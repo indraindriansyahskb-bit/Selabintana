@@ -36,7 +36,7 @@
     </script>
     <style>
         .gradient-overlay {
-            background: linear-gradient(135deg, rgba(8, 28, 21, 0.88) 0%, rgba(27, 67, 50, 0.75) 100%);
+            background: linear-gradient(135deg, rgba(8, 28, 21, 0.90) 0%, rgba(27, 67, 50, 0.80) 100%);
         }
         .card-hover {
             transition: all 0.3s ease;
@@ -60,7 +60,7 @@
                     </div>
                     <div>
                         <span class="text-xl font-bold text-brand-green tracking-tight">CV. SELABINTANA</span>
-                        <span class="block text-xs text-brand-gold font-semibold tracking-widest uppercase">Closed House Poultry Farm</span>
+                        <span class="block text-xs text-brand-gold font-semibold tracking-widest uppercase">Closed House Layer Farm</span>
                     </div>
                 </a>
 
@@ -108,12 +108,12 @@
 
     <!-- HERO SECTION -->
     <section id="home" class="relative min-h-screen flex items-center pt-20 overflow-hidden">
-        <!-- Background Image with Fallback & Gradient Overlay -->
+        <!-- Background Image: Gambar Ayam Betina di Farm Unsplash -->
         <div class="absolute inset-0 z-0">
             <img src="https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=1920&q=80" 
-                 alt="Kandang Ayam Closed House Selabintana" 
-                 class="w-full h-full object-cover"
-                 onerror="this.src='https://placehold.co/1920x1080/1b4332/ffffff?text=CV.+Selabintana+Modern+Farm'">
+                 alt="Peternakan Ayam Petelur CV Selabintana" 
+                 class="w-full h-full object-cover object-center"
+                 onerror="this.src='https://placehold.co/1920x1080/1b4332/ffffff?text=CV.+Selabintana+Modern+Poultry+Farm'">
             <div class="absolute inset-0 gradient-overlay"></div>
         </div>
 
@@ -129,7 +129,7 @@
                 </h1>
                 
                 <p class="text-lg sm:text-xl text-gray-200 leading-relaxed font-light">
-                    CV. Selabintana menghadirkan telur konsumsi segar mutu premium langsung dari peternakan ayam petelur berbasis teknologi ramah lingkungan dan standar kesehatan hewani terpercaya di Sukabumi.
+                    CV. Selabintana menghadirkan telur konsumsi segar mutu premium langsung dari peternakan ayam petelur modern berstandar kesehatan hewani terpercaya di Sukabumi.
                 </p>
 
                 <div class="pt-4 flex flex-col sm:flex-row gap-4">
@@ -148,24 +148,20 @@
     <section class="relative z-20 -mt-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="bg-white rounded-3xl shadow-xl p-8 border border-gray-100 grid grid-cols-2 lg:grid-cols-4 gap-8 divide-y lg:divide-y-0 lg:divide-x divide-gray-100">
             <div class="text-center pt-4 lg:pt-0">
-                <div class="text-brand-green text-3xl font-extrabold mb-1">
-                    <span class="counter" data-target="100000">100.000</span>+
-                </div>
+                <div class="text-brand-green text-3xl font-extrabold mb-1">100.000+</div>
                 <p class="text-sm text-gray-500 font-medium uppercase tracking-wider">Populasi Ayam Produktif</p>
             </div>
             <div class="text-center pt-4 lg:pt-0">
-                <div class="text-brand-gold text-3xl font-extrabold mb-1">
-                    <span class="counter" data-target="50000">50.000</span>+
-                </div>
+                <div class="text-brand-gold text-3xl font-extrabold mb-1">50.000+</div>
                 <p class="text-sm text-gray-500 font-medium uppercase tracking-wider">Butir Telur / Hari</p>
             </div>
             <div class="text-center pt-4 lg:pt-0">
                 <div class="text-brand-green text-3xl font-extrabold mb-1">99.9%</div>
-                <p class="text-sm text-gray-500 font-medium uppercase tracking-wider">Biosekuriti & Bebas Disease</p>
+                <p class="text-sm text-gray-500 font-medium uppercase tracking-wider">Biosekuriti Steril</p>
             </div>
             <div class="text-center pt-4 lg:pt-0">
                 <div class="text-brand-gold text-3xl font-extrabold mb-1">NKV & Halal</div>
-                <p class="text-sm text-gray-500 font-medium uppercase tracking-wider">Sertifikasi Resmi Kementan</p>
+                <p class="text-sm text-gray-500 font-medium uppercase tracking-wider">Sertifikasi Kementan</p>
             </div>
         </div>
     </section>
@@ -176,10 +172,11 @@
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                 <div class="relative">
                     <div class="relative z-10 rounded-3xl overflow-hidden shadow-2xl border-4 border-white">
-                        <img src="https://images.unsplash.com/photo-1516467508483-a7212febe31a?auto=format&fit=crop&w=800&q=80" 
-                             alt="Fasilitas Kandang CV Selabintana" 
+                        <!-- Gambar Ayam di Peternakan Modern Unsplash -->
+                        <img src="https://images.unsplash.com/photo-1563281577-a7be47e20db9?auto=format&fit=crop&w=800&q=80" 
+                             alt="Fasilitas Peternakan Unggas CV Selabintana" 
                              class="w-full h-auto object-cover"
-                             onerror="this.src='https://placehold.co/800x600/2d6a4f/ffffff?text=Fasilitas+Closed+House'">
+                             onerror="this.src='https://placehold.co/800x600/2d6a4f/ffffff?text=Fasilitas+Kandang+Closed+House'">
                     </div>
                     <!-- Accent background box -->
                     <div class="absolute -bottom-6 -right-6 w-full h-full bg-brand-gold/20 rounded-3xl z-0 hidden sm:block"></div>
@@ -197,10 +194,10 @@
                         Dedikasi Menghasilkan Telur Terbaik dari Kandang Terkontrol
                     </h2>
                     <p class="text-gray-600 leading-relaxed">
-                        <strong>CV. Selabintana</strong> adalah perusahaan agribisnis berwawasan lingkungan yang berlokasi di Sukabumi, Jawa Barat. Kami mengoperasikan sistem peternakan ayam petelur *Closed House System* tercanggih untuk memastikan kenyamanan penuh hewan (animal welfare) dan produktivitas yang stabil.
+                        <strong>CV. Selabintana</strong> adalah perusahaan agribisnis berwawasan lingkungan yang berlokasi di Sukabumi, Jawa Barat. Kami mengoperasikan sistem peternakan ayam petelur <em>Closed House System</em> (kandang tertutup) untuk memastikan kenyamanan penuh hewan (*animal welfare*) dan produktivitas yang higienis.
                     </p>
                     <p class="text-gray-600 leading-relaxed">
-                        Dengan memadukan pakan bernutrisi terukur, sanitasi menyeluruh, dan pemantauan mikroklimat digital, produk telur kami terjamin kebersihan, ketebalan cangkang, serta kesegaran kuning telurnya hingga ke tangan konsumen.
+                        Dengan memadukan pakan bernutrisi terukur, sanitasi menyeluruh, serta pemantauan mikroklimat digital, produk telur kami terjamin kebersihan, ketebalan cangkang, dan kesegaran kuning telurnya hingga ke tangan konsumen.
                     </p>
 
                     <div class="grid grid-cols-2 gap-4 pt-2">
@@ -245,7 +242,7 @@
                     </div>
                     <h3 class="text-xl font-bold mb-3">Kontrol Iklim Otomatis</h3>
                     <p class="text-gray-300 text-sm leading-relaxed">
-                        Sistem kipas blower dan cooling pad menjaga suhu ideal 24-28°C dan kelembaban optimal tanpa terpengaruh cuaca eksternal.
+                        Sistem kipas blower exhaust dan cooling pad menjaga suhu ideal 24-28°C dan kelembaban optimal tanpa terpengaruh cuaca eksternal.
                     </p>
                 </div>
 
@@ -256,7 +253,7 @@
                     </div>
                     <h3 class="text-xl font-bold mb-3">Biosekuriti Ketat</h3>
                     <p class="text-gray-300 text-sm leading-relaxed">
-                        Akses steril dua arah, penyemprotan desinfektan otomatis, dan proteksi total terhadap burung liar atau vektor penyakit.
+                        Akses steril dua arah, penyemprotan desinfektan otomatis, dan proteksi total dari burung luar atau vektor penyakit.
                     </p>
                 </div>
 
@@ -265,7 +262,7 @@
                     <div class="w-14 h-14 rounded-xl bg-brand-gold text-brand-dark flex items-center justify-center text-2xl font-bold mb-6">
                         <i class="fa-solid fa-faucet-drip"></i>
                     </div>
-                    <h3 class="text-xl font-bold mb-3">Pakan & Minum Otomatis</h3>
+                    <h3 class="text-xl font-bold mb-3">Pakan & Minum Nipple</h3>
                     <p class="text-gray-300 text-sm leading-relaxed">
                         Sistem penakaran auger dan nipple drinker tertutup menjamin ketersediaan air bersih dan pakan segar tanpa terkontaminasi.
                     </p>
@@ -278,7 +275,7 @@
                     </div>
                     <h3 class="text-xl font-bold mb-3">Manajemen Sanitasi</h3>
                     <p class="text-gray-300 text-sm leading-relaxed">
-                        Pembersihan kotoran secara teratur menggunakan sabuk conveyer otomatis menjaga lingkungan kandang tetap minim amonia.
+                        Pembersihan kotoran secara teratur menggunakan sabuk conveyer otomatis menjaga lingkungan kandang bebas gas amonia.
                     </p>
                 </div>
             </div>
@@ -299,7 +296,7 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <!-- Product 1 -->
+                <!-- Product 1: Gambar Telur Segar di Tray Unsplash -->
                 <div class="bg-white rounded-3xl overflow-hidden shadow-lg border border-gray-100 card-hover flex flex-col">
                     <div class="h-56 overflow-hidden relative">
                         <img src="https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?auto=format&fit=crop&w=600&q=80" 
@@ -314,7 +311,7 @@
                         <div>
                             <h3 class="text-xl font-bold text-gray-800 mb-2">Telur Utuh Segar (Grade A)</h3>
                             <p class="text-gray-600 text-sm mb-4">
-                                Telur cangkang cokelat tebal, berwujud seragam, bersih dari kotoran, dan kuning telur berwarna oranye pekat.
+                                Telur cangkang cokelat tebal, ukuran seragam, bersih dari kotoran, dan kuning telur berwarna oranye pekat.
                             </p>
                             <ul class="text-xs text-gray-500 space-y-1 mb-6">
                                 <li><i class="fa-solid fa-check text-brand-lightgreen mr-1"></i> Kemasan Tray Kertas (30 Butir)</li>
@@ -327,7 +324,7 @@
                     </div>
                 </div>
 
-                <!-- Product 2 -->
+                <!-- Product 2: Gambar Kuning Telur Omega 3 Unsplash -->
                 <div class="bg-white rounded-3xl overflow-hidden shadow-lg border border-gray-100 card-hover flex flex-col">
                     <div class="h-56 overflow-hidden relative">
                         <img src="https://images.unsplash.com/photo-1506976785307-8732e854ad03?auto=format&fit=crop&w=600&q=80" 
@@ -342,7 +339,7 @@
                         <div>
                             <h3 class="text-xl font-bold text-gray-800 mb-2">Telur Special Omega 3</h3>
                             <p class="text-gray-600 text-sm mb-4">
-                                Dihasilkan dari ayam yang diberi pakan khusus kaya minyak ikan alami dan vitamin E tinggi untuk kesehatan keluarga.
+                                Dihasilkan dari ayam yang diberi pakan khusus kaya minyak ikan alami & vitamin E tinggi untuk kesehatan keluarga.
                             </p>
                             <ul class="text-xs text-gray-500 space-y-1 mb-6">
                                 <li><i class="fa-solid fa-check text-brand-lightgreen mr-1"></i> Kemasan Retail Pack (10 Butir)</li>
@@ -355,10 +352,10 @@
                     </div>
                 </div>
 
-                <!-- Product 3 -->
+                <!-- Product 3: Gambar Olahan Telur Steril / Mangkuk Telur Unsplash -->
                 <div class="bg-white rounded-3xl overflow-hidden shadow-lg border border-gray-100 card-hover flex flex-col">
                     <div class="h-56 overflow-hidden relative">
-                        <img src="https://images.unsplash.com/photo-1569246294372-ed319c674f14?auto=format&fit=crop&w=600&q=80" 
+                        <img src="https://images.unsplash.com/photo-1516448620398-c5f44bf9f441?auto=format&fit=crop&w=600&q=80" 
                              alt="Pasteurized Liquid Egg" 
                              class="w-full h-full object-cover"
                              onerror="this.src='https://placehold.co/600x400/2d6a4f/ffffff?text=Liquid+Egg+Industri'">
@@ -395,7 +392,7 @@
                         <span class="text-brand-gold font-bold text-sm tracking-wider uppercase">Jaminan Kualitas</span>
                         <h2 class="text-3xl font-bold text-brand-dark">Sertifikasi & Standar Mutu</h2>
                         <p class="text-gray-600 text-sm">
-                            Keamanan pangan konsumen adalah prioritas utama kami. Seluruh proses di peternakan Selabintana telah diawasi dinas terkait.
+                            Keamanan pangan konsumen adalah prioritas utama kami. Seluruh proses di peternakan Selabintana diawasi secara resmi oleh dinas terkait.
                         </p>
                     </div>
 
