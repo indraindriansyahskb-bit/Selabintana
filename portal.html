@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- SEO & Metadata -->
+    <title>Portal Internal - Sistem Permintaan Barang CV. Selabintana</title>
+    <meta name="robots" content="noindex, nofollow"> <!-- Halaman privat internal -->
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            dark: '#1b4332',
+                            primary: '#2d6a4f',
+                            light: '#40916c',
+                            accent: '#f4a261',
+                            cream: '#fefae0',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="font-sans text-gray-800 bg-slate-100 antialiased min-h-screen flex flex-col justify-between">
+
+    <!-- Header Navbar Sederhana -->
+    <header class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex justify-between items-center">
+            <a href="index.html" class="flex items-center gap-3">
+                <i class="fa-solid fa-industry text-brand-primary text-2xl"></i>
+                <div>
+                    <span class="text-base font-bold text-brand-dark tracking-tight block leading-none">CV. SELABINTANA</span>
+                    <span class="text-[10px] text-brand-light font-medium tracking-wide">PORTAL SISTEM INTERNAL</span>
+                </div>
+            </a>
+            <div id="user-info-area" class="hidden items-center gap-4">
+                <span id="display-user-name" class="text-xs sm:text-sm font-medium text-gray-700"></span>
+                <button onclick="logout()" class="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-right-from-bracket"></i> Keluar
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Konten Utama -->
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full flex-grow">
+        
+        <!-- BAGIAN 1: HALAMAN LOGIN -->
+        <div id="section-login" class="max-w-md mx-auto bg-white rounded-3xl shadow-md border border-gray-200 p-8">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-brand-primary/10 rounded-2xl flex items-center justify-center text-brand-primary text-2xl mx-auto mb-3">
+                    <i class="fa-solid fa-lock"></i>
+                </div>
+                <h1 class="text-xl sm:text-2xl font-bold text-gray-900">Login Portal Internal</h1>
+                <p class="text-xs text-gray-500 mt-1">Masukkan kredensial akun staf CV. Selabintana</p>
+            </div>
+
+            <form id="form-login" onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Username</label>
+                    <input type="text" id="username" required placeholder="Contoh: admin" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-primary text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Password</label>
+                    <input type="password" id="password" required placeholder="••••••••" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-primary text-sm">
+                </div>
+                <button type="submit" id="btn-login" class="w-full bg-brand-primary hover:bg-brand-dark text-white font-semibold py-3 rounded-xl transition text-sm shadow-sm flex items-center justify-center gap-2">
+                    <span>Masuk ke Sistem</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </form>
+            <div id="login-error" class="mt-4 hidden bg-red-50 border border-red-200 text-red-600 text-xs p-3 rounded-xl text-center"></div>
+        </div>
+
+        <!-- BAGIAN 2: DASHBOARD UTAMA (TERSEMBUNYI SEBELUM LOGIN) -->
+        <div id="section-dashboard" class="hidden space-y-8">
+            
+            <!-- Banner Sambutan -->
+            <div class="bg-brand-dark text-white p-6 sm:p-8 rounded-3xl shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <span class="text-brand-accent text-xs font-semibold uppercase tracking-widest">Dashboard Operasional</span>
+                    <h2 class="text-xl sm:text-2xl font-bold mt-1">Sistem Pengajuan & Permintaan Barang</h2>
+                    <p class="text-gray-300 text-xs sm:text-sm mt-1">Kelola dan pantau status pengajuan material secara real-time.</p>
+                </div>
+                <div class="bg-white/10 px-4 py-2.5 rounded-2xl backdrop-blur-md border border-white/10 text-xs">
+                    <span class="text-gray-300 block">Divisi:</span>
+                    <span id="badge-divisi" class="font-bold text-white text-sm">-</span>
+                </div>
+            </div>
+
+            <!-- Form Permintaan Barang -->
+            <div class="bg-white rounded-3xl shadow-sm border border-gray-200 p-6 sm:p-8">
+                <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-cart-plus text-brand-primary"></i> Form Permintaan Barang Baru
+                </h3>
+
+                <form id="form-permintaan" onsubmit="handleSubmitedReq(event)" class="grid sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Pilih Barang</label>
+                        <select id="select-barang" required class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-primary text-sm bg-white">
+                            <option value="">-- Memuat Data Barang --</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Jumlah</label>
+                        <input type="number" id="input-jumlah" min="1" required placeholder="Contoh: 50" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-primary text-sm">
+                    </div>
+                    <div class="sm:col-span-2">
+                        <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Keterangan / Keperluan (Opsional)</label>
+                        <textarea id="input-keterangan" rows="2" placeholder="Tuliskan catatan atau lokasi unit peternakan..." class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-primary text-sm"></textarea>
+                    </div>
+                    <div class="sm:col-span-2">
+                        <button type="submit" id="btn-submit-req" class="w-full bg-brand-primary hover:bg-brand-dark text-white font-semibold py-3 rounded-xl transition text-sm shadow-sm flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-paper-plane"></i> Ajukan Permintaan Barang
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Riwayat Permintaan Barang -->
+            <div class="bg-white rounded-3xl shadow-sm border border-gray-200 p-6 sm:p-8">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                        <i class="fa-solid fa-clock-rotate-left text-brand-primary"></i> Riwayat & Status Permintaan
+                    </h3>
+                    <button onclick="loadRiwayatPermintaan()" class="text-xs font-semibold text-brand-primary hover:underline flex items-center gap-1">
+                        <i class="fa-solid fa-rotate"></i> Muat Ulang
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs sm:text-sm">
+                        <thead class="bg-slate-50 text-gray-600 uppercase text-[10px] sm:text-xs border-b border-gray-200">
+                            <tr>
+                                <th class="p-3">ID / Tanggal</th>
+                                <th class="p-3">Pemohon</th>
+                                <th class="p-3">Barang & Jumlah</th>
+                                <th class="p-3">Keterangan</th>
+                                <th class="p-3 text-center">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-riwayat-body" class="divide-y divide-gray-100">
+                            <tr>
+                                <td colspan="5" class="p-4 text-center text-gray-400">Memuat data riwayat...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Footer Sederhana -->
+    <footer class="bg-white border-t border-gray-200 py-6 text-center text-xs text-gray-500">
+        &copy; 2026 CV. Selabintana. Portal Internal Sistem Manajemen Mutu & Logistik.
+    </footer>
+
+    <!-- SCRIPT JAVASCRIPT INTEGRASI GOOGLE APPS SCRIPT -->
+    <script>
+        // ==========================================
+        // MASUKKAN URL WEB APP GOOGLE APPS SCRIPT ANDA DI SINI
+        // ==========================================
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzt8RXiN0KA4VSq_xHtqnRgD05pdw9P-GbY5hP-CYOXzzom4FjzYkphNJsp60hMNbqLPw/exec";
+
+        let currentUser = null;
+
+        // Cek LocalStorage saat halaman dibuka
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedUser = localStorage.getItem('selabintana_user');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                showDashboard();
+            }
+        });
+
+        // Handler Login
+        async function handleLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const btnLogin = document.getElementById('btn-login');
+            const errorDiv = document.getElementById('login-error');
+
+            btnLogin.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Memproses...`;
+            btnLogin.disabled = true;
+            errorDiv.classList.add('hidden');
+
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: "login", username, password })
+                });
+                const result = await response.json();
+
+                if (result.status === "success") {
+                    currentUser = result.user;
+                    localStorage.setItem('selabintana_user', JSON.stringify(currentUser));
+                    showDashboard();
+                } else {
+                    errorDiv.textContent = result.message;
+                    errorDiv.classList.remove('hidden');
+                }
+            } catch (err) {
+                errorDiv.textContent = "Terjadi kesalahan koneksi ke server.";
+                errorDiv.classList.remove('hidden');
+            } finally {
+                btnLogin.innerHTML = `<span>Masuk ke Sistem</span><i class="fa-solid fa-arrow-right"></i>`;
+                btnLogin.disabled = false;
+            }
+        }
+
+        function showDashboard() {
+            document.getElementById('section-login').classList.add('hidden');
+            document.getElementById('section-dashboard').classList.remove('hidden');
+            document.getElementById('user-info-area').classList.remove('hidden');
+            document.getElementById('user-info-area').classList.add('flex');
+            
+            document.getElementById('display-user-name').textContent = currentUser.nama;
+            document.getElementById('badge-divisi').textContent = `${currentUser.divisi} (${currentUser.role})`;
+
+            loadMasterBarang();
+            loadRiwayatPermintaan();
+        }
+
+        function logout() {
+            localStorage.removeItem('selabintana_user');
+            currentUser = null;
+            document.getElementById('section-dashboard').classList.add('hidden');
+            document.getElementById('section-login').classList.remove('hidden');
+            document.getElementById('user-info-area').classList.add('hidden');
+            document.getElementById('form-login').reset();
+        }
+
+        // Ambil Data Master Barang untuk Dropdown
+        async function loadMasterBarang() {
+            const selectBarang = document.getElementById('select-barang');
+            try {
+                const response = await fetch(`${SCRIPT_URL}?action=get_barang`);
+                const result = await response.json();
+
+                if (result.status === "success" && result.data.length > 0) {
+                    selectBarang.innerHTML = '<option value="">-- Pilih Barang --</option>';
+                    result.data.forEach(item => {
+                        selectBarang.innerHTML += `<option value="${item.nama} (${item.satuan})">${item.nama} (${item.kategori}) - Stok Satuan: ${item.satuan}</option>`;
+                    });
+                } else {
+                    selectBarang.innerHTML = '<option value="">Data barang kosong</option>';
+                }
+            } catch (err) {
+                selectBarang.innerHTML = '<option value="">Gagal memuat barang</option>';
+            }
+        }
+
+        // Submit Permintaan Barang Baru
+        async function handleSubmitedReq(e) {
+            e.preventDefault();
+            const barangLengkap = document.getElementById('select-barang').value;
+            const jumlah = document.getElementById('input-jumlah').value;
+            const keterangan = document.getElementById('input-keterangan').value;
+            const btnSubmit = document.getElementById('btn-submit-req');
+
+            // Pisahkan nama barang dan satuan
+            const namaBarang = barangLengkap.split(' (')[0];
+            const satuan = barangLengkap.split('(')[1].replace(')', '');
+
+            btnSubmit.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Mengirim...`;
+            btnSubmit.disabled = true;
+
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: "submit_permintaan",
+                        nama_pemohon: currentUser.nama,
+                        divisi: currentUser.divisi,
+                        nama_barang: namaBarang,
+                        jumlah: jumlah,
+                        satuan: satuan,
+                        keterangan: keterangan
+                    })
+                });
+                const result = await response.json();
+
+                if (result.status === "success") {
+                    alert(result.message);
+                    document.getElementById('form-permintaan').reset();
+                    loadRiwayatPermintaan();
+                } else {
+                    alert("Gagal: " + result.message);
+                }
+            } catch (err) {
+                alert("Terjadi kesalahan sistem saat mengirim data.");
+            } finally {
+                btnSubmit.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Ajukan Permintaan Barang`;
+                btnSubmit.disabled = false;
+            }
+        }
+
+        // Ambil Riwayat Permintaan Barang
+        async function loadRiwayatPermintaan() {
+            const tbody = document.getElementById('table-riwayat-body');
+            tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-400"><i class="fa-solid fa-spinner animate-spin"></i> Memuat data...</td></tr>`;
+
+            try {
+                const response = await fetch(`${SCRIPT_URL}?action=get_permintaan`);
+                const result = await response.json();
+
+                if (result.status === "success" && result.data.length > 0) {
+                    tbody.innerHTML = "";
+                    result.data.forEach(row => {
+                        let badgeColor = "bg-amber-100 text-amber-700";
+                        if (row.status === "Approved") badgeColor = "bg-emerald-100 text-emerald-700";
+                        if (row.status === "Rejected") badgeColor = "bg-red-100 text-red-700";
+
+                        tbody.innerHTML += `
+                            <tr class="hover:bg-slate-50 transition border-b border-gray-100">
+                                <td class="p-3">
+                                    <span class="font-bold text-gray-900 block">${row.id}</span>
+                                    <span class="text-[10px] text-gray-400">${row.tanggal}</span>
+                                </td>
+                                <td class="p-3">
+                                    <span class="font-medium text-gray-900 block">${row.pemohon}</span>
+                                    <span class="text-[10px] text-gray-500">${row.divisi}</span>
+                                </td>
+                                <td class="p-3">
+                                    <span class="font-semibold text-brand-primary block">${row.barang}</span>
+                                    <span class="text-xs text-gray-600">Jumlah: <strong>${row.jumlah} ${row.satuan}</strong></span>
+                                </td>
+                                <td class="p-3 text-gray-600 text-xs">${row.keterangan}</td>
+                                <td class="p-3 text-center">
+                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider ${badgeColor}">${row.status}</span>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-400">Belum ada riwayat permintaan barang.</td></tr>`;
+                }
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-red-500">Gagal memuat data dari server.</td></tr>`;
+            }
+        }
+    </script>
+</body>
+</html>
