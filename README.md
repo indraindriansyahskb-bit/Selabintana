@@ -60,7 +60,7 @@
 
                 <!-- CTA Button -->
                 <div class="hidden md:flex items-center">
-                    <a href="https://wa.me/6281234567890" target="_blank" class="bg-brand-primary hover:bg-brand-dark text-white px-5 py-2.5 rounded-full font-medium text-sm transition shadow-sm flex items-center gap-2">
+                    <a href="https://wa.me/6281385847898" target="_blank" class="bg-brand-primary hover:bg-brand-dark text-white px-5 py-2.5 rounded-full font-medium text-sm transition shadow-sm flex items-center gap-2">
                         <i class="fa-brands fa-whatsapp text-lg"></i> Hubungi Kami
                     </a>
                 </div>
