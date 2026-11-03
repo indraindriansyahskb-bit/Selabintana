@@ -12,6 +12,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- FontAwesome CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- SheetJS untuk Ekspor Excel .xlsx -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     
     <script>
         tailwind.config = {
@@ -239,7 +241,7 @@
                     </tbody>
                 </table>
 
-                <!-- 4 KOLOM TANDA TANGAN (DISUSUN BERBARIS / 2x2 ATAU VERTIKAL AGAR PAS DI POTRET) -->
+                <!-- 4 KOLOM TANDA TANGAN (2x2 Grid) -->
                 <div class="mt-4 pt-2 grid grid-cols-2 gap-2 text-center text-[9px]">
                     <div class="flex flex-col justify-between h-16 border border-gray-200 p-1 rounded">
                         <span class="font-semibold text-gray-700 uppercase text-[8px]">1. Yang Membuat</span>
@@ -281,7 +283,7 @@
                     </div>
                     <div class="flex flex-wrap items-center gap-2">
                         <button id="btn-export-excel" onclick="exportToExcel()" class="hidden bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl text-xs font-semibold transition items-center gap-1.5 shadow-sm">
-                            <i class="fa-solid fa-file-excel"></i> Unduh Rekap Excel
+                            <i class="fa-solid fa-file-excel"></i> Unduh Rekap Excel (.xlsx)
                         </button>
                         <button onclick="loadRiwayatPermintaan()" class="text-xs font-semibold text-brand-primary hover:underline flex items-center gap-1 bg-slate-100 px-3 py-2 rounded-xl">
                             <i class="fa-solid fa-rotate"></i> Muat Ulang
@@ -290,15 +292,15 @@
                 </div>
 
                 <!-- PILIHAN SORTIR / FILTER (KHUSUS ADMIN) -->
-                <div id="filter-container" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6 bg-slate-50 p-4 rounded-2xl border border-gray-200">
+                <div id="filter-container" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6 bg-slate-50 p-4 rounded-2xl border border-gray-200">
                     <div>
-                        <label class="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Filter Berdasarkan Unit Lokasi</label>
+                        <label class="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Filter Unit Lokasi</label>
                         <select id="filter-unit" onchange="loadRiwayatPermintaan()" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs bg-white focus:outline-none focus:border-brand-primary">
                             <option value="">-- Semua Unit Lokasi --</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Filter Berdasarkan Status</label>
+                        <label class="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Filter Status</label>
                         <select id="filter-status" onchange="loadRiwayatPermintaan()" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs bg-white focus:outline-none focus:border-brand-primary">
                             <option value="">-- Semua Status --</option>
                             <option value="PENDING">PENDING</option>
@@ -306,6 +308,34 @@
                             <option value="REJECTED">TIDAK ACC</option>
                             <option value="REVISION">REVISION</option>
                         </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Filter Bulan</label>
+                        <select id="filter-bulan" onchange="loadRiwayatPermintaan()" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs bg-white focus:outline-none focus:border-brand-primary">
+                            <option value="">-- Semua Bulan --</option>
+                            <option value="01">Januari</option>
+                            <option value="02">Februari</option>
+                            <option value="03">Maret</option>
+                            <option value="04">April</option>
+                            <option value="05">Mei</option>
+                            <option value="06">Juni</option>
+                            <option value="07">Juli</option>
+                            <option value="08">Agustus</option>
+                            <option value="09">September</option>
+                            <option value="10">Oktober</option>
+                            <option value="11">November</option>
+                            <option value="12">Desember</option>
+                        </select>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 sm:col-span-2 lg:col-span-1">
+                        <div>
+                            <label class="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Dari Tgl</label>
+                            <input type="date" id="filter-tgl-mulai" onchange="loadRiwayatPermintaan()" class="w-full px-2 py-2 rounded-xl border border-gray-200 text-[11px] bg-white focus:outline-none focus:border-brand-primary">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Sampai Tgl</label>
+                            <input type="date" id="filter-tgl-selesai" onchange="loadRiwayatPermintaan()" class="w-full px-2 py-2 rounded-xl border border-gray-200 text-[11px] bg-white focus:outline-none focus:border-brand-primary">
+                        </div>
                     </div>
                 </div>
 
@@ -405,7 +435,7 @@
                 document.getElementById('dashboard-title').textContent = "Panel Kendali & Approval Permintaan";
                 document.getElementById('dashboard-subtitle').textContent = "Pusat verifikasi, persetujuan, atau revisi pengajuan barang dari seluruh unit.";
                 document.getElementById('table-title').innerHTML = `<i class="fa-solid fa-clipboard-check text-brand-primary"></i> Daftar Permintaan Masuk (Admin)`;
-                document.getElementById('table-subtitle').textContent = "Meninjau dokumen PDF ber-TTD, memperbarui status, dan mencetak lembar verifikasi A5.";
+                document.getElementById('table-subtitle').textContent = "Meninjau dokumen PDF ber-TTD, memperbarui status, dan mencetak lembar verifikasi A5 Potret.";
                 
                 document.getElementById('btn-export-excel').classList.remove('hidden');
                 document.getElementById('btn-export-excel').classList.add('flex');
@@ -458,40 +488,35 @@
 
         function exportToExcel() {
             if (!globalPermintaanData || globalPermintaanData.length === 0) {
-                alert("Tidak ada data untuk diexport.");
+                alert("Tidak ada data yang sesuai dengan filter untuk diexport.");
                 return;
             }
 
-            let csvContent = "\uFEFF";
-            csvContent += "Kode,Tanggal,Pemohon,Divisi,Unit Lokasi,Kategori,Nama Barang,Jumlah,Satuan,Supplier,Keterangan,Status,Catatan Admin\n";
+            let excelData = globalPermintaanData.map(row => ({
+                "Kode Permintaan": row.kode || "",
+                "Tanggal Pengajuan": row.tanggal || "",
+                "Nama Pemohon": row.pemohon || "",
+                "Divisi": row.divisi || "",
+                "Unit Lokasi": row.unit_lokasi || "",
+                "Kategori Barang": row.kategori || "",
+                "Nama Barang": row.barang || "",
+                "Jumlah": row.jumlah || "",
+                "Satuan": row.satuan || "",
+                "Supplier Rujukan": row.supplier || "",
+                "Keterangan / Keperluan": row.keterangan || "",
+                "Status": row.status || "",
+                "Catatan Admin": row.catatan_admin || ""
+            }));
 
-            globalPermintaanData.forEach(row => {
-                let rowData = [
-                    `"${row.kode || ''}"`,
-                    `"${row.tanggal || ''}"`,
-                    `"${row.pemohon || ''}"`,
-                    `"${row.divisi || ''}"`,
-                    `"${row.unit_lokasi || ''}"`,
-                    `"${row.kategori || ''}"`,
-                    `"${row.barang || ''}"`,
-                    `"${row.jumlah || ''}"`,
-                    `"${row.satuan || ''}"`,
-                    `"${row.supplier || ''}"`,
-                    `"${row.keterangan || ''}"`,
-                    `"${row.status || ''}"`,
-                    `"${row.catatan_admin || ''}"`
-                ];
-                csvContent += rowData.join(",") + "\n";
-            });
+            const worksheet = XLSX.utils.json_to_sheet(excelData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Rekap Bulanan");
 
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `Rekap_Permintaan_Barang_${new Date().toISOString().slice(0,10)}.csv`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+            const maxWidth = Object.keys(excelData[0]).map(() => ({ wch: 20 }));
+            worksheet['!cols'] = maxWidth;
+
+            const selectedBulan = document.getElementById('filter-bulan').value || "Semua_Bulan";
+            XLSX.writeFile(workbook, `Rekap_Permintaan_Bulan_${selectedBulan}_${new Date().getFullYear()}.xlsx`);
         }
 
         async function handleSubmitedReq(e) {
@@ -652,9 +677,7 @@
                 const result = await response.json();
 
                 if (result.status === "success" && result.data.length > 0) {
-                    globalPermintaanData = result.data; 
                     const isAdmin = currentUser.role && currentUser.role.toLowerCase() === 'admin';
-                    
                     let displayData = result.data;
 
                     if (isAdmin) {
@@ -671,6 +694,9 @@
 
                         const filterUnitVal = unitSelect.value;
                         const filterStatusVal = document.getElementById('filter-status').value;
+                        const filterBulanVal = document.getElementById('filter-bulan').value;
+                        const tglMulaiVal = document.getElementById('filter-tgl-mulai').value;
+                        const tglSelesaiVal = document.getElementById('filter-tgl-selesai').value;
 
                         if (filterUnitVal) {
                             displayData = displayData.filter(row => row.unit_lokasi && row.unit_lokasi.toLowerCase() === filterUnitVal.toLowerCase());
@@ -678,11 +704,46 @@
                         if (filterStatusVal) {
                             displayData = displayData.filter(row => row.status && row.status.toUpperCase() === filterStatusVal.toUpperCase());
                         }
+                        if (filterBulanVal) {
+                            displayData = displayData.filter(row => {
+                                if (!row.tanggal) return false;
+                                const parts = row.tanggal.split(/[\/\-]/);
+                                return parts.some(p => p.padStart(2, '0') === filterBulanVal);
+                            });
+                        }
+                        if (tglMulaiVal || tglSelesaiVal) {
+                            displayData = displayData.filter(row => {
+                                if (!row.tanggal) return false;
+                                let cleanDateStr = row.tanggal.split(',')[0].trim();
+                                let parts = cleanDateStr.split(/[\/\-]/);
+                                let rowDate;
+                                if (parts[0].length === 4) {
+                                    rowDate = new Date(`${parts[0]}-${parts[1]}-${parts[2]}`);
+                                } else {
+                                    rowDate = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+                                }
+                                if (isNaN(rowDate)) return true;
+
+                                let isValid = true;
+                                if (tglMulaiVal) {
+                                    let startDate = new Date(tglMulaiVal);
+                                    if (rowDate < startDate) isValid = false;
+                                }
+                                if (tglSelesaiVal) {
+                                    let endDate = new Date(tglSelesaiVal);
+                                    endDate.setHours(23, 59, 59);
+                                    if (rowDate > endDate) isValid = false;
+                                }
+                                return isValid;
+                            });
+                        }
                     } else {
                         displayData = result.data.filter(row => 
                             row.unit_lokasi && row.unit_lokasi.toLowerCase().trim() === currentUser.unit_lokasi.toLowerCase().trim()
                         );
                     }
+
+                    globalPermintaanData = displayData;
 
                     if (displayData.length > 0) {
                         tbody.innerHTML = "";
