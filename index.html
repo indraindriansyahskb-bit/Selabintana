@@ -3,30 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CV. Selabintana - Produsen & Supplier Telur Ayam Segar Berkualitas</title>
+    <title>CV. Selabintana | Peternakan Ayam Petelur Modern Closed House</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Plus Jakarta Sans -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- FontAwesome Icons -->
+    <!-- FontAwesome CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    <!-- Google Fonts: Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: {
-                        sans: ['Plus Jakarta Sans', 'sans-serif'],
-                    },
                     colors: {
-                        farm: {
+                        brand: {
                             green: '#1b4332',
                             lightgreen: '#2d6a4f',
-                            gold: '#e9c46a',
-                            amber: '#f4a261',
-                            cream: '#fefae0',
-                            softbg: '#f8f9fa'
+                            gold: '#f4a261',
+                            amber: '#e76f51',
+                            cream: '#fdfbf7',
+                            dark: '#081c15'
                         }
+                    },
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
                     }
                 }
             }
@@ -34,895 +36,562 @@
     </script>
     <style>
         .gradient-overlay {
-            background: linear-gradient(135deg, rgba(27, 67, 50, 0.92) 0%, rgba(45, 106, 79, 0.85) 100%);
+            background: linear-gradient(135deg, rgba(8, 28, 21, 0.90) 0%, rgba(27, 67, 50, 0.80) 100%);
         }
         .card-hover {
             transition: all 0.3s ease;
         }
         .card-hover:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 15px 30px -10px rgba(27, 67, 50, 0.15);
+            transform: translateY(-8px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
     </style>
 </head>
-<body class="font-sans text-gray-800 bg-white antialiased selection:bg-farm-gold selection:text-farm-green">
+<body class="font-sans bg-brand-cream text-gray-800 antialiased selection:bg-brand-gold selection:text-white">
 
-    <!-- Top Info Bar -->
-    <div class="bg-farm-green text-white text-xs py-2 px-4 hidden md:block border-b border-white/10">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <div class="flex items-center space-x-6">
-                <span><i class="fas fa-map-marker-alt text-farm-gold mr-2"></i>Jl. Selabintana Km. 6, Sukabumi, Jawa Barat</span>
-                <span><i class="fas fa-clock text-farm-gold mr-2"></i>Buka: Senin - Sabtu (07.00 - 16.00 WIB)</span>
-            </div>
-            <div class="flex items-center space-x-4">
-                <span><i class="fas fa-phone text-farm-gold mr-1"></i> (0266) 123-4567</span>
-                <span class="text-white/40">|</span>
-                <a href="https://wa.me/6281234567890" target="_blank" class="hover:text-farm-gold transition"><i class="fab fa-whatsapp text-green-400 mr-1"></i> WhatsApp Fast Response</a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Navigation Header -->
-    <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100">
+    <!-- NAVIGATION BAR -->
+    <header class="fixed w-full bg-white/95 backdrop-blur-md shadow-sm z-50 transition-all duration-300">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-20">
-                <!-- Brand Logo -->
-                <a href="#" class="flex items-center space-x-3 group">
-                    <div class="w-12 h-12 rounded-xl bg-farm-green flex items-center justify-center text-farm-gold shadow-md group-hover:scale-105 transition-transform">
-                        <i class="fas fa-egg text-2xl"></i>
+                <!-- Logo -->
+                <a href="#" class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-full bg-brand-green flex items-center justify-center text-brand-gold shadow-md">
+                        <i class="fa-solid fa-egg text-xl"></i>
                     </div>
                     <div>
-                        <span class="text-xl font-extrabold text-farm-green tracking-tight block">CV. SELABINTANA</span>
-                        <span class="text-xs text-gray-500 font-medium tracking-wider uppercase block">Peternakan Ayam Petelur</span>
+                        <span class="text-xl font-bold text-brand-green tracking-tight">CV. SELABINTANA</span>
+                        <span class="block text-xs text-brand-gold font-semibold tracking-widest uppercase">Closed House Layer Farm</span>
                     </div>
                 </a>
 
-                <!-- Desktop Navigation Links -->
-                <nav class="hidden md:flex space-x-8 text-sm font-semibold text-gray-700">
-                    <a href="#beranda" class="text-farm-green hover:text-farm-lightgreen transition py-2 border-b-2 border-farm-green">Beranda</a>
-                    <a href="#tentang" class="hover:text-farm-green transition py-2 border-b-2 border-transparent hover:border-farm-green">Tentang Kami</a>
-                    <a href="#produk" class="hover:text-farm-green transition py-2 border-b-2 border-transparent hover:border-farm-green">Produk & Layanan</a>
-                    <a href="#keunggulan" class="hover:text-farm-green transition py-2 border-b-2 border-transparent hover:border-farm-green">Keunggulan</a>
-                    <a href="#galeri" class="hover:text-farm-green transition py-2 border-b-2 border-transparent hover:border-farm-green">Galeri</a>
-                    <a href="#kalkulator" class="hover:text-farm-green transition py-2 border-b-2 border-transparent hover:border-farm-green">Simulasi Order</a>
+                <!-- Desktop Menu -->
+                <nav class="hidden md:flex space-x-8 text-sm font-medium text-gray-700">
+                    <a href="#home" class="hover:text-brand-lightgreen transition-colors py-2">Beranda</a>
+                    <a href="#about" class="hover:text-brand-lightgreen transition-colors py-2">Tentang Kami</a>
+                    <a href="#technology" class="hover:text-brand-lightgreen transition-colors py-2">Teknologi</a>
+                    <a href="#products" class="hover:text-brand-lightgreen transition-colors py-2">Produk</a>
+                    <a href="#certifications" class="hover:text-brand-lightgreen transition-colors py-2">Sertifikasi</a>
+                    <a href="#contact" class="hover:text-brand-lightgreen transition-colors py-2">Kontak</a>
                 </nav>
 
-                <!-- CTA Button -->
+                <!-- Action Button -->
                 <div class="hidden md:flex items-center space-x-4">
-                    <a href="#kontak" class="bg-farm-green hover:bg-farm-lightgreen text-white px-5 py-2.5 rounded-full text-sm font-bold shadow-md hover:shadow-lg transition duration-200 flex items-center space-x-2">
-                        <span>Hubungi Kami</span>
-                        <i class="fas fa-arrow-right text-xs"></i>
+                    <a href="https://wa.me/6281234567890?text=Halo%20CV.%20Selabintana,%20saya%20ingin%20mengajukan%20penawaran/pemesanan%20telur." target="_blank" class="bg-brand-green hover:bg-brand-lightgreen text-white px-5 py-2.5 rounded-full text-sm font-semibold transition-all shadow-md hover:shadow-lg flex items-center space-x-2">
+                        <i class="fa-brands fa-whatsapp text-lg"></i>
+                        <span>Order Grosir</span>
                     </a>
                 </div>
 
-                <!-- Mobile menu button -->
+                <!-- Mobile Menu Button -->
                 <div class="md:hidden flex items-center">
-                    <button id="mobile-menu-btn" class="text-gray-700 hover:text-farm-green focus:outline-none p-2">
-                        <i class="fas fa-bars text-2xl"></i>
+                    <button id="mobile-menu-btn" class="text-gray-700 hover:text-brand-green focus:outline-none p-2">
+                        <i class="fa-solid fa-bars text-2xl"></i>
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- Mobile Menu -->
-        <div id="mobile-menu" class="hidden md:hidden bg-white border-b border-gray-200 px-4 pt-2 pb-6 space-y-3">
-            <a href="#beranda" class="block py-2 text-farm-green font-semibold border-b border-gray-100">Beranda</a>
-            <a href="#tentang" class="block py-2 text-gray-600 font-semibold border-b border-gray-100">Tentang Kami</a>
-            <a href="#produk" class="block py-2 text-gray-600 font-semibold border-b border-gray-100">Produk & Layanan</a>
-            <a href="#keunggulan" class="block py-2 text-gray-600 font-semibold border-b border-gray-100">Keunggulan</a>
-            <a href="#galeri" class="block py-2 text-gray-600 font-semibold border-b border-gray-100">Galeri</a>
-            <a href="#kalkulator" class="block py-2 text-gray-600 font-semibold border-b border-gray-100">Simulasi Order</a>
-            <a href="#kontak" class="mt-4 block w-full text-center bg-farm-green text-white py-3 rounded-xl font-bold">Hubungi Kami</a>
+        <!-- Mobile Menu Dropdown -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-b border-gray-100 px-4 pt-2 pb-6 space-y-3 shadow-lg">
+            <a href="#home" class="block py-2 text-gray-700 hover:text-brand-green font-medium">Beranda</a>
+            <a href="#about" class="block py-2 text-gray-700 hover:text-brand-green font-medium">Tentang Kami</a>
+            <a href="#technology" class="block py-2 text-gray-700 hover:text-brand-green font-medium">Teknologi Closed House</a>
+            <a href="#products" class="block py-2 text-gray-700 hover:text-brand-green font-medium">Produk Telur</a>
+            <a href="#certifications" class="block py-2 text-gray-700 hover:text-brand-green font-medium">Sertifikasi & Mutu</a>
+            <a href="#contact" class="block py-2 text-gray-700 hover:text-brand-green font-medium">Kontak & Pemesanan</a>
+            <a href="https://wa.me/6281234567890" target="_blank" class="inline-flex w-full justify-center items-center space-x-2 bg-brand-green text-white py-3 rounded-xl font-semibold shadow">
+                <i class="fa-brands fa-whatsapp text-lg"></i>
+                <span>Hubungi via WhatsApp</span>
+            </a>
         </div>
     </header>
 
-    <!-- Hero Section -->
-    <section id="beranda" class="relative bg-farm-green min-h-[85vh] flex items-center overflow-hidden">
-        <!-- Background Image with Overlay -->
+    <!-- HERO SECTION -->
+    <section id="home" class="relative min-h-screen flex items-center pt-20 overflow-hidden">
+        <!-- Background Image: Gambar Ayam Betina di Farm Unsplash -->
         <div class="absolute inset-0 z-0">
-            <img src="https://images.unsplash.com/photo-1516467508483-a7212febe31a?q=80&w=1920&auto=format&fit=crop" alt="Peternakan Ayam Modern" class="w-full h-full object-cover object-center" onerror="this.src='https://placehold.co/1920x1080/1b4332/ffffff?text=CV.+Selabintana+Farm'">
+            <img src="https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=1920&q=80" 
+                 alt="Peternakan Ayam Petelur CV Selabintana" 
+                 class="w-full h-full object-cover object-center"
+                 onerror="this.src='https://placehold.co/1920x1080/1b4332/ffffff?text=CV.+Selabintana+Modern+Poultry+Farm'">
             <div class="absolute inset-0 gradient-overlay"></div>
         </div>
 
-        <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-white">
-            <div class="grid md:grid-cols-12 gap-12 items-center">
-                <div class="md:col-span-7 space-y-6">
-                    <div class="inline-flex items-center space-x-2 bg-farm-gold/20 backdrop-blur-md text-farm-gold px-4 py-1.5 rounded-full border border-farm-gold/30 text-xs font-bold uppercase tracking-widest">
-                        <i class="fas fa-certificate text-sm"></i>
-                        <span>Peternakan Terpercaya Sukabumi</span>
-                    </div>
-                    <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight">
-                        Menyajikan <span class="text-farm-gold">Telur Segar</span> Berkualitas Tinggi Setiap Hari
-                    </h1>
-                    <p class="text-gray-200 text-lg leading-relaxed max-w-2xl font-light">
-                        CV. Selabintana adalah produsen dan supplier utama telur ayam segar di Sukabumi. Diproduksi dari kandang modern berstandar biosekuriti tinggi untuk menjamin kesegaran, kebersihan, dan nutrisi terbaik bagi keluarga & bisnis Anda.
-                    </p>
-                    <div class="pt-4 flex flex-col sm:flex-row gap-4">
-                        <a href="#produk" class="bg-farm-gold hover:bg-yellow-500 text-farm-green px-8 py-4 rounded-xl font-bold text-center shadow-lg hover:shadow-xl transition flex items-center justify-center space-x-2">
-                            <span>Lihat Produk Kami</span>
-                            <i class="fas fa-chevron-right text-xs"></i>
-                        </a>
-                        <a href="https://wa.me/6281234567890" target="_blank" class="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30 text-white px-8 py-4 rounded-xl font-bold text-center transition flex items-center justify-center space-x-2">
-                            <i class="fab fa-whatsapp text-lg text-green-400"></i>
-                            <span>Pesan Grosir (Fast Response)</span>
-                        </a>
-                    </div>
-                    
-                    <!-- Quick Badges -->
-                    <div class="pt-8 border-t border-white/10 grid grid-cols-3 gap-4 text-center sm:text-left">
-                        <div>
-                            <div class="text-2xl sm:text-3xl font-extrabold text-farm-gold">100%</div>
-                            <div class="text-xs text-gray-300">Segar & Harian</div>
-                        </div>
-                        <div>
-                            <div class="text-2xl sm:text-3xl font-extrabold text-farm-gold">Free</div>
-                            <div class="text-xs text-gray-300">Bebas Antibiotik</div>
-                        </div>
-                        <div>
-                            <div class="text-2xl sm:text-3xl font-extrabold text-farm-gold">Grade A</div>
-                            <div class="text-xs text-gray-300">Standar Mutu Tinggi</div>
-                        </div>
-                    </div>
+        <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-white">
+            <div class="max-w-3xl space-y-6">
+                <div class="inline-flex items-center space-x-2 bg-white/10 backdrop-blur-md px-4 py-1.5 rounded-full text-brand-gold border border-white/20 text-xs sm:text-sm font-semibold">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <span>Sistem Biosekuriti Ketat & Bebas Residu Kimia</span>
                 </div>
-
-                <!-- Floating Feature Card / Image Stack -->
-                <div class="md:col-span-5 hidden md:block relative">
-                    <div class="relative mx-auto max-w-sm rounded-2xl overflow-hidden shadow-2xl border-4 border-white/20">
-                        <img src="https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?q=80&w=800&auto=format&fit=crop" alt="Telur Segar CV Selabintana" class="w-full h-96 object-cover" onerror="this.src='https://placehold.co/600x800/2d6a4f/ffffff?text=Telur+Segar+Grade+A'">
-                        <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-6 text-white">
-                            <div class="flex items-center space-x-3 mb-2">
-                                <span class="bg-green-500 text-xs px-2.5 py-1 rounded-full font-bold">Panen Hari Ini</span>
-                                <span class="text-xs text-gray-300"><i class="fas fa-check-circle mr-1"></i>Lulus Kontrol Kualitas</span>
-                            </div>
-                            <h3 class="font-bold text-lg">Telur Ayam Ras Premium</h3>
-                            <p class="text-xs text-gray-300">Dikemas rapi dalam tray ramah lingkungan siap kirim.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Stats Bar -->
-    <section class="bg-farm-cream border-y border-yellow-200/60 py-10">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-8">
-                <div class="flex items-center space-x-4 bg-white p-6 rounded-2xl shadow-sm border border-yellow-100">
-                    <div class="w-14 h-14 rounded-xl bg-farm-green/10 text-farm-green flex items-center justify-center text-2xl font-bold">
-                        <i class="fas fa-crow"></i>
-                    </div>
-                    <div>
-                        <div class="text-3xl font-extrabold text-farm-green">50.000+</div>
-                        <div class="text-xs font-medium text-gray-600 uppercase tracking-wider">Ayam Produktif</div>
-                    </div>
-                </div>
-                <div class="flex items-center space-x-4 bg-white p-6 rounded-2xl shadow-sm border border-yellow-100">
-                    <div class="w-14 h-14 rounded-xl bg-farm-gold/20 text-farm-amber flex items-center justify-center text-2xl font-bold">
-                        <i class="fas fa-egg"></i>
-                    </div>
-                    <div>
-                        <div class="text-3xl font-extrabold text-farm-green">45.000+</div>
-                        <div class="text-xs font-medium text-gray-600 uppercase tracking-wider">Butir Telur / Hari</div>
-                    </div>
-                </div>
-                <div class="flex items-center space-x-4 bg-white p-6 rounded-2xl shadow-sm border border-yellow-100">
-                    <div class="w-14 h-14 rounded-xl bg-farm-green/10 text-farm-green flex items-center justify-center text-2xl font-bold">
-                        <i class="fas fa-store"></i>
-                    </div>
-                    <div>
-                        <div class="text-3xl font-extrabold text-farm-green">120+</div>
-                        <div class="text-xs font-medium text-gray-600 uppercase tracking-wider">Mitra Bisnis Aktif</div>
-                    </div>
-                </div>
-                <div class="flex items-center space-x-4 bg-white p-6 rounded-2xl shadow-sm border border-yellow-100">
-                    <div class="w-14 h-14 rounded-xl bg-farm-gold/20 text-farm-amber flex items-center justify-center text-2xl font-bold">
-                        <i class="fas fa-award"></i>
-                    </div>
-                    <div>
-                        <div class="text-3xl font-extrabold text-farm-green">12+ Tahun</div>
-                        <div class="text-xs font-medium text-gray-600 uppercase tracking-wider">Pengalaman Industri</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- About Us Section (Tentang Kami) -->
-    <section id="tentang" class="py-24 bg-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid lg:grid-cols-12 gap-12 items-center">
-                <!-- Left Image Grid -->
-                <div class="lg:col-span-6 grid grid-cols-2 gap-4">
-                    <img src="https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?q=80&w=600&auto=format&fit=crop" alt="Ayam Petelur Sehat" class="rounded-2xl shadow-md w-full h-64 object-cover hover:scale-105 transition duration-300" onerror="this.src='https://placehold.co/600x500/1b4332/ffffff?text=Fasilitas+Kandang'">
-                    <img src="https://images.unsplash.com/photo-1598965402089-897ce52e8355?q=80&w=600&auto=format&fit=crop" alt="Sortir Telur" class="rounded-2xl shadow-md w-full h-64 object-cover mt-8 hover:scale-105 transition duration-300" onerror="this.src='https://placehold.co/600x500/2d6a4f/ffffff?text=Pemeriksaan+Kualitas'">
-                </div>
-
-                <!-- Right Content -->
-                <div class="lg:col-span-6 space-y-6">
-                    <div class="inline-block bg-farm-green/10 text-farm-green px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider">
-                        Tentang CV. Selabintana
-                    </div>
-                    <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
-                        Komitmen Kami Pada Kesegaran, Kualitas, & Standar Peternakan Modern
-                    </h2>
-                    <p class="text-gray-600 leading-relaxed">
-                        Berdiri di kawasan sejuk Selabintana, Sukabumi, **CV. Selabintana** mengelola peternakan ayam petelur dengan mengintegrasikan teknologi ramah lingkungan, sistem perkandangan tertutup (closed house), serta pakan bernutrisi seimbang tanpa antibiotik berbahaya.
-                    </p>
-                    <p class="text-gray-600 leading-relaxed">
-                        Kami melayani pasokan telur harian skala besar untuk supermarket, pasar tradisional, industri toko roti (bakery), hotel, restoran, dan agen distributor di wilayah Jabodetabek & Jawa Barat.
-                    </p>
-
-                    <!-- Visi & Misi Accordion / Cards -->
-                    <div class="grid sm:grid-cols-2 gap-4 pt-4">
-                        <div class="p-5 rounded-xl bg-farm-softbg border border-gray-100">
-                            <div class="flex items-center space-x-3 mb-2">
-                                <div class="w-8 h-8 rounded-lg bg-farm-green text-white flex items-center justify-center font-bold text-sm">V</div>
-                                <h3 class="font-bold text-gray-900">Visi Kami</h3>
-                            </div>
-                            <p class="text-xs text-gray-600 leading-normal">
-                                Menjadi produsen telur ayam terdepan di Jawa Barat yang tepercaya, higienis, dan berkelanjutan.
-                            </p>
-                        </div>
-                        <div class="p-5 rounded-xl bg-farm-softbg border border-gray-100">
-                            <div class="flex items-center space-x-3 mb-2">
-                                <div class="w-8 h-8 rounded-lg bg-farm-gold text-farm-green flex items-center justify-center font-bold text-sm">M</div>
-                                <h3 class="font-bold text-gray-900">Misi Kami</h3>
-                            </div>
-                            <p class="text-xs text-gray-600 leading-normal">
-                                Menyediakan telur berkualitas tinggi dengan harga kompetitif melalui kontrol biosekuriti ketat.
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- Highlight Badges -->
-                    <div class="flex flex-wrap gap-3 pt-2">
-                        <span class="inline-flex items-center text-xs font-medium text-gray-700 bg-gray-100 px-3 py-1.5 rounded-lg border border-gray-200">
-                            <i class="fas fa-shield-alt text-farm-green mr-1.5"></i> Biosekuriti Ketat
-                        </span>
-                        <span class="inline-flex items-center text-xs font-medium text-gray-700 bg-gray-100 px-3 py-1.5 rounded-lg border border-gray-200">
-                            <i class="fas fa-leaf text-farm-green mr-1.5"></i> Pakan Herbal & Nutrisi Unggul
-                        </span>
-                        <span class="inline-flex items-center text-xs font-medium text-gray-700 bg-gray-100 px-3 py-1.5 rounded-lg border border-gray-200">
-                            <i class="fas fa-truck-loading text-farm-green mr-1.5"></i> Pengiriman Tepat Waktu
-                        </span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Products & Services Section -->
-    <section id="produk" class="py-24 bg-farm-softbg">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center max-w-3xl mx-auto mb-16 space-y-4">
-                <div class="inline-block bg-farm-gold/20 text-farm-green px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider">
-                    Produk & Layanan Utam
-                </div>
-                <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
-                    Pilihan Telur Segar & Hasil Peternakan
-                </h2>
-                <p class="text-gray-600 text-base">
-                    Kami menyediakan berbagai kategori produk sesuai dengan kebutuhan konsumsi rumah tangga maupun pasokan skala industri.
-                </p>
-            </div>
-
-            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-                <!-- Product 1 -->
-                <div class="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm card-hover flex flex-col justify-between">
-                    <div>
-                        <div class="relative h-48 overflow-hidden bg-gray-100">
-                            <img src="https://images.unsplash.com/photo-1516467508483-a7212febe31a?q=80&w=500&auto=format&fit=crop" alt="Telur Fresh Regular" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/400x300/1b4332/ffffff?text=Telur+Fresh+Grade+A'">
-                            <span class="absolute top-3 right-3 bg-farm-green text-white text-xs px-2.5 py-1 rounded-full font-bold">Best Seller</span>
-                        </div>
-                        <div class="p-6 space-y-3">
-                            <h3 class="text-xl font-bold text-gray-900">Telur Ayam Fresh Grade A</h3>
-                            <p class="text-xs text-gray-500 leading-relaxed">
-                                Telur ayam ras konsumsi harian dengan cangkang tebal, warna cokelat cerah, dan kuning telur yang padat & segar.
-                            </p>
-                            <ul class="text-xs text-gray-600 space-y-2 pt-2">
-                                <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Berat rata-rata: 58-65 gram/butir</li>
-                                <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Panen harian tanpa bahan pengawet</li>
-                                <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Kemasan Tray (30 Butir) / Karton</li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="p-6 pt-0">
-                        <a href="#kontak" class="block text-center w-full bg-gray-100 hover:bg-farm-green hover:text-white text-gray-800 py-2.5 rounded-xl text-xs font-bold transition">Tanyakan Stok & Harga</a>
-                    </div>
-                </div>
-
-                <!-- Product 2 -->
-                <div class="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm card-hover flex flex-col justify-between">
-                    <div>
-                        <div class="relative h-48 overflow-hidden bg-gray-100">
-                            <img src="https://images.unsplash.com/photo-1506976785307-8732e854ad03?q=80&w=500&auto=format&fit=crop" alt="Telur Omega 3" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/400x300/e9c46a/1b4332?text=Telur+Omega+3'">
-                            <span class="absolute top-3 right-3 bg-farm-gold text-farm-green text-xs px-2.5 py-1 rounded-full font-bold">Premium Nutrisi</span>
-                        </div>
-                        <div class="p-6 space-y-3">
-                            <h3 class="text-xl font-bold text-gray-900">Telur Omega 3 Plus</h3>
-                            <p class="text-xs text-gray-500 leading-relaxed">
-                                Diperkaya dengan DHA & Omega 3 dari pakan alami pilihan. Kuning telur berwarna oranye pekat, sangat bernutrisi.
-                            </p>
-                            <ul class="text-xs text-gray-600 space-y-2 pt-2">
-                                <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Tinggi DHA, EPA & Vitamin E</li>
-                                <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Bebas kolesterol berlebih</li>
-                                <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Ideal untuk balita & lansia</li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="p-6 pt-0">
-                        <a href="#kontak" class="block text-center w-full bg-gray-100 hover:bg-farm-green hover:text-white text-gray-800 py-2.5 rounded-xl text-xs font-bold transition">Tanyakan Stok & Harga</a>
-                    </div>
-                </div>
-
-                <!-- Product 3 -->
-                <div class="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm card-hover flex flex-col justify-between">
-                    <div>
-                        <div class="relative h-48 overflow-hidden bg-gray-100">
-                            <img src="https://images.unsplash.com/photo-1587486913049-53fc88980cfc?q=80&w=500&auto=format&fit=crop" alt="Pasokan Telur Grosir Bakery" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/400x300/2d6a4f/ffffff?text=Grosir+%26+Industri'">
-                            <span class="absolute top-3 right-3 bg-blue-600 text-white text-xs px-2.5 py-1 rounded-full font-bold">Khusus Industri</span>
-                        </div>
-                        <div class="p-6 space-y-3">
-                            <h3 class="text-xl font-bold text-gray-900">Pasokan Curah & Grosir</h3>
-                            <p class="text-xs text-gray-500 leading-relaxed">
-                                Solusi pasokan berkala skala besar untuk industri toko roti (bakery), katering, hotel, dan restoran dengan harga khusus mitra.
-                            </p>
-                            <ul class="text-xs text-gray-600 space-y-2 pt-2">
-                                <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Pengiriman peti/ikat kustom</li>
-                                <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Garansi penggantian retur/pecah</li>
-                                <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Kontrak pasokan terjamin</li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="p-6 pt-0">
-                        <a href="#kontak" class="block text-center w-full bg-gray-100 hover:bg-farm-green hover:text-white text-gray-800 py-2.5 rounded-xl text-xs font-bold transition">Konsultasi Mitra Grosir</a>
-                    </div>
-                </div>
-
-                <!-- Product 4 -->
-                <div class="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm card-hover flex flex-col justify-between">
-                    <div>
-                        <div class="relative h-48 overflow-hidden bg-gray-100">
-                            <img src="https://images.unsplash.com/photo-1592417817098-8f3d6ef23a85?q=80&w=500&auto=format&fit=crop" alt="Pupuk Organik Kotoran Ayam" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/400x300/1b4332/e9c46a?text=Pupuk+Organik'">
-                            <span class="absolute top-3 right-3 bg-emerald-700 text-white text-xs px-2.5 py-1 rounded-full font-bold">Eco-Product</span>
-                        </div>
-                        <div class="p-6 space-y-3">
-                            <h3 class="text-xl font-bold text-gray-900">Pupuk Organik Manure</h3>
-                            <p class="text-xs text-gray-500 leading-relaxed">
-                                Pupuk kotoran ayam terfermentasi matang (manure) tinggi Nitrogen & Organik untuk perkebunan sawit, sayur & buah.
-                            </p>
-                            <ul class="text-xs text-gray-600 space-y-2 pt-2">
-                                <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Sudah Fermentasi / Kering Olah</li>
-                                <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Menyuburkan tanah perkebunan</li>
-                                <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Kemasan Karung 25kg & Bulk</li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="p-6 pt-0">
-                        <a href="#kontak" class="block text-center w-full bg-gray-100 hover:bg-farm-green hover:text-white text-gray-800 py-2.5 rounded-xl text-xs font-bold transition">Pesan Pupuk Organik</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Key Advantages (Keunggulan Kami) -->
-    <section id="keunggulan" class="py-24 bg-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid lg:grid-cols-12 gap-12 items-center">
-                <div class="lg:col-span-5 space-y-6">
-                    <div class="inline-block bg-farm-green/10 text-farm-green px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider">
-                        Mengapa Memilih Kami?
-                    </div>
-                    <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
-                        Keunggulan Utama Telur CV. Selabintana
-                    </h2>
-                    <p class="text-gray-600 leading-relaxed text-sm">
-                        Kami mengutamakan kualitas mulai dari pemilihan bibit ayam (DOC) unggul, formula pakan bernutrisi tinggi, hingga pengemasan yang higienis sebelum didistribusikan ke tangan pelanggan.
-                    </p>
-
-                    <div class="space-y-4 pt-2">
-                        <div class="flex items-start space-x-4">
-                            <div class="w-10 h-10 rounded-xl bg-farm-gold/20 text-farm-amber flex items-center justify-center shrink-0 mt-1 font-bold">
-                                <i class="fas fa-sun"></i>
-                            </div>
-                            <div>
-                                <h4 class="font-bold text-gray-900">100% Panen Segar Harian</h4>
-                                <p class="text-xs text-gray-500">Telur dikumpulkan setiap pagi dari kandang dan langsung didistribusikan tanpa penyimpangan waktu lama.</p>
-                            </div>
-                        </div>
-
-                        <div class="flex items-start space-x-4">
-                            <div class="w-10 h-10 rounded-xl bg-farm-green/10 text-farm-green flex items-center justify-center shrink-0 mt-1 font-bold">
-                                <i class="fas fa-shield-virus"></i>
-                            </div>
-                            <div>
-                                <h4 class="font-bold text-gray-900">Bebas Residu Antibiotik</h4>
-                                <p class="text-xs text-gray-500">Ayam dibesarkan dengan suplemen herbal Alami (jamu ternak) untuk menjaga kesehatan tanpa bahan kimia berbahaya.</p>
-                            </div>
-                        </div>
-
-                        <div class="flex items-start space-x-4">
-                            <div class="w-10 h-10 rounded-xl bg-farm-gold/20 text-farm-amber flex items-center justify-center shrink-0 mt-1 font-bold">
-                                <i class="fas fa-microscope"></i>
-                            </div>
-                            <div>
-                                <h4 class="font-bold text-gray-900">Kontrol Kualitas Cangkang & Berat</h4>
-                                <p class="text-xs text-gray-500">Setiap butir telur disortir secara presisi untuk memastikan ketebalan cangkang dan ukuran yang seragam.</p>
-                            </div>
-                        </div>
-
-                        <div class="flex items-start space-x-4">
-                            <div class="w-10 h-10 rounded-xl bg-farm-green/10 text-farm-green flex items-center justify-center shrink-0 mt-1 font-bold">
-                                <i class="fas fa-truck-fast"></i>
-                            </div>
-                            <div>
-                                <h4 class="font-bold text-gray-900">Armada Pengiriman Khusus</h4>
-                                <p class="text-xs text-gray-500">Pengiriman terencana dengan kendaraan yang dilengkapi peredam benturan untuk meminimalisir risiko pecah.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="lg:col-span-7">
-                    <div class="bg-farm-green rounded-3xl p-8 sm:p-12 text-white relative overflow-hidden shadow-xl">
-                        <div class="absolute -right-10 -bottom-10 opacity-10 text-white">
-                            <i class="fas fa-egg text-9xl"></i>
-                        </div>
-                        <h3 class="text-2xl font-bold text-farm-gold mb-4">Standar Biosekuriti Modern</h3>
-                        <p class="text-gray-200 text-sm leading-relaxed mb-6">
-                            Lokasi peternakan CV. Selabintana menerapkan sterilisasi ketat bagi setiap kendaraan dan personel yang masuk. Kandang bertipe *Closed House* menjaga suhu & kelembaban ideal agar ayam bebas stres dan berproduksi secara optimal.
-                        </p>
-                        
-                        <div class="grid grid-cols-2 gap-4 border-t border-white/20 pt-6">
-                            <div>
-                                <span class="text-3xl font-extrabold text-white block">24/7</span>
-                                <span class="text-xs text-gray-300">Monitoring Suhu Kandang</span>
-                            </div>
-                            <div>
-                                <span class="text-3xl font-extrabold text-white block">0%</span>
-                                <span class="text-xs text-gray-300">Kontaminasi Luar</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Interactive Price Estimator / Calculator -->
-    <section id="kalkulator" class="py-20 bg-emerald-950 text-white">
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center space-y-4 mb-12">
-                <span class="bg-farm-gold/20 text-farm-gold px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider">Simulasi Pesanan Grosir</span>
-                <h2 class="text-3xl font-extrabold">Kalkulator Estimasi Kebutuhan Telur</h2>
-                <p class="text-gray-300 text-sm max-w-xl mx-auto">
-                    Hitung perkiraan jumlah ikat / tray telur yang Anda butuhkan untuk usaha roti, restoran, atau stok toko Anda.
-                </p>
-            </div>
-
-            <div class="bg-white text-gray-800 rounded-3xl p-6 sm:p-10 shadow-2xl">
-                <div class="grid md:grid-cols-2 gap-8 items-center">
-                    <div class="space-y-6">
-                        <div>
-                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Pilih Tipe Produk</label>
-                            <select id="calc-type" class="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-farm-green font-semibold">
-                                <option value="fresh">Telur Fresh Regular Grade A</option>
-                                <option value="omega">Telur Omega 3 Premium</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
-                                Estimasi Kebutuhan Harian (Kg)
-                            </label>
-                            <input type="range" id="calc-range" min="10" max="500" value="50" class="w-full accent-farm-green h-2 bg-gray-200 rounded-lg cursor-pointer">
-                            <div class="flex justify-between text-xs text-gray-500 font-bold mt-2">
-                                <span>10 Kg</span>
-                                <span id="calc-range-val" class="text-base text-farm-green font-extrabold">50 Kg</span>
-                                <span>500 Kg</span>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Frekuensi Pengiriman</label>
-                            <div class="grid grid-cols-3 gap-2">
-                                <button type="button" class="freq-btn bg-farm-green text-white py-2 rounded-lg text-xs font-bold transition" data-freq="1">Harian</button>
-                                <button type="button" class="freq-btn bg-gray-100 text-gray-700 py-2 rounded-lg text-xs font-bold transition" data-freq="3">2-3x / Minggu</button>
-                                <button type="button" class="freq-btn bg-gray-100 text-gray-700 py-2 rounded-lg text-xs font-bold transition" data-freq="7">Mingguan</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Calculator Output Card -->
-                    <div class="bg-farm-softbg border border-gray-200 rounded-2xl p-6 space-y-4">
-                        <h4 class="font-bold text-gray-900 border-b border-gray-200 pb-3 text-sm uppercase tracking-wider">Ringkasan Estimasi Pasokan</h4>
-                        <div class="flex justify-between items-center text-sm">
-                            <span class="text-gray-600">Perkiraan Butir Telur / Hari:</span>
-                            <span id="res-butir" class="font-bold text-farm-green">± 800 Butir</span>
-                        </div>
-                        <div class="flex justify-between items-center text-sm">
-                            <span class="text-gray-600">Jumlah Tray (30 butir):</span>
-                            <span id="res-tray" class="font-bold text-farm-green">± 27 Tray</span>
-                        </div>
-                        <div class="flex justify-between items-center text-sm border-t border-gray-200 pt-3">
-                            <span class="font-bold text-gray-800">Status Diskon Grosir:</span>
-                            <span id="res-discount" class="bg-green-100 text-green-800 text-xs font-bold px-2.5 py-1 rounded-md">Mitra Tier 1 (Potongan Spesial)</span>
-                        </div>
-
-                        <div class="pt-4">
-                            <a id="calc-wa-btn" href="#" target="_blank" class="block w-full text-center bg-farm-green hover:bg-farm-lightgreen text-white py-3 rounded-xl text-sm font-bold shadow-md transition">
-                                <i class="fab fa-whatsapp mr-2"></i> Minta Penawaran Resmi WA
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Gallery / Farm Overview -->
-    <section id="galeri" class="py-24 bg-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center max-w-3xl mx-auto mb-16 space-y-4">
-                <div class="inline-block bg-farm-green/10 text-farm-green px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider">
-                    Galeri & Dokumentasi
-                </div>
-                <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
-                    Fasilitas Kandang & Process Kontrol Kualitas
-                </h2>
-                <p class="text-gray-600 text-base">
-                    Intip lingkungan peternakan modern CV. Selabintana yang terawat, higienis, dan dikelola secara profesional.
-                </p>
-            </div>
-
-            <!-- Gallery Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="relative group overflow-hidden rounded-2xl shadow-md h-72">
-                    <img src="https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?q=80&w=800&auto=format&fit=crop" alt="Kandang Modern Closed House" class="w-full h-full object-cover group-hover:scale-110 transition duration-500" onerror="this.src='https://placehold.co/600x400/1b4332/ffffff?text=Kandang+Closed+House'">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition duration-300 flex flex-col justify-end p-6 text-white">
-                        <h4 class="font-bold text-lg">Kandang Closed House</h4>
-                        <p class="text-xs text-gray-300">Pengaturan suhu otomatis demi kenyamanan & produktivitas ayam.</p>
-                    </div>
-                </div>
-
-                <div class="relative group overflow-hidden rounded-2xl shadow-md h-72">
-                    <img src="https://images.unsplash.com/photo-1516467508483-a7212febe31a?q=80&w=800&auto=format&fit=crop" alt="Pemeriksaan Telur Harian" class="w-full h-full object-cover group-hover:scale-110 transition duration-500" onerror="this.src='https://placehold.co/600x400/2d6a4f/ffffff?text=Pemeriksaan+Telur'">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition duration-300 flex flex-col justify-end p-6 text-white">
-                        <h4 class="font-bold text-lg">Sortir & Grading Harian</h4>
-                        <p class="text-xs text-gray-300">Pilah telur berdasarkan ukuran dan kebersihan cangkang.</p>
-                    </div>
-                </div>
-
-                <div class="relative group overflow-hidden rounded-2xl shadow-md h-72">
-                    <img src="https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?q=80&w=800&auto=format&fit=crop" alt="Pengemasan Tray & Karton" class="w-full h-full object-cover group-hover:scale-110 transition duration-500" onerror="this.src='https://placehold.co/600x400/e9c46a/1b4332?text=Pengemasan+Tray'">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition duration-300 flex flex-col justify-end p-6 text-white">
-                        <h4 class="font-bold text-lg">Pengemasan Higienis</h4>
-                        <p class="text-xs text-gray-300">Penataan dalam tray egg ramah lingkungan siap edar.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Testimonials / Mitra Section -->
-    <section class="py-20 bg-farm-cream">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center max-w-2xl mx-auto mb-12">
-                <h3 class="text-2xl font-extrabold text-gray-900">Dipercaya Oleh Berbagai Mitra Usaha</h3>
-                <p class="text-xs text-gray-600 mt-2">Supermarket, Toko Roti, Hotel & Agen Grosir di Sukabumi & Sekitarnya</p>
-            </div>
-
-            <div class="grid md:grid-cols-3 gap-6">
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-yellow-100 space-y-4">
-                    <div class="flex text-amber-400 text-xs">
-                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-                    </div>
-                    <p class="text-xs text-gray-600 leading-relaxed italic">
-                        "Pasokan telur dari CV. Selabintana selalu konsisten segar dan kuning telurnya pekat. Sangat cocok untuk produksi bakery kami karena adonan mengembang sempurna!"
-                    </p>
-                    <div class="flex items-center space-x-3 pt-2">
-                        <div class="w-10 h-10 rounded-full bg-farm-green text-white font-bold flex items-center justify-center text-sm">SB</div>
-                        <div>
-                            <h5 class="font-bold text-xs text-gray-900">Bpk. Hendra</h5>
-                            <span class="text-[10px] text-gray-500">Pemilik Bakery Sukabumi</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-yellow-100 space-y-4">
-                    <div class="flex text-amber-400 text-xs">
-                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-                    </div>
-                    <p class="text-xs text-gray-600 leading-relaxed italic">
-                        "Pelayanan pengiriman sangat ramah dan tepat waktu. Risiko telur pecah sangat minim karena armada angkut mereka profesional."
-                    </p>
-                    <div class="flex items-center space-x-3 pt-2">
-                        <div class="w-10 h-10 rounded-full bg-farm-gold text-farm-green font-bold flex items-center justify-center text-sm">AG</div>
-                        <div>
-                            <h5 class="font-bold text-xs text-gray-900">Ibu Ratna</h5>
-                            <span class="text-[10px] text-gray-500">Distributor Pasar Cisaat</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-yellow-100 space-y-4">
-                    <div class="flex text-amber-400 text-xs">
-                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-                    </div>
-                    <p class="text-xs text-gray-600 leading-relaxed italic">
-                        "Kami langganan Telur Omega 3 CV. Selabintana untuk kebutuhan sarapan tamu hotel. Kualitasnya top dan bersertifikat."
-                    </p>
-                    <div class="flex items-center space-x-3 pt-2">
-                        <div class="w-10 h-10 rounded-full bg-farm-green text-white font-bold flex items-center justify-center text-sm">HT</div>
-                        <div>
-                            <h5 class="font-bold text-xs text-gray-900">Manager F&B</h5>
-                            <span class="text-[10px] text-gray-500">Hotel Resort Sukabumi</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Contact & Location Section -->
-    <section id="kontak" class="py-24 bg-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid lg:grid-cols-12 gap-12">
                 
-                <!-- Contact Info Left -->
-                <div class="lg:col-span-5 space-y-8">
-                    <div>
-                        <div class="inline-block bg-farm-green/10 text-farm-green px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider mb-3">
-                            Kontak & Lokasi
+                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight">
+                    Pasokan Telur Segar Berkualitas dengan <span class="text-brand-gold">Teknologi Closed House</span>
+                </h1>
+                
+                <p class="text-lg sm:text-xl text-gray-200 leading-relaxed font-light">
+                    CV. Selabintana menghadirkan telur konsumsi segar mutu premium langsung dari peternakan ayam petelur modern berstandar kesehatan hewani terpercaya di Sukabumi.
+                </p>
+
+                <div class="pt-4 flex flex-col sm:flex-row gap-4">
+                    <a href="#contact" class="inline-flex justify-center items-center px-8 py-4 bg-brand-gold hover:bg-yellow-500 text-brand-dark font-bold rounded-full shadow-lg hover:shadow-yellow-500/30 transition-all transform hover:-translate-y-0.5">
+                        <i class="fa-solid fa-paper-plane mr-2"></i> Hubungi Kami
+                    </a>
+                    <a href="#products" class="inline-flex justify-center items-center px-8 py-4 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-full border border-white/30 backdrop-blur-sm transition-all">
+                        <i class="fa-solid fa-layer-group mr-2"></i> Lihat Produk Kami
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- METRICS / STATS COUNTER -->
+    <section class="relative z-20 -mt-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="bg-white rounded-3xl shadow-xl p-8 border border-gray-100 grid grid-cols-2 lg:grid-cols-4 gap-8 divide-y lg:divide-y-0 lg:divide-x divide-gray-100">
+            <div class="text-center pt-4 lg:pt-0">
+                <div class="text-brand-green text-3xl font-extrabold mb-1">100.000+</div>
+                <p class="text-sm text-gray-500 font-medium uppercase tracking-wider">Populasi Ayam Produktif</p>
+            </div>
+            <div class="text-center pt-4 lg:pt-0">
+                <div class="text-brand-gold text-3xl font-extrabold mb-1">50.000+</div>
+                <p class="text-sm text-gray-500 font-medium uppercase tracking-wider">Butir Telur / Hari</p>
+            </div>
+            <div class="text-center pt-4 lg:pt-0">
+                <div class="text-brand-green text-3xl font-extrabold mb-1">99.9%</div>
+                <p class="text-sm text-gray-500 font-medium uppercase tracking-wider">Biosekuriti Steril</p>
+            </div>
+            <div class="text-center pt-4 lg:pt-0">
+                <div class="text-brand-gold text-3xl font-extrabold mb-1">NKV & Halal</div>
+                <p class="text-sm text-gray-500 font-medium uppercase tracking-wider">Sertifikasi Kementan</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ABOUT SECTION -->
+    <section id="about" class="py-24">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div class="relative">
+                    <div class="relative z-10 rounded-3xl overflow-hidden shadow-2xl border-4 border-white">
+                        <!-- Gambar Ayam di Peternakan Modern Unsplash -->
+                        <img src="https://images.unsplash.com/photo-1563281577-a7be47e20db9?auto=format&fit=crop&w=800&q=80" 
+                             alt="Fasilitas Peternakan Unggas CV Selabintana" 
+                             class="w-full h-auto object-cover"
+                             onerror="this.src='https://placehold.co/800x600/2d6a4f/ffffff?text=Fasilitas+Kandang+Closed+House'">
+                    </div>
+                    <!-- Accent background box -->
+                    <div class="absolute -bottom-6 -right-6 w-full h-full bg-brand-gold/20 rounded-3xl z-0 hidden sm:block"></div>
+                    <div class="absolute -top-6 -left-6 bg-brand-green text-white p-6 rounded-2xl z-20 shadow-lg hidden sm:block max-w-xs">
+                        <p class="text-2xl font-bold">10+ Tahun</p>
+                        <p class="text-xs text-brand-gold">Pengalaman Manajemen Peternakan Modern</p>
+                    </div>
+                </div>
+
+                <div class="space-y-6">
+                    <div class="inline-block bg-brand-lightgreen/10 px-4 py-1.5 rounded-full text-brand-green font-semibold text-sm">
+                        Profil Perusahaan
+                    </div>
+                    <h2 class="text-3xl sm:text-4xl font-bold text-brand-dark leading-tight">
+                        Dedikasi Menghasilkan Telur Terbaik dari Kandang Terkontrol
+                    </h2>
+                    <p class="text-gray-600 leading-relaxed">
+                        <strong>CV. Selabintana</strong> adalah perusahaan agribisnis berwawasan lingkungan yang berlokasi di Sukabumi, Jawa Barat. Kami mengoperasikan sistem peternakan ayam petelur <em>Closed House System</em> (kandang tertutup) untuk memastikan kenyamanan penuh hewan (*animal welfare*) dan produktivitas yang higienis.
+                    </p>
+                    <p class="text-gray-600 leading-relaxed">
+                        Dengan memadukan pakan bernutrisi terukur, sanitasi menyeluruh, serta pemantauan mikroklimat digital, produk telur kami terjamin kebersihan, ketebalan cangkang, dan kesegaran kuning telurnya hingga ke tangan konsumen.
+                    </p>
+
+                    <div class="grid grid-cols-2 gap-4 pt-2">
+                        <div class="flex items-start space-x-3">
+                            <i class="fa-solid fa-circle-check text-brand-lightgreen text-xl mt-1"></i>
+                            <div>
+                                <h4 class="font-semibold text-gray-800">Nutrisi Seimbang</h4>
+                                <p class="text-xs text-gray-500">Pakan alami kaya protein & asam amino.</p>
+                            </div>
                         </div>
-                        <h2 class="text-3xl font-extrabold text-gray-900 tracking-tight">Hubungi Tim Kami</h2>
-                        <p class="text-gray-600 text-sm mt-2">
-                            Siap memesan telur atau ingin menjadi mitra agen resmi? Silakan hubungi kami via WhatsApp, Telepon, atau formulir berikut.
+                        <div class="flex items-start space-x-3">
+                            <i class="fa-solid fa-circle-check text-brand-lightgreen text-xl mt-1"></i>
+                            <div>
+                                <h4 class="font-semibold text-gray-800">Bebas Antibiotik</h4>
+                                <p class="text-xs text-gray-500">Pengawasan ketat dari dokter hewan.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CLOSED HOUSE TECHNOLOGY SECTION -->
+    <section id="technology" class="py-24 bg-brand-green text-white relative overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <span class="bg-white/10 text-brand-gold px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold border border-white/20">
+                    Sistem Kandang Tertutup
+                </span>
+                <h2 class="text-3xl sm:text-4xl font-bold mt-4">Keunggulan Teknologi Closed House</h2>
+                <p class="text-gray-300 mt-4">
+                    Mengapa produk dari sistem Closed House CV. Selabintana lebih konsisten, sehat, dan higienis dibanding peternakan konvensional?
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- Tech Card 1 -->
+                <div class="bg-white/5 border border-white/10 rounded-2xl p-6 card-hover backdrop-blur-sm">
+                    <div class="w-14 h-14 rounded-xl bg-brand-gold text-brand-dark flex items-center justify-center text-2xl font-bold mb-6">
+                        <i class="fa-solid fa-temperature-arrow-down"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Kontrol Iklim Otomatis</h3>
+                    <p class="text-gray-300 text-sm leading-relaxed">
+                        Sistem kipas blower exhaust dan cooling pad menjaga suhu ideal 24-28°C dan kelembaban optimal tanpa terpengaruh cuaca eksternal.
+                    </p>
+                </div>
+
+                <!-- Tech Card 2 -->
+                <div class="bg-white/5 border border-white/10 rounded-2xl p-6 card-hover backdrop-blur-sm">
+                    <div class="w-14 h-14 rounded-xl bg-brand-gold text-brand-dark flex items-center justify-center text-2xl font-bold mb-6">
+                        <i class="fa-solid fa-shield-virus"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Biosekuriti Ketat</h3>
+                    <p class="text-gray-300 text-sm leading-relaxed">
+                        Akses steril dua arah, penyemprotan desinfektan otomatis, dan proteksi total dari burung luar atau vektor penyakit.
+                    </p>
+                </div>
+
+                <!-- Tech Card 3 -->
+                <div class="bg-white/5 border border-white/10 rounded-2xl p-6 card-hover backdrop-blur-sm">
+                    <div class="w-14 h-14 rounded-xl bg-brand-gold text-brand-dark flex items-center justify-center text-2xl font-bold mb-6">
+                        <i class="fa-solid fa-faucet-drip"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Pakan & Minum Nipple</h3>
+                    <p class="text-gray-300 text-sm leading-relaxed">
+                        Sistem penakaran auger dan nipple drinker tertutup menjamin ketersediaan air bersih dan pakan segar tanpa terkontaminasi.
+                    </p>
+                </div>
+
+                <!-- Tech Card 4 -->
+                <div class="bg-white/5 border border-white/10 rounded-2xl p-6 card-hover backdrop-blur-sm">
+                    <div class="w-14 h-14 rounded-xl bg-brand-gold text-brand-dark flex items-center justify-center text-2xl font-bold mb-6">
+                        <i class="fa-solid fa-broom-ball"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Manajemen Sanitasi</h3>
+                    <p class="text-gray-300 text-sm leading-relaxed">
+                        Pembersihan kotoran secara teratur menggunakan sabuk conveyer otomatis menjaga lingkungan kandang bebas gas amonia.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PRODUCTS SECTION -->
+    <section id="products" class="py-24">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <span class="bg-brand-lightgreen/10 text-brand-green px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold">
+                    Katalog Produk
+                </span>
+                <h2 class="text-3xl sm:text-4xl font-bold text-brand-dark mt-4">Produk Telur Segar Berkualitas</h2>
+                <p class="text-gray-600 mt-4">
+                    Kami melayani kebutuhan grosir agen, supermarket, pabrik olahan makanan, hingga industri HORECA.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Product 1: Gambar Telur Segar di Tray Unsplash -->
+                <div class="bg-white rounded-3xl overflow-hidden shadow-lg border border-gray-100 card-hover flex flex-col">
+                    <div class="h-56 overflow-hidden relative">
+                        <img src="https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?auto=format&fit=crop&w=600&q=80" 
+                             alt="Telur Fresh Curah & Tray" 
+                             class="w-full h-full object-cover"
+                             onerror="this.src='https://placehold.co/600x400/f4a261/ffffff?text=Telur+Fresh+Tray'">
+                        <span class="absolute top-4 right-4 bg-brand-green text-white text-xs font-bold px-3 py-1 rounded-full shadow">
+                            Best Seller
+                        </span>
+                    </div>
+                    <div class="p-6 flex-1 flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-800 mb-2">Telur Utuh Segar (Grade A)</h3>
+                            <p class="text-gray-600 text-sm mb-4">
+                                Telur cangkang cokelat tebal, ukuran seragam, bersih dari kotoran, dan kuning telur berwarna oranye pekat.
+                            </p>
+                            <ul class="text-xs text-gray-500 space-y-1 mb-6">
+                                <li><i class="fa-solid fa-check text-brand-lightgreen mr-1"></i> Kemasan Tray Kertas (30 Butir)</li>
+                                <li><i class="fa-solid fa-check text-brand-lightgreen mr-1"></i> Kemasan Karton Bulk (15 Kg)</li>
+                            </ul>
+                        </div>
+                        <a href="https://wa.me/6281234567890?text=Halo,%20saya%20tertarik%20dengan%20Telur%20Utuh%20Segar%20Grade%20A" target="_blank" class="w-full text-center py-3 bg-brand-lightgreen hover:bg-brand-green text-white font-semibold rounded-xl transition-all">
+                            Tanyakan Harga Grosir
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Product 2: Gambar Kuning Telur Omega 3 Unsplash -->
+                <div class="bg-white rounded-3xl overflow-hidden shadow-lg border border-gray-100 card-hover flex flex-col">
+                    <div class="h-56 overflow-hidden relative">
+                        <img src="https://images.unsplash.com/photo-1506976785307-8732e854ad03?auto=format&fit=crop&w=600&q=80" 
+                             alt="Telur Omega 3 Premium" 
+                             class="w-full h-full object-cover"
+                             onerror="this.src='https://placehold.co/600x400/e76f51/ffffff?text=Telur+Omega+3'">
+                        <span class="absolute top-4 right-4 bg-brand-gold text-brand-dark text-xs font-bold px-3 py-1 rounded-full shadow">
+                            Premium Nutrisi
+                        </span>
+                    </div>
+                    <div class="p-6 flex-1 flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-800 mb-2">Telur Special Omega 3</h3>
+                            <p class="text-gray-600 text-sm mb-4">
+                                Dihasilkan dari ayam yang diberi pakan khusus kaya minyak ikan alami & vitamin E tinggi untuk kesehatan keluarga.
+                            </p>
+                            <ul class="text-xs text-gray-500 space-y-1 mb-6">
+                                <li><i class="fa-solid fa-check text-brand-lightgreen mr-1"></i> Kemasan Retail Pack (10 Butir)</li>
+                                <li><i class="fa-solid fa-check text-brand-lightgreen mr-1"></i> Bebas Bau Amis Berlebih</li>
+                            </ul>
+                        </div>
+                        <a href="https://wa.me/6281234567890?text=Halo,%20saya%20tertarik%20dengan%20Telur%20Omega%203%20Premium" target="_blank" class="w-full text-center py-3 bg-brand-lightgreen hover:bg-brand-green text-white font-semibold rounded-xl transition-all">
+                            Tanyakan Harga Grosir
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Product 3: Gambar Olahan Telur Steril / Mangkuk Telur Unsplash -->
+                <div class="bg-white rounded-3xl overflow-hidden shadow-lg border border-gray-100 card-hover flex flex-col">
+                    <div class="h-56 overflow-hidden relative">
+                        <img src="https://images.unsplash.com/photo-1516448620398-c5f44bf9f441?auto=format&fit=crop&w=600&q=80" 
+                             alt="Pasteurized Liquid Egg" 
+                             class="w-full h-full object-cover"
+                             onerror="this.src='https://placehold.co/600x400/2d6a4f/ffffff?text=Liquid+Egg+Industri'">
+                        <span class="absolute top-4 right-4 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow">
+                            Industri HORECA
+                        </span>
+                    </div>
+                    <div class="p-6 flex-1 flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-800 mb-2">Liquid Egg (Telur Cair)</h3>
+                            <p class="text-gray-600 text-sm mb-4">
+                                Telur cair pasturisasi steril siap pakai untuk bakery, hotel, dan pabrik roti tanpa repot memecahkan cangkang.
+                            </p>
+                            <ul class="text-xs text-gray-500 space-y-1 mb-6">
+                                <li><i class="fa-solid fa-check text-brand-lightgreen mr-1"></i> Opsi Whole / Whites / Yolks</li>
+                                <li><i class="fa-solid fa-check text-brand-lightgreen mr-1"></i> Kemasan Galon / Bag-in-Box</li>
+                            </ul>
+                        </div>
+                        <a href="https://wa.me/6281234567890?text=Halo,%20saya%20tertarik%20dengan%20Telur%20Cair%20Pasturisasi" target="_blank" class="w-full text-center py-3 bg-brand-lightgreen hover:bg-brand-green text-white font-semibold rounded-xl transition-all">
+                            Tanyakan Penawaran Industri
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CERTIFICATIONS SECTION -->
+    <section id="certifications" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="bg-brand-cream border border-gray-200 rounded-3xl p-8 sm:p-12">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
+                    <div class="lg:col-span-1 space-y-4">
+                        <span class="text-brand-gold font-bold text-sm tracking-wider uppercase">Jaminan Kualitas</span>
+                        <h2 class="text-3xl font-bold text-brand-dark">Sertifikasi & Standar Mutu</h2>
+                        <p class="text-gray-600 text-sm">
+                            Keamanan pangan konsumen adalah prioritas utama kami. Seluruh proses di peternakan Selabintana diawasi secara resmi oleh dinas terkait.
+                        </p>
+                    </div>
+
+                    <div class="lg:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-6">
+                        <!-- Cert Item 1 -->
+                        <div class="bg-white p-6 rounded-2xl shadow-sm text-center border border-gray-100">
+                            <div class="w-12 h-12 bg-green-100 text-green-700 rounded-full flex items-center justify-center mx-auto mb-3 text-xl font-bold">
+                                <i class="fa-solid fa-certificate"></i>
+                            </div>
+                            <h4 class="font-bold text-gray-800 text-sm">Sertifikat NKV</h4>
+                            <p class="text-xs text-gray-500 mt-1">Nomor Kontrol Veteriner Kementan</p>
+                        </div>
+
+                        <!-- Cert Item 2 -->
+                        <div class="bg-white p-6 rounded-2xl shadow-sm text-center border border-gray-100">
+                            <div class="w-12 h-12 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center mx-auto mb-3 text-xl font-bold">
+                                <i class="fa-solid fa-stamp"></i>
+                            </div>
+                            <h4 class="font-bold text-gray-800 text-sm">Sertifikat Halal</h4>
+                            <p class="text-xs text-gray-500 mt-1">BPJPH Kementerian Agama RI</p>
+                        </div>
+
+                        <!-- Cert Item 3 -->
+                        <div class="bg-white p-6 rounded-2xl shadow-sm text-center border border-gray-100">
+                            <div class="w-12 h-12 bg-yellow-100 text-yellow-700 rounded-full flex items-center justify-center mx-auto mb-3 text-xl font-bold">
+                                <i class="fa-solid fa-flask"></i>
+                            </div>
+                            <h4 class="font-bold text-gray-800 text-sm">Uji Bebas Residu</h4>
+                            <p class="text-xs text-gray-500 mt-1">Lulus Uji Laboratorium Terkreditasi</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CONTACT & FORM SECTION -->
+    <section id="contact" class="py-24 bg-brand-cream">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <!-- Info Left -->
+                <div class="space-y-8">
+                    <div>
+                        <span class="bg-brand-lightgreen/10 text-brand-green px-4 py-1.5 rounded-full text-xs font-semibold">
+                            Hubungi Kami
+                        </span>
+                        <h2 class="text-3xl sm:text-4xl font-bold text-brand-dark mt-4">Kemitraan & Layanan Pelanggan</h2>
+                        <p class="text-gray-600 mt-4">
+                            Siap bekerja sama untuk kebutuhan rantai pasok telur Anda? Tim sales dan customer service kami siap melayani Anda.
                         </p>
                     </div>
 
                     <div class="space-y-6">
                         <div class="flex items-start space-x-4">
-                            <div class="w-12 h-12 rounded-xl bg-farm-green/10 text-farm-green flex items-center justify-center shrink-0 text-xl font-bold">
-                                <i class="fas fa-map-marked-alt"></i>
+                            <div class="w-12 h-12 rounded-2xl bg-brand-green text-brand-gold flex items-center justify-center text-xl flex-shrink-0">
+                                <i class="fa-solid fa-location-dot"></i>
                             </div>
                             <div>
-                                <h4 class="font-bold text-gray-900 text-sm">Alamat Peternakan</h4>
-                                <p class="text-xs text-gray-600 leading-relaxed mt-1">
-                                    Jl. Selabintana Km. 6, Desa Sudajaya Girang, Kec. Sukabumi, Kabupaten Sukabumi, Jawa Barat 43151.
+                                <h4 class="font-bold text-gray-800">Alamat Peternakan</h4>
+                                <p class="text-gray-600 text-sm mt-1">
+                                    Jl. Selabintana Km. 6, Kawasan Agrowisata, Kab. Sukabumi, Jawa Barat 43151
                                 </p>
                             </div>
                         </div>
 
                         <div class="flex items-start space-x-4">
-                            <div class="w-12 h-12 rounded-xl bg-green-100 text-green-700 flex items-center justify-center shrink-0 text-xl font-bold">
-                                <i class="fab fa-whatsapp"></i>
+                            <div class="w-12 h-12 rounded-2xl bg-brand-green text-brand-gold flex items-center justify-center text-xl flex-shrink-0">
+                                <i class="fa-solid fa-phone"></i>
                             </div>
                             <div>
-                                <h4 class="font-bold text-gray-900 text-sm">WhatsApp / Telepon Penjualan</h4>
-                                <p class="text-xs text-gray-600 mt-1">+62 812-3456-7890 (Fast Response)</p>
-                                <p class="text-xs text-gray-600">(0266) 123-4567 (Kantor)</p>
+                                <h4 class="font-bold text-gray-800">Telepon / WhatsApp</h4>
+                                <p class="text-gray-600 text-sm mt-1">+62 812-3456-7890 / (0266) 123456</p>
                             </div>
                         </div>
 
                         <div class="flex items-start space-x-4">
-                            <div class="w-12 h-12 rounded-xl bg-farm-gold/20 text-farm-amber flex items-center justify-center shrink-0 text-xl font-bold">
-                                <i class="fas fa-envelope"></i>
+                            <div class="w-12 h-12 rounded-2xl bg-brand-green text-brand-gold flex items-center justify-center text-xl flex-shrink-0">
+                                <i class="fa-solid fa-envelope"></i>
                             </div>
                             <div>
-                                <h4 class="font-bold text-gray-900 text-sm">Email Resmi</h4>
-                                <p class="text-xs text-gray-600 mt-1">info@selabintanaegg.co.id</p>
-                                <p class="text-xs text-gray-600">marketing@selabintanaegg.co.id</p>
+                                <h4 class="font-bold text-gray-800">Email</h4>
+                                <p class="text-gray-600 text-sm mt-1">info@selabintana.web.id / sales@selabintana.web.id</p>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Map Card Frame -->
-                    <div class="rounded-2xl overflow-hidden border border-gray-200 shadow-sm h-48 bg-gray-100 relative flex items-center justify-center">
-                        <div class="text-center p-4">
-                            <i class="fas fa-map-pin text-3xl text-farm-green mb-2"></i>
-                            <h5 class="font-bold text-xs text-gray-800">Kawasan Selabintana, Sukabumi</h5>
-                            <p class="text-[10px] text-gray-500 mt-1">Akses jalan utama mudah dijangkau armada truk besar.</p>
-                            <a href="https://maps.google.com" target="_blank" class="inline-block mt-3 bg-farm-green text-white text-[11px] font-bold px-3 py-1.5 rounded-lg">
-                                Buka di Google Maps <i class="fas fa-external-link-alt text-[9px] ml-1"></i>
-                            </a>
-                        </div>
+                    <!-- Map Placeholder -->
+                    <div class="rounded-2xl overflow-hidden shadow-md border border-gray-200 h-48 bg-gray-200 relative">
+                        <iframe 
+                            class="w-full h-full border-0"
+                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3960.985651239121!2d106.9451!3d-6.8923!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e68e7d7f7f7f7f7%3A0x7f7f7f7f7f7f7f7f!2sSelabintana%2C%20Sukabumi!5e0!3m2!1sid!2sid!4v1600000000000" 
+                            allowfullscreen="" 
+                            loading="lazy">
+                        </iframe>
                     </div>
                 </div>
 
-                <!-- Interactive Contact Form Right -->
-                <div class="lg:col-span-7 bg-farm-softbg border border-gray-200 rounded-3xl p-8 sm:p-10 shadow-sm">
-                    <h3 class="text-xl font-bold text-gray-900 mb-6">Kirim Pesan / Permintaan Penawaran</h3>
+                <!-- Form Right -->
+                <div class="bg-white rounded-3xl p-8 shadow-xl border border-gray-100">
+                    <h3 class="text-2xl font-bold text-brand-dark mb-6">Formulir Kirim Pesan / Penawaran</h3>
                     
-                    <form id="contact-form" class="space-y-4">
-                        <div class="grid sm:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Nama Lengkap *</label>
-                                <input type="text" required placeholder="Contoh: Budi Santoso" class="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-farm-green">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Nomor WhatsApp *</label>
-                                <input type="tel" required placeholder="0812xxxxxxx" class="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-farm-green">
-                            </div>
+                    <form id="contactForm" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap / Perusahaan</label>
+                            <input type="text" required placeholder="Contoh: PT. Kuliner Sejahtera" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-lightgreen transition">
                         </div>
 
-                        <div class="grid sm:grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Email</label>
-                                <input type="email" placeholder="nama@perusahaan.com" class="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-farm-green">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Nomor WhatsApp</label>
+                                <input type="tel" required placeholder="0812xxxxxxx" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-lightgreen transition">
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Jenis Usaha / Kebutuhan</label>
-                                <select class="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-farm-green">
-                                    <option>Toko Roti / Bakery</option>
-                                    <option>Agen Distributor Telur</option>
-                                    <option>Supermarket / Minimarket</option>
-                                    <option>Restoran / Hotel / Katering</option>
-                                    <option>Pembelian Pupuk Organik</option>
-                                    <option>Lainnya</option>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Kategori Pesan</label>
+                                <select class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-lightgreen transition">
+                                    <option>Pemesanan Grosir</option>
+                                    <option>Kemitraan Agen</option>
+                                    <option>Penawaran Kerja Sama</option>
+                                    <option>Saran & Keluhan</option>
                                 </select>
                             </div>
                         </div>
 
                         <div>
-                            <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Pesan / Detail Kebutuhan *</label>
-                            <textarea rows="4" required placeholder="Tuliskan detail pesanan, perkiraan volume per hari/minggu, atau pertanyaan Anda..." class="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-farm-green"></textarea>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Pesan / Detail Kebutuhan</label>
+                            <textarea rows="4" required placeholder="Tuliskan detail kebutuhan jumlah tray/tonase atau pertanyaan Anda..." class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-lightgreen transition"></textarea>
                         </div>
 
-                        <button type="submit" class="w-full bg-farm-green hover:bg-farm-lightgreen text-white py-3.5 rounded-xl font-bold text-sm shadow-md hover:shadow-lg transition flex items-center justify-center space-x-2">
-                            <i class="fas fa-paper-plane text-xs"></i>
-                            <span>Kirim Pesan Penawaran</span>
+                        <button type="submit" class="w-full py-4 bg-brand-green hover:bg-brand-lightgreen text-white font-bold rounded-xl shadow-lg transition-all flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-paper-plane"></i>
+                            <span>Kirim Pesan Sekarang</span>
                         </button>
                     </form>
 
-                    <!-- Alert Box Container -->
-                    <div id="form-alert" class="hidden mt-4 p-4 rounded-xl bg-green-100 text-green-800 text-xs font-medium flex items-center space-x-2">
-                        <i class="fas fa-check-circle text-base"></i>
-                        <span>Pesan Anda berhasil dikirim! Tim marketing CV. Selabintana akan segera menghubungi Anda.</span>
+                    <!-- Feedback Alert Message -->
+                    <div id="formAlert" class="hidden mt-4 p-4 rounded-xl bg-green-100 text-green-800 text-sm font-medium">
+                        Terima kasih! Pesan Anda telah terkirim. Tim CV. Selabintana akan segera menghubungi Anda.
                     </div>
                 </div>
-
             </div>
         </div>
     </section>
 
-    <!-- Footer -->
-    <footer class="bg-farm-green text-white border-t border-white/10 pt-16 pb-8">
+    <!-- FOOTER -->
+    <footer class="bg-brand-dark text-white pt-16 pb-8 border-t border-white/10">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-10 pb-12 border-b border-white/10">
-                
-                <!-- Col 1: Brand Info -->
-                <div class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+                <div class="space-y-4 md:col-span-2">
                     <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 rounded-xl bg-farm-gold flex items-center justify-center text-farm-green font-bold text-xl">
-                            <i class="fas fa-egg"></i>
+                        <div class="w-8 h-8 rounded-full bg-brand-gold flex items-center justify-center text-brand-dark font-bold">
+                            <i class="fa-solid fa-egg"></i>
                         </div>
-                        <span class="text-lg font-extrabold tracking-tight">CV. SELABINTANA</span>
+                        <span class="text-xl font-bold tracking-tight">CV. SELABINTANA</span>
                     </div>
-                    <p class="text-xs text-gray-300 leading-relaxed">
-                        Produsen dan supplier telur ayam ras berkualitas tinggi asal Sukabumi. Berkomitmen menyajikan produk segar harian dengan higienitas dan biosekuriti terjamin.
+                    <p class="text-gray-400 text-sm max-w-md">
+                        Produsen dan pemasok telur ayam konsumsi berkualitas tinggi di Sukabumi. Berkomitmen pada keamanan pangan, biosekuriti modern, dan keberlanjutan lingkungan.
                     </p>
-                    <div class="flex space-x-3 text-gray-300">
-                        <a href="#" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-farm-gold hover:text-farm-green transition"><i class="fab fa-facebook-f text-xs"></i></a>
-                        <a href="#" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-farm-gold hover:text-farm-green transition"><i class="fab fa-instagram text-xs"></i></a>
-                        <a href="#" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-farm-gold hover:text-farm-green transition"><i class="fab fa-whatsapp text-xs"></i></a>
-                    </div>
                 </div>
 
-                <!-- Col 2: Quick Links -->
-                <div class="space-y-3">
-                    <h4 class="font-bold text-sm text-farm-gold uppercase tracking-wider">Navigasi</h4>
-                    <ul class="space-y-2 text-xs text-gray-300">
-                        <li><a href="#beranda" class="hover:text-farm-gold transition">Beranda Utama</a></li>
-                        <li><a href="#tentang" class="hover:text-farm-gold transition">Tentang CV. Selabintana</a></li>
-                        <li><a href="#produk" class="hover:text-farm-gold transition">Produk & Telur Segar</a></li>
-                        <li><a href="#keunggulan" class="hover:text-farm-gold transition">Standar & Biosekuriti</a></li>
-                        <li><a href="#kalkulator" class="hover:text-farm-gold transition">Simulasi Kebutuhan Grosir</a></li>
+                <div>
+                    <h4 class="text-brand-gold font-semibold mb-4">Navigasi Cepat</h4>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li><a href="#home" class="hover:text-white transition">Beranda</a></li>
+                        <li><a href="#about" class="hover:text-white transition">Tentang Perusahaan</a></li>
+                        <li><a href="#technology" class="hover:text-white transition">Teknologi Closed House</a></li>
+                        <li><a href="#products" class="hover:text-white transition">Produk Telur</a></li>
                     </ul>
                 </div>
 
-                <!-- Col 3: Products -->
-                <div class="space-y-3">
-                    <h4 class="font-bold text-sm text-farm-gold uppercase tracking-wider">Kategori Produk</h4>
-                    <ul class="space-y-2 text-xs text-gray-300">
-                        <li>Telur Ayam Fresh Grade A</li>
-                        <li>Telur Omega 3 Premium</li>
-                        <li>Pasokan Telur Curah Industri</li>
-                        <li>Pupuk Kotoran Ayam (Manure)</li>
-                    </ul>
-                </div>
-
-                <!-- Col 4: Operational Hours -->
-                <div class="space-y-3">
-                    <h4 class="font-bold text-sm text-farm-gold uppercase tracking-wider">Jam Operasional Kandang</h4>
-                    <ul class="space-y-2 text-xs text-gray-300">
-                        <li class="flex justify-between"><span>Senin - Jumat:</span> <span>07:00 - 16:00 WIB</span></li>
-                        <li class="flex justify-between"><span>Sabtu:</span> <span>07:00 - 14:00 WIB</span></li>
-                        <li class="flex justify-between text-farm-gold font-semibold"><span>Pengiriman Mitra:</span> <span>24 Jam (Terjadwal)</span></li>
+                <div>
+                    <h4 class="text-brand-gold font-semibold mb-4">Jam Operasional</h4>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li>Senin - Sabtu: 07.00 - 16.00 WIB</li>
+                        <li>Pengiriman: Setiap Hari</li>
+                        <li class="pt-2 text-white font-semibold">Layanan Darurat 24/7</li>
                     </ul>
                 </div>
             </div>
 
-            <!-- Bottom Copyright -->
-            <div class="pt-8 flex flex-col sm:flex-row justify-between items-center text-xs text-gray-400 space-y-4 sm:space-y-0">
-                <div>
-                    &copy; 2026 CV. Selabintana. Hak Cipta Dilindungi Undang-Undang.
-                </div>
-                <div class="flex space-x-6">
-                    <a href="#" class="hover:text-gray-200">Kebijakan Privasi</a>
-                    <a href="#" class="hover:text-gray-200">Syarat & Ketentuan Mitra</a>
-                </div>
+            <div class="border-t border-white/10 pt-8 flex flex-col sm:flex-row justify-between items-center text-xs text-gray-500">
+                <p>&copy; 2026 CV. Selabintana. All Rights Reserved.</p>
+                <p class="mt-2 sm:mt-0">Hosted on GitHub Pages & Powered by Cloudflare</p>
             </div>
         </div>
     </footer>
 
-    <!-- JavaScript Logic -->
+    <!-- INTERACTIVE JAVASCRIPT -->
     <script>
-        // Mobile Menu Toggle
-        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        // Mobile Navigation Toggle
+        const menuBtn = document.getElementById('mobile-menu-btn');
         const mobileMenu = document.getElementById('mobile-menu');
 
-        mobileMenuBtn.addEventListener('click', () => {
+        menuBtn.addEventListener('click', () => {
             mobileMenu.classList.toggle('hidden');
         });
 
-        // Price Estimator Logic
-        const calcRange = document.getElementById('calc-range');
-        const calcRangeVal = document.getElementById('calc-range-val');
-        const calcType = document.getElementById('calc-type');
-        const resButir = document.getElementById('res-butir');
-        const resTray = document.getElementById('res-tray');
-        const resDiscount = document.getElementById('res-discount');
-        const calcWaBtn = document.getElementById('calc-wa-btn');
-
-        function updateCalculator() {
-            const kg = parseInt(calcRange.value);
-            calcRangeVal.textContent = kg + ' Kg';
-
-            // Approx 16 eggs per kg
-            const butir = kg * 16;
-            const tray = Math.round(butir / 30);
-
-            resButir.textContent = `± ${butir.toLocaleString('id-ID')} Butir`;
-            resTray.textContent = `± ${tray.toLocaleString('id-ID')} Tray`;
-
-            if (kg >= 200) {
-                resDiscount.textContent = 'Mitra Skala Besar (Harga Khusus Pabrik/Bakery)';
-                resDiscount.className = 'bg-amber-100 text-amber-800 text-xs font-bold px-2.5 py-1 rounded-md';
-            } else if (kg >= 50) {
-                resDiscount.textContent = 'Mitra Tier 1 (Potongan Harga Spesial)';
-                resDiscount.className = 'bg-green-100 text-green-800 text-xs font-bold px-2.5 py-1 rounded-md';
-            } else {
-                resDiscount.textContent = 'Harga Grosir Standar';
-                resDiscount.className = 'bg-gray-100 text-gray-700 text-xs font-bold px-2.5 py-1 rounded-md';
-            }
-
-            const typeText = calcType.options[calcType.selectedIndex].text;
-            const message = `Halo CV. Selabintana, saya ingin menanyakan penawaran harga untuk pesanan ${typeText} sebanyak ${kg} Kg (${tray} Tray) per pengiriman.`;
-            calcWaBtn.href = `https://wa.me/6281234567890?text=${encodeURIComponent(message)}`;
-        }
-
-        calcRange.addEventListener('input', updateCalculator);
-        calcType.addEventListener('change', updateCalculator);
-        updateCalculator();
-
-        // Frequency Selector Active Styling
-        const freqBtns = document.querySelectorAll('.freq-btn');
-        freqBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                freqBtns.forEach(b => {
-                    b.classList.remove('bg-farm-green', 'text-white');
-                    b.classList.add('bg-gray-100', 'text-gray-700');
-                });
-                btn.classList.remove('bg-gray-100', 'text-gray-700');
-                btn.classList.add('bg-farm-green', 'text-white');
-            });
-        });
-
-        // Contact Form Fake Submission
-        const contactForm = document.getElementById('contact-form');
-        const formAlert = document.getElementById('form-alert');
+        // Contact Form Submission Handler
+        const contactForm = document.getElementById('contactForm');
+        const formAlert = document.getElementById('formAlert');
 
         contactForm.addEventListener('submit', (e) => {
             e.preventDefault();
@@ -930,7 +599,7 @@
             contactForm.reset();
             setTimeout(() => {
                 formAlert.classList.add('hidden');
-            }, 6000);
+            }, 5000);
         });
     </script>
 </body>
