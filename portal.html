@@ -274,23 +274,42 @@
                 </div>
             </div>
 
-            <!-- TABEL RIWAYAT & TOMBOL EKSPOR EXCEL (KHUSUS ADMIN) -->
+            <!-- TABEL RIWAYAT & PANEL KENDALI ADMIN -->
             <div class="bg-white rounded-3xl shadow-sm border border-gray-200 p-6 sm:p-8 no-print">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                     <div>
                         <h3 id="table-title" class="text-lg font-bold text-gray-900 flex items-center gap-2">
-                            <i class="fa-solid fa-clock-rotate-left text-brand-primary"></i> Riwayat & Status Permintaan
+                            <i class="fa-solid fa-clipboard-check text-brand-primary"></i> Daftar Permintaan Masuk (Admin)
                         </h3>
-                        <p id="table-subtitle" class="text-xs text-gray-500 mt-0.5">Kelola, cetak, dan unggah foto dokumen ber-TTD.</p>
+                        <p id="table-subtitle" class="text-xs text-gray-500 mt-0.5">Kelola, verifikasi, dan unduh rekapitulasi data.</p>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <!-- Tombol Rekap Excel (Hanya Muncul untuk Admin) -->
-                        <button id="btn-export-excel" onclick="exportToExcel()" class="hidden bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-1.5 rounded-xl text-xs font-semibold transition items-center gap-1.5 shadow-sm">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button id="btn-export-excel" onclick="exportToExcel()" class="hidden bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl text-xs font-semibold transition items-center gap-1.5 shadow-sm">
                             <i class="fa-solid fa-file-excel"></i> Unduh Rekap Excel
                         </button>
-                        <button onclick="loadRiwayatPermintaan()" class="text-xs font-semibold text-brand-primary hover:underline flex items-center gap-1 bg-slate-100 px-3 py-1.5 rounded-xl">
+                        <button onclick="loadRiwayatPermintaan()" class="text-xs font-semibold text-brand-primary hover:underline flex items-center gap-1 bg-slate-100 px-3 py-2 rounded-xl">
                             <i class="fa-solid fa-rotate"></i> Muat Ulang
                         </button>
+                    </div>
+                </div>
+
+                <!-- PILIHAN SORTIR / FILTER (KHUSUS ADMIN) -->
+                <div id="filter-container" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6 bg-slate-50 p-4 rounded-2xl border border-gray-200">
+                    <div>
+                        <label class="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Filter Berdasarkan Unit Lokasi</label>
+                        <select id="filter-unit" onchange="loadRiwayatPermintaan()" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs bg-white focus:outline-none focus:border-brand-primary">
+                            <option value="">-- Semua Unit Lokasi --</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Filter Berdasarkan Status</label>
+                        <select id="filter-status" onchange="loadRiwayatPermintaan()" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs bg-white focus:outline-none focus:border-brand-primary">
+                            <option value="">-- Semua Status --</option>
+                            <option value="PENDING">PENDING</option>
+                            <option value="APPROVED">DI-ACC</option>
+                            <option value="REJECTED">TIDAK ACC</option>
+                            <option value="REVISION">REVISION</option>
+                        </select>
                     </div>
                 </div>
 
@@ -325,11 +344,11 @@
 
     <!-- SCRIPT JAVASCRIPT -->
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzpU96kkn0mbQNCnMWbBZtzv8Q-G2B9HtsKUIo7M0-yZMYAxZif5q3wuCJfzbYWfU2TmQ/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx0DTHNW9XS2BeBe9kEvGAhyOqJnedem5xg_BLeXVD6EHOVvUrYV8c8VzDaPduUzjQo/exec";
 
         let currentUser = null;
         let masterBarangList = [];
-        let globalPermintaanData = []; // Menyimpan data untuk keperluan ekspor Excel
+        let globalPermintaanData = [];
 
         window.addEventListener('DOMContentLoaded', () => {
             const savedUser = localStorage.getItem('selabintana_user');
@@ -391,13 +410,15 @@
                 document.getElementById('dashboard-subtitle').textContent = "Pusat verifikasi, persetujuan, atau revisi pengajuan barang dari seluruh unit.";
                 document.getElementById('table-title').innerHTML = `<i class="fa-solid fa-clipboard-check text-brand-primary"></i> Daftar Permintaan Masuk (Admin)`;
                 document.getElementById('table-subtitle').textContent = "Meninjau dokumen ber-TTD, memperbarui status, dan mencetak lembar verifikasi A5.";
-                // Tampilkan tombol ekspor Excel khusus admin
+                
                 document.getElementById('btn-export-excel').classList.remove('hidden');
                 document.getElementById('btn-export-excel').classList.add('flex');
+                document.getElementById('filter-container').classList.remove('hidden');
             } else {
                 document.getElementById('form-container').classList.remove('hidden');
                 document.getElementById('text-unit-lokasi').textContent = currentUser.unit_lokasi;
                 document.getElementById('btn-export-excel').classList.add('hidden');
+                document.getElementById('filter-container').classList.add('hidden');
                 loadMasterBarang();
             }
 
@@ -439,15 +460,13 @@
             }
         }
 
-        // FUNGSI EKSPOR KE EXCEL / CSV
         function exportToExcel() {
             if (!globalPermintaanData || globalPermintaanData.length === 0) {
                 alert("Tidak ada data untuk diexport.");
                 return;
             }
 
-            // Buat header CSV
-            let csvContent = "\uFEFF"; // BOM agar karakter UTF-8 terbaca rapi di Excel
+            let csvContent = "\uFEFF";
             csvContent += "Kode,Tanggal,Pemohon,Divisi,Unit Lokasi,Kategori,Nama Barang,Jumlah,Satuan,Supplier,Keterangan,Status,Catatan Admin\n";
 
             globalPermintaanData.forEach(row => {
@@ -469,7 +488,6 @@
                 csvContent += rowData.join(",") + "\n";
             });
 
-            // Buat file blob dan unduh otomatis
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -583,7 +601,7 @@
                         dataUrl = canvas.toDataURL('image/jpeg', quality);
                     }
 
-                    alert("Mengunggah foto dokumen bertanda tangan...");
+                    alert("Mengunggah dokumen ber-TTD...");
                     try {
                         const response = await fetch(SCRIPT_URL, {
                             method: 'POST',
@@ -665,11 +683,33 @@
                 const result = await response.json();
 
                 if (result.status === "success" && result.data.length > 0) {
-                    globalPermintaanData = result.data; // Simpan untuk ekspor Excel
-                    let displayData = result.data;
+                    globalPermintaanData = result.data; 
                     const isAdmin = currentUser.role && currentUser.role.toLowerCase() === 'admin';
+                    
+                    let displayData = result.data;
 
-                    if (!isAdmin) {
+                    if (isAdmin) {
+                        const unitSelect = document.getElementById('filter-unit');
+                        const selectedUnitVal = unitSelect.value;
+                        const uniqueUnits = [...new Set(result.data.map(item => item.unit_lokasi))];
+                        
+                        unitSelect.innerHTML = `<option value="">-- Semua Unit Lokasi --</option>`;
+                        uniqueUnits.forEach(unit => {
+                            if (unit) {
+                                unitSelect.innerHTML += `<option value="${unit}" ${unit === selectedUnitVal ? 'selected' : ''}>${unit}</option>`;
+                            }
+                        });
+
+                        const filterUnitVal = unitSelect.value;
+                        const filterStatusVal = document.getElementById('filter-status').value;
+
+                        if (filterUnitVal) {
+                            displayData = displayData.filter(row => row.unit_lokasi && row.unit_lokasi.toLowerCase() === filterUnitVal.toLowerCase());
+                        }
+                        if (filterStatusVal) {
+                            displayData = displayData.filter(row => row.status && row.status.toUpperCase() === filterStatusVal.toUpperCase());
+                        }
+                    } else {
                         displayData = result.data.filter(row => 
                             row.unit_lokasi && row.unit_lokasi.toLowerCase().trim() === currentUser.unit_lokasi.toLowerCase().trim()
                         );
@@ -689,17 +729,27 @@
                                 </button>
                             `;
 
-                            let dokumenHtml = `<div class="mt-2 pt-2 border-t border-gray-100">`;
+                            let dokumenHtml = `<div class="mt-2 pt-2 border-t border-gray-100 space-y-1">`;
                             if (row.foto && row.foto.length > 20) {
-                                dokumenHtml += `<a href="${row.foto}" target="_blank" class="text-emerald-700 font-bold hover:underline flex items-center gap-1 text-[11px] mb-1"><i class="fa-solid fa-circle-check"></i> Lihat Foto TTD Valid</a>`;
+                                dokumenHtml += `
+                                    <span class="text-emerald-700 font-bold block text-[11px]"><i class="fa-solid fa-circle-check"></i> Dokumen Ber-TTD Valid</span>
+                                    <div class="flex gap-1.5 mt-1">
+                                        <a href="${row.foto}" target="_blank" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-1 rounded text-[10px] font-semibold transition flex items-center gap-1">
+                                            <i class="fa-solid fa-eye"></i> Lihat
+                                        </a>
+                                        <a href="${row.foto}" download="Dokumen_TTD_${row.kode}.jpg" class="bg-brand-primary hover:bg-brand-dark text-white px-2 py-1 rounded text-[10px] font-semibold transition flex items-center gap-1">
+                                            <i class="fa-solid fa-download"></i> Download untuk Purchasing
+                                        </a>
+                                    </div>
+                                `;
                             } else {
-                                dokumenHtml += `<span class="text-amber-600 block text-[10px] mb-1"><i class="fa-solid fa-triangle-exclamation"></i> Belum ada foto TTD</span>`;
+                                dokumenHtml += `<span class="text-amber-600 block text-[10px] mb-1"><i class="fa-solid fa-triangle-exclamation"></i> Belum ada dokumen TTD</span>`;
                             }
                             
                             dokumenHtml += `
                                 <input type="file" id="file-foto-${row.kode}" accept="image/*" onchange="triggerUploadFoto('${row.kode}')" class="hidden">
-                                <button onclick="document.getElementById('file-foto-${row.kode}').click()" class="bg-brand-primary/10 hover:bg-brand-primary/20 text-brand-primary px-2 py-1 rounded text-[10px] font-semibold transition flex items-center gap-1">
-                                    <i class="fa-solid fa-upload"></i> Upload / Ganti Foto TTD
+                                <button onclick="document.getElementById('file-foto-${row.kode}').click()" class="mt-1 bg-amber-50 hover:bg-amber-100 text-amber-700 px-2 py-1 rounded text-[10px] font-semibold transition flex items-center gap-1">
+                                    <i class="fa-solid fa-upload"></i> Upload / Ganti Dokumen TTD
                                 </button>
                             </div>`;
 
@@ -775,7 +825,7 @@
                             }
                         });
                     } else {
-                        tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-400">Belum ada riwayat permintaan.</td></tr>`;
+                        tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-400">Tidak ada data yang sesuai dengan filter.</td></tr>`;
                     }
                 } else {
                     tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-400">Belum ada riwayat permintaan barang.</td></tr>`;
