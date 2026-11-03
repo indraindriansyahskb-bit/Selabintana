@@ -208,7 +208,7 @@
                         <div class="text-xs font-semibold text-brand-primary uppercase tracking-wider mb-2">Konsumsi Harian</div>
                         <h3 class="text-xl font-bold text-gray-900 mb-2">Telur Segar Grade A</h3>
                         <p class="text-gray-600 text-sm mb-6 leading-relaxed">Telur cangkang bersih bermutu tinggi dengan cangkang tebal dan kuning telur utuh berkepadatan optimal.</p>
-                        <a href="https://wa.me/6281234567890?text=Halo%20CV.%20Selabintana,%20saya%20ingin%20tanya%20produk%20Telur%20Segar%20Grade%20A" target="_blank" class="w-full inline-flex justify-center items-center gap-2 bg-slate-100 hover:bg-brand-primary hover:text-white text-gray-800 font-medium py-2.5 rounded-xl transition text-sm">
+                        <a href="https://wa.me/6281385847898?text=Halo%20CV.%20Selabintana,%20saya%20ingin%20tanya%20produk%20Telur%20Segar%20Grade%20A" target="_blank" class="w-full inline-flex justify-center items-center gap-2 bg-slate-100 hover:bg-brand-primary hover:text-white text-gray-800 font-medium py-2.5 rounded-xl transition text-sm">
                             <i class="fa-brands fa-whatsapp"></i> Pesan Sekarang
                         </a>
                     </div>
