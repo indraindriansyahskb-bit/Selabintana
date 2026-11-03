@@ -92,24 +92,22 @@
             <div class="bg-brand-dark text-white p-6 sm:p-8 rounded-3xl shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                     <span class="text-brand-accent text-xs font-semibold uppercase tracking-widest">Dashboard Operasional</span>
-                    <h2 class="text-xl sm:text-2xl font-bold mt-1">Sistem Pengajuan & Permintaan Barang</h2>
-                    <p class="text-gray-300 text-xs sm:text-sm mt-1">Kelola dan pantau status pengajuan material secara real-time.</p>
+                    <h2 id="dashboard-title" class="text-xl sm:text-2xl font-bold mt-1">Sistem Pengajuan & Permintaan Barang</h2>
+                    <p id="dashboard-subtitle" class="text-gray-300 text-xs sm:text-sm mt-1">Kelola dan pantau status pengajuan material secara real-time.</p>
                 </div>
                 <div class="bg-white/10 px-4 py-2.5 rounded-2xl backdrop-blur-md border border-white/10 text-xs text-right">
-                    <span class="text-gray-300 block">Akun / Divisi:</span>
+                    <span class="text-gray-300 block">Akun / Peran:</span>
                     <span id="badge-divisi" class="font-bold text-white text-sm">-</span>
                 </div>
             </div>
 
-            <!-- Form Permintaan Barang -->
-            <div class="bg-white rounded-3xl shadow-sm border border-gray-200 p-6 sm:p-8">
+            <!-- FORM PERMINTAAN BARANG (HANYA MUNCUL UNTUK STAF, DISEMBUNYIKAN UNTUK ADMIN) -->
+            <div id="form-container" class="bg-white rounded-3xl shadow-sm border border-gray-200 p-6 sm:p-8">
                 <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
                     <i class="fa-solid fa-cart-plus text-brand-primary"></i> Form Permintaan Barang Baru
                 </h3>
 
                 <form id="form-permintaan" onsubmit="handleSubmitedReq(event)" class="grid sm:grid-cols-2 gap-4">
-                    
-                    <!-- Unit / Lokasi Otomatis dari Akun -->
                     <div class="sm:col-span-2 bg-slate-50 p-4 rounded-2xl border border-gray-200 flex items-center justify-between">
                         <div>
                             <span class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider block">Unit / Lokasi Pengajuan (Otomatis)</span>
@@ -118,7 +116,6 @@
                         <i class="fa-solid fa-location-dot text-brand-primary text-xl"></i>
                     </div>
 
-                    <!-- Kategori Barang -->
                     <div>
                         <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Kategori Barang</label>
                         <select id="input-kategori" required class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-primary text-sm bg-white">
@@ -131,14 +128,12 @@
                         </select>
                     </div>
 
-                    <!-- Nama Barang dengan Auto-Fill Master -->
                     <div>
                         <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Nama Barang / Material</label>
                         <input type="text" id="input-nama-barang" list="list-master-barang" oninput="autofillBarang(this.value)" required placeholder="Ketik atau pilih barang..." class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-primary text-sm">
                         <datalist id="list-master-barang"></datalist>
                     </div>
                     
-                    <!-- Jumlah & Satuan -->
                     <div class="grid grid-cols-2 gap-2 sm:col-span-2">
                         <div>
                             <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Jumlah</label>
@@ -150,13 +145,11 @@
                         </div>
                     </div>
 
-                    <!-- Supplier -->
                     <div class="sm:col-span-2">
                         <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Supplier / Toko Rujukan (Opsional)</label>
                         <input type="text" id="input-supplier" placeholder="Contoh: PT. Sumber Pangan" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-primary text-sm">
                     </div>
 
-                    <!-- Keterangan -->
                     <div class="sm:col-span-2">
                         <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Keterangan / Keperluan (Opsional)</label>
                         <textarea id="input-keterangan" rows="2" placeholder="Tuliskan catatan atau keperluan..." class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-primary text-sm"></textarea>
@@ -170,14 +163,14 @@
                 </form>
             </div>
 
-            <!-- Riwayat Permintaan Barang -->
+            <!-- TABEL RIWAYAT / PANEL APPROVAL ADMIN -->
             <div class="bg-white rounded-3xl shadow-sm border border-gray-200 p-6 sm:p-8">
                 <div class="flex justify-between items-center mb-4">
                     <div>
-                        <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                        <h3 id="table-title" class="text-lg font-bold text-gray-900 flex items-center gap-2">
                             <i class="fa-solid fa-clock-rotate-left text-brand-primary"></i> Riwayat & Status Permintaan
                         </h3>
-                        <p class="text-xs text-gray-500 mt-0.5">Menampilkan riwayat pengajuan unit Anda.</p>
+                        <p id="table-subtitle" class="text-xs text-gray-500 mt-0.5">Menampilkan riwayat pengajuan unit Anda.</p>
                     </div>
                     <button onclick="loadRiwayatPermintaan()" class="text-xs font-semibold text-brand-primary hover:underline flex items-center gap-1">
                         <i class="fa-solid fa-rotate"></i> Muat Ulang
@@ -189,15 +182,15 @@
                         <thead class="bg-slate-50 text-gray-600 uppercase text-[10px] sm:text-xs border-b border-gray-200">
                             <tr>
                                 <th class="p-3">Kode / Tanggal</th>
-                                <th class="p-3">Lokasi / Unit</th>
+                                <th class="p-3">Lokasi & Pemohon</th>
                                 <th class="p-3">Kategori & Barang</th>
-                                <th class="p-3">Keterangan</th>
-                                <th class="p-3 text-center">Status</th>
+                                <th class="p-3">Keterangan & Catatan Admin</th>
+                                <th class="p-3 text-center">Status / Aksi</th>
                             </tr>
                         </thead>
                         <tbody id="table-riwayat-body" class="divide-y divide-gray-100">
                             <tr>
-                                <td colspan="5" class="p-4 text-center text-gray-400">Memuat data riwayat...</td>
+                                <td colspan="5" class="p-4 text-center text-gray-400">Memuat data...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -215,7 +208,7 @@
 
     <!-- SCRIPT JAVASCRIPT -->
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyuZEPr3k3CUEREbNkF117XOaRPJPUE5BVaXscbQl7TiyNUbzYjdOIGtnZ6zGQ57kp4wA/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwXUtqE72N67sofCZYEFEREwCSRcOeRo9GQ7MnMwU3kLPVXU1VbtiXaJ5mehX95NNXzDQ/exec";
 
         let currentUser = null;
         let masterBarangList = [];
@@ -269,11 +262,25 @@
             document.getElementById('user-info-area').classList.remove('hidden');
             document.getElementById('user-info-area').classList.add('flex');
             
+            const isAdmin = currentUser.role && currentUser.role.toLowerCase() === 'admin';
+
             document.getElementById('display-user-name').textContent = `${currentUser.nama} (${currentUser.divisi})`;
             document.getElementById('badge-divisi').textContent = `${currentUser.divisi} - ${currentUser.unit_lokasi}`;
-            document.getElementById('text-unit-lokasi').textContent = currentUser.unit_lokasi;
 
-            loadMasterBarang();
+            if (isAdmin) {
+                // Tampilan untuk ADMIN (Sembunyikan form pengajuan, ubah judul tabel menjadi Panel Approval)
+                document.getElementById('form-container').classList.add('hidden');
+                document.getElementById('dashboard-title').textContent = "Panel Kendali & Approval Permintaan";
+                document.getElementById('dashboard-subtitle').textContent = "Pusat verifikasi, persetujuan, atau revisi pengajuan barang dari seluruh unit.";
+                document.getElementById('table-title.innerHTML') = `<i class="fa-solid fa-clipboard-check text-brand-primary"></i> Daftar Permintaan Masuk (Admin)`;
+                document.getElementById('table-subtitle').textContent = "Meninjau dan memperbarui status permintaan seluruh unit.";
+            } else {
+                // Tampilan untuk STAF UNIT
+                document.getElementById('form-container').classList.remove('hidden');
+                document.getElementById('text-unit-lokasi').textContent = currentUser.unit_lokasi;
+                loadMasterBarang();
+            }
+
             loadRiwayatPermintaan();
         }
 
@@ -346,7 +353,7 @@
                 if (result.status === "success") {
                     alert(result.message);
                     document.getElementById('form-permintaan').reset();
-                    document.getElementById('text-unit-lokasi').textContent = currentUser.unit_lokasi; // Pertahankan teks unit
+                    document.getElementById('text-unit-lokasi').textContent = currentUser.unit_lokasi;
                     loadMasterBarang();
                     loadRiwayatPermintaan();
                 } else {
@@ -360,7 +367,36 @@
             }
         }
 
-        // Ambil Riwayat & Filter Ketat (Unit Staf vs Admin Pusat)
+        // Fungsi Admin Mengubah Status & Catatan
+        async function updateStatus(kode) {
+            const statusSelect = document.getElementById(`status-${kode}`).value;
+            const catatanInput = document.getElementById(`catatan-${kode}`).value;
+
+            if(!confirm(`Simpan perubahan status untuk ${kode}?`)) return;
+
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: "update_status",
+                        kode: kode,
+                        status: statusSelect,
+                        catatan: catatanInput || "-"
+                    })
+                });
+                const result = await response.json();
+                if(result.status === "success") {
+                    alert("Status berhasil diperbarui!");
+                    loadRiwayatPermintaan();
+                } else {
+                    alert("Gagal memperbarui status.");
+                }
+            } catch(err) {
+                alert("Kesalahan koneksi.");
+            }
+        }
+
+        // Memuat Tabel Berdasarkan Peran (Staf vs Admin)
         async function loadRiwayatPermintaan() {
             const tbody = document.getElementById('table-riwayat-body');
             tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-400"><i class="fa-solid fa-spinner animate-spin"></i> Memuat data...</td></tr>`;
@@ -374,7 +410,7 @@
                     const isAdmin = currentUser.role && currentUser.role.toLowerCase() === 'admin';
 
                     if (!isAdmin) {
-                        // Filter ketat berdasarkan unit lokasi user yang sedang login
+                        // Staf hanya melihat miliknya sendiri berdasarkan unit lokasi
                         displayData = result.data.filter(row => 
                             row.unit_lokasi && row.unit_lokasi.toLowerCase().trim() === currentUser.unit_lokasi.toLowerCase().trim()
                         );
@@ -384,34 +420,82 @@
                         tbody.innerHTML = "";
                         displayData.forEach(row => {
                             let badgeColor = "bg-amber-100 text-amber-700";
-                            if (row.status === "Approved") badgeColor = "bg-emerald-100 text-emerald-700";
-                            if (row.status === "Rejected") badgeColor = "bg-red-100 text-red-700";
+                            if (row.status === "APPROVED") badgeColor = "bg-emerald-100 text-emerald-700";
+                            if (row.status === "REJECTED") badgeColor = "bg-red-100 text-red-700";
+                            if (row.status === "REVISION") badgeColor = "bg-blue-100 text-blue-700";
 
-                            tbody.innerHTML += `
-                                <tr class="hover:bg-slate-50 transition border-b border-gray-100">
-                                    <td class="p-3">
-                                        <span class="font-bold text-gray-900 block">${row.kode}</span>
-                                        <span class="text-[10px] text-gray-400">${row.tanggal}</span>
-                                    </td>
-                                    <td class="p-3">
-                                        <span class="font-medium text-gray-900 block text-brand-dark">${row.unit_lokasi}</span>
-                                        <span class="text-[10px] text-gray-500">Oleh: ${row.pemohon}</span>
-                                    </td>
-                                    <td class="p-3">
-                                        <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-brand-primary/10 text-brand-primary mb-1">${row.kategori}</span>
-                                        <span class="font-semibold text-gray-900 block">${row.barang}</span>
-                                        <span class="text-xs text-gray-600">Jumlah: <strong>${row.jumlah} ${row.satuan}</strong></span>
-                                        <span class="text-[11px] text-gray-500 block italic">Supplier: ${row.supplier}</span>
-                                    </td>
-                                    <td class="p-3 text-gray-600 text-xs">${row.keterangan}</td>
-                                    <td class="p-3 text-center">
-                                        <span class="px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider ${badgeColor}">${row.status}</span>
-                                    </td>
-                                </tr>
-                            `;
+                            // Render Tampilan Berbeda untuk Admin dan Staf
+                            if (isAdmin) {
+                                // TAMPILAN ADMIN: Dilengkapi Dropdown Status & Input Catatan/Keterangan
+                                tbody.innerHTML += `
+                                    <tr class="hover:bg-slate-50 transition border-b border-gray-100">
+                                        <td class="p-3">
+                                            <span class="font-bold text-gray-900 block">${row.kode}</span>
+                                            <span class="text-[10px] text-gray-400">${row.tanggal}</span>
+                                        </td>
+                                        <td class="p-3">
+                                            <span class="font-medium text-gray-900 block text-brand-dark">${row.unit_lokasi}</span>
+                                            <span class="text-[10px] text-gray-500">Oleh: ${row.pemohon}</span>
+                                        </td>
+                                        <td class="p-3">
+                                            <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-brand-primary/10 text-brand-primary mb-1">${row.kategori}</span>
+                                            <span class="font-semibold text-gray-900 block">${row.barang}</span>
+                                            <span class="text-xs text-gray-600">Jumlah: <strong>${row.jumlah} ${row.satuan}</strong></span>
+                                            <span class="text-[11px] text-gray-500 block italic">Supplier: ${row.supplier}</span>
+                                        </td>
+                                        <td class="p-3 text-xs space-y-1">
+                                            <span class="block text-gray-700"><strong>Keperluan:</strong> ${row.keterangan}</span>
+                                            <div class="mt-1">
+                                                <label class="text-[10px] font-semibold text-gray-400 uppercase">Catatan Admin / Revisi:</label>
+                                                <input type="text" id="catatan-${row.kode}" value="${row.catatan_admin !== '-' ? row.catatan_admin : ''}" placeholder="Tulis alasan revisi/penolakan..." class="w-full px-2 py-1 border border-gray-200 rounded text-xs focus:outline-none focus:border-brand-primary">
+                                            </div>
+                                        </td>
+                                        <td class="p-3 text-center align-middle">
+                                            <div class="space-y-2">
+                                                <select id="status-${row.kode}" class="w-full px-2 py-1 text-xs font-semibold rounded border border-gray-300 bg-white">
+                                                    <option value="PENDING" ${row.status === 'PENDING' ? 'selected' : ''}>PENDING</option>
+                                                    <option value="APPROVED" ${row.status === 'APPROVED' ? 'selected' : ''}>DI-ACC</option>
+                                                    <option value="REJECTED" ${row.status === 'REJECTED' ? 'selected' : ''}>TIDAK ACC</option>
+                                                    <option value="REVISION" ${row.status === 'REVISION' ? 'selected' : ''}>REVISI</option>
+                                                </select>
+                                                <button onclick="updateStatus('${row.kode}')" class="w-full bg-brand-primary hover:bg-brand-dark text-white px-3 py-1 rounded text-xs font-semibold transition">
+                                                    Simpan
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                `;
+                            } else {
+                                // TAMPILAN STAF: Hanya melihat status & catatan admin
+                                tbody.innerHTML += `
+                                    <tr class="hover:bg-slate-50 transition border-b border-gray-100">
+                                        <td class="p-3">
+                                            <span class="font-bold text-gray-900 block">${row.kode}</span>
+                                            <span class="text-[10px] text-gray-400">${row.tanggal}</span>
+                                        </td>
+                                        <td class="p-3">
+                                            <span class="font-medium text-gray-900 block text-brand-dark">${row.unit_lokasi}</span>
+                                            <span class="text-[10px] text-gray-500">Oleh: ${row.pemohon}</span>
+                                        </td>
+                                        <td class="p-3">
+                                            <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-brand-primary/10 text-brand-primary mb-1">${row.kategori}</span>
+                                            <span class="font-semibold text-gray-900 block">${row.barang}</span>
+                                            <span class="text-xs text-gray-600">Jumlah: <strong>${row.jumlah} ${row.satuan}</strong></span>
+                                            <span class="text-[11px] text-gray-500 block italic">Supplier: ${row.supplier}</span>
+                                        </td>
+                                        <td class="p-3 text-xs space-y-1">
+                                            <span class="block text-gray-700"><strong>Keperluan:</strong> ${row.keterangan}</span>
+                                            <span class="block text-red-600 bg-red-50 p-1.5 rounded border border-red-100 mt-1"><strong>Catatan Admin:</strong> ${row.catatan_admin}</span>
+                                        </td>
+                                        <td class="p-3 text-center align-middle">
+                                            <span class="px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider ${badgeColor}">${row.status}</span>
+                                        </td>
+                                    </tr>
+                                `;
+                            }
                         });
                     } else {
-                        tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-400">Belum ada riwayat permintaan untuk unit ${currentUser.unit_lokasi}.</td></tr>`;
+                        tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-400">Belum ada riwayat permintaan.</td></tr>`;
                     }
                 } else {
                     tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-400">Belum ada riwayat permintaan barang.</td></tr>`;
