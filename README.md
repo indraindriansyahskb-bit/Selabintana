@@ -60,7 +60,7 @@
                     </div>
                     <div>
                         <span class="text-xl font-bold text-brand-green tracking-tight">CV. SELABINTANA</span>
-                        <span class="block text-xs text-brand-gold font-semibold tracking-widest uppercase">Closed House Layer Farm</span>
+                        <span class="block text-xs text-brand-gold font-semibold tracking-widest uppercase"></span>
                     </div>
                 </a>
 
