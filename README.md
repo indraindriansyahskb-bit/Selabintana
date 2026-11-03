@@ -44,7 +44,7 @@
                     </div>
                     <div>
                         <span class="text-xl font-bold text-brand-dark tracking-tight block leading-none">CV. SELABINTANA</span>
-                        <span class="text-xs text-brand-light font-medium tracking-wide">POULTRY FARM & PROCESSING</span>
+                        <span class="text-xs text-brand-light font-medium tracking-wide"></span>
                     </div>
                 </a>
 
