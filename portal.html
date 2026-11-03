@@ -131,7 +131,7 @@
                         </select>
                     </div>
 
-                    <!-- Nama Barang dengan Auto-Fill -->
+                    <!-- Nama Barang dengan Auto-Fill Master -->
                     <div>
                         <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Nama Barang / Material</label>
                         <input type="text" id="input-nama-barang" list="list-master-barang" oninput="autofillBarang(this.value)" required placeholder="Ketik atau pilih barang..." class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-primary text-sm">
@@ -175,9 +175,9 @@
                 <div class="flex justify-between items-center mb-4">
                     <div>
                         <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2">
-                            <i class="fa-solid fa-clock-rotate-left text-brand-primary"></i> Riwayat & Status Permintaan Saya
+                            <i class="fa-solid fa-clock-rotate-left text-brand-primary"></i> Riwayat & Status Permintaan
                         </h3>
-                        <p class="text-xs text-gray-500 mt-0.5">Menampilkan riwayat pengajuan dari unit Anda sendiri.</p>
+                        <p class="text-xs text-gray-500 mt-0.5">Menampilkan riwayat pengajuan unit Anda.</p>
                     </div>
                     <button onclick="loadRiwayatPermintaan()" class="text-xs font-semibold text-brand-primary hover:underline flex items-center gap-1">
                         <i class="fa-solid fa-rotate"></i> Muat Ulang
@@ -332,7 +332,7 @@
                         action: "submit_permintaan_manual",
                         nama_pemohon: currentUser.nama,
                         divisi: currentUser.divisi,
-                        unit_lokasi: currentUser.unit_lokasi, // Otomatis dari akun user
+                        unit_lokasi: currentUser.unit_lokasi,
                         kategori: kategori,
                         nama_barang: namaBarang,
                         jumlah: jumlah,
@@ -346,6 +346,7 @@
                 if (result.status === "success") {
                     alert(result.message);
                     document.getElementById('form-permintaan').reset();
+                    document.getElementById('text-unit-lokasi').textContent = currentUser.unit_lokasi; // Pertahankan teks unit
                     loadMasterBarang();
                     loadRiwayatPermintaan();
                 } else {
@@ -359,7 +360,7 @@
             }
         }
 
-        // Ambil Riwayat & Filter berdasarkan Role (Admin melihat semua, Staf melihat miliknya sendiri)
+        // Ambil Riwayat & Filter Ketat (Unit Staf vs Admin Pusat)
         async function loadRiwayatPermintaan() {
             const tbody = document.getElementById('table-riwayat-body');
             tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-400"><i class="fa-solid fa-spinner animate-spin"></i> Memuat data...</td></tr>`;
@@ -370,13 +371,13 @@
 
                 if (result.status === "success" && result.data.length > 0) {
                     let displayData = result.data;
-
-                    // Cek apakah user yang login BUKAN Admin
                     const isAdmin = currentUser.role && currentUser.role.toLowerCase() === 'admin';
-                    
+
                     if (!isAdmin) {
-                        // Jika staf biasa, filter hanya miliknya sendiri
-                        displayData = result.data.filter(row => row.pemohon.toLowerCase() === currentUser.nama.toLowerCase());
+                        // Filter ketat berdasarkan unit lokasi user yang sedang login
+                        displayData = result.data.filter(row => 
+                            row.unit_lokasi && row.unit_lokasi.toLowerCase().trim() === currentUser.unit_lokasi.toLowerCase().trim()
+                        );
                     }
 
                     if (displayData.length > 0) {
@@ -394,7 +395,7 @@
                                     </td>
                                     <td class="p-3">
                                         <span class="font-medium text-gray-900 block text-brand-dark">${row.unit_lokasi}</span>
-                                        <span class="text-[10px] text-gray-500">Oleh: ${row.pemohon} (${row.divisi})</span>
+                                        <span class="text-[10px] text-gray-500">Oleh: ${row.pemohon}</span>
                                     </td>
                                     <td class="p-3">
                                         <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-brand-primary/10 text-brand-primary mb-1">${row.kategori}</span>
@@ -410,7 +411,7 @@
                             `;
                         });
                     } else {
-                        tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-400">Belum ada data riwayat permintaan.</td></tr>`;
+                        tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-400">Belum ada riwayat permintaan untuk unit ${currentUser.unit_lokasi}.</td></tr>`;
                     }
                 } else {
                     tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-400">Belum ada riwayat permintaan barang.</td></tr>`;
