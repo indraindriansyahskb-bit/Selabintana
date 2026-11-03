@@ -332,6 +332,7 @@
                     </table>
                 </div>
             </div>
+
         </div>
 
     </main>
@@ -408,7 +409,7 @@
                 document.getElementById('dashboard-title').textContent = "Panel Kendali & Approval Permintaan";
                 document.getElementById('dashboard-subtitle').textContent = "Pusat verifikasi, persetujuan, atau revisi pengajuan barang dari seluruh unit.";
                 document.getElementById('table-title').innerHTML = `<i class="fa-solid fa-clipboard-check text-brand-primary"></i> Daftar Permintaan Masuk (Admin)`;
-                document.getElementById('table-subtitle').textContent = "Meninjau dokumen ber-TTD, memperbarui status, dan mencetak lembar verifikasi A5.";
+                document.getElementById('table-subtitle').textContent = "Meninjau dokumen PDF ber-TTD, memperbarui status, dan mencetak lembar verifikasi A5.";
                 
                 document.getElementById('btn-export-excel').classList.remove('hidden');
                 document.getElementById('btn-export-excel').classList.add('flex');
@@ -558,68 +559,42 @@
             }
         }
 
+        // FUNGSI UPLOAD DOKUMEN PDF ATAU GAMBAR BER-TTD (MAKSIMAL 200 KB)
         function triggerUploadFoto(kode) {
             const fileInput = document.getElementById(`file-foto-${kode}`);
             const file = fileInput.files[0];
             if (!file) return;
 
+            if (file.size > 200 * 1024) {
+                alert("Ukuran file terlalu besar! Maksimal 200 KB.");
+                fileInput.value = "";
+                return;
+            }
+
             const reader = new FileReader();
             reader.readAsDataURL(file);
-            reader.onload = function(event) {
-                const img = new Image();
-                img.src = event.target.result;
-                img.onload = async function() {
-                    const canvas = document.createElement('canvas');
-                    let width = img.width;
-                    let height = img.height;
+            reader.onload = async function(event) {
+                const base64String = event.target.result;
 
-                    const MAX_WIDTH = 900;
-                    const MAX_HEIGHT = 900;
-                    if (width > height) {
-                        if (width > MAX_WIDTH) {
-                            height *= MAX_WIDTH / width;
-                            width = MAX_WIDTH;
-                        }
+                alert("Mengunggah dokumen PDF/Foto ber-TTD...");
+                try {
+                    const response = await fetch(SCRIPT_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            action: "upload_foto_ttd",
+                            kode: kode,
+                            foto: base64String
+                        })
+                    });
+                    const result = await response.json();
+                    if (result.status === "success") {
+                        alert("Dokumen ber-TTD berhasil diunggah!");
+                        loadRiwayatPermintaan();
                     } else {
-                        if (height > MAX_HEIGHT) {
-                            width *= MAX_HEIGHT / height;
-                            height = MAX_HEIGHT;
-                        }
+                        alert("Gagal mengunggah dokumen.");
                     }
-
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-
-                    let quality = 0.7;
-                    let dataUrl = canvas.toDataURL('image/jpeg', quality);
-                    
-                    while (dataUrl.length > 200 * 1024 && quality > 0.1) {
-                        quality -= 0.1;
-                        dataUrl = canvas.toDataURL('image/jpeg', quality);
-                    }
-
-                    alert("Mengunggah dokumen ber-TTD...");
-                    try {
-                        const response = await fetch(SCRIPT_URL, {
-                            method: 'POST',
-                            body: JSON.stringify({
-                                action: "upload_foto_ttd",
-                                kode: kode,
-                                foto: dataUrl
-                            })
-                        });
-                        const result = await response.json();
-                        if (result.status === "success") {
-                            alert("Dokumen ber-TTD berhasil diunggah!");
-                            loadRiwayatPermintaan();
-                        } else {
-                            alert("Gagal mengunggah foto.");
-                        }
-                    } catch (err) {
-                        alert("Terjadi kesalahan koneksi.");
-                    }
+                } catch (err) {
+                    alert("Terjadi kesalahan koneksi.");
                 }
             }
         }
@@ -731,12 +706,12 @@
                             let dokumenHtml = `<div class="mt-2 pt-2 border-t border-gray-100 space-y-1">`;
                             if (row.foto && row.foto.length > 20) {
                                 dokumenHtml += `
-                                    <span class="text-emerald-700 font-bold block text-[11px]"><i class="fa-solid fa-circle-check"></i> Dokumen Ber-TTD Valid</span>
+                                    <span class="text-emerald-700 font-bold block text-[11px]"><i class="fa-solid fa-circle-check"></i> Dokumen PDF/Foto Ber-TTD Valid</span>
                                     <div class="flex gap-1.5 mt-1">
                                         <a href="${row.foto}" target="_blank" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-1 rounded text-[10px] font-semibold transition flex items-center gap-1">
                                             <i class="fa-solid fa-eye"></i> Lihat
                                         </a>
-                                        <a href="${row.foto}" download="Dokumen_TTD_${row.kode}.jpg" class="bg-brand-primary hover:bg-brand-dark text-white px-2 py-1 rounded text-[10px] font-semibold transition flex items-center gap-1">
+                                        <a href="${row.foto}" download="Dokumen_TTD_${row.kode}" class="bg-brand-primary hover:bg-brand-dark text-white px-2 py-1 rounded text-[10px] font-semibold transition flex items-center gap-1">
                                             <i class="fa-solid fa-download"></i> Download untuk Purchasing
                                         </a>
                                     </div>
@@ -746,9 +721,9 @@
                             }
                             
                             dokumenHtml += `
-                                <input type="file" id="file-foto-${row.kode}" accept="image/*" onchange="triggerUploadFoto('${row.kode}')" class="hidden">
+                                <input type="file" id="file-foto-${row.kode}" accept=".pdf,image/*" onchange="triggerUploadFoto('${row.kode}')" class="hidden">
                                 <button onclick="document.getElementById('file-foto-${row.kode}').click()" class="mt-1 bg-amber-50 hover:bg-amber-100 text-amber-700 px-2 py-1 rounded text-[10px] font-semibold transition flex items-center gap-1">
-                                    <i class="fa-solid fa-upload"></i> Upload / Ganti Dokumen TTD
+                                    <i class="fa-solid fa-upload"></i> Upload / Ganti Dokumen PDF TTD
                                 </button>
                             </div>`;
 
