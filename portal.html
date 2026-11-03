@@ -87,7 +87,7 @@
             <div id="login-error" class="mt-4 hidden bg-red-50 border border-red-200 text-red-600 text-xs p-3 rounded-xl text-center"></div>
         </div>
 
-        <!-- BAGIAN 2: DASHBOARD UTAMA (TERSEMBUNYI SEBELUM LOGIN) -->
+        <!-- BAGIAN 2: DASHBOARD UTAMA -->
         <div id="section-dashboard" class="hidden space-y-8">
             
             <!-- Banner Sambutan -->
@@ -103,17 +103,31 @@
                 </div>
             </div>
 
-            <!-- Form Permintaan Barang (Manual & Supplier Opsional) -->
+            <!-- Form Permintaan Barang -->
             <div class="bg-white rounded-3xl shadow-sm border border-gray-200 p-6 sm:p-8">
                 <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
                     <i class="fa-solid fa-cart-plus text-brand-primary"></i> Form Permintaan Barang Baru
                 </h3>
 
                 <form id="form-permintaan" onsubmit="handleSubmitedReq(event)" class="grid sm:grid-cols-2 gap-4">
+                    <!-- Pilihan Kategori Baru -->
+                    <div class="sm:col-span-2">
+                        <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Kategori Barang</label>
+                        <select id="input-kategori" required class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-primary text-sm bg-white">
+                            <option value="">-- Pilih Kategori --</option>
+                            <option value="OBAT">OBAT</option>
+                            <option value="VAKSIN">VAKSIN</option>
+                            <option value="KIMIA">KIMIA</option>
+                            <option value="VITAMIN">VITAMIN</option>
+                            <option value="PERALATAN">PERALATAN</option>
+                        </select>
+                    </div>
+
                     <div>
                         <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Nama Barang / Material</label>
-                        <input type="text" id="input-nama-barang" required placeholder="Contoh: Vitamin Ternak / Kemasan Karton" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-primary text-sm">
+                        <input type="text" id="input-nama-barang" required placeholder="Contoh: Biocid 200" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-primary text-sm">
                     </div>
+                    
                     <div class="grid grid-cols-2 gap-2">
                         <div>
                             <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Jumlah</label>
@@ -121,17 +135,20 @@
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Satuan</label>
-                            <input type="text" id="input-satuan" required placeholder="Kg / Pcs / Liter" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-primary text-sm">
+                            <input type="text" id="input-satuan" required placeholder="liter / pcs / kg" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-primary text-sm">
                         </div>
                     </div>
+
                     <div class="sm:col-span-2">
                         <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Supplier / Toko Rujukan (Opsional)</label>
-                        <input type="text" id="input-supplier" placeholder="Contoh: PT. Sumber Pangan Jaya (Kosongkan jika tidak ada)" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-primary text-sm">
+                        <input type="text" id="input-supplier" placeholder="Contoh: shs (Kosongkan jika tidak ada)" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-primary text-sm">
                     </div>
+
                     <div class="sm:col-span-2">
                         <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Keterangan / Keperluan (Opsional)</label>
-                        <textarea id="input-keterangan" rows="2" placeholder="Tuliskan catatan atau lokasi unit peternakan..." class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-primary text-sm"></textarea>
+                        <textarea id="input-keterangan" rows="2" placeholder="Tuliskan catatan atau keperluan..." class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-primary text-sm"></textarea>
                     </div>
+
                     <div class="sm:col-span-2">
                         <button type="submit" id="btn-submit-req" class="w-full bg-brand-primary hover:bg-brand-dark text-white font-semibold py-3 rounded-xl transition text-sm shadow-sm flex items-center justify-center gap-2">
                             <i class="fa-solid fa-paper-plane"></i> Ajukan Permintaan Barang
@@ -157,7 +174,7 @@
                             <tr>
                                 <th class="p-3">Kode / Tanggal</th>
                                 <th class="p-3">Pemohon</th>
-                                <th class="p-3">Barang & Supplier</th>
+                                <th class="p-3">Kategori & Barang</th>
                                 <th class="p-3">Keterangan</th>
                                 <th class="p-3 text-center">Status</th>
                             </tr>
@@ -182,7 +199,6 @@
 
     <!-- SCRIPT JAVASCRIPT -->
     <script>
-        // URL Web App Google Apps Script Anda yang sudah terintegrasi
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx0DTHNW9XS2BeBe9kEvGAhyOqJnedem5xg_BLeXVD6EHOVvUrYV8c8VzDaPduUzjQo/exec";
 
         let currentUser = null;
@@ -253,6 +269,7 @@
 
         async function handleSubmitedReq(e) {
             e.preventDefault();
+            const kategori = document.getElementById('input-kategori').value;
             const namaBarang = document.getElementById('input-nama-barang').value;
             const jumlah = document.getElementById('input-jumlah').value;
             const satuan = document.getElementById('input-satuan').value;
@@ -270,6 +287,7 @@
                         action: "submit_permintaan_manual",
                         nama_pemohon: currentUser.nama,
                         divisi: currentUser.divisi,
+                        kategori: kategori,
                         nama_barang: namaBarang,
                         jumlah: jumlah,
                         satuan: satuan,
@@ -320,7 +338,8 @@
                                     <span class="text-[10px] text-gray-500">${row.divisi}</span>
                                 </td>
                                 <td class="p-3">
-                                    <span class="font-semibold text-brand-primary block">${row.barang}</span>
+                                    <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-brand-primary/10 text-brand-primary mb-1">${row.kategori}</span>
+                                    <span class="font-semibold text-gray-900 block">${row.barang}</span>
                                     <span class="text-xs text-gray-600">Jumlah: <strong>${row.jumlah} ${row.satuan}</strong></span>
                                     <span class="text-[11px] text-gray-500 block italic">Supplier: ${row.supplier}</span>
                                 </td>
