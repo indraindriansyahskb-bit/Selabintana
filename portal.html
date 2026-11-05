@@ -151,10 +151,11 @@
       display: none;
     }
 
+    /* Maksimalkan ukuran kertas A5 dengan narrow margin */
     @media print {
       @page {
         size: A5 portrait;
-        margin: 5mm;
+        margin: 3mm; /* Menggunakan narrow margin agar area cetak maksimal */
       }
       body * {
         visibility: hidden !important;
@@ -169,7 +170,7 @@
         top: 0;
         width: 100%;
         height: 100%;
-        padding: 5mm;
+        padding: 2mm;
         background: white;
         font-family: 'Segoe UI', Arial, sans-serif;
         color: #111827;
@@ -182,11 +183,11 @@
       justify-content: space-between;
       align-items: flex-start;
       border-bottom: 2px solid #111827;
-      padding-bottom: 10px;
-      margin-bottom: 20px;
+      padding-bottom: 6px;
+      margin-bottom: 10px;
     }
     .print-header h2 {
-      font-size: 20px;
+      font-size: 15px;
       font-weight: 800;
       margin: 0;
       color: #111827;
@@ -195,43 +196,43 @@
       padding: 0;
     }
     .print-header p {
-      font-size: 12px;
+      font-size: 9px;
       color: #4b5563;
-      margin: 4px 0 0 0;
+      margin: 2px 0 0 0;
     }
     .print-meta {
       text-align: right;
     }
     .print-meta .req-code {
-      font-size: 16px;
+      font-size: 13px;
       font-weight: 800;
       color: #059669;
     }
     .print-meta .req-date {
-      font-size: 11px;
+      font-size: 9px;
       color: #4b5563;
-      margin-top: 4px;
+      margin-top: 2px;
     }
 
     .print-user-card {
-      border: 1.5px solid #d1d5db;
-      border-radius: 8px;
-      padding: 14px 18px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      padding: 8px 12px;
       display: flex;
       justify-content: space-between;
-      margin-bottom: 25px;
+      margin-bottom: 12px;
       background-color: #ffffff;
     }
     .user-card-item label {
-      font-size: 11px;
+      font-size: 9px;
       font-weight: 700;
       color: #6b7280;
       text-transform: uppercase;
       display: block;
-      margin-bottom: 4px;
+      margin-bottom: 2px;
     }
     .user-card-item span {
-      font-size: 14px;
+      font-size: 11px;
       font-weight: 800;
       color: #111827;
     }
@@ -239,21 +240,21 @@
     .print-table {
       width: 100%;
       border-collapse: collapse;
-      margin-bottom: 45px;
+      margin-bottom: 20px;
     }
     .print-table th {
-      font-size: 11px;
+      font-size: 9px;
       font-weight: 700;
       color: #374151;
       text-transform: uppercase;
       text-align: left;
-      padding: 8px 6px;
+      padding: 5px 4px;
       border-bottom: 2px solid #9ca3af;
     }
     .print-table td {
-      font-size: 13px;
+      font-size: 10px;
       font-weight: 700;
-      padding: 16px 6px;
+      padding: 8px 4px;
       border-bottom: 1px solid #e5e7eb;
       vertical-align: top;
     }
@@ -264,12 +265,12 @@
     .print-ttd-container {
       display: flex;
       justify-content: space-between;
-      margin-top: 40px;
+      margin-top: 15px;
     }
     .print-ttd-box {
       flex: 1;
       text-align: center;
-      padding: 0 5px;
+      padding: 0 4px;
       position: relative;
     }
     .print-ttd-box:not(:last-child)::after {
@@ -281,18 +282,18 @@
       border-right: 1px solid #e5e7eb;
     }
     .print-ttd-title {
-      font-size: 11px;
+      font-size: 8px;
       font-weight: 800;
       color: #374151;
       text-transform: uppercase;
-      margin-bottom: 65px; /* Memberikan ruang tinggi untuk tanda tangan fisik */
+      margin-bottom: 35px; /* Ruang tanda tangan manual yang proporsional di A5 */
     }
     .print-ttd-line {
-      border-bottom: 1.5px dashed #6b7280;
-      margin: 0 10px 12px 10px;
+      border-bottom: 1px dashed #6b7280;
+      margin: 0 6px 6px 6px;
     }
     .print-ttd-name {
-      font-size: 12px;
+      font-size: 9px;
       font-weight: 800;
       color: #111827;
     }
@@ -519,7 +520,7 @@
 </div>
 
 <script>
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbyXv7p4QS7P_6EmgNDT2hr9y3iQ4jaZo3L31o-NPB5A3lT6ZmicDfZnbVi0CF8p8OT8PQ/exec";
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbyppz8kOitOUv6PF_92hDCE5WjPD9LCd4tAbIo4ue8Mjbs1LB6DEFreMEJUKT0QHt8a0A/exec";
 
   let sesiUser = {};
   let masterBarangData = [];
