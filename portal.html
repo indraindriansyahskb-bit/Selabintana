@@ -216,6 +216,28 @@
       <hr style="margin: 30px 0; border: 0; border-top: 1px solid #e5e7eb;">
 
       <h3>Riwayat & Status Pengajuan Anda</h3>
+
+      <!-- FILTER & DOWNLOAD CSV UNTUK STAFF -->
+      <div class="filter-card" style="background:#f1f5f9; padding:15px; border-radius:8px; margin-bottom:20px; display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end;">
+        <div style="flex:1; min-width:160px;">
+          <label>Bulan:</label>
+          <input type="month" id="filterBulanStaff" onchange="terapkanFilterStaff()">
+        </div>
+        <div style="flex:1; min-width:160px;">
+          <label>Status:</label>
+          <select id="filterStatusStaff" onchange="terapkanFilterStaff()">
+            <option value="">-- Semua Status --</option>
+            <option value="PENDING">PENDING</option>
+            <option value="ACC">ACC</option>
+            <option value="REVISI">REVISI</option>
+            <option value="DITOLAK">DITOLAK</option>
+          </select>
+        </div>
+        <div>
+          <button onclick="eksporKeCSVStaff()" style="background:#059669; padding:10px;">📥 Unduh CSV</button>
+        </div>
+      </div>
+
       <div class="table-responsive" id="containerRiwayatStaff">
         <p>Memuat riwayat...</p>
       </div>
@@ -267,7 +289,7 @@
   </div>
 </div>
 
-<!-- Area Cetak A5 (Lengkap: Kode Tiket, Tanggal Diminta/Dibutuhkan, Urgensi, Kode Barang, Nama Barang, Jumlah, Supplier, Keterangan) -->
+<!-- Area Cetak A5 -->
 <div id="printArea">
   <div class="print-header">
     <div>
@@ -298,9 +320,7 @@
         <th style="width: 20%;">Keterangan</th>
       </tr>
     </thead>
-    <tbody id="p_tabelItems">
-      <!-- Item barang dinamis -->
-    </tbody>
+    <tbody id="p_tabelItems"></tbody>
   </table>
 
   <div class="print-ttd-container">
@@ -334,6 +354,7 @@
   let masterBarangData = [];
   let rawAdminData = [];
   let groupedTiketList = [];
+  let staffOriginalData = []; // Menyimpan data mentah khusus staff sebelum difilter
   let targetKodeUpload = "";
 
   window.onload = function() {
@@ -573,48 +594,93 @@
       const json = await res.json();
       if (json.status === "success") {
         let staffRows = json.data.filter(item => item.pemohon.toLowerCase() === sesiUser.nama.toLowerCase());
-        groupedTiketList = groupTiketData(staffRows);
-
-        if (groupedTiketList.length === 0) {
-          document.getElementById('containerRiwayatStaff').innerHTML = "<p style='color:#666; font-size:13px;'>Belum ada riwayat pengajuan.</p>";
-          return;
-        }
-
-        let html = `<table><thead><tr>
-          <th>Kode Tiket</th><th>Tanggal</th><th>Daftar Barang (${groupedTiketList.reduce((a,b)=>a+b.items.length,0)} Item)</th><th>Status & Catatan</th><th>PDF TTD</th><th>Aksi</th>
-        </tr></thead><tbody>`;
-
-        groupedTiketList.forEach(tiket => {
-          let badgeClass = 'badge-pending';
-          if(tiket.status === 'ACC') badgeClass = 'badge-acc';
-          else if(tiket.status === 'REVISI') badgeClass = 'badge-revisi';
-          else if(tiket.status === 'DITOLAK') badgeClass = 'badge-tolak';
-
-          const cleanPdfUrl = formatGoogleDriveUrl(tiket.pdfUrl);
-          let itemSummary = tiket.items.map(i => `• ${i.barang} (${i.jumlah} ${i.satuan})`).join('<br>');
-
-          html += `<tr>
-            <td><b>${tiket.kode}</b><br><small>${tiket.urgensi}</small></td>
-            <td>${tiket.tglPermintaan || '-'}</td>
-            <td>${itemSummary}</td>
-            <td>
-              <span class="badge ${badgeClass}">${tiket.status}</span>
-              ${tiket.catatan && tiket.catatan !== '-' ? `<br><small style="color:#666;">Catatan: ${tiket.catatan}</small>` : ''}
-            </td>
-            <td>${cleanPdfUrl !== '-' ? `<a href="${cleanPdfUrl}" target="_blank" style="color:#1a73e8; font-weight:bold;">Lihat PDF</a>` : '<span style="color:#999;">Belum ada</span>'}</td>
-            <td>
-              <button class="btn-sm btn-print" onclick="cetakFormulirA5('${tiket.kode}')">🖨️ Cetak </button>
-              <button class="btn-sm btn-upload" onclick="triggerUploadPdf('${tiket.kode}')">📤 Upload PDF</button>
-              ${tiket.status === 'PENDING' ? `<button class="btn-sm btn-delete" onclick="hapusTiket('${tiket.kode}')">🗑️ Hapus</button>` : ''}
-            </td>
-          </tr>`;
-        });
-        html += `</tbody></table>`;
-        document.getElementById('containerRiwayatStaff').innerHTML = html;
+        staffOriginalData = groupTiketData(staffRows);
+        terapkanFilterStaff();
       }
     } catch(e) {
       document.getElementById('containerRiwayatStaff').innerHTML = "Gagal memuat riwayat.";
     }
+  }
+
+  function terapkanFilterStaff() {
+    const filterBulan = document.getElementById('filterBulanStaff').value;
+    const filterStatus = document.getElementById('filterStatusStaff').value;
+
+    let filtered = staffOriginalData.filter(item => {
+      if (filterBulan && !(item.tglPermintaan || "").startsWith(filterBulan)) return false;
+      if (filterStatus && item.status !== filterStatus) return false;
+      return true;
+    });
+
+    renderTabelStaff(filtered);
+  }
+
+  function renderTabelStaff(dataList) {
+    groupedTiketList = dataList; // untuk keperluan cetak form
+
+    if (dataList.length === 0) {
+      document.getElementById('containerRiwayatStaff').innerHTML = "<p style='color:#666; font-size:13px; text-align:center; padding:15px;'>Tidak ada riwayat pengajuan yang sesuai.</p>";
+      return;
+    }
+
+    let html = `<table><thead><tr>
+      <th>Kode Tiket</th><th>Tanggal</th><th>Daftar Barang</th><th>Status & Catatan</th><th>PDF TTD</th><th>Aksi</th>
+    </tr></thead><tbody>`;
+
+    dataList.forEach(tiket => {
+      let badgeClass = 'badge-pending';
+      if(tiket.status === 'ACC') badgeClass = 'badge-acc';
+      else if(tiket.status === 'REVISI') badgeClass = 'badge-revisi';
+      else if(tiket.status === 'DITOLAK') badgeClass = 'badge-tolak';
+
+      const cleanPdfUrl = formatGoogleDriveUrl(tiket.pdfUrl);
+      let itemSummary = tiket.items.map(i => `• ${i.barang} (${i.jumlah} ${i.satuan})`).join('<br>');
+
+      html += `<tr>
+        <td><b>${tiket.kode}</b><br><small>${tiket.urgensi}</small></td>
+        <td>${tiket.tglPermintaan || '-'}</td>
+        <td>${itemSummary}</td>
+        <td>
+          <span class="badge ${badgeClass}">${tiket.status}</span>
+          ${tiket.catatan && tiket.catatan !== '-' ? `<br><small style="color:#666;">Catatan: ${tiket.catatan}</small>` : ''}
+        </td>
+        <td>${cleanPdfUrl !== '-' ? `<a href="${cleanPdfUrl}" target="_blank" style="color:#1a73e8; font-weight:bold;">Lihat PDF</a>` : '<span style="color:#999;">Belum ada</span>'}</td>
+        <td>
+          <button class="btn-sm btn-print" onclick="cetakFormulirA5('${tiket.kode}')">🖨️ Cetak </button>
+          <button class="btn-sm btn-upload" onclick="triggerUploadPdf('${tiket.kode}')">📤 Upload PDF</button>
+          ${tiket.status === 'PENDING' ? `<button class="btn-sm btn-delete" onclick="hapusTiket('${tiket.kode}')">🗑️ Hapus</button>` : ''}
+        </td>
+      </tr>`;
+    });
+    html += `</tbody></table>`;
+    document.getElementById('containerRiwayatStaff').innerHTML = html;
+  }
+
+  function eksporKeCSVStaff() {
+    const filterBulan = document.getElementById('filterBulanStaff').value;
+    const filterStatus = document.getElementById('filterStatusStaff').value;
+
+    let filtered = staffOriginalData.filter(item => {
+      if (filterBulan && !(item.tglPermintaan || "").startsWith(filterBulan)) return false;
+      if (filterStatus && item.status !== filterStatus) return false;
+      return true;
+    });
+
+    if (filtered.length === 0) {
+      alert("Tidak ada data untuk diekspor!");
+      return;
+    }
+
+    let csv = "data:text/csv;charset=utf-8,Kode,Tanggal,Pemohon,Unit,Kategori,Barang,Jumlah,Satuan,Status,Catatan,PDF\n";
+    filtered.forEach(tiket => {
+      tiket.items.forEach(i => {
+        csv += `"${tiket.kode}","${tiket.tglPermintaan}","${tiket.pemohon}","${tiket.unit}","${i.kategori}","${i.barang}","${i.jumlah}","${i.satuan}","${tiket.status}","${tiket.catatan}","${tiket.pdfUrl}"\n`;
+      });
+    });
+    const link = document.createElement("a");
+    link.setAttribute("href", encodeURI(csv));
+    link.setAttribute("download", `Rekap_Permintaan_${sesiUser.nama.replace(/\s+/g, '_')}.csv`);
+    document.body.appendChild(link); link.click(); document.body.removeChild(link);
   }
 
   function triggerUploadPdf(kode) {
