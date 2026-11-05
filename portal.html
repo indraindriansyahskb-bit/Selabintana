@@ -145,13 +145,17 @@
     .btn-upload:hover { background-color: #059669; }
 
     /* =========================================
-       STYLE KHUSUS CETAK DRAF A5 (SESUAI GAMBAR 2)
+       PROPORSI FULL-PAGE PRINT UNTUK CETAK A5
        ========================================= */
     #printArea {
       display: none;
     }
 
     @media print {
+      @page {
+        size: A5 portrait;
+        margin: 5mm;
+      }
       body * {
         visibility: hidden !important;
       }
@@ -163,17 +167,13 @@
         position: absolute;
         left: 0;
         top: 0;
-        width: 148mm;
-        height: 210mm;
-        padding: 8mm 10mm;
+        width: 100%;
+        height: 100%;
+        padding: 5mm;
         background: white;
         font-family: 'Segoe UI', Arial, sans-serif;
         color: #111827;
         box-sizing: border-box;
-      }
-      @page {
-        size: A4 portrait;
-        margin: 5mm;
       }
     }
 
@@ -181,12 +181,12 @@
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      border-bottom: 1px solid #e5e7eb;
-      padding-bottom: 8px;
-      margin-bottom: 15px;
+      border-bottom: 2px solid #111827;
+      padding-bottom: 10px;
+      margin-bottom: 20px;
     }
     .print-header h2 {
-      font-size: 16px;
+      font-size: 20px;
       font-weight: 800;
       margin: 0;
       color: #111827;
@@ -195,43 +195,43 @@
       padding: 0;
     }
     .print-header p {
-      font-size: 10px;
-      color: #6b7280;
-      margin: 2px 0 0 0;
+      font-size: 12px;
+      color: #4b5563;
+      margin: 4px 0 0 0;
     }
     .print-meta {
       text-align: right;
     }
     .print-meta .req-code {
-      font-size: 13px;
+      font-size: 16px;
       font-weight: 800;
       color: #059669;
     }
     .print-meta .req-date {
-      font-size: 10px;
+      font-size: 11px;
       color: #4b5563;
-      margin-top: 2px;
+      margin-top: 4px;
     }
 
     .print-user-card {
-      border: 1px solid #e5e7eb;
+      border: 1.5px solid #d1d5db;
       border-radius: 8px;
-      padding: 10px 15px;
+      padding: 14px 18px;
       display: flex;
       justify-content: space-between;
-      margin-bottom: 18px;
+      margin-bottom: 25px;
       background-color: #ffffff;
     }
     .user-card-item label {
-      font-size: 9px;
+      font-size: 11px;
       font-weight: 700;
       color: #6b7280;
       text-transform: uppercase;
       display: block;
-      margin-bottom: 2px;
+      margin-bottom: 4px;
     }
     .user-card-item span {
-      font-size: 12px;
+      font-size: 14px;
       font-weight: 800;
       color: #111827;
     }
@@ -239,21 +239,21 @@
     .print-table {
       width: 100%;
       border-collapse: collapse;
-      margin-bottom: 35px;
+      margin-bottom: 45px;
     }
     .print-table th {
-      font-size: 9px;
-      font-weight: 700;
-      color: #4b5563;
-      text-transform: uppercase;
-      text-align: left;
-      padding: 6px 4px;
-      border-bottom: 1px solid #e5e7eb;
-    }
-    .print-table td {
       font-size: 11px;
       font-weight: 700;
-      padding: 12px 4px;
+      color: #374151;
+      text-transform: uppercase;
+      text-align: left;
+      padding: 8px 6px;
+      border-bottom: 2px solid #9ca3af;
+    }
+    .print-table td {
+      font-size: 13px;
+      font-weight: 700;
+      padding: 16px 6px;
       border-bottom: 1px solid #e5e7eb;
       vertical-align: top;
     }
@@ -264,7 +264,7 @@
     .print-ttd-container {
       display: flex;
       justify-content: space-between;
-      margin-top: 20px;
+      margin-top: 40px;
     }
     .print-ttd-box {
       flex: 1;
@@ -276,23 +276,23 @@
       content: "";
       position: absolute;
       right: 0;
-      top: 10%;
-      height: 80%;
-      border-right: 1px solid #f3f4f6;
+      top: 5%;
+      height: 90%;
+      border-right: 1px solid #e5e7eb;
     }
     .print-ttd-title {
-      font-size: 9px;
+      font-size: 11px;
       font-weight: 800;
       color: #374151;
       text-transform: uppercase;
-      margin-bottom: 45px; /* Jarak ruang tanda tangan manual */
+      margin-bottom: 65px; /* Memberikan ruang tinggi untuk tanda tangan fisik */
     }
     .print-ttd-line {
-      border-bottom: 1px dashed #9ca3af;
-      margin: 0 8px 10px 8px;
+      border-bottom: 1.5px dashed #6b7280;
+      margin: 0 10px 12px 10px;
     }
     .print-ttd-name {
-      font-size: 10px;
+      font-size: 12px;
       font-weight: 800;
       color: #111827;
     }
@@ -318,7 +318,7 @@
       <div id="loginLoading" style="display:none; text-align:center; margin-top:10px; font-size:13px; color:#1a73e8;">Memeriksa kredensial...</div>
     </div>
 
-    <!-- Panel Khusus Staff -->
+    <!-- Panel Staff -->
     <div id="panelStaff" style="display: none;">
       <div class="user-info-box" id="infoSesiStaff"></div>
 
@@ -405,7 +405,7 @@
       <input type="file" id="hiddenFileInput" accept="application/pdf" style="display:none;" onchange="prosesUploadPdfHistory(event)">
     </div>
 
-    <!-- Panel Khusus Admin -->
+    <!-- Panel Admin -->
     <div id="panelAdmin" style="display: none;">
       <div class="user-info-box" id="infoSesiAdmin"></div>
 
@@ -449,7 +449,7 @@
   </div>
 </div>
 
-<!-- Area Cetak Sesuai Layout Gambar 2 -->
+<!-- Form Cetak A5 Full Page -->
 <div id="printArea">
   <div class="print-header">
     <div>
@@ -775,8 +775,8 @@
     document.getElementById('p_barang').innerText = item.barang || '-';
     document.getElementById('p_jumlah').innerText = item.jumlah || '-';
     document.getElementById('p_satuan').innerText = item.satuan || '';
-    document.getElementById('p_supplier').innerText = item.supplier !== '-' ? item.supplier : '-';
-    document.getElementById('p_ket').innerText = item.keterangan !== '-' ? item.keterangan : '-';
+    document.getElementById('p_supplier').innerText = (item.supplier && item.supplier !== '-') ? item.supplier : '-';
+    document.getElementById('p_ket').innerText = (item.keterangan && item.keterangan !== '-') ? item.keterangan : '-';
     document.getElementById('t_pemohon').innerText = item.pemohon || '-';
 
     setTimeout(() => { window.print(); }, 200);
