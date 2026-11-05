@@ -856,13 +856,32 @@
   }
 
   async function updateStatusAdmin(kodeTiket) {
-    const status = document.getElementById(`status_${tiket.kode}`).value;
-    const catatan = document.getElementById(`catatan_${tiket.kode}`).value;
+    const selectEl = document.getElementById(`status_${kodeTiket}`);
+    const catatanEl = document.getElementById(`catatan_${kodeTiket}`);
+
+    const status = selectEl ? selectEl.value : "PENDING";
+    const catatan = catatanEl ? catatanEl.value : "-";
+
     try {
-      const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "updateStatus", kodeBarang: kodeTiket, status: status, catatan: catatan }) });
+      const res = await fetch(GAS_URL, { 
+        method: 'POST', 
+        body: JSON.stringify({ 
+          action: "updateStatus", 
+          kodeBarang: kodeTiket, 
+          status: status, 
+          catatan: catatan 
+        }) 
+      });
       const json = await res.json();
-      if(json.status === "success") { alert("Status diperbarui!"); muatDataAdmin(); }
-    } catch(e) { alert("Kesalahan jaringan."); }
+      if(json.status === "success") { 
+        alert("Status berhasil diperbarui!"); 
+        muatDataAdmin(); 
+      } else {
+        alert("Gagal memperbarui: " + json.message);
+      }
+    } catch(e) { 
+      alert("Terjadi kesalahan jaringan."); 
+    }
   }
 
   function eksporKeCSV() {
