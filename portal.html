@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Portal Permintaan Material & Barang</title>
-  <!-- Library html2pdf untuk unduh otomatis file PDF berukuran A5 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     :root {
@@ -22,10 +21,7 @@
       margin: 0;
       padding: 20px;
     }
-    .wrapper {
-      max-width: 1050px;
-      margin: auto;
-    }
+    .wrapper { max-width: 1100px; margin: auto; }
     .card {
       background: var(--card-bg);
       padding: 25px;
@@ -34,91 +30,38 @@
       border: 1px solid var(--border-color);
       margin-bottom: 25px;
     }
-    h2, h3 {
-      color: #1f2937;
-      margin-top: 0;
-    }
-    h2 {
-      text-align: center;
-      margin-bottom: 25px;
-      border-bottom: 2px solid #f3f4f6;
-      padding-bottom: 15px;
-    }
-    .form-group {
-      margin-bottom: 15px;
-    }
-    label {
-      display: block;
-      margin-bottom: 6px;
-      font-weight: 600;
-      font-size: 13px;
-      color: #4b5563;
-    }
+    h2, h3 { color: #1f2937; margin-top: 0; }
+    h2 { text-align: center; margin-bottom: 25px; border-bottom: 2px solid #f3f4f6; padding-bottom: 15px; }
+    .form-group { margin-bottom: 15px; }
+    label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 13px; color: #4b5563; }
     input[type="text"], input[type="password"], select, textarea, input[type="date"], input[type="number"], input[type="month"] {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid var(--border-color);
-      border-radius: 6px;
-      box-sizing: border-box;
-      font-size: 13px;
+      width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; box-sizing: border-box; font-size: 13px;
     }
-    input:focus, select:focus, textarea:focus {
-      outline: none;
-      border-color: var(--primary-color);
-      box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.15);
-    }
-    textarea {
-      resize: vertical;
-      height: 80px;
-    }
-    .row-group {
-      display: flex;
-      gap: 15px;
-    }
-    .row-group .form-group {
-      flex: 1;
-    }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.15); }
+    textarea { resize: vertical; height: 70px; }
+    .row-group { display: flex; gap: 15px; }
+    .row-group .form-group { flex: 1; }
     button {
-      background-color: var(--primary-color);
-      color: white;
-      padding: 10px 14px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 13px;
-      font-weight: 600;
+      background-color: var(--primary-color); color: white; padding: 10px 14px; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600;
     }
     button:hover { background-color: var(--primary-hover); }
     button:disabled { background-color: #9ca3af; cursor: not-allowed; }
     
     .user-info-box {
-      background: #eff6ff;
-      border: 1px solid #bfdbfe;
-      padding: 12px 15px;
-      border-radius: 6px;
-      margin-bottom: 20px;
-      font-size: 14px;
-      color: #1e40af;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      background: #eff6ff; border: 1px solid #bfdbfe; padding: 12px 15px; border-radius: 6px; margin-bottom: 20px; font-size: 14px; color: #1e40af; display: flex; justify-content: space-between; align-items: center;
     }
     .logout-link { color: #dc2626; text-decoration: none; font-weight: 600; font-size: 13px; }
 
+    /* Dinamis Item Rows */
+    .item-row-container {
+      background: #f9fafb; border: 1px solid #e5e7eb; padding: 15px; border-radius: 8px; margin-bottom: 12px; position: relative;
+    }
+    .btn-hapus-item { background: #ef4444; padding: 6px 10px; font-size: 11px; margin-top: 5px; }
+    .btn-hapus-item:hover { background: #dc2626; }
+
     /* Summary & Tabel */
-    .summary-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 15px;
-      margin-bottom: 20px;
-    }
-    .stat-card {
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      padding: 15px;
-      border-radius: 8px;
-      text-align: center;
-    }
+    .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px; }
+    .stat-card { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; text-align: center; }
     .stat-card .val { font-size: 22px; font-weight: bold; margin-top: 5px; color: #1e293b; }
     .stat-card.total { border-left: 4px solid #1a73e8; }
     .stat-card.acc { border-left: 4px solid #16a34a; }
@@ -139,145 +82,37 @@
     .btn-sm { padding: 4px 8px; font-size: 11px; margin-right: 3px; margin-bottom: 3px; border-radius: 4px; }
     .btn-print { background-color: #6366f1; }
     .btn-print:hover { background-color: #4f46e5; }
-    .btn-edit { background-color: #f59e0b; }
-    .btn-edit:hover { background-color: #d97706; }
     .btn-delete { background-color: #ef4444; }
     .btn-delete:hover { background-color: #dc2626; }
     .btn-upload { background-color: #10b981; }
     .btn-upload:hover { background-color: #059669; }
 
-    /* =========================================
-       LAYOUT AREA RENDER PDF A5 (NARROW MARGIN)
-       ========================================= */
+    /* Area Cetak A5 Narrow Margin */
     #printArea {
-      display: none;
-      width: 148mm;
-      padding: 5mm;
-      background: white;
-      font-family: 'Segoe UI', Arial, sans-serif;
-      color: #111827;
-      box-sizing: border-box;
+      display: none; width: 148mm; padding: 5mm; background: white; font-family: 'Segoe UI', Arial, sans-serif; color: #111827; box-sizing: border-box;
     }
+    .print-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #111827; padding-bottom: 6px; margin-bottom: 10px; }
+    .print-header h2 { font-size: 15px; font-weight: 800; margin: 0; color: #111827; text-align: left; border: none; padding: 0; }
+    .print-header p { font-size: 9px; color: #4b5563; margin: 2px 0 0 0; }
+    .print-meta { text-align: right; }
+    .print-meta .req-code { font-size: 13px; font-weight: 800; color: #059669; }
+    .print-meta .req-date { font-size: 9px; color: #4b5563; margin-top: 2px; }
 
-    .print-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      border-bottom: 2px solid #111827;
-      padding-bottom: 6px;
-      margin-bottom: 10px;
-    }
-    .print-header h2 {
-      font-size: 15px;
-      font-weight: 800;
-      margin: 0;
-      color: #111827;
-      text-align: left;
-      border: none;
-      padding: 0;
-    }
-    .print-header p {
-      font-size: 9px;
-      color: #4b5563;
-      margin: 2px 0 0 0;
-    }
-    .print-meta {
-      text-align: right;
-    }
-    .print-meta .req-code {
-      font-size: 13px;
-      font-weight: 800;
-      color: #059669;
-    }
-    .print-meta .req-date {
-      font-size: 9px;
-      color: #4b5563;
-      margin-top: 2px;
-    }
+    .print-user-card { border: 1px solid #d1d5db; border-radius: 6px; padding: 8px 12px; display: flex; justify-content: space-between; margin-bottom: 12px; background-color: #ffffff; }
+    .user-card-item label { font-size: 9px; font-weight: 700; color: #6b7280; text-transform: uppercase; display: block; margin-bottom: 2px; }
+    .user-card-item span { font-size: 11px; font-weight: 800; color: #111827; }
 
-    .print-user-card {
-      border: 1px solid #d1d5db;
-      border-radius: 6px;
-      padding: 8px 12px;
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 12px;
-      background-color: #ffffff;
-    }
-    .user-card-item label {
-      font-size: 9px;
-      font-weight: 700;
-      color: #6b7280;
-      text-transform: uppercase;
-      display: block;
-      margin-bottom: 2px;
-    }
-    .user-card-item span {
-      font-size: 11px;
-      font-weight: 800;
-      color: #111827;
-    }
+    .print-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+    .print-table th { font-size: 9px; font-weight: 700; color: #374151; text-transform: uppercase; text-align: left; padding: 5px 4px; border-bottom: 2px solid #9ca3af; }
+    .print-table td { font-size: 10px; font-weight: 700; padding: 8px 4px; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
+    .print-table td.kat-highlight { color: #059669; }
 
-    .print-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 20px;
-    }
-    .print-table th {
-      font-size: 9px;
-      font-weight: 700;
-      color: #374151;
-      text-transform: uppercase;
-      text-align: left;
-      padding: 5px 4px;
-      border-bottom: 2px solid #9ca3af;
-    }
-    .print-table td {
-      font-size: 10px;
-      font-weight: 700;
-      padding: 8px 4px;
-      border-bottom: 1px solid #e5e7eb;
-      vertical-align: top;
-    }
-    .print-table td.kat-highlight {
-      color: #059669;
-    }
-
-    .print-ttd-container {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 15px;
-    }
-    .print-ttd-box {
-      flex: 1;
-      text-align: center;
-      padding: 0 4px;
-      position: relative;
-    }
-    .print-ttd-box:not(:last-child)::after {
-      content: "";
-      position: absolute;
-      right: 0;
-      top: 5%;
-      height: 90%;
-      border-right: 1px solid #e5e7eb;
-    }
-    .print-ttd-title {
-      font-size: 8px;
-      font-weight: 800;
-      color: #374151;
-      text-transform: uppercase;
-      margin-bottom: 35px;
-    }
-    .print-ttd-line {
-      border-bottom: 1px dashed #6b7280;
-      margin: 0 6px 6px 6px;
-    }
-    .print-ttd-name {
-      font-size: 9px;
-      font-weight: 800;
-      color: #111827;
-    }
+    .print-ttd-container { display: flex; justify-content: space-between; margin-top: 15px; }
+    .print-ttd-box { flex: 1; text-align: center; padding: 0 4px; position: relative; }
+    .print-ttd-box:not(:last-child)::after { content: ""; position: absolute; right: 0; top: 5%; height: 90%; border-right: 1px solid #e5e7eb; }
+    .print-ttd-title { font-size: 8px; font-weight: 800; color: #374151; text-transform: uppercase; margin-bottom: 35px; }
+    .print-ttd-line { border-bottom: 1px dashed #6b7280; margin: 0 6px 6px 6px; }
+    .print-ttd-name { font-size: 9px; font-weight: 800; color: #111827; }
   </style>
 </head>
 <body>
@@ -305,7 +140,6 @@
       <div class="user-info-box" id="infoSesiStaff"></div>
 
       <form id="formPermintaan">
-        <input type="hidden" id="editKodeBarang" value="">
         <h3 id="formTitle">Buat Permintaan Barang Baru</h3>
 
         <div class="row-group">
@@ -328,52 +162,22 @@
               <option value="TOP URGENT">TOP URGENT</option>
             </select>
           </div>
-          <div class="form-group">
-            <label for="kategori">Kategori Barang</label>
-            <select id="kategori" required onchange="filterMasterBarangByKategori(this.value)">
-              <option value="">-- Pilih Kategori --</option>
-              <option value="OBAT">OBAT</option>
-              <option value="VAKSIN">VAKSIN</option>
-              <option value="VITAMIN">VITAMIN</option>
-              <option value="KIMIA">KIMIA</option>
-              <option value="PERALATAN">PERALATAN</option>
-              <option value="PAKAN">PAKAN</option>
-              <option value="LAINNYA">LAINNYA</option>
-            </select>
-          </div>
         </div>
+
+        <hr style="margin: 20px 0; border: 0; border-top: 1px dashed #cbd5e1;">
+        <label style="font-size:14px; font-weight:bold; color:#1e293b; margin-bottom:10px;">Daftar Barang yang Diminta:</label>
+        
+        <!-- Container Item Barang Dinamis -->
+        <div id="listItemsContainer"></div>
+
+        <button type="button" onclick="tambahBarisItem()" style="background:#059669; margin-bottom:20px;">➕ Tambah Barang Lain</button>
 
         <div class="form-group">
-          <label for="namaBarang">Nama Barang / Material</label>
-          <input type="text" id="namaBarang" list="listMasterBarang" required placeholder="Pilih atau ketik nama barang...">
-          <datalist id="listMasterBarang"></datalist>
-        </div>
-
-        <div class="row-group">
-          <div class="form-group">
-            <label for="jumlah">Jumlah</label>
-            <input type="number" id="jumlah" min="1" required placeholder="Contoh: 10">
-          </div>
-          <div class="form-group">
-            <label for="satuan">Satuan</label>
-            <input type="text" id="satuan" required placeholder="Contoh: liter / vial / kg / pcs">
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label for="supplier">Supplier / Vendor Rujukan</label>
-          <input type="text" id="supplier" placeholder="Nama supplier...">
-        </div>
-
-        <div class="form-group">
-          <label for="keterangan">Keperluan / Keterangan</label>
+          <label for="keterangan Umum">Keperluan / Keterangan Umum</label>
           <textarea id="keterangan" placeholder="Tuliskan keterangan keperluan material..."></textarea>
         </div>
 
-        <div style="display:flex; gap:10px;">
-          <button type="submit" id="submitBtn" style="flex:1;">Kirim Permintaan ke Admin</button>
-          <button type="button" id="cancelEditBtn" onclick="batalEdit()" style="background:#6b7280; display:none;">Batal Edit</button>
-        </div>
+        <button type="submit" id="submitBtn" style="width:100%; padding:12px; font-size:15px;">Kirim Permintaan ke Admin</button>
         <div id="loadingStatus" style="text-align:center; margin-top:10px; font-style:italic; color:#1a73e8; display:none;">Sedang memproses...</div>
       </form>
 
@@ -563,6 +367,7 @@
       `;
       muatMasterBarang();
       muatRiwayatStaff();
+      tambahBarisItem(); // Inisialisasi baris pertama input barang
     }
   }
 
@@ -577,25 +382,70 @@
       const result = await response.json();
       if (result.status === "success") {
         masterBarangData = result.data;
-        perbaruiDatalist(masterBarangData);
       }
     } catch (e) { console.error(e); }
   }
 
-  function perbaruiDatalist(dataList) {
-    const datalist = document.getElementById('listMasterBarang');
-    datalist.innerHTML = "";
-    dataList.forEach(item => {
-      const opt = document.createElement('option');
-      opt.value = item.namaBarang;
-      datalist.appendChild(opt);
+  function tambahBarisItem() {
+    const container = document.getElementById('listItemsContainer');
+    const index = container.children.length;
+    
+    let optionsKategori = `<option value="">-- Pilih Kategori --</option>`;
+    ['OBAT', 'VAKSIN', 'VITAMIN', 'KIMIA', 'PERALATAN', 'PAKAN', 'LAINNYA'].forEach(kat => {
+      optionsKategori += `<option value="${kat}">${kat}</option>`;
     });
-  }
 
-  function filterMasterBarangByKategori(kategoriVal) {
-    if (!kategoriVal) { perbaruiDatalist(masterBarangData); return; }
-    const filtered = masterBarangData.filter(i => i.kategori && i.kategori.toUpperCase() === kategoriVal.toUpperCase());
-    perbaruiDatalist(filtered);
+    let datalistOptions = "";
+    masterBarangData.forEach(item => {
+      datalistOptions += `<option value="${item.namaBarang}">`;
+    });
+
+    const div = document.createElement('div');
+    div.className = 'item-row-container';
+    div.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <b style="font-size:12px; color:#475569;">Barang #${index + 1}</b>
+        ${index > 0 ? `<button type="button" class="btn-sm btn-hapus-item" onclick="this.parentElement.parentElement.remove()">Hapus</button>` : ''}
+      </div>
+      <div class="row-group">
+        <div class="form-group" style="flex:1;">
+          <label>Kategori</label>
+          <select class="item-kategori" required>
+            ${optionsKategori}
+          </select>
+        </div>
+        <div class="form-group" style="flex:2;">
+          <label>Nama Barang / Material</label>
+          <input type="text" class="item-nama" list="listMasterDinamis" required placeholder="Nama barang...">
+        </div>
+      </div>
+      <div class="row-group">
+        <div class="form-group" style="flex:1;">
+          <label>Jumlah</label>
+          <input type="number" class="item-jumlah" min="1" required placeholder="Jumlah">
+        </div>
+        <div class="form-group" style="flex:1;">
+          <label>Satuan</label>
+          <input type="text" class="item-satuan" required placeholder="liter/kg/pcs">
+        </div>
+        <div class="form-group" style="flex:2;">
+          <label>Supplier Rujukan</label>
+          <input type="text" class="item-supplier" placeholder="Supplier...">
+        </div>
+      </div>
+    `;
+    
+    // Tambahkan datalist global jika belum ada
+    if (!document.getElementById('listMasterDinamis')) {
+      const dl = document.createElement('datalist');
+      dl.id = 'listMasterDinamis';
+      dl.innerHTML = datalistOptions;
+      document.body.appendChild(dl);
+    } else {
+      document.getElementById('listMasterDinamis').innerHTML = datalistOptions;
+    }
+
+    container.appendChild(div);
   }
 
   function convertFileToBase64(file) {
@@ -611,35 +461,47 @@
     e.preventDefault();
     const btn = document.getElementById('submitBtn');
     const loading = document.getElementById('loadingStatus');
+    
+    const rows = document.querySelectorAll('.item-row-container');
+    if (rows.length === 0) { alert("Tambahkan minimal 1 barang!"); return; }
+
+    let itemsArray = [];
+    rows.forEach(r => {
+      itemsArray.push({
+        kategori: r.querySelector('.item-kategori').value,
+        namaBarang: r.querySelector('.item-nama').value.trim(),
+        jumlah: r.querySelector('.item-jumlah').value,
+        satuan: r.querySelector('.item-satuan').value.trim(),
+        supplier: r.querySelector('.item-supplier').value.trim() || "-"
+      });
+    });
+
     btn.disabled = true;
-    btn.innerText = "Memproses...";
+    btn.innerText = "Memproses Pengajuan...";
     loading.style.display = "block";
 
     try {
-      const editKode = document.getElementById('editKodeBarang').value;
       const payload = {
-        action: editKode ? "editPermintaan" : "submitPermintaan",
-        kodeBarang: editKode,
+        action: "submitPermintaan",
         namaPemohon: sesiUser.nama,
         divisi: sesiUser.divisi,
         unitLokasi: sesiUser.unitLokasi,
         tglPermintaan: document.getElementById('tglPermintaan').value,
         tglDibutuhkan: document.getElementById('tglDibutuhkan').value,
         urgensi: document.getElementById('urgensi').value,
-        kategori: document.getElementById('kategori').value,
-        namaBarang: document.getElementById('namaBarang').value.trim(),
-        jumlah: document.getElementById('jumlah').value,
-        satuan: document.getElementById('satuan').value,
-        supplier: document.getElementById('supplier').value.trim(),
-        keterangan: document.getElementById('keterangan').value.trim()
+        keterangan: document.getElementById('keterangan').value.trim() || "-",
+        items: itemsArray
       };
 
       const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
       const result = await response.json();
 
       if (result.status === "success") {
-        alert(editKode ? "Permintaan berhasil diperbarui!" : "Permintaan berhasil dikirim ke Admin!");
-        batalEdit();
+        alert("Permintaan berhasil dikirim ke Admin!");
+        document.getElementById('formPermintaan').reset();
+        document.getElementById('tglPermintaan').value = new Date().toISOString().split('T')[0];
+        document.getElementById('listItemsContainer').innerHTML = "";
+        tambahBarisItem();
         muatMasterBarang();
         muatRiwayatStaff();
       } else {
@@ -667,7 +529,7 @@
         }
 
         let html = `<table><thead><tr>
-          <th>Kode</th><th>Tanggal</th><th>Barang</th><th>Jumlah</th><th>Status & Catatan Admin</th><th>PDF TTD</th><th>Aksi Staff</th>
+          <th>Kode</th><th>Tanggal</th><th>Barang & Jumlah</th><th>Status & Catatan Admin</th><th>PDF TTD</th><th>Aksi</th>
         </tr></thead><tbody>`;
 
         staffDataList.forEach(row => {
@@ -681,8 +543,7 @@
           html += `<tr>
             <td><b>${row.kode}</b></td>
             <td>${row.tglPermintaan || '-'}</td>
-            <td><span class="badge" style="background:#e2e8f0;">${row.kategori || '-'}</span><br>${row.barang}</td>
-            <td>${row.jumlah} ${row.satuan}</td>
+            <td><span class="badge" style="background:#e2e8f0;">${row.kategori || '-'}</span><br><b>${row.barang}</b> (${row.jumlah} ${row.satuan})</td>
             <td>
               <span class="badge ${badgeClass}">${row.status}</span>
               ${row.catatan && row.catatan !== '-' ? `<br><small style="color:#666;">Catatan: ${row.catatan}</small>` : ''}
@@ -691,7 +552,6 @@
             <td>
               <button class="btn-sm btn-print" onclick="downloadFormulirA5('${row.kode}')">📥 Download Draf A5</button>
               <button class="btn-sm btn-upload" onclick="triggerUploadPdf('${row.kode}')">📤 Upload PDF</button>
-              ${row.status === 'PENDING' || row.status === 'REVISI' ? `<button class="btn-sm btn-edit" onclick="editFormulirRow('${row.kode}')">✏️ Edit</button>` : ''}
               ${row.status === 'PENDING' ? `<button class="btn-sm btn-delete" onclick="hapusPermintaanRow('${row.kode}')">🗑️ Hapus</button>` : ''}
             </td>
           </tr>`;
@@ -713,36 +573,19 @@
     const file = event.target.files[0];
     if (!file) return;
 
-    if (file.type !== "application/pdf") {
-      alert("Harap unggah file berformat PDF!");
-      return;
-    }
-
+    if (file.type !== "application/pdf") { alert("Harap unggah file berformat PDF!"); return; }
     if (!confirm(`Unggah file PDF "${file.name}" untuk permintaan ${targetKodeUpload}?`)) return;
 
     try {
       const base64File = await convertFileToBase64(file);
-      const payload = {
-        action: "uploadPdfOnly",
-        kodeBarang: targetKodeUpload,
-        fileName: file.name,
-        mimeType: file.type,
-        fileData: base64File
-      };
+      const payload = { action: "uploadPdfOnly", kodeBarang: targetKodeUpload, fileName: file.name, mimeType: file.type, fileData: base64File };
 
       const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
       const json = await res.json();
-      if (json.status === "success") {
-        alert("Dokumen PDF TTD berhasil diunggah!");
-        muatRiwayatStaff();
-      } else {
-        alert("Gagal upload: " + json.message);
-      }
-    } catch(e) {
-      alert("Terjadi kesalahan koneksi.");
-    } finally {
-      event.target.value = "";
-    }
+      if (json.status === "success") { alert("Dokumen PDF TTD berhasil diunggah!"); muatRiwayatStaff(); }
+      else { alert("Gagal upload: " + json.message); }
+    } catch(e) { alert("Terjadi kesalahan koneksi."); }
+    finally { event.target.value = ""; }
   }
 
   function downloadFormulirA5(kode) {
@@ -765,46 +608,14 @@
     printArea.style.display = 'block';
 
     const opt = {
-      margin:       2,
-      filename:     `Form_Permintaan_${item.kode}_${item.pemohon}.pdf`.replace(/\s+/g, '_'),
-      image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2, useCORS: true },
-      jsPDF:        { unit: 'mm', format: 'a5', orientation: 'portrait' }
+      margin: 2,
+      filename: `Form_Permintaan_${item.kode}_${item.pemohon}.pdf`.replace(/\s+/g, '_'),
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: 'mm', format: 'a5', orientation: 'portrait' }
     };
 
-    html2pdf().from(printArea).set(opt).save().then(() => {
-      printArea.style.display = 'none';
-    });
-  }
-
-  function editFormulirRow(kode) {
-    const item = staffDataList.find(i => i.kode === kode);
-    if (!item) return;
-
-    document.getElementById('editKodeBarang').value = item.kode;
-    document.getElementById('tglPermintaan').value = item.tglPermintaan;
-    document.getElementById('tglDibutuhkan').value = item.tglDibutuhkan;
-    document.getElementById('urgensi').value = item.urgensi;
-    document.getElementById('kategori').value = item.kategori;
-    document.getElementById('namaBarang').value = item.barang;
-    document.getElementById('jumlah').value = item.jumlah;
-    document.getElementById('satuan').value = item.satuan;
-    document.getElementById('supplier').value = item.supplier !== '-' ? item.supplier : '';
-    document.getElementById('keterangan').value = item.keterangan !== '-' ? item.keterangan : '';
-
-    document.getElementById('formTitle').innerText = "Edit Permintaan (" + item.kode + ")";
-    document.getElementById('submitBtn').innerText = "Simpan Perubahan";
-    document.getElementById('cancelEditBtn').style.display = "inline-block";
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  function batalEdit() {
-    document.getElementById('editKodeBarang').value = "";
-    document.getElementById('formPermintaan').reset();
-    document.getElementById('tglPermintaan').value = new Date().toISOString().split('T')[0];
-    document.getElementById('formTitle').innerText = "Buat Permintaan Barang Baru";
-    document.getElementById('submitBtn').innerText = "Kirim Permintaan ke Admin";
-    document.getElementById('cancelEditBtn').style.display = "none";
+    html2pdf().from(printArea).set(opt).save().then(() => { printArea.style.display = 'none'; });
   }
 
   async function hapusPermintaanRow(kode) {
@@ -814,15 +625,9 @@
       const payload = { action: "deletePermintaan", kodeBarang: kode };
       const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
       const json = await res.json();
-      if (json.status === "success") {
-        alert("Permintaan berhasil dihapus!");
-        muatRiwayatStaff();
-      } else {
-        alert("Gagal: " + json.message);
-      }
-    } catch(e) {
-      alert("Terjadi kesalahan koneksi.");
-    }
+      if (json.status === "success") { alert("Permintaan berhasil dihapus!"); muatRiwayatStaff(); }
+      else { alert("Gagal: " + json.message); }
+    } catch(e) { alert("Terjadi kesalahan koneksi."); }
   }
 
   async function muatDataAdmin() {
