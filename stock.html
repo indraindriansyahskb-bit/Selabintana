@@ -1,335 +1,279 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aplikasi Kartu Stok & Pemakaian Barang</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
-  <style>
-    :root {
-      --primary: #0284c7;
-      --primary-hover: #0369a1;
-      --bg-body: #f8fafc;
-      --card-bg: #ffffff;
-      --text-main: #0f172a;
-      --text-muted: #64748b;
-      --border-color: #e2e8f0;
-      --danger: #ef4444;
-      --success: #10b981;
-    }
-    * { box-sizing: border-box; }
-    body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); margin: 0; padding: 25px 15px; }
-    .wrapper { max-width: 1200px; margin: auto; }
-    .header { text-align: center; margin-bottom: 25px; }
-    .header h2 { margin: 0; font-size: 24px; color: #1e293b; }
-    
-    .card { background: var(--card-bg); padding: 22px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 22px; box-shadow: 0 2px 4px rgba(0,0,0,0.04); }
-    .title { font-size: 16px; font-weight: 600; margin-top: 0; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; display: flex; align-items: center; gap: 8px; }
-    
-    .form-group { margin-bottom: 14px; }
-    label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 5px; color: #334155; }
-    input, select, textarea { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; font-family: inherit; }
-    .row-group { display: flex; gap: 14px; flex-wrap: wrap; }
-    .row-group .form-group { flex: 1; min-width: 180px; }
-    
-    button { background: var(--primary); color: white; border: none; padding: 10px 16px; border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
-    button:hover { background: var(--primary-hover); }
-
-    .user-info-box { background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 1px solid #bfdbfe; padding: 14px 18px; border-radius: 10px; margin-bottom: 22px; font-size: 14px; color: #1e40af; display: flex; justify-content: space-between; align-items: center; }
-    .logout-btn { background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; padding: 6px 12px; font-size: 12px; }
-    
-    .table-responsive { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border-color); }
-    table { width: 100%; border-collapse: collapse; font-size: 13px; background: white; text-align: left; }
-    th, td { padding: 10px 12px; border-bottom: 1px solid var(--border-color); }
-    th { background: #f1f5f9; font-weight: 600; color: #475569; }
-    
-    .badge { padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
-    .badge-out { background: #fee2e2; color: #b91c1c; }
-    .badge-in { background: #d1fae5; color: #047857; }
-    .search-box { background: #f8fafc; border: 1px solid var(--border-color); padding: 14px; border-radius: 8px; margin-bottom: 16px; display: flex; gap: 12px; flex-wrap: wrap; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Management System - Multi Unit</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-green: #1b4d3e;
+            --accent-green: #2e7d32;
+            --light-bg: #f4f7f6;
+        }
+        body {
+            background-color: var(--light-bg);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        #sidebar {
+            background-color: var(--primary-green);
+            min-height: 100vh;
+            color: #fff;
+            transition: all 0.3s;
+        }
+        #sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 5px;
+            border-radius: 5px;
+        }
+        #sidebar .nav-link:hover, #sidebar .nav-link.active {
+            background-color: var(--accent-green);
+            color: #fff;
+        }
+        .card-stat {
+            border-left: 4px solid var(--primary-green);
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+        .spinner-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.7);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
 </head>
 <body>
 
-<div class="wrapper">
-  <div class="header">
-    <h2><i class="fa-solid fa-boxes-stacked" style="color:var(--primary);"></i> Kartu Stok & Pemakaian Barang</h2>
-    <p style="font-size:13px; color:var(--text-muted); margin-top:4px;">Sistem Manajemen Stok Per Unit & Rekapitulasi</p>
-  </div>
-
-  <!-- LOGIN SECTION -->
-  <div id="loginSection" class="card" style="max-width: 400px; margin: 40px auto;">
-    <h3 class="title"><i class="fa-solid fa-right-to-bracket"></i> Login Pengguna</h3>
-    <div class="form-group"><label>Username</label><input type="text" id="loginUser" placeholder="Username..." required></div>
-    <div class="form-group"><label>Password</label><input type="password" id="loginPass" placeholder="Password..." required></div>
-    <button type="button" onclick="prosesLogin()" style="width:100%; justify-content:center; margin-top:10px;">Login ke Sistem</button>
-    <div id="loginLoading" style="display:none; text-align:center; margin-top:10px; color:var(--primary); font-size:13px;"><i class="fa-solid fa-spinner fa-spin"></i> Memeriksa kredensial...</div>
-  </div>
-
-  <!-- MAIN APP PANEL -->
-  <div id="appPanel" style="display:none;">
-    <div class="user-info-box" id="infoSesi"></div>
-
-    <!-- REKAPITULASI STOK & SALDO UNIT -->
-    <div class="card">
-      <h3 class="title"><i class="fa-solid fa-chart-pie"></i> Rekapitulasi Saldo Stok Saat Ini</h3>
-      <div class="row-group" style="margin-bottom:12px;">
-        <div style="flex:1; min-width:200px;">
-          <label>Pilih Tampilan Rekap:</label>
-          <select id="pilihModeRekap" onchange="renderRekapitulasi()">
-            <option value="unit">Stok di Unit Anda / Unit Terpilih</option>
-            <option value="global">Rekapitulasi Global (Semua Unit)</option>
-          </select>
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="spinner-overlay d-none">
+        <div class="spinner-border text-success" role="status" style="width: 3rem; height: 3rem;">
+            <span class="visually-hidden">Loading...</span>
         </div>
-        <div style="flex:1; min-width:200px;" id="wrapperFilterUnitAdmin">
-          <label>Filter Unit (Khusus Admin):</label>
-          <select id="filterUnitAdmin" onchange="renderRekapitulasi()"><option value="">-- Semua Unit --</option></select>
-        </div>
-      </div>
-      <div class="table-responsive" id="containerRekapStok"></div>
     </div>
 
-    <!-- FORM INPUT TRANSAKSI / PEMAKAIAN -->
-    <div class="card">
-      <h3 class="title"><i class="fa-solid fa-pen-to-square"></i> Input Transaksi / Pemakaian Barang</h3>
-      <form id="formPemakaian">
-        <div class="row-group">
-          <div class="form-group">
-            <label>Jenis Transaksi</label>
-            <select id="jenisTransaksi" required onchange="sesuaikanFormJenis()">
-              <option value="PEMAKAIAN">PEMAKAIAN (Barang Keluar)</option>
-              <option value="MASUK">BARANG MASUK (Tambah Stok)</option>
-            </select>
-          </div>
-          <div class="form-group" style="flex:2;">
-            <label>Pilih Barang</label>
-            <input type="text" id="namaBarang" list="listMasterBarang" required placeholder="Ketik nama barang..." onchange="isiSatuanOtomatis()">
-            <datalist id="listMasterBarang"></datalist>
-          </div>
+    <!-- Login Container -->
+    <div id="loginSection" class="container d-flex justify-content-center align-items-center vh-100">
+        <div class="card shadow-lg p-4" style="width: 100%; max-width: 400px;">
+            <div class="text-center mb-4">
+                <i class="fas fa-warehouse fa-3x text-success mb-2"></i>
+                <h4 class="fw-bold text-dark">IMS - MULTI UNIT</h4>
+                <p class="text-muted small">Sistem Manajemen Stok Perusahaan Peternakan Ayam</p>
+            </div>
+            <form id="loginForm">
+                <div class="mb-3">
+                    <label class="form-label">Username</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-user"></i></span>
+                        <input type="text" id="loginUsername" class="form-control" required placeholder="Masukkan username">
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                        <input type="password" id="loginPassword" class="form-control" required placeholder="Masukkan password">
+                    </div>
+                </div>
+                <div id="loginError" class="alert alert-danger d-none py-2 small"></div>
+                <button type="submit" class="btn btn-success w-100 py-2 fw-bold">LOGIN</button>
+            </form>
         </div>
-
-        <div class="row-group">
-          <div class="form-group"><label>Jumlah</label><input type="number" id="jumlah" min="1" required placeholder="1"></div>
-          <div class="form-group"><label>Satuan</label><input type="text" id="satuan" required placeholder="pcs/kg"></div>
-          <div class="form-group" style="flex:2;"><label id="labelPemohon">Pemohon / Unit Pemakai</label><input type="text" id="pemohonUnit" placeholder="Nama pemohon..."></div>
-        </div>
-
-        <div class="form-group"><label>Keterangan Keperluan</label><textarea id="keterangan" placeholder="Keperluan penggunaan..."></textarea></div>
-        <button type="submit" id="btnSubmit"><i class="fa-solid fa-floppy-disk"></i> Simpan Catatan Transaksi</button>
-      </form>
     </div>
 
-    <!-- HISTORY / KARTU STOK PER BARANG -->
-    <div class="card">
-      <h3 class="title"><i class="fa-solid fa-receipt"></i> Kartu Stok & Riwayat Mutasi</h3>
-      <div class="search-box">
-        <div style="flex:2; min-width:200px;"><label>Filter Nama Barang:</label><input type="text" id="filterBarang" placeholder="Cari barang..." onkeyup="terapkanFilterStok()"></div>
-        <div style="flex:1; min-width:150px;"><label>Jenis:</label>
-          <select id="filterJenis" onchange="terapkanFilterStok()">
-            <option value="">-- Semua --</option>
-            <option value="PEMAKAIAN">Pemakaian</option>
-            <option value="MASUK">Masuk</option>
-          </select>
+    <!-- App Main Dashboard Container -->
+    <div id="appSection" class="container-fluid d-none">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block p-3 collapse">
+                <div class="text-center mb-4 mt-2">
+                    <h5 class="fw-bold m-0">SELABINTANA IMS</h5>
+                    <small id="userRoleBadge" class="badge bg-light text-dark mt-1">Super Admin HO</small>
+                </div>
+                <hr class="border-light">
+                <ul class="nav flex-column">
+                    <li class="nav-item"><a href="#" class="nav-link active" onclick="switchTab('dashboard')"><i class="fas fa-chart-line me-2"></i> Dashboard</a></li>
+                    <li class="nav-item"><a href="#" class="nav-link" onclick="switchTab('masterItems')"><i class="fas fa-boxes me-2"></i> Master Barang</a></li>
+                    <li class="nav-item"><a href="#" class="nav-link" onclick="switchTab('txIn')"><i class="fas fa-cart-plus me-2"></i> Barang Masuk</a></li>
+                    <li class="nav-item"><a href="#" class="nav-link" onclick="switchTab('txOut')"><i class="fas fa-dolly me-2"></i> Barang Keluar</a></li>
+                    <li class="nav-item"><a href="#" class="nav-link" onclick="switchTab('mutations')"><i class="fas fa-exchange-alt me-2"></i> Mutasi Antar Unit</a></li>
+                    <li class="nav-item"><a href="#" class="nav-link" onclick="switchTab('reports')"><i class="fas fa-file-alt me-2"></i> Laporan Stok</a></li>
+                    <li class="nav-item mt-4"><a href="#" class="nav-link text-warning" onclick="logout()"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
+                </ul>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 id="pageTitle" class="h3 fw-bold text-success">Dashboard Overview</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <span id="welcomeUserText" class="fw-bold text-secondary">Selamat Datang, Admin</span>
+                    </div>
+                </div>
+
+                <!-- Tab: Dashboard -->
+                <div id="tab-dashboard" class="app-tab-content">
+                    <div class="row g-3 mb-4">
+                        <div class="col-xl-3 col-md-6">
+                            <div class="card card-stat p-3">
+                                <div class="text-muted small">Total Unit Operasional</div>
+                                <h3 id="statUnits" class="fw-bold text-success mt-1">0</h3>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-md-6">
+                            <div class="card card-stat p-3">
+                                <div class="text-muted small">Total Gudang Aktif</div>
+                                <h3 id="statWarehouses" class="fw-bold text-success mt-1">0</h3>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-md-6">
+                            <div class="card card-stat p-3">
+                                <div class="text-muted small">Total Jenis Barang</div>
+                                <h3 id="statItems" class="fw-bold text-success mt-1">0</h3>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-md-6">
+                            <div class="card card-stat p-3">
+                                <div class="text-muted small">Transaksi Masuk Bulan Ini</div>
+                                <h3 id="statTxIn" class="fw-bold text-success mt-1">0</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Other Tabs Placeholder -->
+                <div id="tab-masterItems" class="app-tab-content d-none">
+                    <h4>Modul Master Barang</h4>
+                    <p class="text-muted">Kelola seluruh kode, kategori, dan satuan barang standar perusahaan.</p>
+                </div>
+                <div id="tab-txIn" class="app-tab-content d-none">
+                    <h4>Transaksi Barang Masuk</h4>
+                </div>
+                <div id="tab-txOut" class="app-tab-content d-none">
+                    <h4>Transaksi Barang Keluar</h4>
+                </div>
+                <div id="tab-mutations" class="app-tab-content d-none">
+                    <h4>Manajemen Mutasi Antar Unit & Gudang</h4>
+                </div>
+                <div id="tab-reports" class="app-tab-content d-none">
+                    <h4>Laporan Rekapitulasi Persediaan</h4>
+                </div>
+            </main>
         </div>
-      </div>
-      <div class="table-responsive" id="containerTabelStok"><p style="text-align:center; padding:15px; color:var(--text-muted);">Memuat riwayat...</p></div>
     </div>
-  </div>
-</div>
 
-<script>
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbxy2PuKO83tL2_rPNeQPHokapyitlB7D1wZ04z5zJAHUKndbYZMytXFFj69FIhTxMfb/exec";
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const STORAGE_KEY = "ims_session_token";
 
-  let sesiUser = {};
-  let masterBarangData = [];
-  let rawTransaksiData = [];
-  let saldoUnitMapGlobal = {};
-  let saldoGlobalMapGlobal = {};
+        window.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem(STORAGE_KEY);
+            if (token) {
+                showLoader(true);
+                google.script.run
+                    .withSuccessHandler(res => {
+                        showLoader(false);
+                        if (res.valid) {
+                            initApp(res.user);
+                        } else {
+                            localStorage.removeItem(STORAGE_KEY);
+                        }
+                    })
+                    .withFailureHandler(err => {
+                        showLoader(false);
+                        console.error(err);
+                    })
+                    .apiValidateSession(token);
+            }
+        });
 
-  window.onload = function() {
-    const saved = localStorage.getItem('stok_user_session');
-    if (saved) {
-      sesiUser = JSON.parse(saved);
-      tampilkanDashboard();
-    }
-  };
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const u = document.getElementById('loginUsername').value;
+            const p = document.getElementById('loginPassword').value;
+            const errBox = document.getElementById('loginError');
+            
+            showLoader(true);
+            errBox.classList.add('d-none');
 
-  async function prosesLogin() {
-    const u = document.getElementById('loginUser').value.trim();
-    const p = document.getElementById('loginPass').value.trim();
-    const ld = document.getElementById('loginLoading');
-    if (!u || !p) { alert("Isi username & password!"); return; }
-    ld.style.display = "block";
-    try {
-      const res = await fetch(`${GAS_URL}?action=login&username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}`);
-      const json = await res.json();
-      if (json.status === "success") {
-        sesiUser = json.userData;
-        localStorage.setItem('stok_user_session', JSON.stringify(sesiUser));
-        tampilkanDashboard();
-      } else { alert(json.message); }
-    } catch(e) { alert("Kesalahan koneksi."); }
-    finally { ld.style.display = "none"; }
-  }
+            google.script.run
+                .withSuccessHandler(res => {
+                    showLoader(false);
+                    if (res.success) {
+                        localStorage.setItem(STORAGE_KEY, res.token);
+                        initApp(res.user);
+                    } else {
+                        errBox.textContent = res.message;
+                        errBox.classList.remove('d-none');
+                    }
+                })
+                .withFailureHandler(err => {
+                    showLoader(false);
+                    errBox.textContent = "Terjadi kesalahan sistem: " + err.message;
+                    errBox.classList.remove('d-none');
+                })
+                .apiLogin(u, p);
+        });
 
-  function tampilkanDashboard() {
-    document.getElementById('loginSection').style.display = 'none';
-    document.getElementById('appPanel').style.display = 'block';
-    
-    let roleText = sesiUser.isAdmin ? "ADMINISTRATOR (Pusat)" : `Staff Unit: ${sesiUser.unitLokasi}`;
-    document.getElementById('infoSesi').innerHTML = `
-      <div><b>${sesiUser.nama}</b> (${sesiUser.jabatan})<br><small><i class="fa-solid fa-location-dot"></i> ${roleText}</small></div>
-      <button onclick="localStorage.clear(); location.reload();" class="logout-btn">Keluar</button>
-    `;
+        function initApp(user) {
+            document.getElementById('loginSection').classList.add('d-none');
+            document.getElementById('appSection').classList.remove('d-none');
+            document.getElementById('welcomeUserText').textContent = `Halo, ${user.fullName}`;
+            document.getElementById('userRoleBadge').textContent = user.role;
+            
+            loadDashboardData();
+        }
 
-    if (!sesiUser.isAdmin) {
-      document.getElementById('wrapperFilterUnitAdmin').style.display = 'none';
-    }
+        function loadDashboardData() {
+            const token = localStorage.getItem(STORAGE_KEY);
+            google.script.run
+                .withSuccessHandler(res => {
+                    if (res.success) {
+                        document.getElementById('statUnits').textContent = res.stats.units;
+                        document.getElementById('statWarehouses').textContent = res.stats.warehouses;
+                        document.getElementById('statItems').textContent = res.stats.items;
+                        document.getElementById('statTxIn').textContent = res.stats.txInMonth;
+                    }
+                })
+                .apiGetDashboardData();
+        }
 
-    muatMasterBarang();
-    muatDataStok();
-  }
+        function switchTab(tabName) {
+            document.querySelectorAll('.app-tab-content').forEach(el => el.classList.add('d-none'));
+            document.querySelectorAll('#sidebar .nav-link').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById('tab-' + tabName).classList.remove('d-none');
+            event.currentTarget.classList.add('active');
+            
+            const titles = {
+                'dashboard': 'Dashboard Overview',
+                'masterItems': 'Master Data Barang',
+                'txIn': 'Transaksi Barang Masuk',
+                'txOut': 'Transaksi Barang Keluar',
+                'mutations': 'Mutasi Barang',
+                'reports': 'Laporan Stok'
+            };
+            document.getElementById('pageTitle').textContent = titles[tabName] || 'Inventory System';
+        }
 
-  async function muatMasterBarang() {
-    try {
-      const res = await fetch(GAS_URL + "?action=getMasterBarang");
-      const json = await res.json();
-      if (json.status === "success") {
-        masterBarangData = json.data;
-        let opt = "";
-        masterBarangData.forEach(i => { opt += `<option value="${i.namaBarang}">`; });
-        document.getElementById('listMasterBarang').innerHTML = opt;
-      }
-    } catch(e) {}
-  }
+        function logout() {
+            localStorage.removeItem(STORAGE_KEY);
+            location.reload();
+        }
 
-  function isiSatuanOtomatis() {
-    const val = document.getElementById('namaBarang').value.trim();
-    const item = masterBarangData.find(i => i.namaBarang.toLowerCase() === val.toLowerCase());
-    if (item) document.getElementById('satuan').value = item.satuan;
-  }
-
-  function sesuaikanFormJenis() {
-    const j = document.getElementById('jenisTransaksi').value;
-    document.getElementById('labelPemohon').innerText = (j === "MASUK") ? "Sumber / Supplier" : "Pemohon / Unit Pemakai";
-  }
-
-  document.getElementById('formPemakaian').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const btn = document.getElementById('btnSubmit');
-    btn.disabled = true; btn.innerText = "Menyimpan...";
-    try {
-      const payload = {
-        action: "catatPemakaian",
-        jenisTransaksi: document.getElementById('jenisTransaksi').value,
-        namaBarang: document.getElementById('namaBarang').value.trim(),
-        jumlah: document.getElementById('jumlah').value,
-        satuan: document.getElementById('satuan').value.trim(),
-        unitLokasi: sesiUser.isAdmin ? (document.getElementById('filterUnitAdmin').value || sesiUser.unitLokasi) : sesiUser.unitLokasi,
-        pemohonUnit: document.getElementById('pemohonUnit').value.trim() || "-",
-        keterangan: document.getElementById('keterangan').value.trim() || "-"
-      };
-      const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
-      const json = await res.json();
-      if (json.status === "success") {
-        alert("Berhasil disimpan!");
-        document.getElementById('formPemakaian').reset();
-        muatDataStok();
-      } else { alert(json.message); }
-    } catch(e) { alert("Kesalahan jaringan."); }
-    finally { btn.disabled = false; btn.innerText = "Simpan Catatan Transaksi"; }
-  });
-
-  async function muatDataStok() {
-    try {
-      const res = await fetch(GAS_URL + "?action=getRekapStok");
-      const json = await res.json();
-      if (json.status === "success") {
-        rawTransaksiData = json.transaksi;
-        saldoUnitMapGlobal = json.saldoUnitMap;
-        saldoGlobalMapGlobal = json.saldoGlobalMap;
-        
-        populateUnitFilter(Object.keys(saldoUnitMapGlobal));
-        renderRekapitulasi();
-        terapkanFilterStok();
-      }
-    } catch(e) {}
-  }
-
-  function populateUnitFilter(units) {
-    if (!sesiUser.isAdmin) return;
-    const sel = document.getElementById('filterUnitAdmin');
-    let cur = sel.value;
-    sel.innerHTML = '<option value="">-- Semua Unit --</option>';
-    units.forEach(u => {
-      sel.innerHTML += `<option value="${u}" ${u===cur?'selected':''}>${u}</option>`;
-    });
-  }
-
-  function renderRekapitulasi() {
-    const mode = document.getElementById('pilihModeRekap').value;
-    let container = document.getElementById('containerRekapStok');
-    
-    if (mode === "global") {
-      if (Object.keys(saldoGlobalMapGlobal).length === 0) { container.innerHTML = "<p style='text-align:center; padding:15px; color:var(--text-muted);'>Belum ada data rekapitulasi.</p>"; return; }
-      let html = `<table><thead><tr><th>Nama Barang</th><th>Total Sisa Saldo Global (Semua Unit)</th></tr></thead><tbody>`;
-      for (let barang in saldoGlobalMapGlobal) {
-        html += `<tr><td><b>${barang}</b></td><td><b>${saldoGlobalMapGlobal[barang]}</b></td></tr>`;
-      }
-      html += `</tbody></table>`;
-      container.innerHTML = html;
-    } else {
-      let targetUnit = sesiUser.isAdmin ? (document.getElementById('filterUnitAdmin').value || Object.keys(saldoUnitMapGlobal)[0] || sesiUser.unitLokasi) : sesiUser.unitLokasi;
-      let dataUnit = saldoUnitMapGlobal[targetUnit] || {};
-      
-      if (Object.keys(dataUnit).length === 0) { container.innerHTML = `<p style='text-align:center; padding:15px; color:var(--text-muted);'>Belum ada catatan stok untuk unit: <b>${targetUnit}</b></p>`; return; }
-      let html = `<table><thead><tr><th>Unit / Lokasi</th><th>Nama Barang</th><th>Sisa Stok Unit</th></tr></thead><tbody>`;
-      for (let barang in dataUnit) {
-        html += `<tr><td><span class="badge" style="background:#e0f2fe; color:#0369a1;">${targetUnit}</span></td><td><b>${barang}</b></td><td><b>${dataUnit[barang]}</b></td></tr>`;
-      }
-      html += `</tbody></table>`;
-      container.innerHTML = html;
-    }
-  }
-
-  function terapkanFilterStok() {
-    const search = document.getElementById('filterBarang').value.toLowerCase().trim();
-    const jenis = document.getElementById('filterJenis').value;
-
-    let filtered = rawTransaksiData.filter(item => {
-      // Jika bukan admin, batasi hanya melihat transaksi unitnya sendiri
-      if (!sesiUser.isAdmin && item.unitLokasi.toLowerCase() !== sesiUser.unitLokasi.toLowerCase()) return false;
-      if (search && !item.nama.toLowerCase().includes(search)) return false;
-      if (jenis && item.jenis !== jenis) return false;
-      return true;
-    });
-
-    renderTabelStok(filtered);
-  }
-
-  function renderTabelStok(data) {
-    let container = document.getElementById('containerTabelStok');
-    if (data.length === 0) { container.innerHTML = "<p style='text-align:center; padding:20px; color:var(--text-muted);'>Tidak ada riwayat mutasi.</p>"; return; }
-
-    let html = `<table><thead><tr><th>Tanggal</th><th>Unit / Lokasi</th><th>Nama Barang</th><th>Jenis</th><th>Jumlah</th><th>Pemohon / Sumber</th><th>Keterangan</th></tr></thead><tbody>`;
-    data.slice().reverse().forEach(row => {
-      let badge = row.jenis === 'MASUK' ? `<span class="badge badge-in">MASUK</span>` : `<span class="badge badge-out">PEMAKAIAN</span>`;
-      html += `<tr>
-        <td><small>${row.tanggal}</small></td>
-        <td><b>${row.unitLokasi}</b></td>
-        <td><b>${row.nama}</b></td>
-        <td>${badge}</td>
-        <td><b>${row.jumlah}</b> ${row.satuan}</td>
-        <td>${row.pemohon}</td>
-        <td>${row.keterangan}</td>
-      </tr>`;
-    });
-    html += `</tbody></table>`;
-    container.innerHTML = html;
-  }
-</script>
-
+        function showLoader(show) {
+            const loader = document.getElementById('loadingSpinner');
+            if (show) loader.classList.remove('d-none');
+            else loader.classList.add('d-none');
+        }
+    </script>
 </body>
 </html>
