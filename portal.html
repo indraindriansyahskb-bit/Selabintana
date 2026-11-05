@@ -614,12 +614,14 @@
     const tiket = groupedTiketList.find(i => i.kode === kode);
     if (!tiket) { alert("Data tiket tidak ditemukan!"); return; }
 
+    // 1. Masukkan data teks ke elemen printArea
     document.getElementById('p_kode').innerText = tiket.kode || '-';
     document.getElementById('p_tglSistem').innerText = tiket.tglSistem || '-';
     document.getElementById('p_nama').innerText = tiket.pemohon || '-';
     document.getElementById('p_unit').innerText = tiket.unit || '-';
     document.getElementById('t_pemohon').innerText = tiket.pemohon || '-';
 
+    // 2. Masukkan daftar item barang ke tabel draf A5
     let tbodyHtml = "";
     tiket.items.forEach(itm => {
       tbodyHtml += `
@@ -634,18 +636,30 @@
     });
     document.getElementById('p_tabelItems').innerHTML = tbodyHtml;
 
+    // 3. Tampilkan elemen printArea secara aman agar terbaca oleh html2pdf
     const printArea = document.getElementById('printArea');
     printArea.style.display = 'block';
+    printArea.style.position = 'absolute';
+    printArea.style.left = '-9999px'; // Letakkan di luar layar agar tidak mengganggu pandangan user
 
     const opt = {
-      margin: 2,
-      filename: `Form_Tiket_${tiket.kode}_${tiket.pemohon}.pdf`.replace(/\s+/g, '_'),
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true },
-      jsPDF: { unit: 'mm', format: 'a5', orientation: 'portrait' }
+      margin:       2,
+      filename:     `Form_Tiket_${tiket.kode}_${tiket.pemohon}.pdf`.replace(/\s+/g, '_'),
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2, useCORS: true, logging: false },
+      jsPDF:        { unit: 'mm', format: 'a5', orientation: 'portrait' }
     };
 
-    html2pdf().from(printArea).set(opt).save().then(() => { printArea.style.display = 'none'; });
+    // 4. Proses render PDF, lalu sembunyikan kembali elemen setelah terunduh
+    html2pdf().from(printArea).set(opt).save().then(() => {
+      printArea.style.display = 'none';
+      printArea.style.position = 'static';
+      printArea.style.left = 'auto';
+    }).catch(err => {
+      console.error(err);
+      printArea.style.display = 'none';
+      alert("Gagal mengunduh draf PDF.");
+    });
   }
 
   async function hapusTiket(kode) {
