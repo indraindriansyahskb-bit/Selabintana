@@ -603,7 +603,7 @@
             </td>
             <td>${cleanPdfUrl !== '-' ? `<a href="${cleanPdfUrl}" target="_blank" style="color:#1a73e8; font-weight:bold;">Lihat PDF</a>` : '<span style="color:#999;">Belum ada</span>'}</td>
             <td>
-              <button class="btn-sm btn-print" onclick="cetakFormulirA5('${tiket.kode}')">🖨️ Cetak A5</button>
+              <button class="btn-sm btn-print" onclick="cetakFormulirA5('${tiket.kode}')">🖨️ Cetak </button>
               <button class="btn-sm btn-upload" onclick="triggerUploadPdf('${tiket.kode}')">📤 Upload PDF</button>
               ${tiket.status === 'PENDING' ? `<button class="btn-sm btn-delete" onclick="hapusTiket('${tiket.kode}')">🗑️ Hapus</button>` : ''}
             </td>
