@@ -21,7 +21,7 @@
       padding: 30px 15px;
     }
     .wrapper {
-      max-width: 700px;
+      max-width: 800px;
       margin: auto;
     }
     .card {
@@ -59,7 +59,6 @@
       border-radius: 6px;
       box-sizing: border-box;
       font-size: 14px;
-      transition: border-color 0.2s, box-shadow 0.2s;
     }
     input:focus, select:focus, textarea:focus {
       outline: none;
@@ -143,6 +142,21 @@
     .logout-link:hover {
       text-decoration: underline;
     }
+    /* Style Tabel untuk Admin */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      font-size: 13px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f3f4f6;
+    }
   </style>
 </head>
 <body>
@@ -151,11 +165,11 @@
   <div class="card">
     <h2>Portal Permintaan Material & Barang</h2>
     
-    <!-- Sesi Login Mengacu ke Tab 'Users' -->
+    <!-- Bagian Login -->
     <div id="loginSection">
       <div class="form-group">
         <label for="loginUser">Username:</label>
-        <input type="text" id="loginUser" placeholder="Masukkan username Anda..." required>
+        <input type="text" id="loginUser" placeholder="Masukkan username..." required>
       </div>
       <div class="form-group">
         <label for="loginPass">Password:</label>
@@ -165,9 +179,9 @@
       <div id="loginLoading">Memeriksa kredensial...</div>
     </div>
 
-    <!-- Form Utama Permintaan -->
+    <!-- Panel Khusus Staff (Form Permintaan) -->
     <form id="formPermintaan" style="display: none;">
-      <div class="user-info-box" id="infoSesi"></div>
+      <div class="user-info-box" id="infoSesiStaff"></div>
 
       <div class="row-group">
         <div class="form-group">
@@ -206,9 +220,8 @@
 
       <div class="form-group">
         <label for="namaBarang">Nama Barang / Material</label>
-        <input type="text" id="namaBarang" list="listMasterBarang" required placeholder="Pilih atau ketik nama barang baru..." oninput="cekBarangBaru(this.value)">
+        <input type="text" id="namaBarang" list="listMasterBarang" required placeholder="Pilih atau ketik nama barang...">
         <datalist id="listMasterBarang"></datalist>
-        <small id="infoBarangBaru" style="color: #d97706; display: none; margin-top: 4px;">ℹ️ Barang baru akan otomatis ditambahkan ke Master Barang.</small>
       </div>
 
       <div class="row-group">
@@ -224,7 +237,7 @@
 
       <div class="form-group">
         <label for="supplier">Supplier / Vendor Rujukan</label>
-        <input type="text" id="supplier" placeholder="Nama supplier (opsional)...">
+        <input type="text" id="supplier" placeholder="Nama supplier...">
       </div>
 
       <div class="form-group">
@@ -233,17 +246,28 @@
       </div>
 
       <div class="form-group">
-        <label for="lampiranFile">Dokumen PDF / TTD (Opsional)</label>
+        <label for="lampiranFile">Unggah Dokumen PDF Tanda Tangan (Setelah Dicetak & TTD)</label>
         <div class="file-upload-box" onclick="document.getElementById('lampiranFile').click()">
-          📂 Klik untuk memilih file PDF
+          📂 Klik untuk memilih file PDF bertanda tangan
           <input type="file" id="lampiranFile" accept="application/pdf" style="display: none;" onchange="handleFileSelect(event)">
           <div id="fileInfo">Belum ada file dipilih</div>
         </div>
       </div>
 
-      <button type="submit" id="submitBtn">Kirim Permintaan</button>
-      <div id="loadingStatus">Sedang mengirim data ke server...</div>
+      <button type="submit" id="submitBtn">Kirim Permintaan ke Admin</button>
+      <div id="loadingStatus">Sedang mengirim data...</div>
     </form>
+
+    <!-- Panel Khusus Admin (Pemeriksaan & Update Status) -->
+    <div id="panelAdmin" style="display: none;">
+      <div class="user-info-box" id="infoSesiAdmin"></div>
+      <h3>Daftar Permintaan Masuk (Verifikasi Admin)</h3>
+      <p style="font-size: 13px; color: #666;">Admin dapat memeriksa data, mengunduh PDF TTD, mengubah status (ACC / REVISI / TOLAK), dan memberi catatan.</p>
+      <div id="containerTabelAdmin">
+        <p>Memuat data permintaan...</p>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -257,9 +281,10 @@
     const savedUser = localStorage.getItem('portal_user_session');
     if (savedUser) {
       sesiUser = JSON.parse(savedUser);
-      tampilkanFormUtama();
+      tampilkanDashboard();
     }
-    document.getElementById('tglPermintaan').value = new Date().toISOString().split('T')[0];
+    const tgl = document.getElementById('tglPermintaan');
+    if(tgl) tgl.value = new Date().toISOString().split('T')[0];
   };
 
   async function prosesLogin() {
@@ -280,7 +305,7 @@
       if (result.status === "success") {
         sesiUser = result.userData;
         localStorage.setItem('portal_user_session', JSON.stringify(sesiUser));
-        tampilkanFormUtama();
+        tampilkanDashboard();
       } else {
         alert("Login Gagal: " + result.message);
       }
@@ -292,17 +317,32 @@
     }
   }
 
-  function tampilkanFormUtama() {
+  function tampilkanDashboard() {
     document.getElementById('loginSection').style.display = 'none';
-    document.getElementById('formPermintaan').style.display = 'block';
-    document.getElementById('infoSesi').innerHTML = `
-      <div>
-        👤 <b>${sesiUser.nama}</b> (${sesiUser.jabatan})<br>
-        <small>🏢 ${sesiUser.divisi} | 📍 ${sesiUser.unitLokasi}</small>
-      </div>
-      <a href="#" onclick="logoutSesi()" class="logout-link">Keluar</a>
-    `;
-    muatMasterBarang();
+
+    if (sesiUser.isAdmin) {
+      // Tampilkan Panel Admin
+      document.getElementById('panelAdmin').style.display = 'block';
+      document.getElementById('infoSesiAdmin').innerHTML = `
+        <div>
+          🛠️ <b>ADMIN: ${sesiUser.nama}</b><br>
+          <small>Pusat Kontrol & Verifikasi Permintaan</small>
+        </div>
+        <a href="#" onclick="logoutSesi()" class="logout-link">Keluar</a>
+      `;
+      muatDataAdmin();
+    } else {
+      // Tampilkan Form Staff
+      document.getElementById('formPermintaan').style.display = 'block';
+      document.getElementById('infoSesiStaff').innerHTML = `
+        <div>
+          👤 <b>Pemohon: ${sesiUser.nama}</b> (${sesiUser.jabatan})<br>
+          <small>🏢 ${sesiUser.divisi} | 📍 ${sesiUser.unitLokasi}</small>
+        </div>
+        <a href="#" onclick="logoutSesi()" class="logout-link">Keluar</a>
+      `;
+      muatMasterBarang();
+    }
   }
 
   function logoutSesi() {
@@ -315,7 +355,7 @@
       const response = await fetch(GAS_URL + "?action=getMasterBarang");
       const result = await response.json();
       if (result.status === "success") {
-        masterBarangData = result.data; 
+        masterBarangData = result.data;
         perbaruiDatalist(masterBarangData);
       }
     } catch (e) {
@@ -340,16 +380,6 @@
     }
     const filtered = masterBarangData.filter(i => i.kategori && i.kategori.toUpperCase() === kategoriVal.toUpperCase());
     perbaruiDatalist(filtered);
-  }
-
-  function cekBarangBaru(val) {
-    const info = document.getElementById('infoBarangBaru');
-    const match = masterBarangData.some(i => i.namaBarang.toLowerCase() === val.toLowerCase());
-    if (val.trim() !== "" && !match) {
-      info.style.display = "block";
-    } else {
-      info.style.display = "none";
-    }
   }
 
   function handleFileSelect(event) {
@@ -377,6 +407,7 @@
     });
   }
 
+  // Kirim Pengajuan dari Staff
   document.getElementById('formPermintaan').addEventListener('submit', async function(e) {
     e.preventDefault();
     const btn = document.getElementById('submitBtn');
@@ -424,11 +455,10 @@
       const result = await response.json();
 
       if (result.status === "success") {
-        alert("Permintaan berhasil dikirim dan master barang otomatis diperbarui!");
+        alert("Permintaan berhasil dikirim! Silakan cetak dokumen untuk proses tanda tangan.");
         document.getElementById('formPermintaan').reset();
         document.getElementById('tglPermintaan').value = new Date().toISOString().split('T')[0];
         document.getElementById('fileInfo').innerText = "Belum ada file dipilih";
-        document.getElementById('infoBarangBaru').style.display = "none";
         muatMasterBarang();
       } else {
         alert("Gagal: " + result.message);
@@ -438,10 +468,72 @@
       alert("Terjadi kesalahan jaringan.");
     } finally {
       btn.disabled = false;
-      btn.innerText = "Kirim Permintaan";
+      btn.innerText = "Kirim Permintaan ke Admin";
       loading.style.display = "none";
     }
   });
+
+  // Fungsi khusus Admin memuat data permintaan
+  async function muatDataAdmin() {
+    try {
+      const res = await fetch(GAS_URL + "?action=getPermintaanAdmin");
+      const json = await res.json();
+      if (json.status === "success") {
+        let html = `<table><thead><tr>
+          <th>Kode</th><th>Pemohon</th><th>Unit</th><th>Barang</th><th>Status</th><th>PDF TTD</th><th>Aksi Admin</th>
+        </tr></thead><tbody>`;
+        
+        json.data.forEach((row, index) => {
+          html += `<tr>
+            <td>${row.kode}</td>
+            <td>${row.pemohon}</td>
+            <td>${row.unit}</td>
+            <td>${row.barang} (${row.jumlah} ${row.satuan})</td>
+            <td><b>${row.status}</b><br><small>${row.catatan}</small></td>
+            <td>${row.pdfUrl !== '-' ? `<a href="${row.pdfUrl}" target="_blank">Lihat PDF</a>` : 'Belum Ada'}</td>
+            <td>
+              <select id="status_${index}">
+                <option value="PENDING" ${row.status==='PENDING'?'selected':''}>PENDING</option>
+                <option value="ACC" ${row.status==='ACC'?'selected':''}>ACC</option>
+                <option value="REVISI" ${row.status==='REVISI'?'selected':''}>REVISI</option>
+                <option value="DITOLAK" ${row.status==='DITOLAK'?'selected':''}>DITOLAK</option>
+              </select><br>
+              <input type="text" id="catatan_${index}" value="${row.catatan !== '-' ? row.catatan : ''}" placeholder="Catatan admin..." style="margin-top:4px; font-size:12px;"><br>
+              <button onclick="updateStatusAdmin('${row.kode}', ${index})" style="padding:4px 8px; font-size:12px; margin-top:4px; width:auto;">Simpan</button>
+            </td>
+          </tr>`;
+        });
+        html += `</tbody></table>`;
+        document.getElementById('containerTabelAdmin').innerHTML = html;
+      }
+    } catch(e) {
+      document.getElementById('containerTabelAdmin').innerHTML = "Gagal memuat data.";
+    }
+  }
+
+  async function updateStatusAdmin(kodeBarang, index) {
+    const status = document.getElementById(`status_${index}`).value;
+    const catatan = document.getElementById(`catatan_${index}`).value;
+
+    try {
+      const payload = {
+        action: "updateStatus",
+        kodeBarang: kodeBarang,
+        status: status,
+        catatan: catatan
+      };
+      const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+      const json = await res.json();
+      if(json.status === "success") {
+        alert("Status berhasil diperbarui!");
+        muatDataAdmin();
+      } else {
+        alert("Gagal: " + json.message);
+      }
+    } catch(e) {
+      alert("Terjadi kesalahan jaringan.");
+    }
+  }
 </script>
 
 </body>
