@@ -862,18 +862,46 @@
   }
 
   function eksporKeCSV() {
-    let csv = "data:text/csv;charset=utf-8,Kode,Tanggal,Pemohon,Unit,Kategori,Barang,Jumlah,Satuan,Status,Catatan,PDF\n";
+    let csv = "\ufeffKode;Tanggal;Pemohon;Unit;Kategori;Barang;Jumlah;Satuan;Status;Catatan;PDF\n";
     rawAdminData.forEach(tiket => {
       tiket.items.forEach(i => {
-        csv += `"${tiket.kode}","${tiket.tglPermintaan}","${tiket.pemohon}","${tiket.unit}","${i.kategori}","${i.barang}","${i.jumlah}","${i.satuan}","${tiket.status}","${tiket.catatan}","${tiket.pdfUrl}"\n`;
+        csv += `"${tiket.kode}";"${tiket.tglPermintaan}";"${tiket.pemohon}";"${tiket.unit}";"${i.kategori}";"${i.barang}";"${i.jumlah}";"${i.satuan}";"${tiket.status}";"${tiket.catatan}";"${tiket.pdfUrl}"\n`;
       });
     });
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement("a");
-    link.setAttribute("href", encodeURI(csv));
+    link.href = URL.createObjectURL(blob);
     link.setAttribute("download", "Rekap_Tiket_Permintaan.csv");
     document.body.appendChild(link); link.click(); document.body.removeChild(link);
   }
-</script>
+
+  function eksporKeCSVStaff() {
+    const filterBulan = document.getElementById('filterBulanStaff').value;
+    const filterStatus = document.getElementById('filterStatusStaff').value;
+
+    let filtered = staffOriginalData.filter(item => {
+      if (filterBulan && !(item.tglPermintaan || "").startsWith(filterBulan)) return false;
+      if (filterStatus && item.status !== filterStatus) return false;
+      return true;
+    });
+
+    if (filtered.length === 0) {
+      alert("Tidak ada data untuk diekspor!");
+      return;
+    }
+
+    let csv = "\ufeffKode;Tanggal;Pemohon;Unit;Kategori;Barang;Jumlah;Satuan;Status;Catatan;PDF\n";
+    filtered.forEach(tiket => {
+      tiket.items.forEach(i => {
+        csv += `"${tiket.kode}";"${tiket.tglPermintaan}";"${tiket.pemohon}";"${tiket.unit}";"${i.kategori}";"${i.barang}";"${i.jumlah}";"${i.satuan}";"${tiket.status}";"${tiket.catatan}";"${tiket.pdfUrl}"\n`;
+      });
+    });
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute("download", `Rekap_Permintaan_${sesiUser.nama.replace(/\s+/g, '_')}.csv`);
+    document.body.appendChild(link); link.click(); document.body.removeChild(link);
+  }
 
 </body>
 </html>
