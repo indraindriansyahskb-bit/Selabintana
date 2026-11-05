@@ -36,7 +36,7 @@
     input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
     textarea { resize: vertical; height: 75px; }
     .row-group { display: flex; gap: 16px; flex-wrap: wrap; }
-    .row-group .form-group { flex: 1; min-width: 200px; }
+    .row-group .form-group { flex: 1; min-width: 180px; }
     button { background-color: var(--primary); color: white; padding: 10px 18px; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; }
     button:hover { background-color: var(--primary-hover); }
     button:disabled { background-color: #94a3b8; cursor: not-allowed; }
@@ -74,7 +74,7 @@
 
     /* Modal Edit */
     #modalEdit { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; overflow-y: auto; padding: 20px; }
-    .modal-content { background: white; max-width: 700px; margin: 30px auto; padding: 25px; border-radius: 12px; position: relative; }
+    .modal-content { background: white; max-width: 750px; margin: 30px auto; padding: 25px; border-radius: 12px; position: relative; }
 
     @media print {
       @page { size: A5 portrait; margin: 4mm; }
@@ -124,7 +124,10 @@
       <h3 class="section-title"><i class="fa-solid fa-pen-to-square"></i> Buat Permintaan Barang Baru</h3>
       <form id="formPermintaan">
         <div class="row-group">
-          <div class="form-group"><label>Tanggal Permintaan</label><input type="date" id="tglPermintaan" required></div>
+          <div class="form-group">
+            <label>Tanggal Permintaan <small style="color:var(--text-muted);">(Otomatis Hari Ini)</small></label>
+            <input type="date" id="tglPermintaan" readonly style="background-color: #f1f5f9; cursor: not-allowed;" required>
+          </div>
           <div class="form-group"><label>Tanggal Dibutuhkan</label><input type="date" id="tglDibutuhkan" required></div>
           <div class="form-group"><label>Urgensi</label>
             <select id="urgensi" required>
@@ -203,7 +206,10 @@
     <form id="formEditPermintaan">
       <input type="hidden" id="editKodeTiket">
       <div class="row-group">
-        <div class="form-group"><label>Tanggal Permintaan</label><input type="date" id="editTglPermintaan" required></div>
+        <div class="form-group">
+          <label>Tanggal Permintaan</label>
+          <input type="date" id="editTglPermintaan" readonly style="background-color: #f1f5f9; cursor: not-allowed;" required>
+        </div>
         <div class="form-group"><label>Tanggal Dibutuhkan</label><input type="date" id="editTglDibutuhkan" required></div>
         <div class="form-group"><label>Urgensi</label>
           <select id="editUrgensi" required>
@@ -239,7 +245,7 @@
     <div style="grid-column: span 2;"><label>Urgensi:</label> <span id="p_urgensi" style="color:#dc2626;">-</span></div>
   </div>
   <table class="print-table">
-    <thead><tr><th style="width: 15%;">Kode</th><th style="width: 32%;">Nama Barang</th><th style="width: 15%;">Jumlah</th><th style="width: 18%;">Supplier</th><th style="width: 20%;">Keterangan</th></tr></thead>
+    <thead><tr><th style="width: 15%;">Kode Barang</th><th style="width: 32%;">Nama Barang</th><th style="width: 15%;">Jumlah</th><th style="width: 18%;">Supplier</th><th style="width: 20%;">Keterangan</th></tr></thead>
     <tbody id="p_tabelItems"></tbody>
   </table>
   <div class="print-ttd-container">
@@ -251,7 +257,7 @@
 </div>
 
 <script>
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbzjh_RoQroR6aG4SroughZ01m_KYoQ_2Aua-laivEFz6noKtMQGwoKqznAqsuszDYVh/exec";
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbyongCzCtohhLcWAxtiiaTkAiXX24sOjjST64voEOotobhW2yggj_LZvbk3epegzDRqtQ/exec";
 
   let sesiUser = {};
   let masterBarangData = [];
@@ -263,8 +269,11 @@
   window.onload = function() {
     const savedUser = localStorage.getItem('portal_user_session');
     if (savedUser) { sesiUser = JSON.parse(savedUser); tampilkanDashboard(); }
+    
+    // Set tanggal permintaan otomatis hari ini dan dikunci
+    const today = new Date().toISOString().split('T')[0];
     const tgl = document.getElementById('tglPermintaan');
-    if(tgl) tgl.value = new Date().toISOString().split('T')[0];
+    if(tgl) tgl.value = today;
   };
 
   async function prosesLogin() {
@@ -330,6 +339,7 @@
         ${index > 0 ? `<button type="button" class="btn-sm btn-hapus-item" onclick="this.parentElement.parentElement.remove()">Hapus</button>` : ''}
       </div>
       <div class="row-group">
+        <div class="form-group" style="flex:1;"><label>Kode Barang (Supplier)</label><input type="text" class="item-kode" value="${dataItem && dataItem.kodeItem !== '-' ? dataItem.kodeItem : ''}" placeholder="Kode supplier..."></div>
         <div class="form-group" style="flex:1;"><label>Kategori</label><select class="item-kategori" required>${optionsKategori}</select></div>
         <div class="form-group" style="flex:2;"><label>Nama Barang</label><input type="text" class="item-nama" list="listMasterDinamis" required value="${dataItem ? dataItem.barang : ''}" placeholder="Nama barang..."></div>
       </div>
@@ -358,6 +368,7 @@
     let itemsArray = [];
     rows.forEach(r => {
       itemsArray.push({
+        kodeItem: r.querySelector('.item-kode').value.trim() || "-",
         kategori: r.querySelector('.item-kategori').value,
         namaBarang: r.querySelector('.item-nama').value.trim(),
         jumlah: r.querySelector('.item-jumlah').value,
@@ -401,7 +412,7 @@
           keterangan: row.keterangan, status: row.status, catatan: row.catatan, pdfUrl: row.pdfUrl, items: []
         };
       }
-      map[row.kode].items.push({ kategori: row.kategori, barang: row.barang, jumlah: row.jumlah, satuan: row.satuan, supplier: row.supplier });
+      map[row.kode].items.push({ kodeItem: row.kodeItem, kategori: row.kategori, barang: row.barang, jumlah: row.jumlah, satuan: row.satuan, supplier: row.supplier });
     });
     return Object.values(map);
   }
@@ -447,7 +458,7 @@
       else if(tiket.status === 'DITOLAK') badgeClass = 'badge-tolak';
 
       const cleanPdfUrl = formatGoogleDriveUrl(tiket.pdfUrl);
-      let itemSummary = tiket.items.map(i => `• <b>${i.barang}</b> (${i.jumlah} ${i.satuan})`).join('<br>');
+      let itemSummary = tiket.items.map(i => `• [${i.kodeItem !== '-' ? i.kodeItem : '-'}] <b>${i.barang}</b> (${i.jumlah} ${i.satuan})`).join('<br>');
 
       html += `<tr>
         <td><b>${tiket.kode}</b></td>
@@ -499,6 +510,7 @@
     let itemsArray = [];
     rows.forEach(r => {
       itemsArray.push({
+        kodeItem: r.querySelector('.item-kode').value.trim() || "-",
         kategori: r.querySelector('.item-kategori').value,
         namaBarang: r.querySelector('.item-nama').value.trim(),
         jumlah: r.querySelector('.item-jumlah').value,
@@ -537,10 +549,10 @@
       return true;
     });
     if (filtered.length === 0) { alert("Tidak ada data!"); return; }
-    let csv = "\ufeffKode;Tanggal;Pemohon;Unit;Kategori;Barang;Jumlah;Satuan;Status;Catatan;PDF\n";
+    let csv = "\ufeffKode;Tanggal;Pemohon;Unit;Kode_Barang;Kategori;Barang;Jumlah;Satuan;Status;Catatan;PDF\n";
     filtered.forEach(tiket => {
       tiket.items.forEach(i => {
-        csv += `"${tiket.kode}";"${tiket.tglPermintaan}";"${tiket.pemohon}";"${tiket.unit}";"${i.kategori}";"${i.barang}";"${i.jumlah}";"${i.satuan}";"${tiket.status}";"${tiket.catatan}";"${tiket.pdfUrl}"\n`;
+        csv += `"${tiket.kode}";"${tiket.tglPermintaan}";"${tiket.pemohon}";"${tiket.unit}";"${i.kodeItem}";"${i.kategori}";"${i.barang}";"${i.jumlah}";"${i.satuan}";"${tiket.status}";"${tiket.catatan}";"${tiket.pdfUrl}"\n`;
       });
     });
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -583,8 +595,8 @@
     document.getElementById('t_pemohon').innerText = tiket.pemohon;
 
     let tbodyHtml = "";
-    tiket.items.forEach((itm, idx) => {
-      tbodyHtml += `<tr><td>BRG-0${idx + 1}</td><td><b>${itm.barang}</b></td><td>${itm.jumlah} ${itm.satuan}</td><td>${itm.supplier}</td><td>${tiket.keterangan}</td></tr>`;
+    tiket.items.forEach((itm) => {
+      tbodyHtml += `<tr><td>${itm.kodeItem !== '-' ? itm.kodeItem : '-'}</td><td><b>${itm.barang}</b></td><td>${itm.jumlah} ${itm.satuan}</td><td>${itm.supplier}</td><td>${tiket.keterangan}</td></tr>`;
     });
     document.getElementById('p_tabelItems').innerHTML = tbodyHtml;
     setTimeout(() => { window.print(); }, 200);
@@ -662,7 +674,7 @@
       else if(tiket.status === 'DITOLAK') badgeClass = 'badge-tolak';
 
       const cleanPdfUrl = formatGoogleDriveUrl(tiket.pdfUrl);
-      let itemSummary = tiket.items.map(i => `• <b>${i.barang}</b> (${i.jumlah} ${i.satuan})`).join('<br>');
+      let itemSummary = tiket.items.map(i => `• [${i.kodeItem !== '-' ? i.kodeItem : '-'}] <b>${i.barang}</b> (${i.jumlah} ${i.satuan})`).join('<br>');
 
       html += `<tr>
         <td><b>${tiket.kode}</b><br><small>${tiket.tglPermintaan}</small></td>
@@ -697,10 +709,10 @@
   }
 
   function eksporKeCSV() {
-    let csv = "\ufeffKode;Tanggal;Pemohon;Unit;Kategori;Barang;Jumlah;Satuan;Status;Catatan;PDF\n";
+    let csv = "\ufeffKode;Tanggal;Pemohon;Unit;Kode_Barang;Kategori;Barang;Jumlah;Satuan;Status;Catatan;PDF\n";
     rawAdminData.forEach(tiket => {
       tiket.items.forEach(i => {
-        csv += `"${tiket.kode}";"${tiket.tglPermintaan}";"${tiket.pemohon}";"${tiket.unit}";"${i.kategori}";"${i.barang}";"${i.jumlah}";"${i.satuan}";"${tiket.status}";"${tiket.catatan}";"${tiket.pdfUrl}"\n`;
+        csv += `"${tiket.kode}";"${tiket.tglPermintaan}";"${tiket.pemohon}";"${tiket.unit}";"${i.kodeItem}";"${i.kategori}";"${i.barang}";"${i.jumlah}";"${i.satuan}";"${tiket.status}";"${tiket.catatan}";"${tiket.pdfUrl}"\n`;
       });
     });
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
