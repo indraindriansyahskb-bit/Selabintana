@@ -453,9 +453,11 @@
     let html = `<table><thead><tr><th>Kode Tiket</th><th>Tanggal</th><th>Daftar Barang</th><th>Status & Catatan</th><th>PDF TTD</th><th>Aksi</th></tr></thead><tbody>`;
     dataList.forEach(tiket => {
       let badgeClass = 'badge-pending';
-      if(tiket.status === 'ACC') badgeClass = 'badge-acc';
-      else if(tiket.status === 'REVISI') badgeClass = 'badge-revisi';
-      else if(tiket.status === 'DITOLAK') badgeClass = 'badge-tolak';
+      let statusText = tiket.status && tiket.status !== '-' ? tiket.status : 'PENDING';
+      
+      if(statusText === 'ACC') badgeClass = 'badge-acc';
+      else if(statusText === 'REVISI') badgeClass = 'badge-revisi';
+      else if(statusText === 'DITOLAK') badgeClass = 'badge-tolak';
 
       const cleanPdfUrl = formatGoogleDriveUrl(tiket.pdfUrl);
       let itemSummary = tiket.items.map(i => `• [${i.kodeItem !== '-' ? i.kodeItem : '-'}] <b>${i.barang}</b> (${i.jumlah} ${i.satuan})`).join('<br>');
@@ -464,13 +466,16 @@
         <td><b>${tiket.kode}</b></td>
         <td>${tiket.tglPermintaan || '-'}</td>
         <td>${itemSummary}</td>
-        <td><span class="badge ${badgeClass}">${tiket.status}</span>${tiket.catatan && tiket.catatan !== '-' ? `<br><small>${tiket.catatan}</small>` : ''}</td>
-        <td>${cleanPdfUrl !== '-' ? `<a href="${cleanPdfUrl}" target="_blank">Lihat PDF</a>` : '-'}</td>
+        <td>
+          <span class="badge ${badgeClass}">${statusText}</span>
+          ${tiket.catatan && tiket.catatan !== '-' ? `<br><small style="color:var(--text-muted);">${tiket.catatan}</small>` : ''}
+        </td>
+        <td>${cleanPdfUrl !== '-' ? `<a href="${cleanPdfUrl}" target="_blank" style="color:var(--primary); font-weight:600;"><i class="fa-solid fa-file-pdf"></i> Lihat PDF</a>` : '<span style="color:#94a3b8;">Belum ada</span>'}</td>
         <td>
           <button class="btn-sm btn-print" onclick="cetakFormulirA5('${tiket.kode}')">Cetak</button>
           <button class="btn-sm btn-upload" onclick="triggerUploadPdf('${tiket.kode}')">Upload PDF</button>
-          ${tiket.status === 'PENDING' ? `<button class="btn-sm btn-edit" onclick="bukaModalEdit('${tiket.kode}')">Edit</button>` : ''}
-          ${tiket.status === 'PENDING' ? `<button class="btn-sm btn-delete" onclick="hapusTiket('${tiket.kode}')">Hapus</button>` : ''}
+          ${statusText === 'PENDING' ? `<button class="btn-sm btn-edit" onclick="bukaModalEdit('${tiket.kode}')">Edit</button>` : ''}
+          ${statusText === 'PENDING' ? `<button class="btn-sm btn-delete" onclick="hapusTiket('${tiket.kode}')">Hapus</button>` : ''}
         </td>
       </tr>`;
     });
@@ -669,9 +674,11 @@
     let html = `<table><thead><tr><th>Tiket & Tanggal</th><th>Pemohon / Unit</th><th>Daftar Barang</th><th>Status</th><th>PDF TTD</th><th>Aksi Admin</th></tr></thead><tbody>`;
     data.forEach(tiket => {
       let badgeClass = 'badge-pending';
-      if(tiket.status === 'ACC') badgeClass = 'badge-acc';
-      else if(tiket.status === 'REVISI') badgeClass = 'badge-revisi';
-      else if(tiket.status === 'DITOLAK') badgeClass = 'badge-tolak';
+      let statusText = tiket.status && tiket.status !== '-' ? tiket.status : 'PENDING';
+      
+      if(statusText === 'ACC') badgeClass = 'badge-acc';
+      else if(statusText === 'REVISI') badgeClass = 'badge-revisi';
+      else if(statusText === 'DITOLAK') badgeClass = 'badge-tolak';
 
       const cleanPdfUrl = formatGoogleDriveUrl(tiket.pdfUrl);
       let itemSummary = tiket.items.map(i => `• [${i.kodeItem !== '-' ? i.kodeItem : '-'}] <b>${i.barang}</b> (${i.jumlah} ${i.satuan})`).join('<br>');
@@ -680,14 +687,14 @@
         <td><b>${tiket.kode}</b><br><small>${tiket.tglPermintaan}</small></td>
         <td><b>${tiket.pemohon}</b><br><small>${tiket.unit}</small></td>
         <td>${itemSummary}</td>
-        <td><span class="badge ${badgeClass}">${tiket.status}</span><br><small>${tiket.catatan !== '-' ? tiket.catatan : ''}</small></td>
+        <td><span class="badge ${badgeClass}">${statusText}</span><br><small>${tiket.catatan !== '-' ? tiket.catatan : ''}</small></td>
         <td>${cleanPdfUrl !== '-' ? `<a href="${cleanPdfUrl}" target="_blank">Lihat PDF</a>` : '-'}</td>
         <td>
           <select id="status_${tiket.kode}" style="padding:6px; font-size:12px; margin-bottom:4px;">
-            <option value="PENDING" ${tiket.status==='PENDING'?'selected':''}>PENDING</option>
-            <option value="ACC" ${tiket.status==='ACC'?'selected':''}>ACC</option>
-            <option value="REVISI" ${tiket.status==='REVISI'?'selected':''}>REVISI</option>
-            <option value="DITOLAK" ${tiket.status==='DITOLAK'?'selected':''}>DITOLAK</option>
+            <option value="PENDING" ${statusText==='PENDING'?'selected':''}>PENDING</option>
+            <option value="ACC" ${statusText==='ACC'?'selected':''}>ACC</option>
+            <option value="REVISI" ${statusText==='REVISI'?'selected':''}>REVISI</option>
+            <option value="DITOLAK" ${statusText==='DITOLAK'?'selected':''}>DITOLAK</option>
           </select><br>
           <input type="text" id="catatan_${tiket.kode}" value="${tiket.catatan !== '-' ? tiket.catatan : ''}" placeholder="Catatan..." style="font-size:12px; padding:6px;"><br>
           <button onclick="updateStatusAdmin('${tiket.kode}')" style="padding:6px 12px; font-size:12px; margin-top:6px; width:100%;">Simpan</button>
