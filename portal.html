@@ -52,14 +52,12 @@
     }
     .logout-link { color: #dc2626; text-decoration: none; font-weight: 600; font-size: 13px; }
 
-    /* Dinamis Item Rows */
     .item-row-container {
       background: #f9fafb; border: 1px solid #e5e7eb; padding: 15px; border-radius: 8px; margin-bottom: 12px; position: relative;
     }
     .btn-hapus-item { background: #ef4444; padding: 6px 10px; font-size: 11px; margin-top: 5px; }
     .btn-hapus-item:hover { background: #dc2626; }
 
-    /* Summary & Tabel */
     .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px; }
     .stat-card { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; text-align: center; }
     .stat-card .val { font-size: 22px; font-weight: bold; margin-top: 5px; color: #1e293b; }
@@ -104,7 +102,7 @@
 
     .print-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
     .print-table th { font-size: 9px; font-weight: 700; color: #374151; text-transform: uppercase; text-align: left; padding: 5px 4px; border-bottom: 2px solid #9ca3af; }
-    .print-table td { font-size: 10px; font-weight: 700; padding: 8px 4px; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
+    .print-table td { font-size: 10px; font-weight: 700; padding: 6px 4px; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
     .print-table td.kat-highlight { color: #059669; }
 
     .print-ttd-container { display: flex; justify-content: space-between; margin-top: 15px; }
@@ -140,7 +138,7 @@
       <div class="user-info-box" id="infoSesiStaff"></div>
 
       <form id="formPermintaan">
-        <h3 id="formTitle">Buat Permintaan Barang Baru</h3>
+        <h3 id="formTitle">Buat Permintaan Barang Baru (1 Tiket / Transaksi)</h3>
 
         <div class="row-group">
           <div class="form-group">
@@ -165,19 +163,18 @@
         </div>
 
         <hr style="margin: 20px 0; border: 0; border-top: 1px dashed #cbd5e1;">
-        <label style="font-size:14px; font-weight:bold; color:#1e293b; margin-bottom:10px;">Daftar Barang yang Diminta:</label>
+        <label style="font-size:14px; font-weight:bold; color:#1e293b; margin-bottom:10px;">Daftar Barang dalam 1 Tiket:</label>
         
-        <!-- Container Item Barang Dinamis -->
         <div id="listItemsContainer"></div>
 
         <button type="button" onclick="tambahBarisItem()" style="background:#059669; margin-bottom:20px;">➕ Tambah Barang Lain</button>
 
         <div class="form-group">
-          <label for="keterangan Umum">Keperluan / Keterangan Umum</label>
+          <label for="keterangan">Keperluan / Keterangan Umum</label>
           <textarea id="keterangan" placeholder="Tuliskan keterangan keperluan material..."></textarea>
         </div>
 
-        <button type="submit" id="submitBtn" style="width:100%; padding:12px; font-size:15px;">Kirim Permintaan ke Admin</button>
+        <button type="submit" id="submitBtn" style="width:100%; padding:12px; font-size:15px;">Kirim Tiket Permintaan ke Admin</button>
         <div id="loadingStatus" style="text-align:center; margin-top:10px; font-style:italic; color:#1a73e8; display:none;">Sedang memproses...</div>
       </form>
 
@@ -196,7 +193,7 @@
       <div class="user-info-box" id="infoSesiAdmin"></div>
 
       <div class="summary-grid">
-        <div class="stat-card total"><label>Total</label><div class="val" id="statTotal">0</div></div>
+        <div class="stat-card total"><label>Total Tiket</label><div class="val" id="statTotal">0</div></div>
         <div class="stat-card pending"><label>Pending</label><div class="val" id="statPending">0</div></div>
         <div class="stat-card acc"><label>Di ACC</label><div class="val" id="statACC">0</div></div>
         <div class="stat-card tolak"><label>Revisi/Tolak</label><div class="val" id="statTolak">0</div></div>
@@ -226,7 +223,7 @@
         </div>
       </div>
 
-      <h3>Daftar & Rekapitulasi Permintaan</h3>
+      <h3>Daftar & Rekapitulasi Tiket Permintaan</h3>
       <div class="table-responsive" id="containerTabelAdmin">
         <p>Memuat data permintaan...</p>
       </div>
@@ -235,7 +232,7 @@
   </div>
 </div>
 
-<!-- Area Render Draf PDF A5 -->
+<!-- Area Render Draf PDF A5 (Menampilkan Semua Barang dalam 1 Tiket) -->
 <div id="printArea">
   <div class="print-header">
     <div>
@@ -265,18 +262,12 @@
         <th style="width: 18%;">Kategori</th>
         <th style="width: 32%;">Nama Barang</th>
         <th style="width: 15%;">Jumlah</th>
-        <th style="width: 18%;">Supplier Rujukan</th>
-        <th style="width: 17%;">Keperluan / Keterangan</th>
+        <th style="width: 18%;">Supplier</th>
+        <th style="width: 17%;">Keterangan</th>
       </tr>
     </thead>
-    <tbody>
-      <tr>
-        <td class="kat-highlight" id="p_kategori">-</td>
-        <td id="p_barang">-</td>
-        <td><span id="p_jumlah">-</span> <span id="p_satuan"></span></td>
-        <td id="p_supplier">-</td>
-        <td id="p_ket">-</td>
-      </tr>
+    <tbody id="p_tabelItems">
+      <!-- Item barang akan dimasukkan dinamis di sini -->
     </tbody>
   </table>
 
@@ -305,12 +296,12 @@
 </div>
 
 <script>
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbyO728ZswaU-irbWAy3bWMay5UGicbfGSO7oaEfuFZpS4pe_2SWRUC7B6ujQ7yszi3N5Q/exec";
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbz3Ym-oqM3vHu4udv-J_iYR8RM1dNYS1BFGPZnnHX4PZsF7CWUKqpYFV0dM2RNjd3xTMA/exec";
 
   let sesiUser = {};
   let masterBarangData = [];
   let rawAdminData = [];
-  let staffDataList = [];
+  let groupedTiketList = [];
   let targetKodeUpload = "";
 
   window.onload = function() {
@@ -367,7 +358,7 @@
       `;
       muatMasterBarang();
       muatRiwayatStaff();
-      tambahBarisItem(); // Inisialisasi baris pertama input barang
+      tambahBarisItem();
     }
   }
 
@@ -410,9 +401,7 @@
       <div class="row-group">
         <div class="form-group" style="flex:1;">
           <label>Kategori</label>
-          <select class="item-kategori" required>
-            ${optionsKategori}
-          </select>
+          <select class="item-kategori" required>${optionsKategori}</select>
         </div>
         <div class="form-group" style="flex:2;">
           <label>Nama Barang / Material</label>
@@ -435,7 +424,6 @@
       </div>
     `;
     
-    // Tambahkan datalist global jika belum ada
     if (!document.getElementById('listMasterDinamis')) {
       const dl = document.createElement('datalist');
       dl.id = 'listMasterDinamis';
@@ -477,7 +465,7 @@
     });
 
     btn.disabled = true;
-    btn.innerText = "Memproses Pengajuan...";
+    btn.innerText = "Mengirim Tiket...";
     loading.style.display = "block";
 
     try {
@@ -497,7 +485,7 @@
       const result = await response.json();
 
       if (result.status === "success") {
-        alert("Permintaan berhasil dikirim ke Admin!");
+        alert("Tiket Permintaan berhasil dikirim ke Admin!");
         document.getElementById('formPermintaan').reset();
         document.getElementById('tglPermintaan').value = new Date().toISOString().split('T')[0];
         document.getElementById('listItemsContainer').innerHTML = "";
@@ -511,48 +499,82 @@
       alert("Terjadi kesalahan jaringan.");
     } finally {
       btn.disabled = false;
-      btn.innerText = "Kirim Permintaan ke Admin";
+      btn.innerText = "Kirim Tiket Permintaan ke Admin";
       loading.style.display = "none";
     }
   });
+
+  // Mengelompokkan baris berdasarkan kode REQ yang sama agar menjadi 1 tiket
+  function groupTiketData(dataList) {
+    let map = {};
+    dataList.forEach(row => {
+      if (!map[row.kode]) {
+        map[row.kode] = {
+          kode: row.kode,
+          tglSistem: row.tglSistem,
+          pemohon: row.pemohon,
+          divisi: row.divisi,
+          unit: row.unit,
+          tglPermintaan: row.tglPermintaan,
+          tglDibutuhkan: row.tglDibutuhkan,
+          urgensi: row.urgensi,
+          keterangan: row.keterangan,
+          status: row.status,
+          catatan: row.catatan,
+          pdfUrl: row.pdfUrl,
+          items: []
+        };
+      }
+      map[row.kode].items.push({
+        kategori: row.kategori,
+        barang: row.barang,
+        jumlah: row.jumlah,
+        satuan: row.satuan,
+        supplier: row.supplier
+      });
+    });
+    return Object.values(map);
+  }
 
   async function muatRiwayatStaff() {
     try {
       const res = await fetch(GAS_URL + "?action=getPermintaanAdmin");
       const json = await res.json();
       if (json.status === "success") {
-        staffDataList = json.data.filter(item => item.pemohon.toLowerCase() === sesiUser.nama.toLowerCase());
+        let staffRows = json.data.filter(item => item.pemohon.toLowerCase() === sesiUser.nama.toLowerCase());
+        groupedTiketList = groupTiketData(staffRows);
 
-        if (staffDataList.length === 0) {
+        if (groupedTiketList.length === 0) {
           document.getElementById('containerRiwayatStaff').innerHTML = "<p style='color:#666; font-size:13px;'>Belum ada riwayat pengajuan.</p>";
           return;
         }
 
         let html = `<table><thead><tr>
-          <th>Kode</th><th>Tanggal</th><th>Barang & Jumlah</th><th>Status & Catatan Admin</th><th>PDF TTD</th><th>Aksi</th>
+          <th>Kode Tiket</th><th>Tanggal</th><th>Daftar Barang (${groupedTiketList.reduce((a,b)=>a+b.items.length,0)} Item)</th><th>Status & Catatan</th><th>PDF TTD</th><th>Aksi</th>
         </tr></thead><tbody>`;
 
-        staffDataList.forEach(row => {
+        groupedTiketList.forEach(tiket => {
           let badgeClass = 'badge-pending';
-          if(row.status === 'ACC') badgeClass = 'badge-acc';
-          else if(row.status === 'REVISI') badgeClass = 'badge-revisi';
-          else if(row.status === 'DITOLAK') badgeClass = 'badge-tolak';
+          if(tiket.status === 'ACC') badgeClass = 'badge-acc';
+          else if(tiket.status === 'REVISI') badgeClass = 'badge-revisi';
+          else if(tiket.status === 'DITOLAK') badgeClass = 'badge-tolak';
 
-          const cleanPdfUrl = formatGoogleDriveUrl(row.pdfUrl);
+          const cleanPdfUrl = formatGoogleDriveUrl(tiket.pdfUrl);
+          let itemSummary = tiket.items.map(i => `• ${i.barang} (${i.jumlah} ${i.satuan})`).join('<br>');
 
           html += `<tr>
-            <td><b>${row.kode}</b></td>
-            <td>${row.tglPermintaan || '-'}</td>
-            <td><span class="badge" style="background:#e2e8f0;">${row.kategori || '-'}</span><br><b>${row.barang}</b> (${row.jumlah} ${row.satuan})</td>
+            <td><b>${tiket.kode}</b><br><small>${tiket.urgensi}</small></td>
+            <td>${tiket.tglPermintaan || '-'}</td>
+            <td>${itemSummary}</td>
             <td>
-              <span class="badge ${badgeClass}">${row.status}</span>
-              ${row.catatan && row.catatan !== '-' ? `<br><small style="color:#666;">Catatan: ${row.catatan}</small>` : ''}
+              <span class="badge ${badgeClass}">${tiket.status}</span>
+              ${tiket.catatan && tiket.catatan !== '-' ? `<br><small style="color:#666;">Catatan: ${tiket.catatan}</small>` : ''}
             </td>
             <td>${cleanPdfUrl !== '-' ? `<a href="${cleanPdfUrl}" target="_blank" style="color:#1a73e8; font-weight:bold;">Lihat PDF</a>` : '<span style="color:#999;">Belum ada</span>'}</td>
             <td>
-              <button class="btn-sm btn-print" onclick="downloadFormulirA5('${row.kode}')">📥 Download Draf A5</button>
-              <button class="btn-sm btn-upload" onclick="triggerUploadPdf('${row.kode}')">📤 Upload PDF</button>
-              ${row.status === 'PENDING' ? `<button class="btn-sm btn-delete" onclick="hapusPermintaanRow('${row.kode}')">🗑️ Hapus</button>` : ''}
+              <button class="btn-sm btn-print" onclick="downloadFormulirA5('${tiket.kode}')">📥 Download Draf A5</button>
+              <button class="btn-sm btn-upload" onclick="triggerUploadPdf('${tiket.kode}')">📤 Upload PDF</button>
+              ${tiket.status === 'PENDING' ? `<button class="btn-sm btn-delete" onclick="hapusTiket('${tiket.kode}')">🗑️ Hapus</button>` : ''}
             </td>
           </tr>`;
         });
@@ -574,7 +596,7 @@
     if (!file) return;
 
     if (file.type !== "application/pdf") { alert("Harap unggah file berformat PDF!"); return; }
-    if (!confirm(`Unggah file PDF "${file.name}" untuk permintaan ${targetKodeUpload}?`)) return;
+    if (!confirm(`Unggah file PDF "${file.name}" untuk tiket ${targetKodeUpload}?`)) return;
 
     try {
       const base64File = await convertFileToBase64(file);
@@ -589,27 +611,35 @@
   }
 
   function downloadFormulirA5(kode) {
-    const item = staffDataList.find(i => i.kode === kode);
-    if (!item) { alert("Data tidak ditemukan!"); return; }
+    const tiket = groupedTiketList.find(i => i.kode === kode);
+    if (!tiket) { alert("Data tiket tidak ditemukan!"); return; }
 
-    document.getElementById('p_kode').innerText = item.kode || '-';
-    document.getElementById('p_tglSistem').innerText = item.tglSistem || '-';
-    document.getElementById('p_nama').innerText = item.pemohon || '-';
-    document.getElementById('p_unit').innerText = item.unit || '-';
-    document.getElementById('p_kategori').innerText = item.kategori || '-';
-    document.getElementById('p_barang').innerText = item.barang || '-';
-    document.getElementById('p_jumlah').innerText = item.jumlah || '-';
-    document.getElementById('p_satuan').innerText = item.satuan || '';
-    document.getElementById('p_supplier').innerText = (item.supplier && item.supplier !== '-') ? item.supplier : '-';
-    document.getElementById('p_ket').innerText = (item.keterangan && item.keterangan !== '-') ? item.keterangan : '-';
-    document.getElementById('t_pemohon').innerText = item.pemohon || '-';
+    document.getElementById('p_kode').innerText = tiket.kode || '-';
+    document.getElementById('p_tglSistem').innerText = tiket.tglSistem || '-';
+    document.getElementById('p_nama').innerText = tiket.pemohon || '-';
+    document.getElementById('p_unit').innerText = tiket.unit || '-';
+    document.getElementById('t_pemohon').innerText = tiket.pemohon || '-';
+
+    let tbodyHtml = "";
+    tiket.items.forEach(itm => {
+      tbodyHtml += `
+        <tr>
+          <td class="kat-highlight">${itm.kategori}</td>
+          <td><b>${itm.barang}</b></td>
+          <td>${itm.jumlah} ${itm.satuan}</td>
+          <td>${itm.supplier !== '-' ? itm.supplier : '-'}</td>
+          <td>${tiket.keterangan !== '-' ? tiket.keterangan : '-'}</td>
+        </tr>
+      `;
+    });
+    document.getElementById('p_tabelItems').innerHTML = tbodyHtml;
 
     const printArea = document.getElementById('printArea');
     printArea.style.display = 'block';
 
     const opt = {
       margin: 2,
-      filename: `Form_Permintaan_${item.kode}_${item.pemohon}.pdf`.replace(/\s+/g, '_'),
+      filename: `Form_Tiket_${tiket.kode}_${tiket.pemohon}.pdf`.replace(/\s+/g, '_'),
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { scale: 2, useCORS: true },
       jsPDF: { unit: 'mm', format: 'a5', orientation: 'portrait' }
@@ -618,14 +648,14 @@
     html2pdf().from(printArea).set(opt).save().then(() => { printArea.style.display = 'none'; });
   }
 
-  async function hapusPermintaanRow(kode) {
-    if (!confirm(`Apakah Anda yakin ingin menghapus permintaan ${kode}?`)) return;
+  async function hapusTiket(kode) {
+    if (!confirm(`Apakah Anda yakin ingin menghapus seluruh tiket ${kode}?`)) return;
 
     try {
       const payload = { action: "deletePermintaan", kodeBarang: kode };
       const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
       const json = await res.json();
-      if (json.status === "success") { alert("Permintaan berhasil dihapus!"); muatRiwayatStaff(); }
+      if (json.status === "success") { alert("Tiket berhasil dihapus!"); muatRiwayatStaff(); }
       else { alert("Gagal: " + json.message); }
     } catch(e) { alert("Terjadi kesalahan koneksi."); }
   }
@@ -635,7 +665,7 @@
       const res = await fetch(GAS_URL + "?action=getPermintaanAdmin");
       const json = await res.json();
       if (json.status === "success") {
-        rawAdminData = json.data;
+        rawAdminData = groupTiketData(json.data);
         populateUnitFilter(rawAdminData);
         terapkanFilterAdmin();
       }
@@ -684,38 +714,38 @@
 
   function renderTabelAdmin(data) {
     if (data.length === 0) {
-      document.getElementById('containerTabelAdmin').innerHTML = "<p style='text-align:center; padding:20px; color:#666;'>Tidak ada data.</p>";
+      document.getElementById('containerTabelAdmin').innerHTML = "<p style='text-align:center; padding:20px; color:#666;'>Tidak ada data tiket.</p>";
       return;
     }
 
     let html = `<table><thead><tr>
-      <th>Kode</th><th>Tanggal</th><th>Pemohon / Unit</th><th>Barang</th><th>Status</th><th>PDF TTD</th><th>Aksi Admin</th>
+      <th>Tiket & Tanggal</th><th>Pemohon / Unit</th><th>Daftar Barang</th><th>Status</th><th>PDF TTD</th><th>Aksi Admin</th>
     </tr></thead><tbody>`;
 
-    data.forEach(row => {
+    data.forEach(tiket => {
       let badgeClass = 'badge-pending';
-      if(row.status === 'ACC') badgeClass = 'badge-acc';
-      else if(row.status === 'REVISI') badgeClass = 'badge-revisi';
-      else if(row.status === 'DITOLAK') badgeClass = 'badge-tolak';
+      if(tiket.status === 'ACC') badgeClass = 'badge-acc';
+      else if(tiket.status === 'REVISI') badgeClass = 'badge-revisi';
+      else if(tiket.status === 'DITOLAK') badgeClass = 'badge-tolak';
 
-      const cleanPdfUrl = formatGoogleDriveUrl(row.pdfUrl);
+      const cleanPdfUrl = formatGoogleDriveUrl(tiket.pdfUrl);
+      let itemSummary = tiket.items.map(i => `• ${i.barang} (${i.jumlah} ${i.satuan})`).join('<br>');
 
       html += `<tr>
-        <td><b>${row.kode}</b></td>
-        <td>${row.tglPermintaan || '-'}</td>
-        <td><b>${row.pemohon}</b><br><small>${row.unit}</small></td>
-        <td>${row.barang} (${row.jumlah} ${row.satuan})</td>
-        <td><span class="badge ${badgeClass}">${row.status}</span><br><small>${row.catatan !== '-' ? row.catatan : ''}</small></td>
+        <td><b>${tiket.kode}</b><br><small>${tiket.tglPermintaan}</small></td>
+        <td><b>${tiket.pemohon}</b><br><small>${tiket.unit}</small></td>
+        <td>${itemSummary}</td>
+        <td><span class="badge ${badgeClass}">${tiket.status}</span><br><small>${tiket.catatan !== '-' ? tiket.catatan : ''}</small></td>
         <td>${cleanPdfUrl !== '-' ? `<a href="${cleanPdfUrl}" target="_blank">Lihat PDF</a>` : '-'}</td>
         <td>
-          <select id="status_${row.kode}" style="padding:4px; font-size:12px; margin-bottom:4px;">
-            <option value="PENDING" ${row.status==='PENDING'?'selected':''}>PENDING</option>
-            <option value="ACC" ${row.status==='ACC'?'selected':''}>ACC</option>
-            <option value="REVISI" ${row.status==='REVISI'?'selected':''}>REVISI</option>
-            <option value="DITOLAK" ${row.status==='DITOLAK'?'selected':''}>DITOLAK</option>
+          <select id="status_${tiket.kode}" style="padding:4px; font-size:12px; margin-bottom:4px;">
+            <option value="PENDING" ${tiket.status==='PENDING'?'selected':''}>PENDING</option>
+            <option value="ACC" ${tiket.status==='ACC'?'selected':''}>ACC</option>
+            <option value="REVISI" ${tiket.status==='REVISI'?'selected':''}>REVISI</option>
+            <option value="DITOLAK" ${tiket.status==='DITOLAK'?'selected':''}>DITOLAK</option>
           </select><br>
-          <input type="text" id="catatan_${row.kode}" value="${row.catatan !== '-' ? row.catatan : ''}" placeholder="Catatan..." style="font-size:12px; padding:4px;"><br>
-          <button onclick="updateStatusAdmin('${row.kode}')" style="padding:4px 8px; font-size:12px; margin-top:4px; background:#1a73e8; width:auto;">Simpan</button>
+          <input type="text" id="catatan_${tiket.kode}" value="${tiket.catatan !== '-' ? tiket.catatan : ''}" placeholder="Catatan..." style="font-size:12px; padding:4px;"><br>
+          <button onclick="updateStatusAdmin('${tiket.kode}')" style="padding:4px 8px; font-size:12px; margin-top:4px; background:#1a73e8; width:auto;">Simpan</button>
         </td>
       </tr>`;
     });
@@ -723,27 +753,29 @@
     document.getElementById('containerTabelAdmin').innerHTML = html;
   }
 
-  async function updateStatusAdmin(kodeBarang) {
-    const status = document.getElementById(`status_${kodeBarang}`).value;
-    const catatan = document.getElementById(`catatan_${kodeBarang}`).value;
+  async function updateStatusAdmin(kodeTiket) {
+    const status = document.getElementById(`status_${kodeTiket}`).value;
+    const catatan = document.getElementById(`catatan_${kodeTiket}`).value;
 
     try {
-      const payload = { action: "updateStatus", kodeBarang: kodeBarang, status: status, catatan: catatan };
+      const payload = { action: "updateStatus", kodeBarang: kodeTiket, status: status, catatan: catatan };
       const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
       const json = await res.json();
-      if(json.status === "success") { alert("Status diperbarui!"); muatDataAdmin(); }
+      if(json.status === "success") { alert("Status tiket diperbarui!"); muatDataAdmin(); }
       else { alert("Gagal: " + json.message); }
     } catch(e) { alert("Terjadi kesalahan jaringan."); }
   }
 
   function eksporKeCSV() {
     let csv = "data:text/csv;charset=utf-8,Kode,Tanggal,Pemohon,Unit,Kategori,Barang,Jumlah,Satuan,Status,Catatan,PDF\n";
-    rawAdminData.forEach(r => {
-      csv += `"${r.kode}","${r.tglPermintaan}","${r.pemohon}","${r.unit}","${r.kategori}","${r.barang}","${r.jumlah}","${r.satuan}","${r.status}","${r.catatan}","${r.pdfUrl}"\n`;
+    rawAdminData.forEach(tiket => {
+      tiket.items.forEach(i => {
+        csv += `"${tiket.kode}","${tiket.tglPermintaan}","${tiket.pemohon}","${tiket.unit}","${i.kategori}","${i.barang}","${i.jumlah}","${i.satuan}","${tiket.status}","${tiket.catatan}","${tiket.pdfUrl}"\n`;
+      });
     });
     const link = document.createElement("a");
     link.setAttribute("href", encodeURI(csv));
-    link.setAttribute("download", "Rekap_Permintaan.csv");
+    link.setAttribute("download", "Rekap_Tiket_Permintaan.csv");
     document.body.appendChild(link); link.click(); document.body.removeChild(link);
   }
 </script>
