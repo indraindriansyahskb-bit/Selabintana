@@ -134,7 +134,6 @@
     .badge-revisi { background: #e0f2fe; color: #075985; }
     .badge-tolak { background: #fee2e2; color: #991b1b; }
 
-    /* Tombol-tombol Aksi di Tabel */
     .btn-sm { padding: 4px 8px; font-size: 11px; margin-right: 3px; margin-bottom: 3px; border-radius: 4px; }
     .btn-print { background-color: #6366f1; }
     .btn-print:hover { background-color: #4f46e5; }
@@ -145,7 +144,9 @@
     .btn-upload { background-color: #10b981; }
     .btn-upload:hover { background-color: #059669; }
 
-    /* Style Khusus Cetak A5 (Format Sempit untuk 2 Lembar Form A5 dalam 1 Kertas A4) */
+    /* =========================================
+       STYLE KHUSUS CETAK DRAF A5 (SESUAI GAMBAR 2)
+       ========================================= */
     #printArea {
       display: none;
     }
@@ -164,16 +165,136 @@
         top: 0;
         width: 148mm;
         height: 210mm;
-        padding: 5mm;
+        padding: 8mm 10mm;
         background: white;
-        font-size: 11px;
-        color: black;
+        font-family: 'Segoe UI', Arial, sans-serif;
+        color: #111827;
         box-sizing: border-box;
       }
       @page {
         size: A4 portrait;
         margin: 5mm;
       }
+    }
+
+    .print-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 1px solid #e5e7eb;
+      padding-bottom: 8px;
+      margin-bottom: 15px;
+    }
+    .print-header h2 {
+      font-size: 16px;
+      font-weight: 800;
+      margin: 0;
+      color: #111827;
+      text-align: left;
+      border: none;
+      padding: 0;
+    }
+    .print-header p {
+      font-size: 10px;
+      color: #6b7280;
+      margin: 2px 0 0 0;
+    }
+    .print-meta {
+      text-align: right;
+    }
+    .print-meta .req-code {
+      font-size: 13px;
+      font-weight: 800;
+      color: #059669;
+    }
+    .print-meta .req-date {
+      font-size: 10px;
+      color: #4b5563;
+      margin-top: 2px;
+    }
+
+    .print-user-card {
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 10px 15px;
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      background-color: #ffffff;
+    }
+    .user-card-item label {
+      font-size: 9px;
+      font-weight: 700;
+      color: #6b7280;
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 2px;
+    }
+    .user-card-item span {
+      font-size: 12px;
+      font-weight: 800;
+      color: #111827;
+    }
+
+    .print-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 35px;
+    }
+    .print-table th {
+      font-size: 9px;
+      font-weight: 700;
+      color: #4b5563;
+      text-transform: uppercase;
+      text-align: left;
+      padding: 6px 4px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .print-table td {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 12px 4px;
+      border-bottom: 1px solid #e5e7eb;
+      vertical-align: top;
+    }
+    .print-table td.kat-highlight {
+      color: #059669;
+    }
+
+    .print-ttd-container {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+    }
+    .print-ttd-box {
+      flex: 1;
+      text-align: center;
+      padding: 0 5px;
+      position: relative;
+    }
+    .print-ttd-box:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      right: 0;
+      top: 10%;
+      height: 80%;
+      border-right: 1px solid #f3f4f6;
+    }
+    .print-ttd-title {
+      font-size: 9px;
+      font-weight: 800;
+      color: #374151;
+      text-transform: uppercase;
+      margin-bottom: 45px; /* Jarak ruang tanda tangan manual */
+    }
+    .print-ttd-line {
+      border-bottom: 1px dashed #9ca3af;
+      margin: 0 8px 10px 8px;
+    }
+    .print-ttd-name {
+      font-size: 10px;
+      font-weight: 800;
+      color: #111827;
     }
   </style>
 </head>
@@ -197,7 +318,7 @@
       <div id="loginLoading" style="display:none; text-align:center; margin-top:10px; font-size:13px; color:#1a73e8;">Memeriksa kredensial...</div>
     </div>
 
-    <!-- Panel Khusus Staff (Form Permintaan & Riwayat) -->
+    <!-- Panel Khusus Staff -->
     <div id="panelStaff" style="display: none;">
       <div class="user-info-box" id="infoSesiStaff"></div>
 
@@ -281,7 +402,6 @@
         <p>Memuat riwayat...</p>
       </div>
 
-      <!-- Input file tersembunyi untuk upload per baris -->
       <input type="file" id="hiddenFileInput" accept="application/pdf" style="display:none;" onchange="prosesUploadPdfHistory(event)">
     </div>
 
@@ -329,39 +449,73 @@
   </div>
 </div>
 
-<!-- Format Cetak Draf A5 Tersembunyi -->
+<!-- Area Cetak Sesuai Layout Gambar 2 -->
 <div id="printArea">
-  <div style="text-align:center; font-weight:bold; font-size:14px; margin-bottom:5px;">CV. SELABINTANA</div>
-  <div style="text-align:center; font-size:12px; margin-bottom:15px; border-bottom:1px solid #000; padding-bottom:5px;">LEMBAR PENGAJUAN & PERMINTAAN MATERIAL (A5)</div>
-  
-  <table style="width:100%; font-size:11px; margin-bottom:15px; border-collapse:collapse;">
-    <tr><td style="width:30%;"><strong>Kode Req</strong></td><td>: <span id="p_kode">-</span></td></tr>
-    <tr><td><strong>Pemohon</strong></td><td>: <span id="p_nama">-</span></td></tr>
-    <tr><td><strong>Divisi / Unit</strong></td><td>: <span id="p_divisi">-</span> / <span id="p_unit">-</span></td></tr>
-    <tr><td><strong>Tanggal Permintaan</strong></td><td>: <span id="p_tgl">-</span></td></tr>
-    <tr><td><strong>Tanggal Dibutuhkan</strong></td><td>: <span id="p_tglButuh">-</span></td></tr>
-    <tr><td><strong>Urgensi / Kategori</strong></td><td>: <span id="p_urgensi">-</span> / <span id="p_kategori">-</span></td></tr>
-    <tr><td><strong>Nama Barang</strong></td><td>: <span id="p_barang">-</span></td></tr>
-    <tr><td><strong>Jumlah & Satuan</strong></td><td>: <span id="p_jumlah">-</span> <span id="p_satuan">-</span></td></tr>
-    <tr><td><strong>Supplier Rujukan</strong></td><td>: <span id="p_supplier">-</span></td></tr>
-    <tr><td><strong>Keperluan</strong></td><td>: <span id="p_ket">-</span></td></tr>
+  <div class="print-header">
+    <div>
+      <h2>CV. SELABINTANA</h2>
+      <p>Lembar Pengajuan & Permintaan Material (Ukuran A5)</p>
+    </div>
+    <div class="print-meta">
+      <div class="req-code" id="p_kode">-</div>
+      <div class="req-date" id="p_tglSistem">-</div>
+    </div>
+  </div>
+
+  <div class="print-user-card">
+    <div class="user-card-item">
+      <label>Pemohon:</label>
+      <span id="p_nama">-</span>
+    </div>
+    <div class="user-card-item" style="text-align: right;">
+      <label>Unit / Lokasi:</label>
+      <span id="p_unit">-</span>
+    </div>
+  </div>
+
+  <table class="print-table">
+    <thead>
+      <tr>
+        <th style="width: 18%;">Kategori</th>
+        <th style="width: 32%;">Nama Barang</th>
+        <th style="width: 15%;">Jumlah</th>
+        <th style="width: 18%;">Supplier Rujukan</th>
+        <th style="width: 17%;">Keperluan / Keterangan</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="kat-highlight" id="p_kategori">-</td>
+        <td id="p_barang">-</td>
+        <td><span id="p_jumlah">-</span> <span id="p_satuan"></span></td>
+        <td id="p_supplier">-</td>
+        <td id="p_ket">-</td>
+      </tr>
+    </tbody>
   </table>
 
-  <!-- 4 Kolom Tanda Tangan Berjenjang -->
-  <table style="width:100%; text-align:center; font-size:10px; margin-top:20px; border-collapse:collapse;">
-    <tr>
-      <td style="border:1px solid #000; padding:5px; width:25%;">1. YANG MEMBUAT</td>
-      <td style="border:1px solid #000; padding:5px; width:25%;">2. MENGETAHUI</td>
-      <td style="border:1px solid #000; padding:5px; width:25%;">3. MENYETUJUI</td>
-      <td style="border:1px solid #000; padding:5px; width:25%;">4. DI-ACC GM</td>
-    </tr>
-    <tr>
-      <td style="border:1px solid #000; height:50px; vertical-align:bottom;">(<span id="t_pemohon">-</span>)</td>
-      <td style="border:1px solid #000; height:50px; vertical-align:bottom;">(Atasan Unit)</td>
-      <td style="border:1px solid #000; height:50px; vertical-align:bottom;">(Head Farm / Unit)</td>
-      <td style="border:1px solid #000; height:50px; vertical-align:bottom;">(General Manager)</td>
-    </tr>
-  </table>
+  <div class="print-ttd-container">
+    <div class="print-ttd-box">
+      <div class="print-ttd-title">1. YANG MEMBUAT</div>
+      <div class="print-ttd-line"></div>
+      <div class="print-ttd-name">( <span id="t_pemohon">-</span> )</div>
+    </div>
+    <div class="print-ttd-box">
+      <div class="print-ttd-title">2. MENGETAHUI</div>
+      <div class="print-ttd-line"></div>
+      <div class="print-ttd-name">( Atasan Unit )</div>
+    </div>
+    <div class="print-ttd-box">
+      <div class="print-ttd-title">3. MENYETUJUI</div>
+      <div class="print-ttd-line"></div>
+      <div class="print-ttd-name">( Head Farm / Unit )</div>
+    </div>
+    <div class="print-ttd-box">
+      <div class="print-ttd-title">4. DI-ACC GM</div>
+      <div class="print-ttd-line"></div>
+      <div class="print-ttd-name">drh. Titin Idayati</div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -471,7 +625,6 @@
     });
   }
 
-  // Submit / Edit Permintaan dari Staff
   document.getElementById('formPermintaan').addEventListener('submit', async function(e) {
     e.preventDefault();
     const btn = document.getElementById('submitBtn');
@@ -519,7 +672,6 @@
     }
   });
 
-  // Muat Riwayat Khusus Staff
   async function muatRiwayatStaff() {
     try {
       const res = await fetch(GAS_URL + "?action=getPermintaanAdmin");
@@ -613,29 +765,21 @@
 
   function cetakFormulirRow(kode) {
     const item = staffDataList.find(i => i.kode === kode);
-    if (!item) {
-      alert("Data permintaan tidak ditemukan!");
-      return;
-    }
+    if (!item) { alert("Data tidak ditemukan!"); return; }
 
     document.getElementById('p_kode').innerText = item.kode || '-';
+    document.getElementById('p_tglSistem').innerText = item.tglSistem || '-';
     document.getElementById('p_nama').innerText = item.pemohon || '-';
-    document.getElementById('p_divisi').innerText = item.divisi || '-';
     document.getElementById('p_unit').innerText = item.unit || '-';
-    document.getElementById('p_tgl').innerText = item.tglPermintaan || '-';
-    document.getElementById('p_tglButuh').innerText = item.tglDibutuhkan || '-';
-    document.getElementById('p_urgensi').innerText = item.urgensi || '-';
     document.getElementById('p_kategori').innerText = item.kategori || '-';
     document.getElementById('p_barang').innerText = item.barang || '-';
     document.getElementById('p_jumlah').innerText = item.jumlah || '-';
-    document.getElementById('p_satuan').innerText = item.satuan || '-';
+    document.getElementById('p_satuan').innerText = item.satuan || '';
     document.getElementById('p_supplier').innerText = item.supplier !== '-' ? item.supplier : '-';
     document.getElementById('p_ket').innerText = item.keterangan !== '-' ? item.keterangan : '-';
     document.getElementById('t_pemohon').innerText = item.pemohon || '-';
 
-    setTimeout(() => {
-      window.print();
-    }, 200);
+    setTimeout(() => { window.print(); }, 200);
   }
 
   function editFormulirRow(kode) {
