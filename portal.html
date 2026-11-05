@@ -21,7 +21,7 @@
       padding: 20px;
     }
     .wrapper {
-      max-width: 950px;
+      max-width: 1050px;
       margin: auto;
     }
     .card {
@@ -76,34 +76,15 @@
     .row-group .form-group {
       flex: 1;
     }
-    .file-upload-box {
-      border: 2px dashed var(--border-color);
-      padding: 15px;
-      text-align: center;
-      border-radius: 6px;
-      background: #fafafa;
-      cursor: pointer;
-    }
-    .file-upload-box:hover {
-      border-color: var(--primary-color);
-      background: #f1f5f9;
-    }
-    #fileInfo {
-      margin-top: 6px;
-      font-size: 12px;
-      color: #059669;
-      font-weight: 500;
-    }
     button {
       background-color: var(--primary-color);
       color: white;
-      padding: 12px 15px;
+      padding: 10px 14px;
       border: none;
       border-radius: 6px;
       cursor: pointer;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 600;
-      width: 100%;
     }
     button:hover { background-color: var(--primary-hover); }
     button:disabled { background-color: #9ca3af; cursor: not-allowed; }
@@ -143,8 +124,8 @@
     .stat-card.tolak { border-left: 4px solid #dc2626; }
 
     .table-responsive { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; font-size: 13px; background: white; margin-top: 10px; }
-    th, td { border: 1px solid #e5e7eb; padding: 10px; text-align: left; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; background: white; margin-top: 10px; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; vertical-align: middle; }
     th { background-color: #f9fafb; font-weight: 600; color: #374151; }
     tr:nth-child(even) { background-color: #f9fafb; }
     .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
@@ -153,18 +134,22 @@
     .badge-revisi { background: #e0f2fe; color: #075985; }
     .badge-tolak { background: #fee2e2; color: #991b1b; }
 
-    /* Tombol Cetak A5 */
-    .btn-print {
-      background-color: #6366f1;
-      margin-bottom: 15px;
-    }
+    /* Tombol-tombol Aksi di Tabel */
+    .btn-sm { padding: 4px 8px; font-size: 11px; margin-right: 3px; margin-bottom: 3px; border-radius: 4px; }
+    .btn-print { background-color: #6366f1; }
     .btn-print:hover { background-color: #4f46e5; }
+    .btn-edit { background-color: #f59e0b; }
+    .btn-edit:hover { background-color: #d97706; }
+    .btn-delete { background-color: #ef4444; }
+    .btn-delete:hover { background-color: #dc2626; }
+    .btn-upload { background-color: #10b981; }
+    .btn-upload:hover { background-color: #059669; }
 
     /* Style Khusus Cetak A5 */
     @media print {
       body * { visibility: hidden; }
       #printArea, #printArea * { visibility: visible; }
-      #printArea { position: absolute; left: 0; top: 0; width: 148mm; height: 210mm; padding: 10mm; background: white; font-size: 12px; }
+      #printArea { position: absolute; left: 0; top: 0; width: 148mm; height: 210mm; padding: 10mm; background: white; font-size: 11px; }
       .no-print { display: none !important; }
     }
   </style>
@@ -172,11 +157,11 @@
 <body>
 
 <div class="wrapper">
-  <div class="card">
+  <div class="card no-print">
     <h2>Portal Permintaan Material & Barang</h2>
     
     <!-- Login Section -->
-    <div id="loginSection" class="no-print">
+    <div id="loginSection">
       <div class="form-group">
         <label for="loginUser">Username:</label>
         <input type="text" id="loginUser" placeholder="Masukkan username..." required>
@@ -185,17 +170,18 @@
         <label for="loginPass">Password:</label>
         <input type="password" id="loginPass" placeholder="Masukkan password..." required>
       </div>
-      <button type="button" onclick="prosesLogin()">Login ke Portal</button>
+      <button type="button" onclick="prosesLogin()" style="width:100%;">Login ke Portal</button>
       <div id="loginLoading" style="display:none; text-align:center; margin-top:10px; font-size:13px; color:#1a73e8;">Memeriksa kredensial...</div>
     </div>
 
-    <!-- Panel Khusus Staff (Form, Tombol Cetak & Riwayat) -->
+    <!-- Panel Khusus Staff (Form Permintaan & Riwayat) -->
     <div id="panelStaff" style="display: none;">
       <div class="user-info-box" id="infoSesiStaff"></div>
 
-      <button type="button" class="btn-print" onclick="cetakFormulirA5()">🖨️ Cetak Draf Permintaan (Format A5)</button>
-
       <form id="formPermintaan">
+        <input type="hidden" id="editKodeBarang" value="">
+        <h3 id="formTitle">Buat Permintaan Barang Baru</h3>
+
         <div class="row-group">
           <div class="form-group">
             <label for="tglPermintaan">Tanggal Permintaan</label>
@@ -258,16 +244,10 @@
           <textarea id="keterangan" placeholder="Tuliskan keterangan keperluan material..."></textarea>
         </div>
 
-        <div class="form-group">
-          <label for="lampiranFile">Unggah Dokumen PDF Tanda Tangan (Setelah Dicetak & TTD Berjenjang)</label>
-          <div class="file-upload-box" onclick="document.getElementById('lampiranFile').click()">
-            📂 Klik untuk memilih file PDF bertanda tangan
-            <input type="file" id="lampiranFile" accept="application/pdf" style="display: none;" onchange="handleFileSelect(event)">
-            <div id="fileInfo">Belum ada file dipilih</div>
-          </div>
+        <div style="display:flex; gap:10px;">
+          <button type="submit" id="submitBtn" style="flex:1;">Kirim Permintaan ke Admin</button>
+          <button type="button" id="cancelEditBtn" onclick="batalEdit()" style="background:#6b7280; display:none;">Batal Edit</button>
         </div>
-
-        <button type="submit" id="submitBtn">Kirim Permintaan ke Admin</button>
         <div id="loadingStatus" style="text-align:center; margin-top:10px; font-style:italic; color:#1a73e8; display:none;">Sedang memproses...</div>
       </form>
 
@@ -277,9 +257,12 @@
       <div class="table-responsive" id="containerRiwayatStaff">
         <p>Memuat riwayat...</p>
       </div>
+
+      <!-- Input file tersembunyi untuk upload per baris -->
+      <input type="file" id="hiddenFileInput" accept="application/pdf" style="display:none;" onchange="prosesUploadPdfHistory(event)">
     </div>
 
-    <!-- Panel Khusus Admin (Verifikasi & Rekapitulasi) -->
+    <!-- Panel Khusus Admin -->
     <div id="panelAdmin" style="display: none;">
       <div class="user-info-box" id="infoSesiAdmin"></div>
 
@@ -323,13 +306,14 @@
   </div>
 </div>
 
-<!-- Area Cetak Tersembunyi (Format A5 & Kotak TTD Berjenjang) -->
+<!-- Format Cetak Draf A5 Tersembunyi -->
 <div id="printArea" style="display:none;">
   <div style="text-align:center; font-weight:bold; font-size:14px; margin-bottom:5px;">CV. SELABINTANA</div>
   <div style="text-align:center; font-size:12px; margin-bottom:15px; border-bottom:1px solid #000; padding-bottom:5px;">LEMBAR PENGAJUAN & PERMINTAAN MATERIAL (A5)</div>
   
   <table style="width:100%; font-size:11px; margin-bottom:15px; border-collapse:collapse;">
-    <tr><td style="width:30%;"><strong>Pemohon</strong></td><td>: <span id="p_nama">-</span></td></tr>
+    <tr><td style="width:30%;"><strong>Kode Req</strong></td><td>: <span id="p_kode">-</span></td></tr>
+    <tr><td><strong>Pemohon</strong></td><td>: <span id="p_nama">-</span></td></tr>
     <tr><td><strong>Divisi / Unit</strong></td><td>: <span id="p_divisi">-</span> / <span id="p_unit">-</span></td></tr>
     <tr><td><strong>Tanggal Permintaan</strong></td><td>: <span id="p_tgl">-</span></td></tr>
     <tr><td><strong>Tanggal Dibutuhkan</strong></td><td>: <span id="p_tglButuh">-</span></td></tr>
@@ -340,7 +324,7 @@
     <tr><td><strong>Keperluan</strong></td><td>: <span id="p_ket">-</span></td></tr>
   </table>
 
-  <!-- Kotak Tanda Tangan Berjenjang -->
+  <!-- 4 Kolom Tanda Tangan Berjenjang -->
   <table style="width:100%; text-align:center; font-size:10px; margin-top:20px; border-collapse:collapse;">
     <tr>
       <td style="border:1px solid #000; padding:5px; width:25%;">1. YANG MEMBUAT</td>
@@ -363,6 +347,8 @@
   let sesiUser = {};
   let masterBarangData = [];
   let rawAdminData = [];
+  let staffDataList = [];
+  let targetKodeUpload = "";
 
   window.onload = function() {
     const savedUser = localStorage.getItem('portal_user_session');
@@ -453,22 +439,6 @@
     perbaruiDatalist(filtered);
   }
 
-  function handleFileSelect(event) {
-    const file = event.target.files[0];
-    const fileInfo = document.getElementById('fileInfo');
-    if (file) {
-      if (file.type !== "application/pdf") {
-        alert("Harap unggah file berformat PDF!");
-        event.target.value = "";
-        fileInfo.innerText = "Belum ada file dipilih";
-        return;
-      }
-      fileInfo.innerText = `📄 ${file.name} (${(file.size/1024/1024).toFixed(2)} MB)`;
-    } else {
-      fileInfo.innerText = "Belum ada file dipilih";
-    }
-  }
-
   function convertFileToBase64(file) {
     return new Promise((resolve) => {
       if (!file) { resolve(""); return; }
@@ -478,29 +448,7 @@
     });
   }
 
-  // Fungsi Cetak Draf Format A5
-  function cetakFormulirA5() {
-    const barang = document.getElementById('namaBarang').value;
-    if (!barang) { alert("Isi nama barang terlebih dahulu sebelum mencetak draf!"); return; }
-
-    document.getElementById('p_nama').innerText = sesiUser.nama;
-    document.getElementById('p_divisi').innerText = sesiUser.divisi;
-    document.getElementById('p_unit').innerText = sesiUser.unitLokasi;
-    document.getElementById('p_tgl').innerText = document.getElementById('tglPermintaan').value;
-    document.getElementById('p_tglButuh').innerText = document.getElementById('tglDibutuhkan').value;
-    document.getElementById('p_urgensi').innerText = document.getElementById('urgensi').value;
-    document.getElementById('p_kategori').innerText = document.getElementById('kategori').value;
-    document.getElementById('p_barang').innerText = barang;
-    document.getElementById('p_jumlah').innerText = document.getElementById('jumlah').value;
-    document.getElementById('p_satuan').innerText = document.getElementById('satuan').value;
-    document.getElementById('p_supplier').innerText = document.getElementById('supplier').value || '-';
-    document.getElementById('p_ket').innerText = document.getElementById('keterangan').value || '-';
-    document.getElementById('t_pemohon').innerText = sesiUser.nama;
-
-    window.print();
-  }
-
-  // Submit Permintaan dari Staff
+  // Submit / Edit Permintaan dari Staff
   document.getElementById('formPermintaan').addEventListener('submit', async function(e) {
     e.preventDefault();
     const btn = document.getElementById('submitBtn');
@@ -510,20 +458,10 @@
     loading.style.display = "block";
 
     try {
-      const fileInput = document.getElementById('lampiranFile');
-      let base64File = "";
-      let fileName = "";
-      let mimeType = "application/pdf";
-
-      if (fileInput.files.length > 0) {
-        const file = fileInput.files[0];
-        fileName = file.name;
-        mimeType = file.type;
-        base64File = await convertFileToBase64(file);
-      }
-
+      const editKode = document.getElementById('editKodeBarang').value;
       const payload = {
-        action: "submitPermintaan",
+        action: editKode ? "editPermintaan" : "submitPermintaan",
+        kodeBarang: editKode,
         namaPemohon: sesiUser.nama,
         divisi: sesiUser.divisi,
         unitLokasi: sesiUser.unitLokasi,
@@ -535,20 +473,15 @@
         jumlah: document.getElementById('jumlah').value,
         satuan: document.getElementById('satuan').value,
         supplier: document.getElementById('supplier').value.trim(),
-        keterangan: document.getElementById('keterangan').value.trim(),
-        fileName: fileName,
-        mimeType: mimeType,
-        fileData: base64File
+        keterangan: document.getElementById('keterangan').value.trim()
       };
 
       const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
       const result = await response.json();
 
       if (result.status === "success") {
-        alert("Permintaan berhasil dikirim ke Admin!");
-        document.getElementById('formPermintaan').reset();
-        document.getElementById('tglPermintaan').value = new Date().toISOString().split('T')[0];
-        document.getElementById('fileInfo').innerText = "Belum ada file dipilih";
+        alert(editKode ? "Permintaan berhasil diperbarui!" : "Permintaan berhasil dikirim ke Admin!");
+        batalEdit();
         muatMasterBarang();
         muatRiwayatStaff();
       } else {
@@ -563,25 +496,24 @@
     }
   });
 
-  // Muat Riwayat Khusus Staff yang Sedang Login
+  // Muat Riwayat Khusus Staff
   async function muatRiwayatStaff() {
     try {
       const res = await fetch(GAS_URL + "?action=getPermintaanAdmin");
       const json = await res.json();
       if (json.status === "success") {
-        // Filter hanya milik staff yang sedang login
-        const myData = json.data.filter(item => item.pemohon.toLowerCase() === sesiUser.nama.toLowerCase());
+        staffDataList = json.data.filter(item => item.pemohon.toLowerCase() === sesiUser.nama.toLowerCase());
 
-        if (myData.length === 0) {
+        if (staffDataList.length === 0) {
           document.getElementById('containerRiwayatStaff').innerHTML = "<p style='color:#666; font-size:13px;'>Belum ada riwayat pengajuan.</p>";
           return;
         }
 
         let html = `<table><thead><tr>
-          <th>Kode</th><th>Tanggal</th><th>Barang</th><th>Jumlah</th><th>Status & Catatan Admin</th><th>PDF TTD</th>
+          <th>Kode</th><th>Tanggal</th><th>Barang</th><th>Jumlah</th><th>Status & Catatan Admin</th><th>PDF TTD</th><th>Aksi Staff</th>
         </tr></thead><tbody>`;
 
-        myData.forEach(row => {
+        staffDataList.forEach(row => {
           let badgeClass = 'badge-pending';
           if(row.status === 'ACC') badgeClass = 'badge-acc';
           else if(row.status === 'REVISI') badgeClass = 'badge-revisi';
@@ -599,6 +531,12 @@
               ${row.catatan && row.catatan !== '-' ? `<br><small style="color:#666;">Catatan: ${row.catatan}</small>` : ''}
             </td>
             <td>${cleanPdfUrl !== '-' ? `<a href="${cleanPdfUrl}" target="_blank" style="color:#1a73e8; font-weight:bold;">Lihat PDF</a>` : '<span style="color:#999;">Belum ada</span>'}</td>
+            <td>
+              <button class="btn-sm btn-print" onclick="cetakFormulirRow('${row.kode}')">🖨️ Cetak A5</button>
+              <button class="btn-sm btn-upload" onclick="triggerUploadPdf('${row.kode}')">📤 Upload PDF</button>
+              ${row.status === 'PENDING' || row.status === 'REVISI' ? `<button class="btn-sm btn-edit" onclick="editFormulirRow('${row.kode}')">✏️ Edit</button>` : ''}
+              ${row.status === 'PENDING' ? `<button class="btn-sm btn-delete" onclick="hapusPermintaanRow('${row.kode}')">🗑️ Hapus</button>` : ''}
+            </td>
           </tr>`;
         });
         html += `</tbody></table>`;
@@ -606,6 +544,121 @@
       }
     } catch(e) {
       document.getElementById('containerRiwayatStaff').innerHTML = "Gagal memuat riwayat.";
+    }
+  }
+
+  // Action: Trigger File Upload dari Baris Tabel
+  function triggerUploadPdf(kode) {
+    targetKodeUpload = kode;
+    document.getElementById('hiddenFileInput').click();
+  }
+
+  async function prosesUploadPdfHistory(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    if (file.type !== "application/pdf") {
+      alert("Harap unggah file berformat PDF!");
+      return;
+    }
+
+    if (!confirm(`Unggah file PDF "${file.name}" untuk permintaan ${targetKodeUpload}?`)) return;
+
+    try {
+      const base64File = await convertFileToBase64(file);
+      const payload = {
+        action: "uploadPdfOnly",
+        kodeBarang: targetKodeUpload,
+        fileName: file.name,
+        mimeType: file.type,
+        fileData: base64File
+      };
+
+      const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+      const json = await res.json();
+      if (json.status === "success") {
+        alert("Dokumen PDF TTD berhasil diunggah!");
+        muatRiwayatStaff();
+      } else {
+        alert("Gagal upload: " + json.message);
+      }
+    } catch(e) {
+      alert("Terjadi kesalahan koneksi.");
+    } finally {
+      event.target.value = "";
+    }
+  }
+
+  // Action: Cetak Format A5 dari Baris Tabel
+  function cetakFormulirRow(kode) {
+    const item = staffDataList.find(i => i.kode === kode);
+    if (!item) return;
+
+    document.getElementById('p_kode').innerText = item.kode;
+    document.getElementById('p_nama').innerText = item.pemohon;
+    document.getElementById('p_divisi').innerText = item.divisi;
+    document.getElementById('p_unit').innerText = item.unit;
+    document.getElementById('p_tgl').innerText = item.tglPermintaan;
+    document.getElementById('p_tglButuh').innerText = item.tglDibutuhkan;
+    document.getElementById('p_urgensi').innerText = item.urgensi;
+    document.getElementById('p_kategori').innerText = item.kategori;
+    document.getElementById('p_barang').innerText = item.barang;
+    document.getElementById('p_jumlah').innerText = item.jumlah;
+    document.getElementById('p_satuan').innerText = item.satuan;
+    document.getElementById('p_supplier').innerText = item.supplier || '-';
+    document.getElementById('p_ket').innerText = item.keterangan || '-';
+    document.getElementById('t_pemohon').innerText = item.pemohon;
+
+    window.print();
+  }
+
+  // Action: Edit Baris
+  function editFormulirRow(kode) {
+    const item = staffDataList.find(i => i.kode === kode);
+    if (!item) return;
+
+    document.getElementById('editKodeBarang').value = item.kode;
+    document.getElementById('tglPermintaan').value = item.tglPermintaan;
+    document.getElementById('tglDibutuhkan').value = item.tglDibutuhkan;
+    document.getElementById('urgensi').value = item.urgensi;
+    document.getElementById('kategori').value = item.kategori;
+    document.getElementById('namaBarang').value = item.barang;
+    document.getElementById('jumlah').value = item.jumlah;
+    document.getElementById('satuan').value = item.satuan;
+    document.getElementById('supplier').value = item.supplier !== '-' ? item.supplier : '';
+    document.getElementById('keterangan').value = item.keterangan !== '-' ? item.keterangan : '';
+
+    document.getElementById('formTitle').innerText = "Edit Permintaan (" + item.kode + ")";
+    document.getElementById('submitBtn').innerText = "Simpan Perubahan";
+    document.getElementById('cancelEditBtn').style.display = "inline-block";
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function batalEdit() {
+    document.getElementById('editKodeBarang').value = "";
+    document.getElementById('formPermintaan').reset();
+    document.getElementById('tglPermintaan').value = new Date().toISOString().split('T')[0];
+    document.getElementById('formTitle').innerText = "Buat Permintaan Barang Baru";
+    document.getElementById('submitBtn').innerText = "Kirim Permintaan ke Admin";
+    document.getElementById('cancelEditBtn').style.display = "none";
+  }
+
+  // Action: Hapus Baris
+  async function hapusPermintaanRow(kode) {
+    if (!confirm(`Apakah Anda yakin ingin menghapus permintaan ${kode}?`)) return;
+
+    try {
+      const payload = { action: "deletePermintaan", kodeBarang: kode };
+      const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+      const json = await res.json();
+      if (json.status === "success") {
+        alert("Permintaan berhasil dihapus!");
+        muatRiwayatStaff();
+      } else {
+        alert("Gagal: " + json.message);
+      }
+    } catch(e) {
+      alert("Terjadi kesalahan koneksi.");
     }
   }
 
