@@ -76,13 +76,37 @@
     #modalEdit { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; overflow-y: auto; padding: 20px; }
     .modal-content { background: white; max-width: 750px; margin: 30px auto; padding: 25px; border-radius: 12px; position: relative; }
 
-    /* Styling Cetak A5 yang Ringkas & Padat */
+    /* Pengaturan Cetak A5 Presisi (Anti Halaman Kosong Berlebih) */
     @media print {
-      @page { size: A5 portrait; margin: 4mm; }
-      body * { visibility: hidden !important; }
-      #printArea, #printArea * { visibility: visible !important; }
-      #printArea { display: block !important; position: absolute; left: 0; top: 0; width: 100%; background: white; font-family: 'Inter', sans-serif; }
+      @page { 
+        size: A5 portrait; 
+        margin: 5mm; 
+      }
+      body * { 
+        visibility: hidden !important; 
+      }
+      #printArea, #printArea * { 
+        visibility: visible !important; 
+      }
+      #printArea { 
+        display: block !important; 
+        position: absolute !important; 
+        left: 0 !important; 
+        top: 0 !important; 
+        width: 100% !important; 
+        background: white !important; 
+        font-family: 'Inter', sans-serif !important; 
+        padding: 0 !important;
+        margin: 0 !important;
+        box-sizing: border-box !important;
+      }
+      html, body {
+        height: auto !important;
+        overflow: visible !important;
+        background: white !important;
+      }
     }
+
     .print-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #111827; padding-bottom: 2px; margin-bottom: 6px; }
     .print-header h2 { font-size: 13px; font-weight: 800; margin: 0; }
     .print-meta { text-align: right; }
@@ -104,14 +128,14 @@
     .print-info-grid label { font-weight: 700; color: #475569; min-width: 65px; margin: 0; display: inline; }
     .print-info-grid span { font-weight: 600; color: #0f172a; }
 
-    .print-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+    .print-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
     .print-table th { font-size: 8px; font-weight: 700; background: #f1f5f9; padding: 4px 3px; border-bottom: 2px solid #94a3b8; text-align: left; }
     .print-table td { font-size: 9px; font-weight: 500; padding: 4px 3px; border-bottom: 1px solid #e2e8f0; }
     
-    .print-ttd-container { display: flex; justify-content: space-between; margin-top: 8px; }
+    .print-ttd-container { display: flex; justify-content: space-between; margin-top: 6px; page-break-inside: avoid; }
     .print-ttd-box { flex: 1; text-align: center; padding: 0 2px; position: relative; }
     .print-ttd-box:not(:last-child)::after { content: ""; position: absolute; right: 0; top: 5%; height: 90%; border-right: 1px solid #e2e8f0; }
-    .print-ttd-title { font-size: 7px; font-weight: 800; text-transform: uppercase; margin-bottom: 22px; }
+    .print-ttd-title { font-size: 7px; font-weight: 800; text-transform: uppercase; margin-bottom: 20px; }
     .print-ttd-line { border-bottom: 1px dashed #6b7280; margin: 0 4px 3px 4px; }
     .print-ttd-name { font-size: 8px; font-weight: 800; }
     #printArea { display: none; }
@@ -249,7 +273,7 @@
   </div>
 </div>
 
-<!-- Area Cetak A5 -->
+<!-- Area Cetak A5 Presisi 1 Halaman -->
 <div id="printArea">
   <div class="print-header">
     <div><h2>CV. SELABINTANA</h2><p style="font-size:9px; margin:0; color:#4b5563;">Form Permintaan Barang</p></div>
