@@ -1,1009 +1,386 @@
 <!DOCTYPE html>
-<html lang="id" class="scroll-smooth">
+<html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal Internal - Sistem Permintaan Barang CV. Selabintana</title>
-    <meta name="robots" content="noindex, nofollow">
-
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts Poppins -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- FontAwesome CDN -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- SheetJS untuk Ekspor Excel .xlsx -->
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        brand: {
-                            dark: '#1b4332',
-                            primary: '#2d6a4f',
-                            light: '#40916c',
-                            accent: '#f4a261',
-                            cream: '#fefae0',
-                        }
-                    },
-                    fontFamily: {
-                        sans: ['Poppins', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>
-
-    <!-- CSS KHUSUS CETAK: Ukuran Kertas 210mm x 148mm (A5 Lanskap) -->
-    <style>
-        @page {
-            size: 210mm 148mm;
-            margin: 10mm;
-        }
-        @media print {
-            body * {
-                visibility: hidden;
-            }
-            #print-area, #print-area * {
-                visibility: visible;
-            }
-            #print-area {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 210mm;
-                height: 148mm;
-                margin: 0;
-                padding: 10mm;
-                background: white !important;
-                box-shadow: none !important;
-                border: none !important;
-            }
-            .no-print {
-                display: none !important;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal Permintaan Barang & Peralatan</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f6f9;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 800px;
+      background: #ffffff;
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      margin: auto;
+      margin-bottom: 30px;
+    }
+    h2 {
+      color: #333;
+      text-align: center;
+      margin-bottom: 25px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: #555;
+    }
+    input[type="text"], select, textarea, input[type="file"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    textarea {
+      resize: vertical;
+      height: 80px;
+    }
+    .preview-container {
+      margin-top: 10px;
+      text-align: center;
+    }
+    #imagePreview {
+      max-width: 100%;
+      max-height: 200px;
+      display: none;
+      border-radius: 6px;
+      border: 1px solid #ddd;
+      margin-top: 5px;
+    }
+    button {
+      background-color: #28a745;
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      width: 100%;
+      font-size: 16px;
+      font-weight: bold;
+    }
+    button:hover {
+      background-color: #218838;
+    }
+    button:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+    #loadingStatus {
+      text-align: center;
+      margin-top: 15px;
+      font-style: italic;
+      color: #007bff;
+      display: none;
+    }
+    .filter-wrapper {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      margin-bottom: 15px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #ddd;
+      text-align: left;
+      font-size: 14px;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+  </style>
 </head>
-<body class="font-sans text-gray-800 bg-slate-100 antialiased min-h-screen flex flex-col justify-between">
+<body>
 
-    <!-- Header Navbar -->
-    <header class="bg-white shadow-sm border-b border-gray-200 no-print">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex justify-between items-center">
-            <a href="index.html" class="flex items-center gap-3">
-                <i class="fa-solid fa-industry text-brand-primary text-2xl"></i>
-                <div>
-                    <span class="text-base font-bold text-brand-dark tracking-tight block leading-none">CV. SELABINTANA</span>
-                    <span class="text-[10px] text-brand-light font-medium tracking-wide">PORTAL SISTEM INTERNAL</span>
-                </div>
-            </a>
-            <div id="user-info-area" class="hidden items-center gap-4">
-                <span id="display-user-name" class="text-xs sm:text-sm font-medium text-gray-700"></span>
-                <button onclick="logout()" class="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5">
-                    <i class="fa-solid fa-right-from-bracket"></i> Keluar
-                </button>
-            </div>
-        </div>
-    </header>
+<!-- KONTAINER FORMULIR PERMINTAAN -->
+<div class="container">
+  <h2>Form Permintaan Barang & Peralatan</h2>
+  
+  <form id="formPermintaan">
+    <div class="form-group">
+      <label for="namaPemohon">Nama Pemohon:</label>
+      <input type="text" id="namaPemohon" required placeholder="Masukkan nama lengkap">
+    </div>
 
-    <!-- Konten Utama -->
-    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full flex-grow">
+    <div class="form-group">
+      <label for="unitFarm">Unit Farm / Departemen:</label>
+      <select id="unitFarm" required>
+        <option value="">-- Pilih Unit Farm --</option>
+        <option value="Farm Sukajaya">Farm Sukajaya</option>
+        <option value="Farm Selabintana">Farm Selabintana</option>
+        <option value="Hatchery Teras">Hatchery Teras</option>
+        <option value="RPA Pasir Pin">RPA Pasir Pin</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="daftarBarang">Daftar Barang / Keperluan:</label>
+      <textarea id="daftarBarang" required placeholder="Tuliskan rincian barang yang diminta..."></textarea>
+    </div>
+
+    <div class="form-group">
+      <label for="lampiranFile">Unggah Foto / Bukti (Gambar):</label>
+      <input type="file" id="lampiranFile" accept="image/png, image/jpeg, image/jpg" onchange="previewImage(event)" required>
+      
+      <div class="preview-container">
+        <img id="imagePreview" alt="Pratinjau Gambar">
+      </div>
+    </div>
+
+    <button type="submit" id="submitBtn">Kirim Permintaan</button>
+    <div id="loadingStatus">Sedang memproses dan mengunggah data...</div>
+  </form>
+</div>
+
+<!-- KONTAINER RIWAYAT & FILTER -->
+<div class="container">
+  <h2>Riwayat Permintaan Barang</h2>
+  
+  <div class="filter-wrapper">
+    <div class="form-group" style="flex: 1; min-width: 200px; margin-bottom: 0;">
+      <label for="filterUnit">Filter Unit Farm:</label>
+      <select id="filterUnit" onchange="jalankanFilter()">
+        <option value="ALL">-- Tampilkan Semua Unit --</option>
+        <option value="Farm Sukajaya">Farm Sukajaya</option>
+        <option value="Farm Selabintana">Farm Selabintana</option>
+        <option value="Hatchery Teras">Hatchery Teras</option>
+        <option value="RPA Pasir Pin">RPA Pasir Pin</option>
+      </select>
+    </div>
+
+    <div class="form-group" style="flex: 1; min-width: 200px; margin-bottom: 0;">
+      <label for="searchBox">Cari Pemohon / Barang:</label>
+      <input type="text" id="searchBox" onkeyup="jalankanFilter()" placeholder="Ketik nama atau barang...">
+    </div>
+  </div>
+
+  <div style="overflow-x: auto;">
+    <table id="tabelRiwayat">
+      <thead>
+        <tr>
+          <th>Waktu</th>
+          <th>Pemohon</th>
+          <th>Unit Farm</th>
+          <th>Barang</th>
+          <th>Lampiran</th>
+        </tr>
+      </thead>
+      <tbody id="bodyRiwayat">
+        <tr>
+          <td colspan="5" style="text-align: center;">Memuat data riwayat...</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  // Ganti dengan URL Web App dari Google Apps Script kamu
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbyXv7p4QS7P_6EmgNDT2hr9y3iQ4jaZo3L31o-NPB5A3lT6ZmicDfZnbVi0CF8p8OT8PQ/exec";
+
+  let semuaDataRiwayat = [];
+
+  // 1. Fungsi Pratinjau (Preview) Gambar
+  function previewImage(event) {
+    const fileInput = event.target;
+    const previewImg = document.getElementById('imagePreview');
+    
+    if (fileInput.files && fileInput.files[0]) {
+      const file = fileInput.files[0];
+      
+      if (!file.type.startsWith('image/')) {
+        alert('Harap pilih file berformat gambar (JPG/PNG).');
+        fileInput.value = '';
+        previewImg.style.display = 'none';
+        return;
+      }
+      
+      const imageURL = URL.createObjectURL(file);
+      previewImg.src = imageURL;
+      previewImg.style.display = 'inline-block';
+      
+      previewImg.onload = function() {
+        URL.revokeObjectURL(previewImg.src);
+      }
+    } else {
+      previewImg.src = '#';
+      previewImg.style.display = 'none';
+    }
+  }
+
+  // 2. Fungsi Kompresi & Resize Gambar menggunakan Canvas
+  function compressAndResizeImage(file, maxWidth = 1200, maxHeight = 1200, quality = 0.7) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target.result;
         
-        <!-- HALAMAN LOGIN -->
-        <div id="section-login" class="max-w-md mx-auto bg-white rounded-3xl shadow-md border border-gray-200 p-8 no-print">
-            <div class="text-center mb-6">
-                <div class="w-16 h-16 bg-brand-primary/10 rounded-2xl flex items-center justify-center text-brand-primary text-2xl mx-auto mb-3">
-                    <i class="fa-solid fa-lock"></i>
-                </div>
-                <h1 class="text-xl sm:text-2xl font-bold text-gray-900">Login Portal Internal</h1>
-                <p class="text-xs text-gray-500 mt-1">Masukkan kredensial akun staf CV. Selabintana</p>
-            </div>
+        img.onload = () => {
+          let width = img.width;
+          let height = img.height;
 
-            <form id="form-login" onsubmit="handleLogin(event)" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Username</label>
-                    <input type="text" id="username" required placeholder="Contoh: admin" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-primary text-sm">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Password</label>
-                    <input type="password" id="password" required placeholder="••••••••" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-primary text-sm">
-                </div>
-                <button type="submit" id="btn-login" class="w-full bg-brand-primary hover:bg-brand-dark text-white font-semibold py-3 rounded-xl transition text-sm shadow-sm flex items-center justify-center gap-2">
-                    <span>Masuk ke Sistem</span>
-                    <i class="fa-solid fa-arrow-right"></i>
-                </button>
-            </form>
-            <div id="login-error" class="mt-4 hidden bg-red-50 border border-red-200 text-red-600 text-xs p-3 rounded-xl text-center"></div>
-        </div>
-
-        <!-- DASHBOARD UTAMA -->
-        <div id="section-dashboard" class="hidden space-y-8">
-            
-            <!-- Banner Sambutan -->
-            <div class="bg-brand-dark text-white p-6 sm:p-8 rounded-3xl shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 no-print">
-                <div>
-                    <span class="text-brand-accent text-xs font-semibold uppercase tracking-widest">Dashboard Operasional</span>
-                    <h2 id="dashboard-title" class="text-xl sm:text-2xl font-bold mt-1">Sistem Pengajuan & Permintaan Barang</h2>
-                    <p id="dashboard-subtitle" class="text-gray-300 text-xs sm:text-sm mt-1">Kelola dan pantau status pengajuan material secara real-time.</p>
-                </div>
-                <div class="bg-white/10 px-4 py-2.5 rounded-2xl backdrop-blur-md border border-white/10 text-xs text-right">
-                    <span class="text-gray-300 block">Akun / Peran:</span>
-                    <span id="badge-divisi" class="font-bold text-white text-sm">-</span>
-                </div>
-            </div>
-
-            <!-- FORM PERMINTAAN BARANG -->
-            <div id="form-container" class="bg-white rounded-3xl shadow-sm border border-gray-200 p-6 sm:p-8 no-print">
-                <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <i class="fa-solid fa-cart-plus text-brand-primary"></i> Form Permintaan Barang Baru
-                </h3>
-
-                <form id="form-permintaan" onsubmit="handleSubmitedReq(event)" class="grid sm:grid-cols-2 gap-4">
-                    <div class="sm:col-span-2 bg-slate-50 p-4 rounded-2xl border border-gray-200 flex items-center justify-between">
-                        <div>
-                            <span class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider block">Unit / Lokasi Pengajuan (Otomatis)</span>
-                            <span id="text-unit-lokasi" class="font-bold text-brand-dark text-sm sm:text-base">-</span>
-                        </div>
-                        <i class="fa-solid fa-location-dot text-brand-primary text-xl"></i>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Tanggal Permintaan</label>
-                        <input type="date" id="input-tgl-permintaan" required class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-primary text-sm bg-white">
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Tanggal Dibutuhkan</label>
-                        <input type="date" id="input-tgl-dibutuhkan" required class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-primary text-sm bg-white">
-                    </div>
-
-                    <div class="sm:col-span-2">
-                        <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Level Urgensi</label>
-                        <select id="input-urgensi" required class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-primary text-sm bg-white">
-                            <option value="REGULER">REGULER</option>
-                            <option value="URGENT">URGENT</option>
-                            <option value="TOP URGENT">TOP URGENT</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Kategori Barang</label>
-                        <select id="input-kategori" required class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-primary text-sm bg-white">
-                            <option value="">-- Pilih Kategori --</option>
-                            <option value="OBAT">OBAT</option>
-                            <option value="VAKSIN">VAKSIN</option>
-                            <option value="KIMIA">KIMIA</option>
-                            <option value="VITAMIN">VITAMIN</option>
-                            <option value="PERALATAN">PERALATAN</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Nama Barang / Material</label>
-                        <input type="text" id="input-nama-barang" list="list-master-barang" oninput="autofillBarang(this.value)" required placeholder="Ketik atau pilih barang..." class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-primary text-sm">
-                        <datalist id="list-master-barang"></datalist>
-                    </div>
-                    
-                    <div class="grid grid-cols-2 gap-2 sm:col-span-2">
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Jumlah</label>
-                            <input type="number" id="input-jumlah" min="1" required placeholder="10" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-primary text-sm">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Satuan</label>
-                            <input type="text" id="input-satuan" required placeholder="liter / pcs / kg" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-primary text-sm">
-                        </div>
-                    </div>
-
-                    <div class="sm:col-span-2">
-                        <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Supplier / Toko Rujukan (Opsional)</label>
-                        <input type="text" id="input-supplier" placeholder="Contoh: PT. Sumber Pangan" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-primary text-sm">
-                    </div>
-
-                    <div class="sm:col-span-2">
-                        <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Keterangan / Keperluan (Opsional)</label>
-                        <textarea id="input-keterangan" rows="2" placeholder="Tuliskan catatan atau keperluan..." class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-primary text-sm"></textarea>
-                    </div>
-
-                    <div class="sm:col-span-2">
-                        <button type="submit" id="btn-submit-req" class="w-full bg-brand-primary hover:bg-brand-dark text-white font-semibold py-3 rounded-xl transition text-sm shadow-sm flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-paper-plane"></i> Ajukan Permintaan Barang
-                        </button>
-                    </div>
-                </form>
-            </div>
-
-            <!-- AREA CETAK FORMAT A5 LANSKAP (210mm x 148mm) -->
-            <div id="print-area" class="hidden bg-white rounded-3xl shadow-sm border border-gray-300 p-6 mb-6">
-                <div class="flex justify-between items-center border-b pb-3 mb-4">
-                    <div>
-                        <h2 class="text-base font-bold text-gray-900 leading-tight">CV. SELABINTANA</h2>
-                        <p class="text-[10px] text-gray-500">Lembar Pengajuan & Permintaan Material (Ukuran A5 Lanskap)</p>
-                    </div>
-                    <div class="text-right">
-                        <span id="cetak-kode" class="font-bold text-brand-primary text-xs block">REQ-XXXX</span>
-                        <span id="cetak-tanggal" class="text-[10px] text-gray-500">00/00/2026</span>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-2 text-[10px] mb-3 bg-slate-50 p-2.5 rounded-xl border">
-                    <div>
-                        <span class="text-gray-400 block font-semibold uppercase text-[8px]">Pemohon & Unit:</span>
-                        <span id="cetak-pemohon" class="font-bold text-gray-900">-</span>
-                    </div>
-                    <div class="text-right">
-                        <span class="text-gray-400 block font-semibold uppercase text-[8px]">Urgensi & Tanggal Dibutuhkan:</span>
-                        <span id="cetak-urgensi-info" class="font-bold text-red-600">-</span>
-                    </div>
-                </div>
-
-                <table class="w-full text-[11px] text-left mb-4 border-collapse">
-                    <thead>
-                        <tr class="border-b border-gray-300 text-gray-600 uppercase text-[9px]">
-                            <th class="py-1.5 px-2">Kategori</th>
-                            <th class="py-1.5 px-2">Nama Barang</th>
-                            <th class="py-1.5 px-2 text-center">Jumlah</th>
-                            <th class="py-1.5 px-2">Supplier Rujukan</th>
-                            <th class="py-1.5 px-2">Keperluan / Keterangan</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="border-b border-gray-200">
-                            <td id="cetak-kategori" class="py-2 px-2 font-bold text-brand-primary">-</td>
-                            <td id="cetak-barang" class="py-2 px-2 font-semibold text-gray-900">-</td>
-                            <td id="cetak-jumlah" class="py-2 px-2 text-center font-bold">-</td>
-                            <td id="cetak-supplier" class="py-2 px-2 text-gray-600">-</td>
-                            <td id="cetak-keterangan" class="py-2 px-2 text-gray-600">-</td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                <!-- 4 KOLOM TANDA TANGAN (Lanskap) -->
-                <div class="mt-6 pt-2 grid grid-cols-4 gap-3 text-center text-[10px]">
-                    <div class="flex flex-col justify-between h-20 border-r border-gray-200 px-1">
-                        <span class="font-semibold text-gray-700 uppercase text-[9px]">1. Yang Membuat</span>
-                        <div class="border-b border-dashed border-gray-400 my-auto"></div>
-                        <span id="ttd-pemohon" class="font-bold text-gray-900 text-[10px]">-</span>
-                    </div>
-                    <div class="flex flex-col justify-between h-20 border-r border-gray-200 px-1">
-                        <span class="font-semibold text-gray-700 uppercase text-[9px]">2. Mengetahui</span>
-                        <div class="border-b border-dashed border-gray-400 my-auto"></div>
-                        <span class="font-bold text-gray-900 text-[10px]">( Atasan Unit )</span>
-                    </div>
-                    <div class="flex flex-col justify-between h-20 border-r border-gray-200 px-1">
-                        <span class="font-semibold text-gray-700 uppercase text-[9px]">3. Menyetujui</span>
-                        <div class="border-b border-dashed border-gray-400 my-auto"></div>
-                        <span class="font-bold text-gray-900 text-[10px]">( Manager Area )</span>
-                    </div>
-                    <div class="flex flex-col justify-between h-20 px-1">
-                        <span class="font-semibold text-gray-700 uppercase text-[9px]">4. Di-ACC GM</span>
-                        <div class="border-b border-dashed border-gray-400 my-auto"></div>
-                        <span class="font-bold text-gray-900 text-[10px]">drh. Titin Idayati</span>
-                    </div>
-                </div>
-
-                <!-- Tombol Aksi Cetak -->
-                <div class="mt-4 flex justify-end gap-2 no-print">
-                    <button onclick="window.print()" class="bg-brand-primary hover:bg-brand-dark text-white px-3 py-1.5 rounded-xl text-xs font-semibold transition flex items-center gap-1.5">
-                        <i class="fa-solid fa-print"></i> Cetak A5 Lanskap
-                    </button>
-                    <button onclick="tutupFormCetak()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1.5 rounded-xl text-xs font-semibold transition">
-                        Tutup / Selesai
-                    </button>
-                </div>
-            </div>
-
-            <!-- MODAL PREVIEW DOKUMEN -->
-            <div id="modal-preview" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 no-print">
-                <div class="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-xl border border-gray-200 flex flex-col max-h-[90vh]">
-                    <div class="flex justify-between items-center border-b pb-3 mb-4">
-                        <h3 class="font-bold text-gray-900 text-base"><i class="fa-solid fa-file-pdf text-brand-primary"></i> Pratinjau Dokumen Ber-TTD</h3>
-                        <button onclick="tutupPreview()" class="text-gray-400 hover:text-gray-600 text-lg font-bold"><i class="fa-solid fa-xmark"></i></button>
-                    </div>
-                    <div class="flex-grow overflow-auto flex items-center justify-center bg-slate-50 rounded-2xl p-2 border min-h-[300px]">
-                        <iframe id="preview-frame" class="w-full h-[450px] rounded-xl border-0 hidden"></iframe>
-                        <img id="preview-image" class="max-h-[450px] object-contain rounded-xl hidden" alt="Pratinjau Dokumen">
-                    </div>
-                    <div class="mt-4 flex justify-end gap-2">
-                        <a id="btn-download-modal" href="#" download="Dokumen_TTD.pdf" class="bg-brand-primary hover:bg-brand-dark text-white px-4 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-1.5">
-                            <i class="fa-solid fa-download"></i> Download File
-                        </a>
-                        <button onclick="tutupPreview()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-xl text-xs font-semibold transition text-xs">Tutup</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- TABEL RIWAYAT & PANEL KENDALI ADMIN -->
-            <div class="bg-white rounded-3xl shadow-sm border border-gray-200 p-6 sm:p-8 no-print">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                    <div>
-                        <h3 id="table-title" class="text-lg font-bold text-gray-900 flex items-center gap-2">
-                            <i class="fa-solid fa-clipboard-check text-brand-primary"></i> Daftar Permintaan Masuk (Admin)
-                        </h3>
-                        <p id="table-subtitle" class="text-xs text-gray-500 mt-0.5">Kelola, verifikasi, dan unduh rekapitulasi data.</p>
-                    </div>
-                    <div class="flex flex-wrap items-center gap-2">
-                        <button id="btn-export-excel" onclick="exportToExcel()" class="hidden bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl text-xs font-semibold transition items-center gap-1.5 shadow-sm">
-                            <i class="fa-solid fa-file-excel"></i> Unduh Rekap Excel (.xlsx)
-                        </button>
-                        <button onclick="loadRiwayatPermintaan()" class="text-xs font-semibold text-brand-primary hover:underline flex items-center gap-1 bg-slate-100 px-3 py-2 rounded-xl">
-                            <i class="fa-solid fa-rotate"></i> Muat Ulang
-                        </button>
-                    </div>
-                </div>
-
-                <!-- PILIHAN SORTIR / FILTER (KHUSUS ADMIN) -->
-                <div id="filter-container" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6 bg-slate-50 p-4 rounded-2xl border border-gray-200">
-                    <div>
-                        <label class="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Filter Unit Lokasi</label>
-                        <select id="filter-unit" onchange="loadRiwayatPermintaan()" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs bg-white focus:outline-none focus:border-brand-primary">
-                            <option value="">-- Semua Unit Lokasi --</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Filter Status</label>
-                        <select id="filter-status" onchange="loadRiwayatPermintaan()" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs bg-white focus:outline-none focus:border-brand-primary">
-                            <option value="">-- Semua Status --</option>
-                            <option value="PENDING">PENDING</option>
-                            <option value="APPROVED">DI-ACC</option>
-                            <option value="REJECTED">TIDAK ACC</option>
-                            <option value="REVISION">REVISION</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Filter Bulan</label>
-                        <select id="filter-bulan" onchange="loadRiwayatPermintaan()" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs bg-white focus:outline-none focus:border-brand-primary">
-                            <option value="">-- Semua Bulan --</option>
-                            <option value="01">Januari</option>
-                            <option value="02">Februari</option>
-                            <option value="03">Maret</option>
-                            <option value="04">April</option>
-                            <option value="05">Mei</option>
-                            <option value="06">Juni</option>
-                            <option value="07">Juli</option>
-                            <option value="08">Agustus</option>
-                            <option value="09">September</option>
-                            <option value="10">Oktober</option>
-                            <option value="11">November</option>
-                            <option value="12">Desember</option>
-                        </select>
-                    </div>
-                    <div class="grid grid-cols-2 gap-2 sm:col-span-2 lg:col-span-1">
-                        <div>
-                            <label class="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Dari Tgl</label>
-                            <input type="date" id="filter-tgl-mulai" onchange="loadRiwayatPermintaan()" class="w-full px-2 py-2 rounded-xl border border-gray-200 text-[11px] bg-white focus:outline-none focus:border-brand-primary">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Sampai Tgl</label>
-                            <input type="date" id="filter-tgl-selesai" onchange="loadRiwayatPermintaan()" class="w-full px-2 py-2 rounded-xl border border-gray-200 text-[11px] bg-white focus:outline-none focus:border-brand-primary">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-xs sm:text-sm">
-                        <thead class="bg-slate-50 text-gray-600 uppercase text-[10px] sm:text-xs border-b border-gray-200">
-                            <tr>
-                                <th class="p-3">Kode / Waktu</th>
-                                <th class="p-3">Lokasi & Pemohon</th>
-                                <th class="p-3">Urgensi & Tanggal</th>
-                                <th class="p-3">Kategori & Barang</th>
-                                <th class="p-3">Keterangan & Dokumen TTD</th>
-                                <th class="p-3 text-center">Status / Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="table-riwayat-body" class="divide-y divide-gray-100">
-                            <tr>
-                                <td colspan="6" class="p-4 text-center text-gray-400">Memuat data...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-        </div>
-
-    </main>
-
-    <!-- Footer -->
-    <footer class="bg-white border-t border-gray-200 py-6 text-center text-xs text-gray-500 no-print">
-        &copy; 2026 CV. Selabintana. Portal Internal Sistem Manajemen Mutu & Logistik.
-    </footer>
-
-    <!-- SCRIPT JAVASCRIPT -->
-    <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyXv7p4QS7P_6EmgNDT2hr9y3iQ4jaZo3L31o-NPB5A3lT6ZmicDfZnbVi0CF8p8OT8PQ/exec";
-
-        let currentUser = null;
-        let masterBarangList = [];
-        let globalPermintaanData = [];
-
-        window.addEventListener('DOMContentLoaded', () => {
-            const savedUser = localStorage.getItem('selabintana_user');
-            if (savedUser) {
-                currentUser = JSON.parse(savedUser);
-                showDashboard();
-            }
-            const todayStr = new Date().toISOString().split('T')[0];
-            const tglPermintaanInput = document.getElementById('input-tgl-permintaan');
-            if(tglPermintaanInput) tglPermintaanInput.value = todayStr;
-        });
-
-        async function handleLogin(e) {
-            e.preventDefault();
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const btnLogin = document.getElementById('btn-login');
-            const errorDiv = document.getElementById('login-error');
-
-            btnLogin.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Memproses...`;
-            btnLogin.disabled = true;
-            errorDiv.classList.add('hidden');
-
-            try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: "login", username, password })
-                });
-                const result = await response.json();
-
-                if (result.status === "success") {
-                    currentUser = result.user;
-                    localStorage.setItem('selabintana_user', JSON.stringify(currentUser));
-                    showDashboard();
-                } else {
-                    errorDiv.textContent = result.message;
-                    errorDiv.classList.remove('hidden');
-                }
-            } catch (err) {
-                errorDiv.textContent = "Terjadi kesalahan koneksi ke server.";
-                errorDiv.classList.add('hidden');
-            } finally {
-                btnLogin.innerHTML = `<span>Masuk ke Sistem</span><i class="fa-solid fa-arrow-right"></i>`;
-                btnLogin.disabled = false;
-            }
-        }
-
-        function showDashboard() {
-            document.getElementById('section-login').classList.add('hidden');
-            document.getElementById('section-dashboard').classList.remove('hidden');
-            document.getElementById('user-info-area').classList.remove('hidden');
-            document.getElementById('user-info-area').classList.add('flex');
-            
-            const isAdmin = currentUser.role && currentUser.role.toLowerCase() === 'admin';
-
-            document.getElementById('display-user-name').textContent = `${currentUser.nama} (${currentUser.divisi})`;
-            document.getElementById('badge-divisi').textContent = `${currentUser.divisi} - ${currentUser.unit_lokasi}`;
-
-            if (isAdmin) {
-                document.getElementById('form-container').classList.add('hidden');
-                document.getElementById('dashboard-title').textContent = "Panel Kendali & Approval Permintaan";
-                document.getElementById('dashboard-subtitle').textContent = "Pusat verifikasi, persetujuan, atau revisi pengajuan barang dari seluruh unit.";
-                document.getElementById('table-title').innerHTML = `<i class="fa-solid fa-clipboard-check text-brand-primary"></i> Daftar Permintaan Masuk (Admin)`;
-                document.getElementById('table-subtitle').textContent = "Meninjau dokumen PDF ber-TTD, memperbarui status, dan mencetak lembar verifikasi A5 Lanskap.";
-                
-                document.getElementById('btn-export-excel').classList.remove('hidden');
-                document.getElementById('btn-export-excel').classList.add('flex');
-                document.getElementById('filter-container').classList.remove('hidden');
+          if (width > maxWidth || height > maxHeight) {
+            if (width > height) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
             } else {
-                document.getElementById('form-container').classList.remove('hidden');
-                document.getElementById('text-unit-lokasi').textContent = currentUser.unit_lokasi;
-                document.getElementById('btn-export-excel').classList.add('hidden');
-                document.getElementById('filter-container').classList.add('hidden');
-                loadMasterBarang();
+              width = Math.round((width * maxHeight) / height);
+              height = maxHeight;
             }
+          }
 
-            loadRiwayatPermintaan();
-        }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
 
-        function logout() {
-            localStorage.removeItem('selabintana_user');
-            currentUser = null;
-            document.getElementById('section-dashboard').classList.add('hidden');
-            document.getElementById('section-login').classList.remove('hidden');
-            document.getElementById('user-info-area').classList.add('hidden');
-            document.getElementById('form-login').reset();
-        }
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+          resolve(compressedDataUrl);
+        };
+        
+        img.onerror = (error) => reject(error);
+      };
+      
+      reader.onerror = (error) => reject(error);
+    });
+  }
 
-        async function loadMasterBarang() {
-            try {
-                const response = await fetch(`${SCRIPT_URL}?action=get_master_barang`);
-                const result = await response.json();
-                if (result.status === "success") {
-                    masterBarangList = result.data;
-                    const datalist = document.getElementById('list-master-barang');
-                    datalist.innerHTML = "";
-                    masterBarangList.forEach(item => {
-                        datalist.innerHTML += `<option value="${item.nama}">`;
-                    });
-                }
-            } catch (err) {
-                console.error("Gagal memuat master barang");
-            }
-        }
+  // 3. Muat Data Riwayat dari Google Apps Script
+  async function muatDataRiwayat() {
+    try {
+      const response = await fetch(GAS_URL + "?action=getData");
+      const result = await response.json();
+      
+      if (result.status === "success") {
+        semuaDataRiwayat = result.data;
+        tampilkanTabel(semuaDataRiwayat);
+      }
+    } catch (error) {
+      console.error("Gagal memuat riwayat:", error);
+      document.getElementById('bodyRiwayat').innerHTML = `<tr><td colspan="5" style="text-align: center; color: red;">Gagal memuat data dari server.</td></tr>`;
+    }
+  }
 
-        function autofillBarang(namaInput) {
-            const found = masterBarangList.find(item => item.nama.toLowerCase() === namaInput.toLowerCase());
-            if (found) {
-                document.getElementById('input-kategori').value = found.kategori || "";
-                document.getElementById('input-satuan').value = found.satuan || "";
-                document.getElementById('input-supplier').value = found.supplier || "";
-            }
-        }
+  // 4. Render Data ke Tabel
+  function tampilkanTabel(data) {
+    const tbody = document.getElementById('bodyRiwayat');
+    tbody.innerHTML = "";
+    
+    if (data.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align: center;">Tidak ada data ditemukan.</td></tr>`;
+      return;
+    }
+    
+    data.forEach(item => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${item.timestamp}</td>
+        <td>${item.namaPemohon}</td>
+        <td>${item.unitFarm}</td>
+        <td>${item.daftarBarang}</td>
+        <td><a href="${item.fileUrl}" target="_blank">Lihat Gambar</a></td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
 
-        function exportToExcel() {
-            if (!globalPermintaanData || globalPermintaanData.length === 0) {
-                alert("Tidak ada data yang sesuai dengan filter untuk diexport.");
-                return;
-            }
+  // 5. Fungsi Filter (Unit Farm + Text Search)
+  function jalankanFilter() {
+    const selectedUnit = document.getElementById('filterUnit').value;
+    const keyword = document.getElementById('searchBox').value.toLowerCase().trim();
+    
+    const filteredData = semuaDataRiwayat.filter(item => {
+      const matchUnit = (selectedUnit === "ALL" || item.unitFarm === selectedUnit);
+      const matchSearch = (
+        String(item.namaPemohon).toLowerCase().includes(keyword) || 
+        String(item.daftarBarang).toLowerCase().includes(keyword)
+      );
+      return matchUnit && matchSearch;
+    });
+    
+    tampilkanTabel(filteredData);
+  }
 
-            let excelData = globalPermintaanData.map(row => ({
-                "Kode Permintaan": row.kode || "",
-                "Tanggal Input Sistem": row.tanggal || "",
-                "Tanggal Permintaan": row.tgl_permintaan || "",
-                "Tanggal Dibutuhkan": row.tgl_dibutuhkan || "",
-                "Level Urgensi": row.urgensi || "",
-                "Nama Pemohon": row.pemohon || "",
-                "Divisi": row.divisi || "",
-                "Unit Lokasi": row.unit_lokasi || "",
-                "Kategori Barang": row.kategori || "",
-                "Nama Barang": row.barang || "",
-                "Jumlah": row.jumlah || "",
-                "Satuan": row.satuan || "",
-                "Supplier Rujukan": row.supplier || "",
-                "Keterangan / Keperluan": row.keterangan || "",
-                "Status": row.status || "",
-                "Catatan Admin": row.catatan_admin || ""
-            }));
+  // 6. Penanganan Submit Form
+  document.getElementById('formPermintaan').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const fileInput = document.getElementById('lampiranFile');
+    if (fileInput.files.length === 0) {
+      alert("Harap unggah gambar terlebih dahulu!");
+      return;
+    }
 
-            const worksheet = XLSX.utils.json_to_sheet(excelData);
-            const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Rekap Bulanan");
+    const submitBtn = document.getElementById('submitBtn');
+    const loadingStatus = document.getElementById('loadingStatus');
+    
+    submitBtn.disabled = true;
+    submitBtn.innerText = "Mengirim...";
+    loadingStatus.style.display = "block";
 
-            const maxWidth = Object.keys(excelData[0]).map(() => ({ wch: 20 }));
-            worksheet['!cols'] = maxWidth;
+    try {
+      const originalFile = fileInput.files[0];
+      const compressedBase64 = await compressAndResizeImage(originalFile, 1200, 1200, 0.7);
+      
+      const payload = {
+        fileName: originalFile.name.replace(/\.[^/.]+$/, "") + ".jpg",
+        mimeType: "image/jpeg",
+        fileData: compressedBase64,
+        namaPemohon: document.getElementById('namaPemohon').value,
+        unitFarm: document.getElementById('unitFarm').value,
+        daftarBarang: document.getElementById('daftarBarang').value
+      };
 
-            const selectedBulan = document.getElementById('filter-bulan').value || "Semua_Bulan";
-            XLSX.writeFile(workbook, `Rekap_Permintaan_Bulan_${selectedBulan}_${new Date().getFullYear()}.xlsx`);
-        }
+      const response = await fetch(GAS_URL, {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      });
+      
+      const result = await response.json();
+      
+      if (result.status === "success") {
+        alert("Berhasil! Permintaan dan gambar telah dikirim.");
+        document.getElementById('formPermintaan').reset();
+        document.getElementById('imagePreview').style.display = 'none';
+        muatDataRiwayat(); // Muat ulang tabel riwayat
+      } else {
+        alert("Gagal: " + result.message);
+      }
+      
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Terjadi kesalahan jaringan atau server saat mengirim data.");
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.innerText = "Kirim Permintaan";
+      loadingStatus.style.display = "none";
+    }
+  });
 
-        async function handleSubmitedReq(e) {
-            e.preventDefault();
-            const tglPermintaan = document.getElementById('input-tgl-permintaan').value;
-            const tglDibutuhkan = document.getElementById('input-tgl-dibutuhkan').value;
-            const urgensi = document.getElementById('input-urgensi').value;
-            const kategori = document.getElementById('input-kategori').value;
-            const namaBarang = document.getElementById('input-nama-barang').value;
-            const jumlah = document.getElementById('input-jumlah').value;
-            const satuan = document.getElementById('input-satuan').value;
-            const supplier = document.getElementById('input-supplier').value || "-";
-            const keterangan = document.getElementById('input-keterangan').value || "-";
-            const btnSubmit = document.getElementById('btn-submit-req');
+  // Muat data saat halaman pertama kali dibuka
+  window.onload = function() {
+    muatDataRiwayat();
+  };
+</script>
 
-            btnSubmit.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Mengirim...`;
-            btnSubmit.disabled = true;
-
-            try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        action: "submit_permintaan_manual",
-                        nama_pemohon: currentUser.nama,
-                        divisi: currentUser.divisi,
-                        unit_lokasi: currentUser.unit_lokasi,
-                        tgl_permintaan: tglPermintaan,
-                        tgl_dibutuhkan: tglDibutuhkan,
-                        urgensi: urgensi,
-                        kategori: kategori,
-                        nama_barang: namaBarang,
-                        jumlah: jumlah,
-                        satuan: satuan,
-                        supplier: supplier,
-                        keterangan: keterangan
-                    })
-                });
-                const result = await response.json();
-
-                if (result.status === "success") {
-                    alert(result.message);
-                    
-                    tampilkanFormCetak({
-                        kode: result.kode || "REQ-BARU",
-                        tanggal: tglPermintaan,
-                        tgl_dibutuhkan: tglDibutuhkan,
-                        urgensi: urgensi,
-                        pemohon: currentUser.nama,
-                        unit_lokasi: currentUser.unit_lokasi,
-                        kategori: kategori,
-                        barang: namaBarang,
-                        jumlah: `${jumlah} ${satuan}`,
-                        supplier: supplier,
-                        keterangan: keterangan
-                    });
-
-                    document.getElementById('form-permintaan').reset();
-                    document.getElementById('text-unit-lokasi').textContent = currentUser.unit_lokasi;
-                    const todayStr = new Date().toISOString().split('T')[0];
-                    document.getElementById('input-tgl-permintaan').value = todayStr;
-                    loadMasterBarang();
-                    loadRiwayatPermintaan();
-                } else {
-                    alert("Gagal: " + result.message);
-                }
-            } catch (err) {
-                alert("Terjadi kesalahan sistem saat mengirim data.");
-            } finally {
-                btnSubmit.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Ajukan Permintaan Barang`;
-                btnSubmit.disabled = false;
-            }
-        }
-
-        // FUNGSI KOMPRESI OTOMATIS MENJADI DIBAWAH 200 KB
-        function compressImageFile(file, callback) {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = function(event) {
-                const img = new Image();
-                img.src = event.target.result;
-                img.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    let width = img.width;
-                    let height = img.height;
-
-                    // Batasi dimensi maksimal agar ukuran file turun drastis
-                    const MAX_WIDTH = 1000;
-                    const MAX_HEIGHT = 1000;
-                    if (width > height) {
-                        if (width > MAX_WIDTH) {
-                            height *= MAX_WIDTH / width;
-                            width = MAX_WIDTH;
-                        }
-                    } else {
-                        if (height > MAX_HEIGHT) {
-                            width *= MAX_HEIGHT / height;
-                            height = MAX_HEIGHT;
-                        }
-                    }
-
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-
-                    // Mulai dari kualitas 0.7, turunkan terus jika masih di atas 200 KB
-                    let quality = 0.7;
-                    let dataUrl = canvas.toDataURL('image/jpeg', quality);
-
-                    while (dataUrl.length > 200 * 1024 * 1.33 && quality > 0.1) {
-                        quality -= 0.1;
-                        dataUrl = canvas.toDataURL('image/jpeg', quality);
-                    }
-
-                    callback(dataUrl);
-                }
-            }
-        }
-
-        function triggerUploadFoto(kode) {
-            const fileInput = document.getElementById(`file-foto-${kode}`);
-            const file = fileInput.files[0];
-            if (!file) return;
-
-            alert("Mengompresi dokumen otomatis (< 200 KB) dan mengunggah...");
-
-            compressImageFile(file, async function(compressedBase64) {
-                try {
-                    const response = await fetch(SCRIPT_URL, {
-                        method: 'POST',
-                        body: JSON.stringify({
-                            action: "upload_foto_ttd",
-                            kode: kode,
-                            foto: compressedBase64
-                        })
-                    });
-                    const result = await response.json();
-                    if (result.status === "success") {
-                        alert("Dokumen berhasil dikompres dan diunggah!");
-                        loadRiwayatPermintaan();
-                    } else {
-                        alert("Gagal mengunggah dokumen: " + result.message);
-                    }
-                } catch (err) {
-                    alert("Terjadi kesalahan koneksi saat upload.");
-                }
-            });
-        }
-
-        function bukaPreview(base64Data, kode) {
-            const modal = document.getElementById('modal-preview');
-            const frame = document.getElementById('preview-frame');
-            const img = document.getElementById('preview-image');
-            const btnDownload = document.getElementById('btn-download-modal');
-
-            btnDownload.href = base64Data;
-            btnDownload.download = `Dokumen_TTD_${kode}.jpg`;
-
-            if (base64Data.startsWith('data:application/pdf') || base64Data.includes('pdf')) {
-                frame.src = base64Data;
-                frame.classList.remove('hidden');
-                img.classList.add('hidden');
-            } else {
-                img.src = base64Data;
-                img.classList.remove('hidden');
-                frame.classList.add('hidden');
-            }
-
-            modal.classList.remove('hidden');
-        }
-
-        function tutupPreview() {
-            document.getElementById('modal-preview').classList.add('hidden');
-            document.getElementById('preview-frame').src = "";
-            document.getElementById('preview-image').src = "";
-        }
-
-        function tampilkanFormCetak(data) {
-            document.getElementById('cetak-kode').textContent = data.kode;
-            document.getElementById('cetak-tanggal').textContent = `Tgl Permintaan: ${data.tgl_permintaan || data.tanggal}`;
-            document.getElementById('cetak-pemohon').textContent = `${data.pemohon} (${data.unit_lokasi})`;
-            document.getElementById('cetak-urgensi-info').textContent = `${data.urgensi || 'REGULER'} | Dibutuhkan: ${data.tgl_dibutuhkan || '-'}`;
-            document.getElementById('cetak-kategori').textContent = data.kategori;
-            document.getElementById('cetak-barang').textContent = data.barang;
-            document.getElementById('cetak-jumlah').textContent = data.jumlah;
-            document.getElementById('cetak-supplier').textContent = data.supplier;
-            document.getElementById('cetak-keterangan').textContent = data.keterangan;
-            document.getElementById('ttd-pemohon').textContent = `( ${data.pemohon} )`;
-
-            const printArea = document.getElementById('print-area');
-            printArea.classList.remove('hidden');
-            printArea.scrollIntoView({ behavior: 'smooth' });
-        }
-
-        function tutupFormCetak() {
-            document.getElementById('print-area').classList.add('hidden');
-        }
-
-        async function updateStatus(kode) {
-            const statusSelect = document.getElementById(`status-${kode}`).value;
-            const catatanInput = document.getElementById(`catatan-${kode}`).value;
-
-            if(!confirm(`Simpan perubahan status untuk ${kode}?`)) return;
-
-            try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        action: "update_status",
-                        kode: kode,
-                        status: statusSelect,
-                        catatan: catatanInput || "-"
-                    })
-                });
-                const result = await response.json();
-                if(result.status === "success") {
-                    alert("Status berhasil diperbarui!");
-                    loadRiwayatPermintaan();
-                } else {
-                    alert("Gagal memperbarui status.");
-                }
-            } catch(err) {
-                alert("Kesalahan koneksi.");
-            }
-        }
-
-        async function loadRiwayatPermintaan() {
-            const tbody = document.getElementById('table-riwayat-body');
-            tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-gray-400"><i class="fa-solid fa-spinner animate-spin"></i> Memuat data...</td></tr>`;
-
-            try {
-                const response = await fetch(`${SCRIPT_URL}?action=get_permintaan`);
-                const result = await response.json();
-
-                if (result.status === "success" && result.data.length > 0) {
-                    const isAdmin = currentUser.role && currentUser.role.toLowerCase() === 'admin';
-                    let displayData = result.data;
-
-                    if (isAdmin) {
-                        const unitSelect = document.getElementById('filter-unit');
-                        const selectedUnitVal = unitSelect.value;
-                        const uniqueUnits = [...new Set(result.data.map(item => item.unit_lokasi))];
-                        
-                        unitSelect.innerHTML = `<option value="">-- Semua Unit Lokasi --</option>`;
-                        uniqueUnits.forEach(unit => {
-                            if (unit) {
-                                unitSelect.innerHTML += `<option value="${unit}" ${unit === selectedUnitVal ? 'selected' : ''}>${unit}</option>`;
-                            }
-                        });
-
-                        const filterUnitVal = unitSelect.value;
-                        const filterStatusVal = document.getElementById('filter-status').value;
-                        const filterBulanVal = document.getElementById('filter-bulan').value;
-                        const tglMulaiVal = document.getElementById('filter-tgl-mulai').value;
-                        const tglSelesaiVal = document.getElementById('filter-tgl-selesai').value;
-
-                        if (filterUnitVal) {
-                            displayData = displayData.filter(row => row.unit_lokasi && row.unit_lokasi.toLowerCase() === filterUnitVal.toLowerCase());
-                        }
-                        if (filterStatusVal) {
-                            displayData = displayData.filter(row => row.status && row.status.toUpperCase() === filterStatusVal.toUpperCase());
-                        }
-                        if (filterBulanVal) {
-                            displayData = displayData.filter(row => {
-                                const targetDate = row.tgl_permintaan || row.tanggal;
-                                if (!targetDate) return false;
-                                const parts = targetDate.split(/[\/\-]/);
-                                return parts.some(p => p.padStart(2, '0') === filterBulanVal);
-                            });
-                        }
-                        if (tglMulaiVal || tglSelesaiVal) {
-                            displayData = displayData.filter(row => {
-                                const targetDate = row.tgl_permintaan || row.tanggal;
-                                if (!targetDate) return false;
-                                let cleanDateStr = targetDate.split(',')[0].trim();
-                                let parts = cleanDateStr.split(/[\/\-]/);
-                                let rowDate;
-                                if (parts[0].length === 4) {
-                                    rowDate = new Date(`${parts[0]}-${parts[1]}-${parts[2]}`);
-                                } else {
-                                    rowDate = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
-                                }
-                                if (isNaN(rowDate)) return true;
-
-                                let isValid = true;
-                                if (tglMulaiVal) {
-                                    let startDate = new Date(tglMulaiVal);
-                                    if (rowDate < startDate) isValid = false;
-                                }
-                                if (tglSelesaiVal) {
-                                    let endDate = new Date(tglSelesaiVal);
-                                    endDate.setHours(23, 59, 59);
-                                    if (rowDate > endDate) isValid = false;
-                                }
-                                return isValid;
-                            });
-                        }
-                    } else {
-                        displayData = result.data.filter(row => 
-                            row.unit_lokasi && row.unit_lokasi.toLowerCase().trim() === currentUser.unit_lokasi.toLowerCase().trim()
-                        );
-                    }
-
-                    globalPermintaanData = displayData;
-
-                    if (displayData.length > 0) {
-                        tbody.innerHTML = "";
-                        displayData.forEach(row => {
-                            let badgeColor = "bg-amber-100 text-amber-700";
-                            if (row.status === "APPROVED") badgeColor = "bg-emerald-100 text-emerald-700";
-                            if (row.status === "REJECTED") badgeColor = "bg-red-100 text-red-700";
-                            if (row.status === "REVISION") badgeColor = "bg-blue-100 text-blue-700";
-
-                            let urgensiBadge = "bg-slate-100 text-slate-700";
-                            if(row.urgensi === "URGENT") urgensiBadge = "bg-amber-100 text-amber-800 font-bold";
-                            if(row.urgensi === "TOP URGENT") urgensiBadge = "bg-red-100 text-red-800 font-bold animate-pulse";
-
-                            const btnCetakHtml = `
-                                <button onclick='tampilkanFormCetak(${JSON.stringify(row)})' class="mt-1 w-full bg-slate-800 hover:bg-slate-900 text-white px-2.5 py-1 rounded text-xs font-semibold transition flex items-center justify-center gap-1">
-                                    <i class="fa-solid fa-print"></i> Cetak A5 Lanskap
-                                </button>
-                            `;
-
-                            let dokumenHtml = `<div class="mt-2 pt-2 border-t border-gray-100 space-y-1">`;
-                            if (row.foto && row.foto.length > 20) {
-                                dokumenHtml += `
-                                    <span class="text-emerald-700 font-bold block text-[11px]"><i class="fa-solid fa-circle-check"></i> Dokumen Ber-TTD Valid</span>
-                                    <div class="flex gap-1.5 mt-1">
-                                        <button onclick="bukaPreview('${row.foto}', '${row.kode}')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-1 rounded text-[10px] font-semibold transition flex items-center gap-1">
-                                            <i class="fa-solid fa-eye"></i> Lihat
-                                        </button>
-                                        <a href="${row.foto}" download="Dokumen_TTD_${row.kode}.jpg" class="bg-brand-primary hover:bg-brand-dark text-white px-2 py-1 rounded text-[10px] font-semibold transition flex items-center gap-1">
-                                            <i class="fa-solid fa-download"></i> Download untuk Purchasing
-                                        </a>
-                                    </div>
-                                `;
-                            } else {
-                                dokumenHtml += `<span class="text-amber-600 block text-[10px] mb-1"><i class="fa-solid fa-triangle-exclamation"></i> Belum ada dokumen TTD</span>`;
-                            }
-                            
-                            dokumenHtml += `
-                                <input type="file" id="file-foto-${row.kode}" accept="image/*" onchange="triggerUploadFoto('${row.kode}')" class="hidden">
-                                <button onclick="document.getElementById('file-foto-${row.kode}').click()" class="mt-1 bg-amber-50 hover:bg-amber-100 text-amber-700 px-2 py-1 rounded text-[10px] font-semibold transition flex items-center gap-1">
-                                    <i class="fa-solid fa-upload"></i> Upload / Ganti Dokumen TTD
-                                </button>
-                            </div>`;
-
-                            if (isAdmin) {
-                                tbody.innerHTML += `
-                                    <tr class="hover:bg-slate-50 transition border-b border-gray-100">
-                                        <td class="p-3">
-                                            <span class="font-bold text-gray-900 block">${row.kode}</span>
-                                            <span class="text-[10px] text-gray-400">Input: ${row.tanggal}</span>
-                                        </td>
-                                        <td class="p-3">
-                                            <span class="font-medium text-gray-900 block text-brand-dark">${row.unit_lokasi}</span>
-                                            <span class="text-[10px] text-gray-500">Oleh: ${row.pemohon}</span>
-                                        </td>
-                                        <td class="p-3">
-                                            <span class="inline-block px-2 py-0.5 rounded text-[10px] ${urgensiBadge} mb-1">${row.urgensi || 'REGULER'}</span>
-                                            <span class="text-[11px] text-gray-700 block">Tgl Minta: <strong>${row.tgl_permintaan || '-'}</strong></span>
-                                            <span class="text-[11px] text-red-600 block">Dibutuhkan: <strong>${row.tgl_dibutuhkan || '-'}</strong></span>
-                                        </td>
-                                        <td class="p-3">
-                                            <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-brand-primary/10 text-brand-primary mb-1">${row.kategori}</span>
-                                            <span class="font-semibold text-gray-900 block">${row.barang}</span>
-                                            <span class="text-xs text-gray-600">Jumlah: <strong>${row.jumlah} ${row.satuan}</strong></span>
-                                            <span class="text-[11px] text-gray-500 block italic">Supplier: ${row.supplier}</span>
-                                        </td>
-                                        <td class="p-3 text-xs space-y-1">
-                                            <span class="block text-gray-700"><strong>Keperluan:</strong> ${row.keterangan}</span>
-                                            ${dokumenHtml}
-                                            <div class="mt-2">
-                                                <label class="text-[10px] font-semibold text-gray-400 uppercase">Catatan Admin / Revisi:</label>
-                                                <input type="text" id="catatan-${row.kode}" value="${row.catatan_admin !== '-' ? row.catatan_admin : ''}" placeholder="Tulis alasan revisi/penolakan..." class="w-full px-2 py-1 border border-gray-200 rounded text-xs focus:outline-none focus:border-brand-primary">
-                                            </div>
-                                        </td>
-                                        <td class="p-3 text-center align-middle">
-                                            <div class="space-y-2">
-                                                <select id="status-${row.kode}" class="w-full px-2 py-1 text-xs font-semibold rounded border border-gray-300 bg-white">
-                                                    <option value="PENDING" ${row.status === 'PENDING' ? 'selected' : ''}>PENDING</option>
-                                                    <option value="APPROVED" ${row.status === 'APPROVED' ? 'selected' : ''}>DI-ACC</option>
-                                                    <option value="REJECTED" ${row.status === 'REJECTED' ? 'selected' : ''}>TIDAK ACC</option>
-                                                    <option value="REVISION" ${row.status === 'REVISION' ? 'selected' : ''}>REVISION</option>
-                                                </select>
-                                                <button onclick="updateStatus('${row.kode}')" class="w-full bg-brand-primary hover:bg-brand-dark text-white px-3 py-1 rounded text-xs font-semibold transition">
-                                                    Simpan Status
-                                                </button>
-                                                ${btnCetakHtml}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                `;
-                            } else {
-                                tbody.innerHTML += `
-                                    <tr class="hover:bg-slate-50 transition border-b border-gray-100">
-                                        <td class="p-3">
-                                            <span class="font-bold text-gray-900 block">${row.kode}</span>
-                                            <span class="text-[10px] text-gray-400">${row.tanggal}</span>
-                                        </td>
-                                        <td class="p-3">
-                                            <span class="font-medium text-gray-900 block text-brand-dark">${row.unit_lokasi}</span>
-                                            <span class="text-[10px] text-gray-500">Oleh: ${row.pemohon}</span>
-                                        </td>
-                                        <td class="p-3">
-                                            <span class="inline-block px-2 py-0.5 rounded text-[10px] ${urgensiBadge} mb-1">${row.urgensi || 'REGULER'}</span>
-                                            <span class="text-[11px] text-red-600 block">Dibutuhkan: <strong>${row.tgl_dibutuhkan || '-'}</strong></span>
-                                        </td>
-                                        <td class="p-3">
-                                            <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-brand-primary/10 text-brand-primary mb-1">${row.kategori}</span>
-                                            <span class="font-semibold text-gray-900 block">${row.barang}</span>
-                                            <span class="text-xs text-gray-600">Jumlah: <strong>${row.jumlah} ${row.satuan}</strong></span>
-                                            <span class="text-[11px] text-gray-500 block italic">Supplier: ${row.supplier}</span>
-                                        </td>
-                                        <td class="p-3 text-xs space-y-1">
-                                            <span class="block text-gray-700"><strong>Keperluan:</strong> ${row.keterangan}</span>
-                                            ${dokumenHtml}
-                                            <span class="block text-red-600 bg-red-50 p-1.5 rounded border border-red-100 mt-1"><strong>Catatan Admin:</strong> ${row.catatan_admin}</span>
-                                        </td>
-                                        <td class="p-3 text-center align-middle">
-                                            <span class="px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider ${badgeColor}">${row.status}</span>
-                                            ${btnCetakHtml}
-                                        </td>
-                                    </tr>
-                                `;
-                            }
-                        });
-                    } else {
-                        tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-gray-400">Tidak ada data yang sesuai dengan filter.</td></tr>`;
-                    }
-                } else {
-                    tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-gray-400">Belum ada riwayat permintaan barang.</td></tr>`;
-                }
-            } catch (err) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-red-500">Gagal memuat data dari server.</td></tr>`;
-            }
-        }
-    </script>
 </body>
 </html>
