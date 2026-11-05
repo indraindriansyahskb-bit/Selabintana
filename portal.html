@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Portal Permintaan Barang & Peralatan</title>
+  <title>Portal Permintaan Material & Barang</title>
   <style>
     :root {
       --primary-color: #1a73e8;
@@ -18,47 +18,47 @@
       background-color: var(--bg-color);
       color: var(--text-color);
       margin: 0;
-      padding: 30px 15px;
+      padding: 20px;
     }
     .wrapper {
-      max-width: 800px;
+      max-width: 1000px;
       margin: auto;
     }
     .card {
       background: var(--card-bg);
-      padding: 35px;
+      padding: 25px;
       border-radius: 10px;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
       border: 1px solid var(--border-color);
       margin-bottom: 25px;
     }
-    h2 {
+    h2, h3 {
       color: #1f2937;
-      text-align: center;
       margin-top: 0;
+    }
+    h2 {
+      text-align: center;
       margin-bottom: 25px;
-      font-size: 24px;
-      font-weight: 600;
       border-bottom: 2px solid #f3f4f6;
       padding-bottom: 15px;
     }
     .form-group {
-      margin-bottom: 20px;
+      margin-bottom: 15px;
     }
     label {
       display: block;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
       font-weight: 600;
-      font-size: 14px;
+      font-size: 13px;
       color: #4b5563;
     }
-    input[type="text"], input[type="password"], select, textarea, input[type="date"], input[type="number"] {
+    input[type="text"], input[type="password"], select, textarea, input[type="date"], input[type="number"], input[type="month"] {
       width: 100%;
-      padding: 12px;
+      padding: 10px;
       border: 1px solid var(--border-color);
       border-radius: 6px;
       box-sizing: border-box;
-      font-size: 14px;
+      font-size: 13px;
     }
     input:focus, select:focus, textarea:focus {
       outline: none;
@@ -67,11 +67,11 @@
     }
     textarea {
       resize: vertical;
-      height: 90px;
+      height: 80px;
     }
     .row-group {
       display: flex;
-      gap: 20px;
+      gap: 15px;
     }
     .row-group .form-group {
       flex: 1;
@@ -97,66 +97,75 @@
     button {
       background-color: var(--primary-color);
       color: white;
-      padding: 14px 20px;
+      padding: 12px 15px;
       border: none;
       border-radius: 6px;
       cursor: pointer;
-      width: 100%;
-      font-size: 16px;
-      font-weight: 600;
-      transition: background-color 0.2s;
-    }
-    button:hover {
-      background-color: var(--primary-hover);
-    }
-    button:disabled {
-      background-color: #9ca3af;
-      cursor: not-allowed;
-    }
-    #loadingStatus, #loginLoading {
-      text-align: center;
-      margin-top: 15px;
-      font-style: italic;
-      color: var(--primary-color);
-      display: none;
       font-size: 14px;
+      font-weight: 600;
+      width: 100%;
     }
+    button:hover { background-color: var(--primary-hover); }
+    button:disabled { background-color: #9ca3af; cursor: not-allowed; }
+    
     .user-info-box {
       background: #eff6ff;
       border: 1px solid #bfdbfe;
-      padding: 15px;
+      padding: 12px 15px;
       border-radius: 6px;
-      margin-bottom: 25px;
+      margin-bottom: 20px;
       font-size: 14px;
       color: #1e40af;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
-    .logout-link {
-      font-size: 13px;
-      color: #dc2626;
-      text-decoration: none;
-      font-weight: 600;
+    .logout-link { color: #dc2626; text-decoration: none; font-weight: 600; font-size: 13px; }
+
+    /* Summary Cards Admin */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+      margin-bottom: 20px;
     }
-    .logout-link:hover {
-      text-decoration: underline;
+    .stat-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      padding: 15px;
+      border-radius: 8px;
+      text-align: center;
     }
-    /* Style Tabel untuk Admin */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 15px;
-      font-size: 13px;
+    .stat-card .val { font-size: 22px; font-weight: bold; margin-top: 5px; color: #1e293b; }
+    .stat-card.total { border-left: 4px solid #1a73e8; }
+    .stat-card.acc { border-left: 4px solid #16a34a; }
+    .stat-card.pending { border-left: 4px solid #d97706; }
+    .stat-card.tolak { border-left: 4px solid #dc2626; }
+
+    /* Filter Bar */
+    .filter-card {
+      background: #f1f5f9;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: flex-end;
     }
-    th, td {
-      border: 1px solid #ddd;
-      padding: 8px;
-      text-align: left;
-    }
-    th {
-      background-color: #f3f4f6;
-    }
+    .filter-item { flex: 1; min-width: 150px; }
+
+    /* Tabel Style */
+    .table-responsive { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; background: white; }
+    th, td { border: 1px solid #e5e7eb; padding: 10px; text-align: left; }
+    th { background-color: #f9fafb; font-weight: 600; color: #374151; }
+    tr:nth-child(even) { background-color: #f9fafb; }
+    .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+    .badge-pending { background: #fef3c7; color: #92400e; }
+    .badge-acc { background: #dcfce7; color: #166534; }
+    .badge-revisi { background: #e0f2fe; color: #075985; }
+    .badge-tolak { background: #fee2e2; color: #991b1b; }
   </style>
 </head>
 <body>
@@ -165,7 +174,7 @@
   <div class="card">
     <h2>Portal Permintaan Material & Barang</h2>
     
-    <!-- Bagian Login -->
+    <!-- Login Section -->
     <div id="loginSection">
       <div class="form-group">
         <label for="loginUser">Username:</label>
@@ -176,10 +185,10 @@
         <input type="password" id="loginPass" placeholder="Masukkan password..." required>
       </div>
       <button type="button" onclick="prosesLogin()">Login ke Portal</button>
-      <div id="loginLoading">Memeriksa kredensial...</div>
+      <div id="loginLoading" style="display:none; text-align:center; margin-top:10px; font-size:13px; color:#1a73e8;">Memeriksa kredensial...</div>
     </div>
 
-    <!-- Panel Khusus Staff (Form Permintaan) -->
+    <!-- Form Pengajuan Khusus Staff -->
     <form id="formPermintaan" style="display: none;">
       <div class="user-info-box" id="infoSesiStaff"></div>
 
@@ -255,15 +264,63 @@
       </div>
 
       <button type="submit" id="submitBtn">Kirim Permintaan ke Admin</button>
-      <div id="loadingStatus">Sedang mengirim data...</div>
+      <div id="loadingStatus" style="text-align:center; margin-top:10px; font-style:italic; color:#1a73e8; display:none;">Sedang memproses...</div>
     </form>
 
-    <!-- Panel Khusus Admin (Pemeriksaan & Update Status) -->
+    <!-- Panel Khusus Admin (Verifikasi & Rekapitulasi) -->
     <div id="panelAdmin" style="display: none;">
       <div class="user-info-box" id="infoSesiAdmin"></div>
-      <h3>Daftar Permintaan Masuk (Verifikasi Admin)</h3>
-      <p style="font-size: 13px; color: #666;">Admin dapat memeriksa data, mengunduh PDF TTD, mengubah status (ACC / REVISI / TOLAK), dan memberi catatan.</p>
-      <div id="containerTabelAdmin">
+
+      <!-- Ringkasan Statistik -->
+      <div class="summary-grid">
+        <div class="stat-card total"><label>Total</label><div class="val" id="statTotal">0</div></div>
+        <div class="stat-card pending"><label>Pending</label><div class="val" id="statPending">0</div></div>
+        <div class="stat-card acc"><label>Di ACC</label><div class="val" id="statACC">0</div></div>
+        <div class="stat-card tolak"><label>Revisi/Tolak</label><div class="val" id="statTolak">0</div></div>
+      </div>
+
+      <!-- Filter Rekapitulasi -->
+      <div class="filter-card">
+        <div class="filter-item">
+          <label for="filterBulan">Periode Bulan:</label>
+          <input type="month" id="filterBulan" onchange="terapkanFilterAdmin()">
+        </div>
+        <div class="filter-item">
+          <label for="filterUnit">Unit / Lokasi:</label>
+          <select id="filterUnit" onchange="terapkanFilterAdmin()">
+            <option value="">-- Semua Unit --</option>
+          </select>
+        </div>
+        <div class="filter-item">
+          <label for="filterKategori">Kategori:</label>
+          <select id="filterKategori" onchange="terapkanFilterAdmin()">
+            <option value="">-- Semua Kategori --</option>
+            <option value="OBAT">OBAT</option>
+            <option value="VAKSIN">VAKSIN</option>
+            <option value="VITAMIN">VITAMIN</option>
+            <option value="KIMIA">KIMIA</option>
+            <option value="PERALATAN">PERALATAN</option>
+            <option value="PAKAN">PAKAN</option>
+            <option value="LAINNYA">LAINNYA</option>
+          </select>
+        </div>
+        <div class="filter-item">
+          <label for="filterStatus">Status:</label>
+          <select id="filterStatus" onchange="terapkanFilterAdmin()">
+            <option value="">-- Semua Status --</option>
+            <option value="PENDING">PENDING</option>
+            <option value="ACC">ACC</option>
+            <option value="REVISI">REVISI</option>
+            <option value="DITOLAK">DITOLAK</option>
+          </select>
+        </div>
+        <div class="filter-item" style="flex: 0 0 auto;">
+          <button onclick="eksporKeCSV()" style="background:#059669; padding: 10px;">📥 Unduh CSV</button>
+        </div>
+      </div>
+
+      <h3>Daftar & Rekapitulasi Permintaan</h3>
+      <div class="table-responsive" id="containerTabelAdmin">
         <p>Memuat data permintaan...</p>
       </div>
     </div>
@@ -272,10 +329,12 @@
 </div>
 
 <script>
+  // URL Web App Google Apps Script kamu
   const GAS_URL = "https://script.google.com/macros/s/AKfycbyXv7p4QS7P_6EmgNDT2hr9y3iQ4jaZo3L31o-NPB5A3lT6ZmicDfZnbVi0CF8p8OT8PQ/exec";
 
   let sesiUser = {};
   let masterBarangData = [];
+  let rawAdminData = [];
 
   window.onload = function() {
     const savedUser = localStorage.getItem('portal_user_session');
@@ -321,7 +380,6 @@
     document.getElementById('loginSection').style.display = 'none';
 
     if (sesiUser.isAdmin) {
-      // Tampilkan Panel Admin
       document.getElementById('panelAdmin').style.display = 'block';
       document.getElementById('infoSesiAdmin').innerHTML = `
         <div>
@@ -332,7 +390,6 @@
       `;
       muatDataAdmin();
     } else {
-      // Tampilkan Form Staff
       document.getElementById('formPermintaan').style.display = 'block';
       document.getElementById('infoSesiStaff').innerHTML = `
         <div>
@@ -407,7 +464,6 @@
     });
   }
 
-  // Kirim Pengajuan dari Staff
   document.getElementById('formPermintaan').addEventListener('submit', async function(e) {
     e.preventDefault();
     const btn = document.getElementById('submitBtn');
@@ -473,55 +529,123 @@
     }
   });
 
-  // Fungsi khusus Admin memuat data permintaan
   async function muatDataAdmin() {
     try {
       const res = await fetch(GAS_URL + "?action=getPermintaanAdmin");
       const json = await res.json();
       if (json.status === "success") {
-        let html = `<table><thead><tr>
-          <th>Kode</th><th>Pemohon</th><th>Unit</th><th>Barang</th><th>Status</th><th>PDF TTD</th><th>Aksi Admin</th>
-        </tr></thead><tbody>`;
-        
-        json.data.forEach((row, index) => {
-          html += `<tr>
-            <td>${row.kode}</td>
-            <td>${row.pemohon}</td>
-            <td>${row.unit}</td>
-            <td>${row.barang} (${row.jumlah} ${row.satuan})</td>
-            <td><b>${row.status}</b><br><small>${row.catatan}</small></td>
-            <td>${row.pdfUrl !== '-' ? `<a href="${row.pdfUrl}" target="_blank">Lihat PDF</a>` : 'Belum Ada'}</td>
-            <td>
-              <select id="status_${index}">
-                <option value="PENDING" ${row.status==='PENDING'?'selected':''}>PENDING</option>
-                <option value="ACC" ${row.status==='ACC'?'selected':''}>ACC</option>
-                <option value="REVISI" ${row.status==='REVISI'?'selected':''}>REVISI</option>
-                <option value="DITOLAK" ${row.status==='DITOLAK'?'selected':''}>DITOLAK</option>
-              </select><br>
-              <input type="text" id="catatan_${index}" value="${row.catatan !== '-' ? row.catatan : ''}" placeholder="Catatan admin..." style="margin-top:4px; font-size:12px;"><br>
-              <button onclick="updateStatusAdmin('${row.kode}', ${index})" style="padding:4px 8px; font-size:12px; margin-top:4px; width:auto;">Simpan</button>
-            </td>
-          </tr>`;
-        });
-        html += `</tbody></table>`;
-        document.getElementById('containerTabelAdmin').innerHTML = html;
+        rawAdminData = json.data;
+        populateUnitFilter(rawAdminData);
+        terapkanFilterAdmin();
       }
     } catch(e) {
       document.getElementById('containerTabelAdmin').innerHTML = "Gagal memuat data.";
     }
   }
 
-  async function updateStatusAdmin(kodeBarang, index) {
-    const status = document.getElementById(`status_${index}`).value;
-    const catatan = document.getElementById(`catatan_${index}`).value;
+  function populateUnitFilter(data) {
+    const selectUnit = document.getElementById('filterUnit');
+    selectUnit.innerHTML = '<option value="">-- Semua Unit --</option>';
+    const units = [...new Set(data.map(item => item.unit).filter(Boolean))];
+    units.forEach(u => {
+      const opt = document.createElement('option');
+      opt.value = u;
+      opt.innerText = u;
+      selectUnit.appendChild(opt);
+    });
+  }
+
+  function terapkanFilterAdmin() {
+    const filterBulan = document.getElementById('filterBulan').value;
+    const filterUnit = document.getElementById('filterUnit').value;
+    const filterKategori = document.getElementById('filterKategori').value;
+    const filterStatus = document.getElementById('filterStatus').value;
+
+    let filtered = rawAdminData.filter(item => {
+      if (filterBulan) {
+        const itemDate = item.tglPermintaan || "";
+        if (!itemDate.startsWith(filterBulan)) return false;
+      }
+      if (filterUnit && item.unit !== filterUnit) return false;
+      if (filterKategori && item.kategori && item.kategori.toUpperCase() !== filterKategori.toUpperCase()) return false;
+      if (filterStatus && item.status !== filterStatus) return false;
+      return true;
+    });
+
+    renderStatistik(filtered);
+    renderTabelAdmin(filtered);
+  }
+
+  function renderStatistik(data) {
+    document.getElementById('statTotal').innerText = data.length;
+    document.getElementById('statPending').innerText = data.filter(i => i.status === 'PENDING').length;
+    document.getElementById('statACC').innerText = data.filter(i => i.status === 'ACC').length;
+    document.getElementById('statTolak').innerText = data.filter(i => i.status === 'REVISI' || i.status === 'DITOLAK').length;
+  }
+
+  function formatGoogleDriveUrl(url) {
+    if (!url || url === '-') return '-';
+    if (url.includes('/file/d/')) {
+      const match = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+      if (match && match[1]) {
+        return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+      }
+    }
+    return url;
+  }
+
+  function renderTabelAdmin(data) {
+    if (data.length === 0) {
+      document.getElementById('containerTabelAdmin').innerHTML = "<p style='text-align:center; padding:20px; color:#666;'>Tidak ada data permintaan.</p>";
+      return;
+    }
+
+    let html = `<table><thead><tr>
+      <th>Kode</th><th>Tanggal</th><th>Pemohon / Unit</th><th>Kategori & Barang</th><th>Jumlah</th><th>Status</th><th>Dokumen PDF</th><th>Aksi Admin</th>
+    </tr></thead><tbody>`;
+
+    data.forEach(row => {
+      let badgeClass = 'badge-pending';
+      if(row.status === 'ACC') badgeClass = 'badge-acc';
+      else if(row.status === 'REVISI') badgeClass = 'badge-revisi';
+      else if(row.status === 'DITOLAK') badgeClass = 'badge-tolak';
+
+      const cleanPdfUrl = formatGoogleDriveUrl(row.pdfUrl);
+
+      html += `<tr>
+        <td><b>${row.kode}</b></td>
+        <td>${row.tglPermintaan || '-'}</td>
+        <td><b>${row.pemohon}</b><br><small>${row.unit}</small></td>
+        <td><span class="badge" style="background:#e2e8f0; color:#334155;">${row.kategori || '-'}</span><br>${row.barang}</td>
+        <td>${row.jumlah} ${row.satuan}</td>
+        <td>
+          <span class="badge ${badgeClass}">${row.status}</span>
+          ${row.catatan && row.catatan !== '-' ? `<br><small style="color:#666;">Catatan: ${row.catatan}</small>` : ''}
+        </td>
+        <td>${cleanPdfUrl !== '-' ? `<a href="${cleanPdfUrl}" target="_blank" style="color:#1a73e8; font-weight:bold;">Buka PDF</a>` : '<span style="color:#999;">Belum ada</span>'}</td>
+        <td>
+          <select id="status_${row.kode}" style="padding:4px; font-size:12px; margin-bottom:4px;">
+            <option value="PENDING" ${row.status==='PENDING'?'selected':''}>PENDING</option>
+            <option value="ACC" ${row.status==='ACC'?'selected':''}>ACC</option>
+            <option value="REVISI" ${row.status==='REVISI'?'selected':''}>REVISI</option>
+            <option value="DITOLAK" ${row.status==='DITOLAK'?'selected':''}>DITOLAK</option>
+          </select><br>
+          <input type="text" id="catatan_${row.kode}" value="${row.catatan !== '-' ? row.catatan : ''}" placeholder="Catatan..." style="font-size:12px; padding:4px;"><br>
+          <button onclick="updateStatusAdmin('${row.kode}')" style="padding:4px 8px; font-size:12px; margin-top:4px; background:#1a73e8; width:auto;">Simpan</button>
+        </td>
+      </tr>`;
+    });
+
+    html += `</tbody></table>`;
+    document.getElementById('containerTabelAdmin').innerHTML = html;
+  }
+
+  async function updateStatusAdmin(kodeBarang) {
+    const status = document.getElementById(`status_${kodeBarang}`).value;
+    const catatan = document.getElementById(`catatan_${kodeBarang}`).value;
 
     try {
-      const payload = {
-        action: "updateStatus",
-        kodeBarang: kodeBarang,
-        status: status,
-        catatan: catatan
-      };
+      const payload = { action: "updateStatus", kodeBarang: kodeBarang, status: status, catatan: catatan };
       const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
       const json = await res.json();
       if(json.status === "success") {
@@ -533,6 +657,39 @@
     } catch(e) {
       alert("Terjadi kesalahan jaringan.");
     }
+  }
+
+  function eksporKeCSV() {
+    const filterBulan = document.getElementById('filterBulan').value;
+    const filterUnit = document.getElementById('filterUnit').value;
+    const filterKategori = document.getElementById('filterKategori').value;
+    const filterStatus = document.getElementById('filterStatus').value;
+
+    let filtered = rawAdminData.filter(item => {
+      if (filterBulan && !(item.tglPermintaan || "").startsWith(filterBulan)) return false;
+      if (filterUnit && item.unit !== filterUnit) return false;
+      if (filterKategori && item.kategori && item.kategori.toUpperCase() !== filterKategori.toUpperCase()) return false;
+      if (filterStatus && item.status !== filterStatus) return false;
+      return true;
+    });
+
+    if(filtered.length === 0) { alert("Tidak ada data untuk diekspor!"); return; }
+
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "Kode_Barang,Tanggal_Permintaan,Pemohon,Unit_Lokasi,Kategori,Nama_Barang,Jumlah,Satuan,Status,Catatan_Admin,Link_PDF\n";
+
+    filtered.forEach(row => {
+      let line = `"${row.kode}","${row.tglPermintaan}","${row.pemohon}","${row.unit}","${row.kategori}","${row.barang}","${row.jumlah}","${row.satuan}","${row.status}","${row.catatan}","${row.pdfUrl}"`;
+      csvContent += line + "\n";
+    });
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `Rekap_Permintaan_${filterBulan || 'Semua'}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 </script>
 
