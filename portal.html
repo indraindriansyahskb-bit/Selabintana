@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Portal Permintaan Material & Barang</title>
+  <!-- Library html2pdf untuk unduh otomatis file PDF berukuran A5 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     :root {
@@ -85,9 +86,17 @@
     .btn-upload { background-color: #10b981; }
     .btn-upload:hover { background-color: #059669; }
 
-    /* Area Cetak A5 Narrow Margin */
+    /* =========================================
+       LAYOUT AREA RENDER PDF A5 (NARROW MARGIN)
+       ========================================= */
     #printArea {
-      display: none; width: 148mm; padding: 5mm; background: white; font-family: 'Segoe UI', Arial, sans-serif; color: #111827; box-sizing: border-box;
+      display: none;
+      width: 148mm;
+      padding: 6mm;
+      background: #ffffff !important;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      color: #111827;
+      box-sizing: border-box;
     }
     .print-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #111827; padding-bottom: 6px; margin-bottom: 10px; }
     .print-header h2 { font-size: 15px; font-weight: 800; margin: 0; color: #111827; text-align: left; border: none; padding: 0; }
@@ -101,8 +110,8 @@
     .user-card-item span { font-size: 11px; font-weight: 800; color: #111827; }
 
     .print-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-    .print-table th { font-size: 9px; font-weight: 700; color: #374151; text-transform: uppercase; text-align: left; padding: 5px 4px; border-bottom: 2px solid #9ca3af; }
-    .print-table td { font-size: 10px; font-weight: 700; padding: 6px 4px; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
+    .print-table th { font-size: 9px; font-weight: 700; color: #374151; text-transform: uppercase; text-align: left; padding: 5px 4px; border-bottom: 2px solid #9ca3af; background: #f3f4f6 !important; }
+    .print-table td { font-size: 10px; font-weight: 700; padding: 6px 4px; border-bottom: 1px solid #e5e7eb; vertical-align: top; color: #111827; }
     .print-table td.kat-highlight { color: #059669; }
 
     .print-ttd-container { display: flex; justify-content: space-between; margin-top: 15px; }
@@ -232,7 +241,7 @@
   </div>
 </div>
 
-<!-- Area Render Draf PDF A5 (Menampilkan Semua Barang dalam 1 Tiket) -->
+<!-- Area Render Draf PDF A5 -->
 <div id="printArea">
   <div class="print-header">
     <div>
@@ -504,7 +513,6 @@
     }
   });
 
-  // Mengelompokkan baris berdasarkan kode REQ yang sama agar menjadi 1 tiket
   function groupTiketData(dataList) {
     let map = {};
     dataList.forEach(row => {
@@ -614,14 +622,12 @@
     const tiket = groupedTiketList.find(i => i.kode === kode);
     if (!tiket) { alert("Data tiket tidak ditemukan!"); return; }
 
-    // 1. Masukkan data teks ke elemen printArea
     document.getElementById('p_kode').innerText = tiket.kode || '-';
     document.getElementById('p_tglSistem').innerText = tiket.tglSistem || '-';
     document.getElementById('p_nama').innerText = tiket.pemohon || '-';
     document.getElementById('p_unit').innerText = tiket.unit || '-';
     document.getElementById('t_pemohon').innerText = tiket.pemohon || '-';
 
-    // 2. Masukkan daftar item barang ke tabel draf A5
     let tbodyHtml = "";
     tiket.items.forEach(itm => {
       tbodyHtml += `
@@ -636,11 +642,10 @@
     });
     document.getElementById('p_tabelItems').innerHTML = tbodyHtml;
 
-    // 3. Tampilkan elemen printArea secara aman agar terbaca oleh html2pdf
     const printArea = document.getElementById('printArea');
     printArea.style.display = 'block';
     printArea.style.position = 'absolute';
-    printArea.style.left = '-9999px'; // Letakkan di luar layar agar tidak mengganggu pandangan user
+    printArea.style.left = '-9999px';
 
     const opt = {
       margin:       2,
@@ -650,7 +655,6 @@
       jsPDF:        { unit: 'mm', format: 'a5', orientation: 'portrait' }
     };
 
-    // 4. Proses render PDF, lalu sembunyikan kembali elemen setelah terunduh
     html2pdf().from(printArea).set(opt).save().then(() => {
       printArea.style.display = 'none';
       printArea.style.position = 'static';
@@ -658,6 +662,8 @@
     }).catch(err => {
       console.error(err);
       printArea.style.display = 'none';
+      printArea.style.position = 'static';
+      printArea.style.left = 'auto';
       alert("Gagal mengunduh draf PDF.");
     });
   }
