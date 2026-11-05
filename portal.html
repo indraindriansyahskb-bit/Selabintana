@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Portal Permintaan Material & Barang</title>
+  <!-- Library html2pdf untuk unduh otomatis file PDF berukuran A5 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     :root {
       --primary-color: #1a73e8;
@@ -145,37 +147,16 @@
     .btn-upload:hover { background-color: #059669; }
 
     /* =========================================
-       PROPORSI FULL-PAGE PRINT UNTUK CETAK A5
+       LAYOUT AREA RENDER PDF A5 (NARROW MARGIN)
        ========================================= */
     #printArea {
       display: none;
-    }
-
-    /* Maksimalkan ukuran kertas A5 dengan narrow margin */
-    @media print {
-      @page {
-        size: A5 portrait;
-        margin: 3mm; /* Menggunakan narrow margin agar area cetak maksimal */
-      }
-      body * {
-        visibility: hidden !important;
-      }
-      #printArea, #printArea * {
-        visibility: visible !important;
-      }
-      #printArea {
-        display: block !important;
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        padding: 2mm;
-        background: white;
-        font-family: 'Segoe UI', Arial, sans-serif;
-        color: #111827;
-        box-sizing: border-box;
-      }
+      width: 148mm;
+      padding: 5mm;
+      background: white;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      color: #111827;
+      box-sizing: border-box;
     }
 
     .print-header {
@@ -286,7 +267,7 @@
       font-weight: 800;
       color: #374151;
       text-transform: uppercase;
-      margin-bottom: 35px; /* Ruang tanda tangan manual yang proporsional di A5 */
+      margin-bottom: 35px;
     }
     .print-ttd-line {
       border-bottom: 1px dashed #6b7280;
@@ -302,7 +283,7 @@
 <body>
 
 <div class="wrapper">
-  <div class="card no-print">
+  <div class="card">
     <h2>Portal Permintaan Material & Barang</h2>
     
     <!-- Login Section -->
@@ -450,7 +431,7 @@
   </div>
 </div>
 
-<!-- Form Cetak A5 Full Page -->
+<!-- Area Render Draf PDF A5 -->
 <div id="printArea">
   <div class="print-header">
     <div>
@@ -708,7 +689,7 @@
             </td>
             <td>${cleanPdfUrl !== '-' ? `<a href="${cleanPdfUrl}" target="_blank" style="color:#1a73e8; font-weight:bold;">Lihat PDF</a>` : '<span style="color:#999;">Belum ada</span>'}</td>
             <td>
-              <button class="btn-sm btn-print" onclick="cetakFormulirRow('${row.kode}')">🖨️ Cetak A5</button>
+              <button class="btn-sm btn-print" onclick="downloadFormulirA5('${row.kode}')">📥 Download Draf A5</button>
               <button class="btn-sm btn-upload" onclick="triggerUploadPdf('${row.kode}')">📤 Upload PDF</button>
               ${row.status === 'PENDING' || row.status === 'REVISI' ? `<button class="btn-sm btn-edit" onclick="editFormulirRow('${row.kode}')">✏️ Edit</button>` : ''}
               ${row.status === 'PENDING' ? `<button class="btn-sm btn-delete" onclick="hapusPermintaanRow('${row.kode}')">🗑️ Hapus</button>` : ''}
@@ -764,7 +745,7 @@
     }
   }
 
-  function cetakFormulirRow(kode) {
+  function downloadFormulirA5(kode) {
     const item = staffDataList.find(i => i.kode === kode);
     if (!item) { alert("Data tidak ditemukan!"); return; }
 
@@ -780,7 +761,20 @@
     document.getElementById('p_ket').innerText = (item.keterangan && item.keterangan !== '-') ? item.keterangan : '-';
     document.getElementById('t_pemohon').innerText = item.pemohon || '-';
 
-    setTimeout(() => { window.print(); }, 200);
+    const printArea = document.getElementById('printArea');
+    printArea.style.display = 'block';
+
+    const opt = {
+      margin:       2,
+      filename:     `Form_Permintaan_${item.kode}_${item.pemohon}.pdf`.replace(/\s+/g, '_'),
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2, useCORS: true },
+      jsPDF:        { unit: 'mm', format: 'a5', orientation: 'portrait' }
+    };
+
+    html2pdf().from(printArea).set(opt).save().then(() => {
+      printArea.style.display = 'none';
+    });
   }
 
   function editFormulirRow(kode) {
