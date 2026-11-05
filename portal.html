@@ -145,12 +145,35 @@
     .btn-upload { background-color: #10b981; }
     .btn-upload:hover { background-color: #059669; }
 
-    /* Style Khusus Cetak A5 */
+    /* Style Khusus Cetak A5 (Format Sempit untuk 2 Lembar Form A5 dalam 1 Kertas A4) */
+    #printArea {
+      display: none;
+    }
+
     @media print {
-      body * { visibility: hidden; }
-      #printArea, #printArea * { visibility: visible; }
-      #printArea { position: absolute; left: 0; top: 0; width: 148mm; height: 210mm; padding: 10mm; background: white; font-size: 11px; }
-      .no-print { display: none !important; }
+      body * {
+        visibility: hidden !important;
+      }
+      #printArea, #printArea * {
+        visibility: visible !important;
+      }
+      #printArea {
+        display: block !important;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 148mm;
+        height: 210mm;
+        padding: 5mm;
+        background: white;
+        font-size: 11px;
+        color: black;
+        box-sizing: border-box;
+      }
+      @page {
+        size: A4 portrait;
+        margin: 5mm;
+      }
     }
   </style>
 </head>
@@ -307,7 +330,7 @@
 </div>
 
 <!-- Format Cetak Draf A5 Tersembunyi -->
-<div id="printArea" style="display:none;">
+<div id="printArea">
   <div style="text-align:center; font-weight:bold; font-size:14px; margin-bottom:5px;">CV. SELABINTANA</div>
   <div style="text-align:center; font-size:12px; margin-bottom:15px; border-bottom:1px solid #000; padding-bottom:5px;">LEMBAR PENGAJUAN & PERMINTAAN MATERIAL (A5)</div>
   
@@ -547,7 +570,6 @@
     }
   }
 
-  // Action: Trigger File Upload dari Baris Tabel
   function triggerUploadPdf(kode) {
     targetKodeUpload = kode;
     document.getElementById('hiddenFileInput').click();
@@ -589,30 +611,33 @@
     }
   }
 
-  // Action: Cetak Format A5 dari Baris Tabel
   function cetakFormulirRow(kode) {
     const item = staffDataList.find(i => i.kode === kode);
-    if (!item) return;
+    if (!item) {
+      alert("Data permintaan tidak ditemukan!");
+      return;
+    }
 
-    document.getElementById('p_kode').innerText = item.kode;
-    document.getElementById('p_nama').innerText = item.pemohon;
-    document.getElementById('p_divisi').innerText = item.divisi;
-    document.getElementById('p_unit').innerText = item.unit;
-    document.getElementById('p_tgl').innerText = item.tglPermintaan;
-    document.getElementById('p_tglButuh').innerText = item.tglDibutuhkan;
-    document.getElementById('p_urgensi').innerText = item.urgensi;
-    document.getElementById('p_kategori').innerText = item.kategori;
-    document.getElementById('p_barang').innerText = item.barang;
-    document.getElementById('p_jumlah').innerText = item.jumlah;
-    document.getElementById('p_satuan').innerText = item.satuan;
-    document.getElementById('p_supplier').innerText = item.supplier || '-';
-    document.getElementById('p_ket').innerText = item.keterangan || '-';
-    document.getElementById('t_pemohon').innerText = item.pemohon;
+    document.getElementById('p_kode').innerText = item.kode || '-';
+    document.getElementById('p_nama').innerText = item.pemohon || '-';
+    document.getElementById('p_divisi').innerText = item.divisi || '-';
+    document.getElementById('p_unit').innerText = item.unit || '-';
+    document.getElementById('p_tgl').innerText = item.tglPermintaan || '-';
+    document.getElementById('p_tglButuh').innerText = item.tglDibutuhkan || '-';
+    document.getElementById('p_urgensi').innerText = item.urgensi || '-';
+    document.getElementById('p_kategori').innerText = item.kategori || '-';
+    document.getElementById('p_barang').innerText = item.barang || '-';
+    document.getElementById('p_jumlah').innerText = item.jumlah || '-';
+    document.getElementById('p_satuan').innerText = item.satuan || '-';
+    document.getElementById('p_supplier').innerText = item.supplier !== '-' ? item.supplier : '-';
+    document.getElementById('p_ket').innerText = item.keterangan !== '-' ? item.keterangan : '-';
+    document.getElementById('t_pemohon').innerText = item.pemohon || '-';
 
-    window.print();
+    setTimeout(() => {
+      window.print();
+    }, 200);
   }
 
-  // Action: Edit Baris
   function editFormulirRow(kode) {
     const item = staffDataList.find(i => i.kode === kode);
     if (!item) return;
@@ -643,7 +668,6 @@
     document.getElementById('cancelEditBtn').style.display = "none";
   }
 
-  // Action: Hapus Baris
   async function hapusPermintaanRow(kode) {
     if (!confirm(`Apakah Anda yakin ingin menghapus permintaan ${kode}?`)) return;
 
@@ -662,7 +686,6 @@
     }
   }
 
-  // Fungsi Dashboard Admin
   async function muatDataAdmin() {
     try {
       const res = await fetch(GAS_URL + "?action=getPermintaanAdmin");
