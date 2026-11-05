@@ -267,7 +267,7 @@
   </div>
 </div>
 
-<!-- Area Cetak A5 (Lengkap memuat Nomor Tiket, Tanggal Diminta/Dibutuhkan, Urgensi, Kode, Nama Barang, Jumlah, Supplier, Keterangan) -->
+<!-- Area Cetak A5 (Lengkap: Kode Tiket, Tanggal Diminta/Dibutuhkan, Urgensi, Kode Barang, Nama Barang, Jumlah, Supplier, Keterangan) -->
 <div id="printArea">
   <div class="print-header">
     <div>
@@ -328,7 +328,7 @@
 </div>
 
 <script>
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbzEsIu5F-9eWsiV8al75bQ6m2t_qQFLmjcoaYu4dnfWy2HHney-o0gAixr3iTSD4_j7JA/exec";
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbxxXStPdwb24KaZFOgp_1wn8ryaOwi8hyClQU6XrJ5aWYvsOVQyNt7vt9jWTm-CJ9Y1eQ/exec";
 
   let sesiUser = {};
   let masterBarangData = [];
@@ -788,7 +788,7 @@
 
     try {
       const payload = { action: "updateStatus", kodeBarang: kodeTiket, status: status, catatan: catatan };
-      const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) tabel });
+      const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
       const json = await res.json();
       if(json.status === "success") { alert("Status tiket diperbarui!"); muatDataAdmin(); }
       else { alert("Gagal: " + json.message); }
