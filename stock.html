@@ -32,7 +32,7 @@
                 <div class="text-center mb-4">
                     <i class="fa-solid fa-feather-pointed fa-3x text-primary mb-2"></i>
                     <h4 class="fw-bold">Farm Stock Control</h4>
-                    <p class="text-muted small">Silakan masuk ke akun Anda</p>
+                    <p class="text-muted small">Silakan masuk sesuai akun Anda</p>
                 </div>
                 <form id="loginForm">
                     <div class="mb-3">
@@ -47,6 +47,9 @@
                         <i class="fa-solid fa-right-to-bracket me-2"></i>Masuk Aplikasi
                     </button>
                 </form>
+                <div class="alert alert-secondary mt-3 small mb-0">
+                    <i class="fa-solid fa-circle-info me-1"></i> Akun Superadmin default: <b>superadmin</b> / bebas. Admin unit sesuaikan yang dibuat di menu Manajemen User.
+                </div>
             </div>
         </div>
     </div>
@@ -57,15 +60,18 @@
         <nav id="sidebar">
             <div class="p-3 text-center border-bottom border-secondary">
                 <h5 class="fw-bold m-0 text-white"><i class="fa-solid fa-boxes-stacked text-info me-2"></i>FARM STOK</h5>
-                <small class="text-muted" id="userRoleBadge">Superadmin</small>
+                <small class="text-muted" id="userRoleBadge">Role</small>
             </div>
             <ul class="nav flex-column mt-3">
                 <li class="nav-item"><a class="nav-link active" href="#" onclick="switchTab('dashboardTab', this)"><i class="fa-solid fa-chart-line me-2"></i>Dashboard</a></li>
-                <li class="nav-item"><a class="nav-link" href="#" onclick="switchTab('inventoryTab', this)"><i class="fa-solid fa-warehouse me-2"></i>Master Barang & Stok</a></li>
+                <li class="nav-item"><a class="nav-link" href="#" onclick="switchTab('inventoryTab', this)"><i class="fa-solid fa-warehouse me-2"></i>Stock & Gudang Akhir</a></li>
                 <li class="nav-item"><a class="nav-link" href="#" onclick="switchTab('mutationTab', this)"><i class="fa-solid fa-right-left me-2"></i>Mutasi Barang</a></li>
-                <li class="nav-item" id="approvalNavItem"><a class="nav-link" href="#" onclick="switchTab('approvalTab', this)"><i class="fa-solid fa-circle-check me-2"></i>Approval Mutasi <span class="badge bg-danger rounded-pill float-end" id="pendingBadgeCount">0</span></a></li>
-                <li class="nav-item" id="unitMasterNavItem"><a class="nav-link" href="#" onclick="switchTab('unitMasterTab', this)"><i class="fa-solid fa-sitemap me-2"></i>Master Unit & Gudang</a></li>
-                <li class="nav-item" id="userManagementNavItem"><a class="nav-link" href="#" onclick="switchTab('userManagementTab', this)"><i class="fa-solid fa-users-gear me-2"></i>Manajemen User</a></li>
+                <li class="nav-item"><a class="nav-link" href="#" onclick="switchTab('historyTab', this)"><i class="fa-solid fa-clock-rotate-left me-2"></i>History Barang</a></li>
+                
+                <!-- MENU KHUSUS SUPERADMIN -->
+                <li class="nav-item menu-superadmin" id="approvalNavItem"><a class="nav-link" href="#" onclick="switchTab('approvalTab', this)"><i class="fa-solid fa-circle-check me-2"></i>Approval Mutasi <span class="badge bg-danger rounded-pill float-end" id="pendingBadgeCount">0</span></a></li>
+                <li class="nav-item menu-superadmin" id="unitMasterNavItem"><a class="nav-link" href="#" onclick="switchTab('unitMasterTab', this)"><i class="fa-solid fa-sitemap me-2"></i>Master Unit & Gudang</a></li>
+                <li class="nav-item menu-superadmin" id="userManagementNavItem"><a class="nav-link" href="#" onclick="switchTab('userManagementTab', this)"><i class="fa-solid fa-users-gear me-2"></i>Manajemen User</a></li>
             </ul>
             <div class="position-absolute bottom-0 w-100 p-3 border-top border-secondary">
                 <button class="btn btn-outline-danger w-100 btn-sm" onclick="logout()"><i class="fa-solid fa-power-off me-2"></i>Keluar</button>
@@ -85,52 +91,52 @@
             <!-- TAB 1: DASHBOARD -->
             <div id="dashboardTab" class="tab-content-item">
                 <div class="row g-3 mb-4">
-                    <div class="col-md-3"><div class="card p-3 stats-card"><span class="text-muted small">Total Unit Farm</span><h3 class="fw-bold my-1" id="dashTotalUnit">0 Unit</h3></div></div>
-                    <div class="col-md-3"><div class="card p-3 stats-card" style="border-left-color: #10b981;"><span class="text-muted small">Master Item (Stok)</span><h3 class="fw-bold my-1" id="dashTotalItem">0 Item</h3></div></div>
-                    <div class="col-md-3"><div class="card p-3 stats-card" style="border-left-color: #f59e0b;"><span class="text-muted small">Mutasi Pending</span><h3 class="fw-bold my-1 text-warning" id="dashPendingCount">0 Trax</h3></div></div>
-                    <div class="col-md-3"><div class="card p-3 stats-card" style="border-left-color: #6366f1;"><span class="text-muted small">Total User Sistem</span><h3 class="fw-bold my-1 text-primary" id="dashTotalUser">0 User</h3></div></div>
+                    <div class="col-md-4"><div class="card p-3 stats-card"><span class="text-muted small">Total Unit Farm</span><h3 class="fw-bold my-1" id="dashTotalUnit">0 Unit</h3></div></div>
+                    <div class="col-md-4"><div class="card p-3 stats-card" style="border-left-color: #10b981;"><span class="text-muted small">Total Master Item</span><h3 class="fw-bold my-1" id="dashTotalItem">0 Item</h3></div></div>
+                    <div class="col-md-4"><div class="card p-3 stats-card menu-superadmin" style="border-left-color: #f59e0b;"><span class="text-muted small">Mutasi Pending</span><h3 class="fw-bold my-1 text-warning" id="dashPendingCount">0 Trax</h3></div></div>
                 </div>
             </div>
 
-            <!-- TAB 2: INVENTORY -->
+            <!-- TAB 2: INVENTORY / STOK AKHIR SEMUA GUDANG -->
             <div id="inventoryTab" class="tab-content-item d-none">
                 <div class="card p-3">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold m-0"><i class="fa-solid fa-warehouse me-2 text-primary"></i>Stok Akhir Barang Per Gudang & Unit</h5>
+                        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addItemModal"><i class="fa-solid fa-plus me-1"></i>Input Barang Masuk / Stok Awal</button>
+                    </div>
                     <div class="row g-2 mb-3">
-                        <div class="col-md-3">
-                            <label class="form-label small fw-bold">Filter Unit</label>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold">Filter Unit Farm</label>
                             <select id="filterUnit" class="form-select form-select-sm" onchange="renderInventoryTable()"><option value="ALL">Semua Unit</option></select>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <label class="form-label small fw-bold">Filter Kategori</label>
                             <select id="filterCategory" class="form-select form-select-sm" onchange="renderInventoryTable()">
                                 <option value="ALL">Semua Kategori</option><option value="Pakan">Pakan</option><option value="Obat & Vaksin">Obat & Vaksin</option><option value="Peralatan">Peralatan Farm</option><option value="Kimia & Sanitasi">Kimia & Sanitasi</option>
                             </select>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label small fw-bold">Cari Barang</label>
+                            <label class="form-label small fw-bold">Cari Nama Barang</label>
                             <input type="text" id="searchItem" class="form-control form-control-sm" placeholder="Ketik nama item..." onkeyup="renderInventoryTable()">
-                        </div>
-                        <div class="col-md-2 d-flex align-items-end">
-                            <button class="btn btn-sm btn-primary w-100" data-bs-toggle="modal" data-bs-target="#addItemModal"><i class="fa-solid fa-plus me-1"></i>Input Stok Awal</button>
                         </div>
                     </div>
                     <div class="table-responsive">
                         <table class="table table-bordered table-hover align-middle">
-                            <thead class="table-dark"><tr><th>Kode Item</th><th>Nama Barang</th><th>Kategori</th><th>Unit Farm</th><th>Gudang</th><th>Stok Saat Ini</th><th>Satuan</th></tr></thead>
-                            <tbody id="inventoryTableBody"><tr><td colspan="7" class="text-center text-muted">Data kosong.</td></tr></tbody>
+                            <thead class="table-dark"><tr><th>Kode Item</th><th>Nama Barang</th><th>Kategori</th><th>Unit Farm</th><th>Gudang</th><th>Stok Akhir</th><th>Satuan</th></tr></thead>
+                            <tbody id="inventoryTableBody"><tr><td colspan="7" class="text-center text-muted">Data stok kosong.</td></tr></tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <!-- TAB 3: MUTASI -->
+            <!-- TAB 3: MUTASI BARANG -->
             <div id="mutationTab" class="tab-content-item d-none">
                 <div class="row">
                     <div class="col-md-5">
                         <div class="card p-3 mb-3">
-                            <h6 class="fw-bold mb-3"><i class="fa-solid fa-paper-plane me-2 text-primary"></i>Form Pengajuan Mutasi</h6>
+                            <h6 class="fw-bold mb-3"><i class="fa-solid fa-paper-plane me-2 text-primary"></i>Form Mutasi Barang Antar Gudang/Unit</h6>
                             <form id="mutationForm">
-                                <div class="mb-2"><label class="form-label small">Pilih Barang</label><select id="mutItemSelect" class="form-select form-select-sm" required></select></div>
+                                <div class="mb-2"><label class="form-label small">Pilih Barang Sumber</label><select id="mutItemSelect" class="form-select form-select-sm" required></select></div>
                                 <div class="row g-2 mb-2">
                                     <div class="col-md-6"><label class="form-label small">Unit Asal</label><input type="text" id="mutSourceUnit" class="form-control form-control-sm" readonly></div>
                                     <div class="col-md-6"><label class="form-label small">Gudang Asal</label><input type="text" id="mutSourceGudang" class="form-control form-control-sm" readonly></div>
@@ -139,18 +145,18 @@
                                     <div class="col-md-6"><label class="form-label small">Unit Tujuan</label><select id="mutTargetUnit" class="form-select form-select-sm" required onchange="updateTargetGudangDropdown()"></select></div>
                                     <div class="col-md-6"><label class="form-label small">Gudang Tujuan</label><select id="mutTargetGudang" class="form-select form-select-sm" required></select></div>
                                 </div>
-                                <div class="mb-2"><label class="form-label small">Jumlah Qty</label><input type="number" id="mutQty" class="form-control form-control-sm" min="1" required></div>
-                                <button type="submit" class="btn btn-primary btn-sm w-100"><i class="fa-solid fa-paper-plane me-1"></i>Kirim Pengajuan</button>
+                                <div class="mb-2"><label class="form-label small">Jumlah Qty Mutasi</label><input type="number" id="mutQty" class="form-control form-control-sm" min="1" required></div>
+                                <button type="submit" class="btn btn-primary btn-sm w-100"><i class="fa-solid fa-paper-plane me-1"></i>Kirim Pengajuan Mutasi</button>
                             </form>
                         </div>
                     </div>
                     <div class="col-md-7">
                         <div class="card p-3">
-                            <h6 class="fw-bold mb-3"><i class="fa-solid fa-list-check me-2"></i>Riwayat Mutasi</h6>
+                            <h6 class="fw-bold mb-3"><i class="fa-solid fa-list-check me-2"></i>Status & Riwayat Mutasi</h6>
                             <div class="table-responsive">
                                 <table class="table table-sm table-hover align-middle">
                                     <thead class="table-light"><tr><th>ID</th><th>Item</th><th>Dari → Ke</th><th>Qty</th><th>Status</th></tr></thead>
-                                    <tbody id="mutationHistoryTable"><tr><td colspan="5" class="text-center text-muted">Belum ada riwayat.</td></tr></tbody>
+                                    <tbody id="mutationHistoryTable"><tr><td colspan="5" class="text-center text-muted">Belum ada riwayat mutasi.</td></tr></tbody>
                                 </table>
                             </div>
                         </div>
@@ -158,10 +164,44 @@
                 </div>
             </div>
 
-            <!-- TAB 4: APPROVAL -->
+            <!-- TAB 4: HISTORY BARANG (PER BULAN, BARANG, GUDANG) -->
+            <div id="historyTab" class="tab-content-item d-none">
+                <div class="card p-3">
+                    <h6 class="fw-bold mb-3"><i class="fa-solid fa-clock-rotate-left me-2 text-primary"></i>Pencarian History Barang & Keluar Masuk</h6>
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-3">
+                            <label class="form-label small fw-bold">Filter Bulan</label>
+                            <input type="month" id="filterMonth" class="form-control form-control-sm" onchange="renderHistoryTable()">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-bold">Filter Barang</label>
+                            <select id="filterHistoryItem" class="form-select form-select-sm" onchange="renderHistoryTable()">
+                                <option value="ALL">Semua Barang</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-bold">Filter Gudang</label>
+                            <select id="filterHistoryGudang" class="form-select form-select-sm" onchange="renderHistoryTable()">
+                                <option value="ALL">Semua Gudang</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button class="btn btn-sm btn-outline-secondary w-100" onclick="resetHistoryFilter()">Reset Filter</button>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover align-middle">
+                            <thead class="table-light"><tr><th>Tanggal</th><th>ID Transaksi</th><th>Nama Barang</th><th>Asal Unit/Gudang</th><th>Tujuan Unit/Gudang</th><th>Qty</th><th>Status / Jenis</th><th>Pemohon</th></tr></thead>
+                            <tbody id="historyTableBody"><tr><td colspan="8" class="text-center text-muted">Belum ada data history.</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 5: APPROVAL MUTASI (SUPERADMIN) -->
             <div id="approvalTab" class="tab-content-item d-none">
                 <div class="card p-3">
-                    <h6 class="fw-bold mb-3"><i class="fa-solid fa-user-shield me-2 text-warning"></i>Persetujuan Mutasi (Superadmin)</h6>
+                    <h6 class="fw-bold mb-3"><i class="fa-solid fa-user-shield me-2 text-warning"></i>Persetujuan Mutasi Antar Gudang/Unit (Superadmin)</h6>
                     <div class="table-responsive">
                         <table class="table table-bordered table-hover align-middle">
                             <thead class="table-light"><tr><th>ID</th><th>Item</th><th>Asal</th><th>Tujuan</th><th>Qty</th><th>Pemohon</th><th>Aksi</th></tr></thead>
@@ -171,7 +211,7 @@
                 </div>
             </div>
 
-            <!-- TAB 5: MASTER UNIT & GUDANG -->
+            <!-- TAB 6: MASTER UNIT & GUDANG (SUPERADMIN) -->
             <div id="unitMasterTab" class="tab-content-item d-none">
                 <div class="row">
                     <div class="col-md-4">
@@ -206,7 +246,7 @@
                 </div>
             </div>
 
-            <!-- TAB 6: MANAJEMEN USER -->
+            <!-- TAB 7: MANAJEMEN USER (SUPERADMIN) -->
             <div id="userManagementTab" class="tab-content-item d-none">
                 <div class="row">
                     <div class="col-md-4">
@@ -246,12 +286,12 @@
         </div>
     </div>
 
-    <!-- MODAL INPUT STOK -->
+    <!-- MODAL INPUT STOK / BARANG MASUK -->
     <div class="modal fade" id="addItemModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title fw-bold">Input Barang & Stok Awal</h5>
+                    <h5 class="modal-title fw-bold">Input Barang Masuk / Stok Awal</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -268,10 +308,10 @@
                             <div class="col-6"><label class="form-label small">Gudang</label><select id="addItemGudang" class="form-select form-select-sm" required></select></div>
                         </div>
                         <div class="row g-2 mb-3">
-                            <div class="col-6"><label class="form-label small">Stok Awal</label><input type="number" id="addItemQty" class="form-control form-control-sm" required min="0"></div>
+                            <div class="col-6"><label class="form-label small">Jumlah Masuk / Stok</label><input type="number" id="addItemQty" class="form-control form-control-sm" required min="1"></div>
                             <div class="col-6"><label class="form-label small">Satuan</label><input type="text" id="addItemUnitType" class="form-control form-control-sm" required placeholder="Vial / Sak"></div>
                         </div>
-                        <button type="submit" class="btn btn-primary btn-sm w-100">Simpan Master Barang</button>
+                        <button type="submit" class="btn btn-primary btn-sm w-100">Simpan Barang Masuk</button>
                     </form>
                 </div>
             </div>
@@ -314,7 +354,7 @@
 
                 const resMut = await fetch(`${API_URL}?action=getDataMutasi`);
                 const rawMut = await resMut.json();
-                mutationData = rawMut.map(m => ({ id: m.ID_Mutasi || m.id, itemId: m.ID_Item || m.itemId, itemName: m.Nama_Barang || m.itemName, fromUnit: m.Unit_Asal || m.fromUnit, fromGudang: m.Gudang_Asal || m.fromGudang, toUnit: m.Unit_Tujuan || m.toUnit, toGudang: m.Gudang_Tujuan || m.toGudang, qty: Number(m.Qty || m.qty), status: m.Status || m.status, requester: m.Pemohon || m.requester }));
+                mutationData = rawMut.map(m => ({ id: m.ID_Mutasi || m.id, date: m.Timestamp || m.date || new Date().toISOString().split('T')[0], itemId: m.ID_Item || m.itemId, itemName: m.Nama_Barang || m.itemName, fromUnit: m.Unit_Asal || m.fromUnit, fromGudang: m.Gudang_Asal || m.fromGudang, toUnit: m.Unit_Tujuan || m.toUnit, toGudang: m.Gudang_Tujuan || m.toGudang, qty: Number(m.Qty || m.qty), status: m.Status || m.status, requester: m.Pemohon || m.requester }));
 
                 refreshAllUI();
             } catch (err) {
@@ -323,13 +363,27 @@
         }
 
         function refreshAllUI() {
+            applyRoleAccess();
             populateDropdowns();
             renderDashboard();
             renderInventoryTable();
             renderMutationHistory();
+            renderHistoryTable();
             renderApprovalTable();
             renderUnitMasterTable();
             renderUserTable();
+        }
+
+        // ATUR HAK AKSES MENU BERDASARKAN ROLE
+        function applyRoleAccess() {
+            const role = currentUser.role;
+            const superadminElements = document.querySelectorAll('.menu-superadmin');
+            
+            if (role === 'unit_admin') {
+                superadminElements.forEach(el => el.classList.add('d-none'));
+            } else {
+                superadminElements.forEach(el => el.classList.remove('d-none'));
+            }
         }
 
         function setupLogin() {
@@ -340,7 +394,11 @@
 
                 const foundUser = usersData.find(u => (u.Username || u.username) === userVal && (u.Password || u.password) === passVal);
                 if (foundUser) {
-                    currentUser = { name: foundUser.Username || foundUser.username, role: foundUser.Role || foundUser.role, unit: foundUser.Unit_Assignment || foundUser.unit || 'ALL' };
+                    currentUser = { 
+                        name: foundUser.Username || foundUser.username, 
+                        role: foundUser.Role || foundUser.role, 
+                        unit: foundUser.Unit_Assignment || foundUser.unit || 'ALL' 
+                    };
                 } else {
                     currentUser = { name: userVal, role: 'superadmin', unit: 'ALL' };
                 }
@@ -348,17 +406,8 @@
                 document.getElementById('loginScreen').classList.add('d-none');
                 document.getElementById('appScreen').classList.remove('d-none');
                 document.getElementById('currentUserName').innerText = currentUser.name;
-                document.getElementById('userRoleBadge').innerText = currentUser.role === 'superadmin' ? 'Superadmin Mode' : 'Admin Unit Mode';
+                document.getElementById('userRoleBadge').innerText = currentUser.role === 'superadmin' ? 'Superadmin Mode' : `Admin Unit (${currentUser.unit})`;
 
-                if (currentUser.role !== 'superadmin') {
-                    document.getElementById('approvalNavItem').classList.add('d-none');
-                    document.getElementById('unitMasterNavItem').classList.add('d-none');
-                    document.getElementById('userManagementNavItem').classList.add('d-none');
-                } else {
-                    document.getElementById('approvalNavItem').classList.remove('d-none');
-                    document.getElementById('unitMasterNavItem').classList.remove('d-none');
-                    document.getElementById('userManagementNavItem').classList.remove('d-none');
-                }
                 refreshAllUI();
             });
         }
@@ -375,6 +424,7 @@
             element.classList.add('active');
         }
 
+        // TAMBAH USER BARU
         document.getElementById('addUserForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const username = document.getElementById('newUserName').value.trim();
@@ -387,8 +437,7 @@
                 return;
             }
 
-            const newUser = { username, password, role, unit };
-            usersData.push(newUser);
+            usersData.push({ username, password, role, unit });
 
             if (!API_URL.includes("MASUKKAN_URL")) {
                 try {
@@ -396,15 +445,12 @@
                         method: 'POST',
                         body: JSON.stringify({ action: 'addUser', username, password, role, unit })
                     });
-                } catch (err) {
-                    console.error("Gagal simpan user:", err);
-                }
+                } catch (err) { console.error(err); }
             }
 
             alert(`User baru "${username}" berhasil ditambahkan!`);
             document.getElementById('addUserForm').reset();
             renderUserTable();
-            renderDashboard();
         });
 
         document.getElementById('addUnitForm').addEventListener('submit', async (e) => {
@@ -443,33 +489,47 @@
             }
         });
 
+        // INPUT STOK MASUK / BARANG MASUK
         document.getElementById('addItemForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const unit = document.getElementById('addItemUnit').value;
             const gudang = document.getElementById('addItemGudang').value;
-            const newItem = {
-                id: `ITM-${Math.floor(1000 + Math.random() * 9000)}`,
-                name: document.getElementById('addItemName').value.trim(),
-                category: document.getElementById('addItemCategory').value,
-                unit: unit,
-                gudang: gudang,
-                qty: parseInt(document.getElementById('addItemQty').value),
-                unitType: document.getElementById('addItemUnitType').value.trim()
-            };
-            inventoryData.push(newItem);
+            const qtyInput = parseInt(document.getElementById('addItemQty').value);
+            const itemName = document.getElementById('addItemName').value.trim();
+            const category = document.getElementById('addItemCategory').value;
+            const unitType = document.getElementById('addItemUnitType').value.trim();
+
+            // Cek apakah item sudah ada di gudang tersebut
+            let existingItem = inventoryData.find(i => i.name.toLowerCase() === itemName.toLowerCase() && i.unit === unit && i.gudang === gudang);
+            
+            if (existingItem) {
+                existingItem.qty += qtyInput;
+            } else {
+                inventoryData.push({
+                    id: `ITM-${Math.floor(1000 + Math.random() * 9000)}`,
+                    name: itemName,
+                    category: category,
+                    unit: unit,
+                    gudang: gudang,
+                    qty: qtyInput,
+                    unitType: unitType
+                });
+            }
 
             if (!API_URL.includes("MASUKKAN_URL")) {
                 await fetch(API_URL, {
                     method: 'POST',
-                    body: JSON.stringify({ action: 'addInventoryItem', ...newItem })
+                    body: JSON.stringify({ action: 'addInventoryItem', id: `ITM-${Math.floor(1000 + Math.random() * 9000)}`, name: itemName, category, unit, gudang, qty: qtyInput, unitType })
                 });
             }
-            alert('Master barang & stok awal berhasil disimpan!');
+
+            alert('Barang masuk / stok awal berhasil disimpan!');
             bootstrap.Modal.getInstance(document.getElementById('addItemModal')).hide();
             document.getElementById('addItemForm').reset();
             refreshAllUI();
         });
 
+        // PENGAJUAN MUTASI
         document.getElementById('mutationForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const itemId = document.getElementById('mutItemSelect').value;
@@ -483,6 +543,7 @@
 
             const newMut = {
                 id: `MUT-${Math.floor(1000 + Math.random() * 9000)}`,
+                date: new Date().toISOString().split('T')[0],
                 itemId: itemObj.id,
                 itemName: itemObj.name,
                 fromUnit: itemObj.unit,
@@ -490,10 +551,19 @@
                 toUnit: document.getElementById('mutTargetUnit').value,
                 toGudang: document.getElementById('mutTargetGudang').value,
                 qty: qty,
-                status: 'PENDING',
+                status: currentUser.role === 'superadmin' ? 'APPROVED' : 'PENDING',
                 requester: currentUser.name
             };
             mutationData.unshift(newMut);
+
+            // Jika superadmin langsung approve & potong stok
+            if (currentUser.role === 'superadmin') {
+                itemObj.qty -= qty;
+                let targetInv = inventoryData.find(i => i.name === newMut.itemName && i.unit === newMut.toUnit && i.gudang === newMut.toGudang);
+                if (targetInv) { targetInv.qty += qty; } else {
+                    inventoryData.push({ id: `ITM-${Math.floor(1000+Math.random()*9000)}`, name: newMut.itemName, category: itemObj.category, unit: newMut.toUnit, gudang: newMut.toGudang, qty: qty, unitType: itemObj.unitType });
+                }
+            }
 
             if (!API_URL.includes("MASUKKAN_URL")) {
                 await fetch(API_URL, {
@@ -501,7 +571,7 @@
                     body: JSON.stringify({ action: 'addMutation', ...newMut })
                 });
             }
-            alert('Pengajuan mutasi berhasil dikirim.');
+            alert(currentUser.role === 'superadmin' ? 'Mutasi berhasil dijalankan.' : 'Pengajuan mutasi berhasil dikirim ke Superadmin.');
             document.getElementById('mutationForm').reset();
             refreshAllUI();
         });
@@ -550,24 +620,59 @@
             const mutTargetUnit = document.getElementById('mutTargetUnit');
             const addItemUnit = document.getElementById('addItemUnit');
             const newUserUnit = document.getElementById('newUserUnit');
+            const filterHistoryItem = document.getElementById('filterHistoryItem');
+            const filterHistoryGudang = document.getElementById('filterHistoryGudang');
 
-            masterUnitSelect.innerHTML = '';
-            mutTargetUnit.innerHTML = '';
-            addItemUnit.innerHTML = '';
-            newUserUnit.innerHTML = '<option value="ALL">Semua Unit (Superadmin)</option>';
+            if (masterUnitSelect) masterUnitSelect.innerHTML = '';
+            if (mutTargetUnit) mutTargetUnit.innerHTML = '';
+            if (addItemUnit) addItemUnit.innerHTML = '';
+            if (newUserUnit) newUserUnit.innerHTML = '<option value="ALL">Semua Unit (Superadmin)</option>';
 
-            unitsData.forEach(u => {
+            // Jika admin unit, batasi unit yang bisa diakses di filter & form
+            let allowedUnits = unitsData;
+            if (currentUser.role === 'unit_admin' && currentUser.unit !== 'ALL') {
+                allowedUnits = unitsData.filter(u => u.name === currentUser.unit || u.id === currentUser.unit);
+                filterUnit.innerHTML = '';
+            }
+
+            allowedUnits.forEach(u => {
                 filterUnit.innerHTML += `<option value="${u.name}">${u.name}</option>`;
-                masterUnitSelect.innerHTML += `<option value="${u.name}">${u.name}</option>`;
-                mutTargetUnit.innerHTML += `<option value="${u.name}">${u.name}</option>`;
-                addItemUnit.innerHTML += `<option value="${u.name}">${u.name}</option>`;
-                newUserUnit.innerHTML += `<option value="${u.name}">${u.name}</option>`;
+                if (masterUnitSelect) masterUnitSelect.innerHTML += `<option value="${u.name}">${u.name}</option>`;
+                if (mutTargetUnit) mutTargetUnit.innerHTML += `<option value="${u.name}">${u.name}</option>`;
+                if (addItemUnit) addItemUnit.innerHTML += `<option value="${u.name}">${u.name}</option>`;
+                if (newUserUnit) newUserUnit.innerHTML += `<option value="${u.name}">${u.name}</option>`;
             });
 
+            // Jika role unit_admin, set default filter unit ke unit miliknya
+            if (currentUser.role === 'unit_admin' && currentUser.unit !== 'ALL') {
+                filterUnit.value = currentUser.unit;
+                filterUnit.disabled = true;
+            }
+
+            // Dropdown barang mutasi (hanya item dari unit admin ybs jika unit_admin)
             const mutItemSelect = document.getElementById('mutItemSelect');
             mutItemSelect.innerHTML = '';
-            inventoryData.forEach(item => {
+            let availableItems = inventoryData;
+            if (currentUser.role === 'unit_admin' && currentUser.unit !== 'ALL') {
+                availableItems = inventoryData.filter(i => i.unit === currentUser.unit);
+            }
+            availableItems.forEach(item => {
                 mutItemSelect.innerHTML += `<option value="${item.id}">${item.name} [${item.unit} - ${item.gudang}] (Stok: ${item.qty} ${item.unitType})</option>`;
+            });
+
+            // Filter History Dropdown Items & Gudang
+            filterHistoryItem.innerHTML = '<option value="ALL">Semua Barang</option>';
+            let uniqueItems = [...new Set(inventoryData.map(i => i.name))];
+            uniqueItems.forEach(itemName => {
+                filterHistoryItem.innerHTML += `<option value="${itemName}">${itemName}</option>`;
+            });
+
+            filterHistoryGudang.innerHTML = '<option value="ALL">Semua Gudang</option>';
+            let uniqueGudang = [];
+            unitsData.forEach(u => { u.warehouses.forEach(w => uniqueGudang.push(w)); });
+            let setGudang = [...new Set(uniqueGudang)];
+            setGudang.forEach(g => {
+                filterHistoryGudang.innerHTML += `<option value="${g}">${g}</option>`;
             });
 
             updateMutationFormDetails();
@@ -611,17 +716,35 @@
             document.getElementById('dashPendingCount').innerText = `${mutationData.filter(m => m.status === 'PENDING').length} Trax`;
             document.getElementById('dashTotalUnit').innerText = `${unitsData.length} Unit`;
             document.getElementById('dashTotalItem').innerText = `${inventoryData.length} Item`;
-            document.getElementById('dashTotalUser').innerText = `${usersData.length} User`;
         }
 
+        // STOK AKHIR SEMUA GUDANG
         function renderInventoryTable() {
+            const filterUnitVal = document.getElementById('filterUnit').value;
+            const filterCatVal = document.getElementById('filterCategory').value;
+            const searchVal = document.getElementById('searchItem').value.toLowerCase();
+
             const tbody = document.getElementById('inventoryTableBody');
             tbody.innerHTML = '';
-            if (inventoryData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted">Belum ada data barang.</td></tr>`;
+
+            let filtered = inventoryData.filter(item => {
+                let matchUnit = filterUnitVal === 'ALL' || item.unit === filterUnitVal;
+                let matchCat = filterCatVal === 'ALL' || item.category === filterCatVal;
+                let matchSearch = item.name.toLowerCase().includes(searchVal);
+                return matchUnit && matchCat && matchSearch;
+            });
+
+            // Jika admin unit, paksa filter hanya unit miliknya
+            if (currentUser.role === 'unit_admin' && currentUser.unit !== 'ALL') {
+                filtered = filtered.filter(item => item.unit === currentUser.unit);
+            }
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted">Tidak ada data stok ditemukan.</td></tr>`;
                 return;
             }
-            inventoryData.forEach(item => {
+
+            filtered.forEach(item => {
                 tbody.innerHTML += `<tr><td class="fw-bold">${item.id}</td><td>${item.name}</td><td><span class="badge bg-secondary">${item.category}</span></td><td>${item.unit}</td><td>${item.gudang}</td><td class="fw-bold text-success">${item.qty}</td><td>${item.unitType}</td></tr>`;
             });
         }
@@ -629,14 +752,66 @@
         function renderMutationHistory() {
             const tbody = document.getElementById('mutationHistoryTable');
             tbody.innerHTML = '';
-            if (mutationData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">Belum ada riwayat.</td></tr>`;
+            let historyList = mutationData;
+            if (currentUser.role === 'unit_admin' && currentUser.unit !== 'ALL') {
+                historyList = mutationData.filter(m => m.fromUnit === currentUser.unit || m.toUnit === currentUser.unit);
+            }
+
+            if (historyList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">Belum ada riwayat mutasi.</td></tr>`;
                 return;
             }
-            mutationData.forEach(m => {
+            historyList.forEach(m => {
                 let badge = m.status === 'PENDING' ? '<span class="badge badge-pending">PENDING</span>' : (m.status === 'APPROVED' ? '<span class="badge badge-approved">DISETUJUI</span>' : '<span class="badge badge-rejected">DITOLAK</span>');
                 tbody.innerHTML += `<tr><td><small>${m.id}</small></td><td>${m.itemName}</td><td><small>${m.fromUnit} (${m.fromGudang}) → ${m.toUnit} (${m.toGudang})</small></td><td class="fw-bold">${m.qty}</td><td>${badge}</td></tr>`;
             });
+        }
+
+        // HISTORY BARANG (PER BULAN, BARANG, GUDANG)
+        function renderHistoryTable() {
+            const filterMonth = document.getElementById('filterMonth').value;
+            const filterItem = document.getElementById('filterHistoryItem').value;
+            const filterGudang = document.getElementById('filterHistoryGudang').value;
+            const tbody = document.getElementById('historyTableBody');
+            tbody.innerHTML = '';
+
+            let historyList = mutationData;
+            if (currentUser.role === 'unit_admin' && currentUser.unit !== 'ALL') {
+                historyList = mutationData.filter(m => m.fromUnit === currentUser.unit || m.toUnit === currentUser.unit);
+            }
+
+            let filtered = historyList.filter(m => {
+                let matchMonth = !filterMonth || (m.date && m.date.startsWith(filterMonth));
+                let matchItem = filterItem === 'ALL' || m.itemName === filterItem;
+                let matchGudang = filterGudang === 'ALL' || m.fromGudang === filterGudang || m.toGudang === filterGudang;
+                return matchMonth && matchItem && matchGudang;
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted">Tidak ada data history untuk filter tersebut.</td></tr>`;
+                return;
+            }
+
+            filtered.forEach(m => {
+                let statusBadge = m.status === 'APPROVED' ? '<span class="badge bg-success">Mutasi Sukses</span>' : (m.status === 'PENDING' ? '<span class="badge bg-warning text-dark">Pending</span>' : '<span class="badge bg-secondary">Transaksi</span>');
+                tbody.innerHTML += `<tr>
+                    <td><small>${m.date || '-'}</small></td>
+                    <td><b>${m.id}</b></td>
+                    <td>${m.itemName}</td>
+                    <td><small>${m.fromUnit} / ${m.fromGudang}</small></td>
+                    <td><small>${m.toUnit} / ${m.toGudang}</small></td>
+                    <td class="fw-bold">${m.qty}</td>
+                    <td>${statusBadge}</td>
+                    <td><small>${m.requester || '-'}</small></td>
+                </tr>`;
+            });
+        }
+
+        function resetHistoryFilter() {
+            document.getElementById('filterMonth').value = '';
+            document.getElementById('filterHistoryItem').value = 'ALL';
+            document.getElementById('filterHistoryGudang').value = 'ALL';
+            renderHistoryTable();
         }
 
         function renderApprovalTable() {
