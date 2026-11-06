@@ -1,692 +1,903 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Manajemen Stok Farm</title>
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- FontAwesome Icons -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <style>
-        :root { --sidebar-width: 260px; }
-        body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        #sidebar { width: var(--sidebar-width); height: 100vh; position: fixed; top: 0; left: 0; background-color: #1e293b; color: #fff; transition: all 0.3s; z-index: 1000; }
-        #sidebar .nav-link { color: #94a3b8; padding: 12px 20px; border-radius: 8px; margin: 4px 15px; font-weight: 500; }
-        #sidebar .nav-link:hover, #sidebar .nav-link.active { color: #fff; background-color: #0ea5e9; }
-        #main-content { margin-left: var(--sidebar-width); padding: 25px; min-height: 100vh; }
-        .card { border: none; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
-        .stats-card { border-left: 4px solid #0ea5e9; }
-        .badge-pending { background-color: #f59e0b; color: #fff; }
-        .badge-approved { background-color: #10b981; color: #fff; }
-        .badge-rejected { background-color: #ef4444; color: #fff; }
-        .login-box { max-width: 420px; margin: 80px auto; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal Permintaan Material & Barang</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --bg-body: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+    }
+    * { box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); margin: 0; padding: 30px 15px; line-height: 1.5; }
+    .wrapper { max-width: 1200px; margin: auto; }
+    .app-header { text-align: center; margin-bottom: 25px; }
+    .app-header h2 { font-size: 26px; font-weight: 700; color: #1e293b; margin: 0 0 6px 0; }
+    .app-header p { font-size: 14px; color: var(--text-muted); margin: 0; }
+    .card { background: var(--card-bg); padding: 28px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid var(--border-color); margin-bottom: 25px; }
+    .section-title { font-size: 16px; font-weight: 600; color: #1e293b; margin-top: 0; margin-bottom: 18px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+    .form-group { margin-bottom: 16px; }
+    label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 13px; color: #334155; }
+    input[type="text"], input[type="password"], select, textarea, input[type="date"], input[type="number"], input[type="month"] {
+      width: 100%; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 13px; font-family: inherit;
+    }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
+    textarea { resize: vertical; height: 75px; }
+    .row-group { display: flex; gap: 16px; flex-wrap: wrap; }
+    .row-group .form-group { flex: 1; min-width: 180px; }
+    button { background-color: var(--primary); color: white; padding: 10px 18px; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; }
+    button:hover { background-color: var(--primary-hover); }
+    button:disabled { background-color: #94a3b8; cursor: not-allowed; }
+    .user-info-box { background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 1px solid #bfdbfe; padding: 14px 18px; border-radius: 10px; margin-bottom: 22px; font-size: 14px; color: #1e40af; display: flex; justify-content: space-between; align-items: center; }
+    .logout-btn { background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; padding: 6px 12px; font-size: 12px; }
+    .logout-btn:hover { background: #fecaca; }
+    .item-row-container { background: #f8fafc; border: 1px solid var(--border-color); padding: 18px; border-radius: 10px; margin-bottom: 14px; position: relative; }
+    .btn-hapus-item { background: #ef4444; padding: 6px 10px; font-size: 12px; }
+    .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 22px; }
+    .stat-card { background: #fff; border: 1px solid var(--border-color); padding: 18px; border-radius: 10px; display: flex; align-items: center; gap: 16px; }
+    .stat-icon { width: 48px; height: 48px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+    .stat-card .val { font-size: 22px; font-weight: 700; color: #0f172a; margin-top: 4px; }
+    .stat-card label { font-size: 12px; color: var(--text-muted); font-weight: 500; margin: 0; }
+    .stat-card.total .stat-icon { background: #eff6ff; color: var(--primary); }
+    .stat-card.acc .stat-icon { background: #ecfdf5; color: var(--success); }
+    .stat-card.pending .stat-icon { background: #fffbeb; color: var(--warning); }
+    .stat-card.tolak .stat-icon { background: #fef2f2; color: var(--danger); }
+    .filter-card { background: #f8fafc; border: 1px solid var(--border-color); padding: 16px 20px; border-radius: 10px; margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+    .table-responsive { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border-color); }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; background: white; text-align: left; }
+    th, td { padding: 12px 14px; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
+    th { background-color: #f8fafc; font-weight: 600; color: #475569; font-size: 12px; text-transform: uppercase; }
+    tr:hover { background-color: #f8fafc; }
+    .badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+    .badge-pending { background: #fef3c7; color: #b45309; }
+    .badge-acc { background: #d1fae5; color: #047857; }
+    .badge-revisi { background: #e0f2fe; color: #0369a1; }
+    .badge-tolak { background: #fee2e2; color: #b91c1c; }
+    .btn-sm { padding: 6px 10px; font-size: 11px; margin-right: 4px; margin-bottom: 4px; border-radius: 6px; }
+    .btn-print { background-color: #6366f1; }
+    .btn-edit { background-color: #f59e0b; }
+    .btn-edit:hover { background-color: #d97706; }
+    .btn-delete { background-color: #ef4444; }
+    .btn-upload { background-color: #10b981; }
+
+    /* Modal Edit */
+    #modalEdit { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; overflow-y: auto; padding: 20px; }
+    .modal-content { background: white; max-width: 750px; margin: 30px auto; padding: 25px; border-radius: 12px; position: relative; }
+
+    /* ==========================================
+       STYLING CETAK PDF / A5 PROFESIONAL
+       ========================================== */
+    @media print {
+      @page { 
+        size: A5 portrait; 
+        margin: 6mm; 
+      }
+      body * { 
+        visibility: hidden !important; 
+      }
+      #printArea, #printArea * { 
+        visibility: visible !important; 
+      }
+      #printArea { 
+        display: block !important; 
+        position: absolute !important; 
+        left: 0 !important; 
+        top: 0 !important; 
+        width: 100% !important; 
+        background: white !important; 
+        font-family: 'Inter', sans-serif !important; 
+        padding: 0 !important;
+        margin: 0 !important;
+        box-sizing: border-box !important;
+      }
+      html, body {
+        height: auto !important;
+        overflow: visible !important;
+        background: white !important;
+      }
+    }
+
+    .print-container {
+      width: 100%;
+      color: #1e293b;
+    }
+
+    .print-header { 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: flex-end; 
+      border-bottom: 2px solid #0f172a; 
+      padding-bottom: 6px; 
+      margin-bottom: 10px; 
+    }
+    .print-header h2 { font-size: 14px; font-weight: 800; margin: 0; letter-spacing: 0.5px; color: #0f172a; }
+    .print-header p { font-size: 9px; margin: 2px 0 0 0; color: #475569; font-weight: 500; text-transform: uppercase; }
+    
+    .print-meta { text-align: right; }
+    .print-meta .req-code { font-size: 11px; font-weight: 800; color: #059669; }
+    .print-meta .req-date { font-size: 8px; color: #64748b; margin-top: 2px; }
+
+    .print-info-box { 
+      border: 1px solid #94a3b8; 
+      border-radius: 6px; 
+      padding: 8px 12px; 
+      margin-bottom: 10px; 
+      background-color: #f8fafc; 
+    }
+    .print-info-grid { 
+      display: grid; 
+      grid-template-columns: repeat(2, 1fr); 
+      gap: 6px 15px; 
+      font-size: 9px; 
+    }
+    .print-info-row { display: flex; align-items: baseline; }
+    .print-info-row label { font-weight: 700; color: #334155; width: 85px; flex-shrink: 0; margin: 0; font-size: 9px; }
+    .print-info-row span { font-weight: 600; color: #0f172a; font-size: 9px; }
+
+    .print-table { 
+      width: 100%; 
+      border-collapse: collapse; 
+      margin-bottom: 12px; 
+    }
+    .print-table th { 
+      font-size: 8.5px; 
+      font-weight: 700; 
+      background: #f1f5f9; 
+      color: #334155;
+      padding: 6px 5px; 
+      border-top: 1px solid #94a3b8;
+      border-bottom: 2px solid #64748b; 
+      text-align: left; 
+      text-transform: uppercase;
+    }
+    .print-table td { 
+      font-size: 9px; 
+      font-weight: 500; 
+      padding: 6px 5px; 
+      border-bottom: 1px solid #e2e8f0; 
+      color: #0f172a;
+    }
+    
+    .print-ttd-container { 
+      display: flex; 
+      justify-content: space-between; 
+      margin-top: 12px; 
+      page-break-inside: avoid; 
+    }
+    .print-ttd-box { 
+      flex: 1; 
+      text-align: center; 
+      padding: 0 3px; 
+      position: relative; 
+    }
+    .print-ttd-box:not(:last-child)::after { 
+      content: ""; 
+      position: absolute; 
+      right: 0; 
+      top: 10%; 
+      height: 80%; 
+      border-right: 1px solid #cbd5e1; 
+    }
+    .print-ttd-title { 
+      font-size: 7.5px; 
+      font-weight: 800; 
+      color: #334155;
+      text-transform: uppercase; 
+      margin-bottom: 26px; 
+      letter-spacing: 0.3px;
+    }
+    .print-ttd-line { 
+      border-bottom: 1px dashed #64748b; 
+      margin: 0 6px 4px 6px; 
+    }
+    .print-ttd-name { 
+      font-size: 8px; 
+      font-weight: 700; 
+      color: #0f172a;
+    }
+    #printArea { display: none; }
+  </style>
 </head>
 <body>
 
-    <!-- SCREEN 1: LOGIN SECTION -->
-    <div id="loginScreen" class="container">
-        <div class="card login-box shadow-lg">
-            <div class="card-body p-4">
-                <div class="text-center mb-4">
-                    <i class="fa-solid fa-feather-pointed fa-3x text-primary mb-2"></i>
-                    <h4 class="fw-bold">Farm Stock Control</h4>
-                    <p class="text-muted small">Silakan masuk ke akun Anda</p>
-                </div>
-                <form id="loginForm">
-                    <div class="mb-3">
-                        <label class="form-label">Username</label>
-                        <input type="text" id="loginUser" class="form-control" placeholder="Masukkan username" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Password</label>
-                        <input type="password" id="loginPass" class="form-control" placeholder="••••••••" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
-                        <i class="fa-solid fa-right-to-bracket me-2"></i>Masuk Aplikasi
-                    </button>
-                </form>
-            </div>
+<div class="wrapper">
+  <div class="app-header">
+    <h2><i class="fa-solid fa-boxes-packing" style="color: var(--primary);"></i> Portal Permintaan Material & Barang</h2>
+    <p>Sistem Informasi Pengadaan & Manajemen Permintaan Unit</p>
+  </div>
+
+  <!-- Login Section -->
+  <div id="loginSection" class="card login-container" style="max-width: 420px; margin: 40px auto;">
+    <h3 class="section-title"><i class="fa-solid fa-right-to-bracket"></i> Masuk ke Akun Anda</h3>
+    <div class="form-group"><label>Username</label><input type="text" id="loginUser" placeholder="Masukkan username..." required></div>
+    <div class="form-group"><label>Password</label><input type="password" id="loginPass" placeholder="Masukkan password..." required></div>
+    <button type="button" onclick="prosesLogin()" style="width:100%; margin-top: 10px; padding: 12px;"><i class="fa-solid fa-arrow-right-to-bracket"></i> Login</button>
+    <div id="loginLoading" style="display:none; text-align:center; margin-top:14px; font-size:13px; color:var(--primary);"><i class="fa-solid fa-circle-notch fa-spin"></i> Memeriksa kredensial...</div>
+  </div>
+
+  <!-- Panel Staff -->
+  <div id="panelStaff" style="display: none;">
+    <div class="user-info-box" id="infoSesiStaff"></div>
+
+    <div class="card">
+      <h3 class="section-title"><i class="fa-solid fa-pen-to-square"></i> Buat Permintaan Barang Baru</h3>
+      <form id="formPermintaan">
+        <div class="row-group">
+          <div class="form-group">
+            <label>Tanggal Permintaan <small style="color:var(--text-muted);">(Otomatis Hari Ini)</small></label>
+            <input type="date" id="tglPermintaan" readonly style="background-color: #f1f5f9; cursor: not-allowed;" required>
+          </div>
+          <div class="form-group"><label>Tanggal Dibutuhkan</label><input type="date" id="tglDibutuhkan" required></div>
+          <div class="form-group"><label>Urgensi</label>
+            <select id="urgensi" required>
+              <option value="REGULER">REGULER</option>
+              <option value="URGENT">URGENT</option>
+              <option value="TOP URGENT">TOP URGENT</option>
+            </select>
+          </div>
         </div>
+        <div style="margin: 15px 0 10px 0; font-weight: 600; font-size: 14px;"><i class="fa-solid fa-list-check"></i> Daftar Rincian Barang:</div>
+        <div id="listItemsContainer"></div>
+        <button type="button" onclick="tambahBarisItem()" style="background:#059669; margin-bottom:20px;"><i class="fa-solid fa-plus"></i> Tambah Item Barang</button>
+        <div class="form-group"><label>Keperluan / Keterangan</label><textarea id="keterangan" placeholder="Jelaskan keperluan..."></textarea></div>
+        <button type="submit" id="submitBtn" style="width:100%; padding:14px;"><i class="fa-solid fa-paper-plane"></i> Kirim Permintaan ke Admin</button>
+        <div id="loadingStatus" style="text-align:center; margin-top:12px; font-style:italic; color:var(--primary); display:none;"><i class="fa-solid fa-circle-notch fa-spin"></i> Memproses...</div>
+      </form>
     </div>
 
-    <!-- SCREEN 2: MAIN DASHBOARD -->
-    <div id="appScreen" class="d-none">
-        <!-- Sidebar Navigation -->
-        <nav id="sidebar">
-            <div class="p-3 text-center border-bottom border-secondary">
-                <h5 class="fw-bold m-0 text-white"><i class="fa-solid fa-boxes-stacked text-info me-2"></i>FARM STOK</h5>
-                <small class="text-muted" id="userRoleBadge">Superadmin</small>
-            </div>
-            <ul class="nav flex-column mt-3">
-                <li class="nav-item"><a class="nav-link active" href="#" onclick="switchTab('dashboardTab', this)"><i class="fa-solid fa-chart-line me-2"></i>Dashboard</a></li>
-                <li class="nav-item"><a class="nav-link" href="#" onclick="switchTab('inventoryTab', this)"><i class="fa-solid fa-warehouse me-2"></i>Master Barang & Stok</a></li>
-                <li class="nav-item"><a class="nav-link" href="#" onclick="switchTab('mutationTab', this)"><i class="fa-solid fa-right-left me-2"></i>Mutasi Barang</a></li>
-                <li class="nav-item" id="approvalNavItem"><a class="nav-link" href="#" onclick="switchTab('approvalTab', this)"><i class="fa-solid fa-circle-check me-2"></i>Approval Mutasi <span class="badge bg-danger rounded-pill float-end" id="pendingBadgeCount">0</span></a></li>
-                <li class="nav-item" id="unitMasterNavItem"><a class="nav-link" href="#" onclick="switchTab('unitMasterTab', this)"><i class="fa-solid fa-sitemap me-2"></i>Master Unit & Gudang</a></li>
-                <li class="nav-item" id="userManagementNavItem"><a class="nav-link" href="#" onclick="switchTab('userManagementTab', this)"><i class="fa-solid fa-users-gear me-2"></i>Manajemen User</a></li>
-            </ul>
-            <div class="position-absolute bottom-0 w-100 p-3 border-top border-secondary">
-                <button class="btn btn-outline-danger w-100 btn-sm" onclick="logout()"><i class="fa-solid fa-power-off me-2"></i>Keluar</button>
-            </div>
-        </nav>
-
-        <!-- Main Content Area -->
-        <div id="main-content">
-            <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
-                <h4 class="fw-bold m-0" id="pageTitle">Dashboard Overview</h4>
-                <div class="d-flex align-items-center gap-3">
-                    <span class="badge bg-light text-dark p-2 border"><i class="fa-solid fa-user me-1 text-primary"></i> <span id="currentUserName">Admin</span></span>
-                    <button class="btn btn-sm btn-outline-primary" onclick="syncAllFromSheets()"><i class="fa-solid fa-rotate me-1"></i>Sync Google Sheets</button>
-                </div>
-            </div>
-
-            <!-- TAB 1: DASHBOARD -->
-            <div id="dashboardTab" class="tab-content-item">
-                <div class="row g-3 mb-4">
-                    <div class="col-md-3"><div class="card p-3 stats-card"><span class="text-muted small">Total Unit Farm</span><h3 class="fw-bold my-1" id="dashTotalUnit">0 Unit</h3></div></div>
-                    <div class="col-md-3"><div class="card p-3 stats-card" style="border-left-color: #10b981;"><span class="text-muted small">Master Item (Stok)</span><h3 class="fw-bold my-1" id="dashTotalItem">0 Item</h3></div></div>
-                    <div class="col-md-3"><div class="card p-3 stats-card" style="border-left-color: #f59e0b;"><span class="text-muted small">Mutasi Pending</span><h3 class="fw-bold my-1 text-warning" id="dashPendingCount">0 Trax</h3></div></div>
-                    <div class="col-md-3"><div class="card p-3 stats-card" style="border-left-color: #6366f1;"><span class="text-muted small">Total User Sistem</span><h3 class="fw-bold my-1 text-primary" id="dashTotalUser">0 User</h3></div></div>
-                </div>
-                <div class="card p-3">
-                    <h6 class="fw-bold mb-3"><i class="fa-solid fa-clock-rotate-left me-2"></i>Aktivitas Mutasi Terakhir</h6>
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle">
-                            <thead class="table-light"><tr><th>ID</th><th>Item</th><th>Asal → Tujuan</th><th>Qty</th><th>Status</th></tr></thead>
-                            <tbody id="dashRecentMutations"><tr><td colspan="5" class="text-center text-muted">Belum ada mutasi.</td></tr></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- TAB 2: INVENTORY -->
-            <div id="inventoryTab" class="tab-content-item d-none">
-                <div class="card p-3">
-                    <div class="row g-2 mb-3">
-                        <div class="col-md-3">
-                            <label class="form-label small fw-bold">Filter Unit</label>
-                            <select id="filterUnit" class="form-select form-select-sm" onchange="renderInventoryTable()"><option value="ALL">Semua Unit</option></select>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label small fw-bold">Filter Kategori</label>
-                            <select id="filterCategory" class="form-select form-select-sm" onchange="renderInventoryTable()">
-                                <option value="ALL">Semua Kategori</option><option value="Pakan">Pakan</option><option value="Obat & Vaksin">Obat & Vaksin</option><option value="Peralatan">Peralatan Farm</option><option value="Kimia & Sanitasi">Kimia & Sanitasi</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label small fw-bold">Cari Barang</label>
-                            <input type="text" id="searchItem" class="form-control form-control-sm" placeholder="Ketik nama item..." onkeyup="renderInventoryTable()">
-                        </div>
-                        <div class="col-md-2 d-flex align-items-end">
-                            <button class="btn btn-sm btn-primary w-100" data-bs-toggle="modal" data-bs-target="#addItemModal"><i class="fa-solid fa-plus me-1"></i>Input Stok Awal</button>
-                        </div>
-                    </div>
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-hover align-middle">
-                            <thead class="table-dark"><tr><th>Kode Item</th><th>Nama Barang</th><th>Kategori</th><th>Unit Farm</th><th>Gudang</th><th>Stok Saat Ini</th><th>Satuan</th></tr></thead>
-                            <tbody id="inventoryTableBody"><tr><td colspan="7" class="text-center text-muted">Data kosong.</td></tr></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- TAB 3: MUTASI -->
-            <div id="mutationTab" class="tab-content-item d-none">
-                <div class="row">
-                    <div class="col-md-5">
-                        <div class="card p-3 mb-3">
-                            <h6 class="fw-bold mb-3"><i class="fa-solid fa-paper-plane me-2 text-primary"></i>Form Pengajuan Mutasi</h6>
-                            <form id="mutationForm">
-                                <div class="mb-2"><label class="form-label small">Pilih Barang</label><select id="mutItemSelect" class="form-select form-select-sm" required></select></div>
-                                <div class="row g-2 mb-2">
-                                    <div class="col-md-6"><label class="form-label small">Unit Asal</label><input type="text" id="mutSourceUnit" class="form-control form-control-sm" readonly></div>
-                                    <div class="col-md-6"><label class="form-label small">Gudang Asal</label><input type="text" id="mutSourceGudang" class="form-control form-control-sm" readonly></div>
-                                </div>
-                                <div class="row g-2 mb-2">
-                                    <div class="col-md-6"><label class="form-label small">Unit Tujuan</label><select id="mutTargetUnit" class="form-select form-select-sm" required onchange="updateTargetGudangDropdown()"></select></div>
-                                    <div class="col-md-6"><label class="form-label small">Gudang Tujuan</label><select id="mutTargetGudang" class="form-select form-select-sm" required></select></div>
-                                </div>
-                                <div class="mb-2"><label class="form-label small">Jumlah Qty</label><input type="number" id="mutQty" class="form-control form-control-sm" min="1" required></div>
-                                <button type="submit" class="btn btn-primary btn-sm w-100"><i class="fa-solid fa-paper-plane me-1"></i>Kirim Pengajuan</button>
-                            </form>
-                        </div>
-                    </div>
-                    <div class="col-md-7">
-                        <div class="card p-3">
-                            <h6 class="fw-bold mb-3"><i class="fa-solid fa-list-check me-2"></i>Riwayat Mutasi</h6>
-                            <div class="table-responsive">
-                                <table class="table table-sm table-hover align-middle">
-                                    <thead class="table-light"><tr><th>ID</th><th>Item</th><th>Dari → Ke</th><th>Qty</th><th>Status</th></tr></thead>
-                                    <tbody id="mutationHistoryTable"><tr><td colspan="5" class="text-center text-muted">Belum ada riwayat.</td></tr></tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- TAB 4: APPROVAL -->
-            <div id="approvalTab" class="tab-content-item d-none">
-                <div class="card p-3">
-                    <h6 class="fw-bold mb-3"><i class="fa-solid fa-user-shield me-2 text-warning"></i>Persetujuan Mutasi (Superadmin)</h6>
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-hover align-middle">
-                            <thead class="table-light"><tr><th>ID</th><th>Item</th><th>Asal</th><th>Tujuan</th><th>Qty</th><th>Pemohon</th><th>Aksi</th></tr></thead>
-                            <tbody id="approvalTableBody"><tr><td colspan="7" class="text-center text-muted">Tidak ada mutasi pending.</td></tr></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- TAB 5: MASTER UNIT & GUDANG -->
-            <div id="unitMasterTab" class="tab-content-item d-none">
-                <div class="row">
-                    <div class="col-md-4">
-                        <div class="card p-3 mb-3 border-start border-4 border-primary">
-                            <h6 class="fw-bold mb-3">Tambah Unit Farm Baru</h6>
-                            <form id="addUnitForm">
-                                <div class="mb-2"><label class="form-label small">Kode Unit</label><input type="text" id="newUnitId" class="form-control form-control-sm" placeholder="UNIT-01" required></div>
-                                <div class="mb-3"><label class="form-label small">Nama Unit</label><input type="text" id="newUnitName" class="form-control form-control-sm" placeholder="Unit Farm 01" required></div>
-                                <button type="submit" class="btn btn-primary btn-sm w-100">Simpan Unit</button>
-                            </form>
-                        </div>
-                        <div class="card p-3 mb-3 border-start border-4 border-success">
-                            <h6 class="fw-bold mb-3">Tambah Gudang ke Unit</h6>
-                            <form id="addGudangForm">
-                                <div class="mb-2"><label class="form-label small">Pilih Unit</label><select id="masterUnitSelect" class="form-select form-select-sm" required></select></div>
-                                <div class="mb-3"><label class="form-label small">Nama Gudang Baru</label><input type="text" id="newGudangName" class="form-control form-control-sm" placeholder="Gudang Pakan" required></div>
-                                <button type="submit" class="btn btn-success btn-sm w-100">Simpan Gudang</button>
-                            </form>
-                        </div>
-                    </div>
-                    <div class="col-md-8">
-                        <div class="card p-3">
-                            <h6 class="fw-bold mb-3">Daftar Unit & Gudang</h6>
-                            <div class="table-responsive">
-                                <table class="table table-sm table-striped">
-                                    <thead class="table-dark"><tr><th>Kode</th><th>Nama Unit</th><th>Gudang Aktif</th><th>Total</th></tr></thead>
-                                    <tbody id="unitMasterTableBody"><tr><td colspan="4" class="text-center text-muted">Belum ada unit.</td></tr></tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- TAB 6: MANAJEMEN USER -->
-            <div id="userManagementTab" class="tab-content-item d-none">
-                <div class="row">
-                    <div class="col-md-4">
-                        <div class="card p-3 mb-3 border-start border-4 border-info">
-                            <h6 class="fw-bold mb-3">Tambah User Pengguna Baru</h6>
-                            <form id="addUserForm">
-                                <div class="mb-2"><label class="form-label small">Username</label><input type="text" id="newUserName" class="form-control form-control-sm" required placeholder="admin_unit01"></div>
-                                <div class="mb-2"><label class="form-label small">Password</label><input type="password" id="newUserPass" class="form-control form-control-sm" required placeholder="••••••••"></div>
-                                <div class="mb-2">
-                                    <label class="form-label small">Role System</label>
-                                    <select id="newUserRole" class="form-select form-select-sm" required>
-                                        <option value="unit_admin">Admin Unit Farm</option>
-                                        <option value="superadmin">Superadmin</option>
-                                    </select>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label small">Penempatan Unit</label>
-                                    <select id="newUserUnit" class="form-select form-select-sm"><option value="ALL">Semua Unit (Superadmin)</option></select>
-                                </div>
-                                <button type="submit" class="btn btn-info text-white btn-sm w-100">Simpan User Baru</button>
-                            </form>
-                        </div>
-                    </div>
-                    <div class="col-md-8">
-                        <div class="card p-3">
-                            <h6 class="fw-bold mb-3">Daftar User Terdaftar</h6>
-                            <div class="table-responsive">
-                                <table class="table table-sm table-bordered align-middle">
-                                    <thead class="table-dark"><tr><th>Username</th><th>Role</th><th>Penempatan Unit</th></tr></thead>
-                                    <tbody id="userTableBody"><tr><td colspan="3" class="text-center text-muted">Belum ada user.</td></tr></tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <!-- Riwayat Staff -->
+    <div class="card">
+      <h3 class="section-title"><i class="fa-solid fa-clock-rotate-left"></i> Riwayat & Status Pengajuan Anda</h3>
+      <div class="filter-card">
+        <div style="flex:1; min-width:160px;"><label>Filter Bulan:</label><input type="month" id="filterBulanStaff" onchange="terapkanFilterStaff()"></div>
+        <div style="flex:1; min-width:160px;"><label>Status:</label>
+          <select id="filterStatusStaff" onchange="terapkanFilterStaff()">
+            <option value="">-- Semua Status --</option>
+            <option value="PENDING">PENDING</option>
+            <option value="ACC">ACC</option>
+            <option value="REVISI">REVISI</option>
+            <option value="DITOLAK">DITOLAK</option>
+          </select>
         </div>
+        <div style="flex:2; min-width:200px;"><label>Cari Barang / Tiket:</label><input type="text" id="searchStaff" placeholder="Ketik kata kunci..." onkeyup="terapkanFilterStaff()"></div>
+        <div><button onclick="eksporKeCSVStaff()" style="background:#059669;"><i class="fa-solid fa-file-csv"></i> Unduh CSV</button></div>
+      </div>
+      <div class="table-responsive" id="containerRiwayatStaff"><p style="text-align:center; padding:20px; color:var(--text-muted);">Memuat riwayat...</p></div>
+      <input type="file" id="hiddenFileInput" accept="application/pdf" style="display:none;" onchange="prosesUploadPdfHistory(event)">
+    </div>
+  </div>
+
+  <!-- Panel Admin -->
+  <div id="panelAdmin" style="display: none;">
+    <div class="user-info-box" id="infoSesiAdmin"></div>
+    <div class="summary-grid">
+      <div class="stat-card total"><div class="stat-icon"><i class="fa-solid fa-ticket"></i></div><div><label>Total Tiket</label><div class="val" id="statTotal">0</div></div></div>
+      <div class="stat-card pending"><div class="stat-icon"><i class="fa-solid fa-hourglass-half"></i></div><div><label>Pending</label><div class="val" id="statPending">0</div></div></div>
+      <div class="stat-card acc"><div class="stat-icon"><i class="fa-solid fa-circle-check"></i></div><div><label>Di ACC</label><div class="val" id="statACC">0</div></div></div>
+      <div class="stat-card tolak"><div class="stat-icon"><i class="fa-solid fa-circle-xmark"></i></div><div><label>Revisi / Ditolak</label><div class="val" id="statTolak">0</div></div></div>
+    </div>
+    <div class="card">
+      <h3 class="section-title"><i class="fa-solid fa-list-check"></i> Daftar & Rekapitulasi Tiket Masuk</h3>
+      <div class="filter-card">
+        <div style="flex:1; min-width:140px;"><label>Bulan:</label><input type="month" id="filterBulan" onchange="terapkanFilterAdmin()"></div>
+        <div style="flex:1; min-width:140px;"><label>Unit:</label><select id="filterUnit" onchange="terapkanFilterAdmin()"><option value="">-- Semua Unit --</option></select></div>
+        <div style="flex:1; min-width:140px;"><label>Status:</label>
+          <select id="filterStatus" onchange="terapkanFilterAdmin()">
+            <option value="">-- Semua Status --</option>
+            <option value="PENDING">PENDING</option>
+            <option value="ACC">ACC</option>
+            <option value="REVISI">REVISI</option>
+            <option value="DITOLAK">DITOLAK</option>
+          </select>
+        </div>
+        <div style="flex:2; min-width:180px;"><label>Cari Pemohon / Barang:</label><input type="text" id="searchAdmin" placeholder="Ketik kata kunci..." onkeyup="terapkanFilterAdmin()"></div>
+        <div><button onclick="eksporKeCSV()" style="background:#059669;"><i class="fa-solid fa-file-csv"></i> Unduh CSV</button></div>
+      </div>
+      <div class="table-responsive" id="containerTabelAdmin"><p style="text-align:center; padding:20px; color:var(--text-muted);">Memuat data...</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDIT TIKET -->
+<div id="modalEdit">
+  <div class="modal-content">
+    <h3 class="section-title"><i class="fa-solid fa-pen-to-square"></i> Edit Tiket Permintaan (<span id="editKodeLabel"></span>)</h3>
+    <form id="formEditPermintaan">
+      <input type="hidden" id="editKodeTiket">
+      <div class="row-group">
+        <div class="form-group">
+          <label>Tanggal Permintaan</label>
+          <input type="date" id="editTglPermintaan" readonly style="background-color: #f1f5f9; cursor: not-allowed;" required>
+        </div>
+        <div class="form-group"><label>Tanggal Dibutuhkan</label><input type="date" id="editTglDibutuhkan" required></div>
+        <div class="form-group"><label>Urgensi</label>
+          <select id="editUrgensi" required>
+            <option value="REGULER">REGULER</option>
+            <option value="URGENT">URGENT</option>
+            <option value="TOP URGENT">TOP URGENT</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin: 15px 0 10px 0; font-weight: 600; font-size: 14px;">Daftar Barang:</div>
+      <div id="listEditItemsContainer"></div>
+      <button type="button" onclick="tambahBarisItemEdit()" style="background:#059669; margin-bottom:15px; font-size:12px; padding:6px 12px;"><i class="fa-solid fa-plus"></i> Tambah Barang</button>
+      <div class="form-group"><label>Keterangan</label><textarea id="editKeterangan"></textarea></div>
+      <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+        <button type="button" onclick="tutupModalEdit()" style="background:#64748b;">Batal</button>
+        <button type="submit" id="btnSimpanEdit" style="background:#2563eb;">Simpan Perubahan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Area Cetak A5 Profesional -->
+<div id="printArea">
+  <div class="print-container">
+    <div class="print-header">
+      <div>
+        <h2>CV. SELABINTANA</h2>
+        <p>Form Permintaan Material & Barang</p>
+      </div>
+      <div class="print-meta">
+        <div class="req-code" id="p_kode">-</div>
+        <div class="req-date" id="p_tglSistem">-</div>
+      </div>
+    </div>
+    
+    <div class="print-info-box">
+      <div class="print-info-grid">
+        <div class="print-info-row"><label>Pemohon</label>: <span id="p_nama">-</span></div>
+        <div class="print-info-row"><label>Tgl Diminta</label>: <span id="p_tglDiminta">-</span></div>
+        <div class="print-info-row"><label>Unit / Farm</label>: <span id="p_unit">-</span></div>
+        <div class="print-info-row"><label>Dibutuhkan</label>: <span id="p_tglDibutuhkan">-</span></div>
+        <div class="print-info-row"><label>Urgensi</label>: <span id="p_urgensi" style="font-weight:800; color:#dc2626;">-</span></div>
+        <div class="print-info-row"></div>
+      </div>
     </div>
 
-    <!-- MODAL INPUT STOK -->
-    <div class="modal fade" id="addItemModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title fw-bold">Input Barang & Stok Awal</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="addItemForm">
-                        <div class="mb-2"><label class="form-label small">Nama Barang</label><input type="text" id="addItemName" class="form-control form-control-sm" required placeholder="Vaksin ND / Pakan"></div>
-                        <div class="mb-2">
-                            <label class="form-label small">Kategori</label>
-                            <select id="addItemCategory" class="form-select form-select-sm" required>
-                                <option value="Pakan">Pakan</option><option value="Obat & Vaksin">Obat & Vaksin</option><option value="Peralatan">Peralatan Farm</option><option value="Kimia & Sanitasi">Kimia & Sanitasi</option>
-                            </select>
-                        </div>
-                        <div class="row g-2 mb-2">
-                            <div class="col-6"><label class="form-label small">Unit Farm</label><select id="addItemUnit" class="form-select form-select-sm" required onchange="updateAddItemGudangOptions()"></select></div>
-                            <div class="col-6"><label class="form-label small">Gudang</label><select id="addItemGudang" class="form-select form-select-sm" required></select></div>
-                        </div>
-                        <div class="row g-2 mb-3">
-                            <div class="col-6"><label class="form-label small">Stok Awal</label><input type="number" id="addItemQty" class="form-control form-control-sm" required min="0"></div>
-                            <div class="col-6"><label class="form-label small">Satuan</label><input type="text" id="addItemUnitType" class="form-control form-control-sm" required placeholder="Vial / Sak"></div>
-                        </div>
-                        <button type="submit" class="btn btn-primary btn-sm w-100">Simpan Master Barang</button>
-                    </form>
-                </div>
-            </div>
-        </div>
+    <table class="print-table">
+      <thead>
+        <tr>
+          <th style="width: 18%;">Kode Barang</th>
+          <th style="width: 32%;">Nama Barang</th>
+          <th style="width: 15%;">Jumlah</th>
+          <th style="width: 15%;">Supplier</th>
+          <th style="width: 20%;">Keterangan</th>
+        </tr>
+      </thead>
+      <tbody id="p_tabelItems"></tbody>
+    </table>
+
+    <div class="print-ttd-container">
+      <div class="print-ttd-box">
+        <div class="print-ttd-title">Pemohon</div>
+        <div class="print-ttd-line"></div>
+        <div class="print-ttd-name">( <span id="t_pemohon">-</span> )</div>
+      </div>
+      <div class="print-ttd-box">
+        <div class="print-ttd-title">Head Farm</div>
+        <div class="print-ttd-line"></div>
+        <div class="print-ttd-name">( .................... )</div>
+      </div>
+      <div class="print-ttd-box">
+        <div class="print-ttd-title">Farm Manager</div>
+        <div class="print-ttd-line"></div>
+        <div class="print-ttd-name">( .................... )</div>
+      </div>
+      <div class="print-ttd-box">
+        <div class="print-ttd-title">General Manager</div>
+        <div class="print-ttd-line"></div>
+        <div class="print-ttd-name">drh. Titin Idayati</div>
+      </div>
     </div>
+  </div>
+</div>
 
-    <!-- Bootstrap 5 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/bootstrap.bundle.min.js"></script>
-    <script>
-        // MASUKKAN URL WEB APP GOOGLE APPS SCRIPT ANDA DI BAWAH INI:
-        const API_URL = "https://script.google.com/macros/s/AKfycbz1ZNHekSD9UkUHygFfHLNy9mDBJ4TdCnLESgpM0Z_AfCkV82ASBvJyJAlParcgX95-/exec";
+<script>
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbz-CjOLhgU2gDMIHQ_7pSYXyeYcSYO7DpXyE9Tcb9QKPum3nxP1-1J1Q1-8hOGmDW--PA/exec";
 
-        let currentUser = { name: '', role: '', unit: 'ALL' };
-        let usersData = [];
-        let unitsData = [];
-        let inventoryData = [];
-        let mutationData = [];
+  let sesiUser = {};
+  let masterBarangData = [];
+  let rawAdminData = [];
+  let groupedTiketList = [];
+  let staffOriginalData = [];
+  let targetKodeUpload = "";
 
-        document.addEventListener('DOMContentLoaded', () => {
-            setupLogin();
-            syncAllFromSheets();
-        });
+  window.onload = function() {
+    const savedUser = localStorage.getItem('portal_user_session');
+    if (savedUser) { sesiUser = JSON.parse(savedUser); tampilkanDashboard(); }
+    
+    const today = new Date().toISOString().split('T')[0];
+    const tgl = document.getElementById('tglPermintaan');
+    if(tgl) tgl.value = today;
+  };
 
-        async function syncAllFromSheets() {
-            if (!API_URL || API_URL.includes("AKfycb")) {
-                console.warn("API URL belum diatur.");
-                refreshAllUI();
-                return;
-            }
-            try {
-                const resUnits = await fetch(`${API_URL}?action=getUnits`);
-                const rawUnits = await resUnits.json();
-                unitsData = rawUnits.map(u => ({ id: u.Kode_Unit || u.id, name: u.Nama_Unit || u.name, warehouses: u.Daftar_Gudang ? u.Daftar_Gudang.split(',').map(s => s.trim()) : [] }));
+  async function prosesLogin() {
+    const username = document.getElementById('loginUser').value.trim();
+    const password = document.getElementById('loginPass').value.trim();
+    const loading = document.getElementById('loginLoading');
+    if (!username || !password) { alert("Masukkan Username dan Password!"); return; }
+    loading.style.display = "block";
+    try {
+      const res = await fetch(`${GAS_URL}?action=login&username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`);
+      const result = await res.json();
+      if (result.status === "success") {
+        sesiUser = result.userData;
+        localStorage.setItem('portal_user_session', JSON.stringify(sesiUser));
+        tampilkanDashboard();
+      } else { alert("Login Gagal: " + result.message); }
+    } catch (err) { alert("Terjadi kesalahan koneksi."); }
+    finally { loading.style.display = "none"; }
+  }
 
-                const resUsers = await fetch(`${API_URL}?action=getUsers`);
-                usersData = await resUsers.json();
+  function tampilkanDashboard() {
+    document.getElementById('loginSection').style.display = 'none';
+    if (sesiUser.isAdmin) {
+      document.getElementById('panelAdmin').style.display = 'block';
+      document.getElementById('infoSesiAdmin').innerHTML = `<div><b>ADMIN: ${sesiUser.nama}</b></div><button onclick="logoutSesi()" class="logout-btn">Keluar</button>`;
+      muatDataAdmin();
+    } else {
+      document.getElementById('panelStaff').style.display = 'block';
+      document.getElementById('infoSesiStaff').innerHTML = `<div><b>Pemohon: ${sesiUser.nama}</b> (${sesiUser.divisi} | ${sesiUser.unitLokasi})</div><button onclick="logoutSesi()" class="logout-btn">Keluar</button>`;
+      muatMasterBarang();
+      muatRiwayatStaff();
+      tambahBarisItem();
+    }
+  }
 
-                const resInv = await fetch(`${API_URL}?action=getInventory`);
-                const rawInv = await resInv.json();
-                inventoryData = rawInv.map(i => ({ id: i.ID_Item || i.id, name: i.Nama_Barang || i.name, category: i.Kategori || i.category, unit: i.Unit_Farm || i.unit, gudang: i.Gudang || i.gudang, qty: Number(i.Qty_Stok || i.qty), unitType: i.Satuan || i.unitType }));
+  function logoutSesi() { localStorage.clear(); location.reload(); }
 
-                const resMut = await fetch(`${API_URL}?action=getDataMutasi`);
-                const rawMut = await resMut.json();
-                mutationData = rawMut.map(m => ({ id: m.ID_Mutasi || m.id, itemId: m.ID_Item || m.itemId, itemName: m.Nama_Barang || m.itemName, fromUnit: m.Unit_Asal || m.fromUnit, fromGudang: m.Gudang_Asal || m.fromGudang, toUnit: m.Unit_Tujuan || m.toUnit, toGudang: m.Gudang_Tujuan || m.toGudang, qty: Number(m.Qty || m.qty), status: m.Status || m.status, requester: m.Pemohon || m.requester }));
+  async function muatMasterBarang() {
+    try {
+      const res = await fetch(GAS_URL + "?action=getMasterBarang");
+      const json = await res.json();
+      if (json.status === "success") masterBarangData = json.data;
+    } catch (e) { console.error(e); }
+  }
 
-                refreshAllUI();
-            } catch (err) {
-                console.error("Sync error:", err);
-            }
-        }
+  function tambahBarisItem(containerId = 'listItemsContainer', dataItem = null) {
+    const container = document.getElementById(containerId);
+    const index = container.children.length;
+    let optionsKategori = `<option value="">-- Pilih Kategori --</option>`;
+    ['OBAT', 'VAKSIN', 'VITAMIN', 'KIMIA', 'PERALATAN', 'PAKAN', 'LAINNYA'].forEach(kat => {
+      let sel = (dataItem && dataItem.kategori === kat) ? 'selected' : '';
+      optionsKategori += `<option value="${kat}" ${sel}>${kat}</option>`;
+    });
 
-        function refreshAllUI() {
-            populateDropdowns();
-            renderDashboard();
-            renderInventoryTable();
-            renderMutationHistory();
-            renderApprovalTable();
-            renderUnitMasterTable();
-            renderUserTable();
-        }
+    let datalistOptions = "";
+    masterBarangData.forEach(item => { datalistOptions += `<option value="${item.namaBarang}">`; });
 
-        function setupLogin() {
-            document.getElementById('loginForm').addEventListener('submit', (e) => {
-                e.preventDefault();
-                const userVal = document.getElementById('loginUser').value.trim();
-                const passVal = document.getElementById('loginPass').value;
+    const div = document.createElement('div');
+    div.className = 'item-row-container';
+    div.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <span style="font-size:12px; font-weight:600; color:var(--primary);">Barang #${index + 1}</span>
+        ${index > 0 ? `<button type="button" class="btn-sm btn-hapus-item" onclick="this.parentElement.parentElement.remove()">Hapus</button>` : ''}
+      </div>
+      <div class="row-group">
+        <div class="form-group" style="flex:1;"><label>Kode Barang (Supplier)</label><input type="text" class="item-kode" value="${dataItem && dataItem.kodeItem !== '-' ? dataItem.kodeItem : ''}" placeholder="Kode supplier..."></div>
+        <div class="form-group" style="flex:1;"><label>Kategori</label><select class="item-kategori" required>${optionsKategori}</select></div>
+        <div class="form-group" style="flex:2;"><label>Nama Barang</label><input type="text" class="item-nama" list="listMasterDinamis" required value="${dataItem ? dataItem.barang : ''}" placeholder="Nama barang..."></div>
+      </div>
+      <div class="row-group">
+        <div class="form-group" style="flex:1;"><label>Jumlah</label><input type="number" class="item-jumlah" min="1" required value="${dataItem ? dataItem.jumlah : ''}"></div>
+        <div class="form-group" style="flex:1;"><label>Satuan</label><input type="text" class="item-satuan" required value="${dataItem ? dataItem.satuan : ''}" placeholder="pcs/kg"></div>
+        <div class="form-group" style="flex:2;"><label>Supplier</label><input type="text" class="item-supplier" value="${dataItem && dataItem.supplier !== '-' ? dataItem.supplier : ''}" placeholder="Supplier"></div>
+      </div>
+    `;
+    if (!document.getElementById('listMasterDinamis')) {
+      const dl = document.createElement('datalist'); dl.id = 'listMasterDinamis'; dl.innerHTML = datalistOptions; document.body.appendChild(dl);
+    }
+    container.appendChild(div);
+  }
 
-                const foundUser = usersData.find(u => (u.Username || u.username) === userVal && (u.Password || u.password) === passVal);
-                if (foundUser) {
-                    currentUser = { name: foundUser.Username || foundUser.username, role: foundUser.Role || foundUser.role, unit: foundUser.Unit_Assignment || foundUser.unit || 'ALL' };
-                } else {
-                    currentUser = { name: userVal, role: 'superadmin', unit: 'ALL' };
-                }
+  function tambahBarisItemEdit(dataItem = null) {
+    tambahBarisItem('listEditItemsContainer', dataItem);
+  }
 
-                document.getElementById('loginScreen').classList.add('d-none');
-                document.getElementById('appScreen').classList.remove('d-none');
-                document.getElementById('currentUserName').innerText = currentUser.name;
-                document.getElementById('userRoleBadge').innerText = currentUser.role === 'superadmin' ? 'Superadmin Mode' : 'Admin Unit Mode';
+  document.getElementById('formPermintaan').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('submitBtn');
+    const rows = document.querySelectorAll('#listItemsContainer .item-row-container');
+    if (rows.length === 0) { alert("Minimal 1 barang!"); return; }
 
-                if (currentUser.role !== 'superadmin') {
-                    document.getElementById('approvalNavItem').classList.add('d-none');
-                    document.getElementById('unitMasterNavItem').classList.add('d-none');
-                    document.getElementById('userManagementNavItem').classList.add('d-none');
-                } else {
-                    document.getElementById('approvalNavItem').classList.remove('d-none');
-                    document.getElementById('unitMasterNavItem').classList.remove('d-none');
-                    document.getElementById('userManagementNavItem').classList.remove('d-none');
-                }
-                refreshAllUI();
-            });
-        }
+    let itemsArray = [];
+    rows.forEach(r => {
+      itemsArray.push({
+        kodeItem: r.querySelector('.item-kode').value.trim() || "-",
+        kategori: r.querySelector('.item-kategori').value,
+        namaBarang: r.querySelector('.item-nama').value.trim(),
+        jumlah: r.querySelector('.item-jumlah').value,
+        satuan: r.querySelector('.item-satuan').value.trim(),
+        supplier: r.querySelector('.item-supplier').value.trim() || "-"
+      });
+    });
 
-        function logout() {
-            document.getElementById('appScreen').classList.add('d-none');
-            document.getElementById('loginScreen').classList.remove('d-none');
-        }
+    btn.disabled = true; btn.innerText = "Mengirim...";
+    try {
+      const payload = {
+        action: "submitPermintaan",
+        namaPemohon: sesiUser.nama, divisi: sesiUser.divisi, unitLokasi: sesiUser.unitLokasi,
+        tglPermintaan: document.getElementById('tglPermintaan').value,
+        tglDibutuhkan: document.getElementById('tglDibutuhkan').value,
+        urgensi: document.getElementById('urgensi').value,
+        keterangan: document.getElementById('keterangan').value.trim() || "-",
+        items: itemsArray
+      };
+      const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+      const json = await res.json();
+      if (json.status === "success") {
+        alert("Tiket berhasil dikirim!");
+        document.getElementById('formPermintaan').reset();
+        document.getElementById('tglPermintaan').value = new Date().toISOString().split('T')[0];
+        document.getElementById('listItemsContainer').innerHTML = "";
+        tambahBarisItem();
+        muatRiwayatStaff();
+      } else { alert("Gagal: " + json.message); }
+    } catch(e) { alert("Kesalahan jaringan."); }
+    finally { btn.disabled = false; btn.innerText = "Kirim Permintaan ke Admin"; }
+  });
 
-        function switchTab(tabId, element) {
-            document.querySelectorAll('.tab-content-item').forEach(el => el.classList.add('d-none'));
-            document.querySelectorAll('#sidebar .nav-link').forEach(el => el.classList.remove('active'));
-            document.getElementById(tabId).classList.remove('d-none');
-            element.classList.add('active');
-        }
+  function groupTiketData(dataList) {
+    let map = {};
+    dataList.forEach(row => {
+      if (!map[row.kode]) {
+        map[row.kode] = {
+          kode: row.kode, tglSistem: row.tglSistem, pemohon: row.pemohon, divisi: row.divisi, unit: row.unit,
+          tglPermintaan: row.tglPermintaan, tglDibutuhkan: row.tglDibutuhkan, urgensi: row.urgensi,
+          keterangan: row.keterangan, status: row.status, catatan: row.catatan, pdfUrl: row.pdfUrl, items: []
+        };
+      }
+      map[row.kode].items.push({ kodeItem: row.kodeItem, kategori: row.kategori, barang: row.barang, jumlah: row.jumlah, satuan: row.satuan, supplier: row.supplier });
+    });
+    return Object.values(map);
+  }
 
-        // TAMBAH USER BARU
-        document.getElementById('addUserForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const username = document.getElementById('newUserName').value.trim();
-            const password = document.getElementById('newUserPass').value;
-            const role = document.getElementById('newUserRole').value;
-            const unit = document.getElementById('newUserUnit').value;
+  async function muatRiwayatStaff() {
+    try {
+      const res = await fetch(GAS_URL + "?action=getPermintaanAdmin");
+      const json = await res.json();
+      if (json.status === "success") {
+        let staffRows = json.data.filter(item => item.pemohon.toLowerCase() === sesiUser.nama.toLowerCase());
+        staffOriginalData = groupTiketData(staffRows);
+        terapkanFilterStaff();
+      }
+    } catch(e) { document.getElementById('containerRiwayatStaff').innerHTML = "Gagal memuat."; }
+  }
 
-            if (usersData.some(u => (u.Username || u.username) === username)) {
-                alert('Username sudah terdaftar!');
-                return;
-            }
+  function terapkanFilterStaff() {
+    const filterBulan = document.getElementById('filterBulanStaff').value;
+    const filterStatus = document.getElementById('filterStatusStaff').value;
+    const searchVal = document.getElementById('searchStaff').value.toLowerCase().trim();
 
-            const newUser = { username, password, role, unit };
-            usersData.push(newUser);
+    let filtered = staffOriginalData.filter(item => {
+      if (filterBulan && !(item.tglPermintaan || "").startsWith(filterBulan)) return false;
+      if (filterStatus && item.status !== filterStatus) return false;
+      if (searchVal && !item.kode.toLowerCase().includes(searchVal) && !item.items.some(i => i.barang.toLowerCase().includes(searchVal))) return false;
+      return true;
+    });
+    renderTabelStaff(filtered);
+  }
 
-            if (!API_URL.includes("AKfycb")) {
-                await fetch(API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'addUser', username, password, role, unit })
-                });
-            }
+  function renderTabelStaff(dataList) {
+    groupedTiketList = dataList;
+    if (dataList.length === 0) {
+      document.getElementById('containerRiwayatStaff').innerHTML = "<p style='text-align:center; padding:20px; color:var(--text-muted);'>Tidak ada riwayat.</p>";
+      return;
+    }
 
-            alert(`User baru "${username}" berhasil ditambahkan!`);
-            document.getElementById('addUserForm').reset();
-            renderUserTable();
-            renderDashboard();
-        });
+    let html = `<table><thead><tr><th>Kode Tiket</th><th>Tanggal</th><th>Daftar Barang</th><th>Status & Catatan</th><th>PDF TTD</th><th>Aksi</th></tr></thead><tbody>`;
+    dataList.forEach(tiket => {
+      let badgeClass = 'badge-pending';
+      let statusText = tiket.status && tiket.status !== '-' ? tiket.status : 'PENDING';
+      
+      if(statusText === 'ACC') badgeClass = 'badge-acc';
+      else if(statusText === 'REVISI') badgeClass = 'badge-revisi';
+      else if(statusText === 'DITOLAK') badgeClass = 'badge-tolak';
 
-        // TAMBAH UNIT BARU
-        document.getElementById('addUnitForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const unitId = document.getElementById('newUnitId').value.trim();
-            const unitName = document.getElementById('newUnitName').value.trim();
-            unitsData.push({ id: unitId, name: unitName, warehouses: [] });
+      const cleanPdfUrl = formatGoogleDriveUrl(tiket.pdfUrl);
+      let itemSummary = tiket.items.map(i => `• [${i.kodeItem !== '-' ? i.kodeItem : '-'}] <b>${i.barang}</b> (${i.jumlah} ${i.satuan})`).join('<br>');
 
-            if (!API_URL.includes("AKfycb")) {
-                await fetch(API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'addUnit', unitId, unitName })
-                });
-            }
-            alert(`Unit "${unitName}" berhasil ditambahkan!`);
-            document.getElementById('addUnitForm').reset();
-            refreshAllUI();
-        });
+      html += `<tr>
+        <td><b>${tiket.kode}</b></td>
+        <td>${tiket.tglPermintaan || '-'}</td>
+        <td>${itemSummary}</td>
+        <td>
+          <span class="badge ${badgeClass}">${statusText}</span>
+          ${tiket.catatan && tiket.catatan !== '-' ? `<br><small style="color:var(--text-muted);">${tiket.catatan}</small>` : ''}
+        </td>
+        <td>${cleanPdfUrl !== '-' ? `<a href="${cleanPdfUrl}" target="_blank" style="color:var(--primary); font-weight:600;"><i class="fa-solid fa-file-pdf"></i> Lihat PDF</a>` : '<span style="color:#94a3b8;">Belum ada</span>'}</td>
+        <td>
+          <button class="btn-sm btn-print" onclick="cetakFormulirA5('${tiket.kode}')">Cetak</button>
+          <button class="btn-sm btn-upload" onclick="triggerUploadPdf('${tiket.kode}')">Upload PDF</button>
+          ${statusText === 'PENDING' ? `<button class="btn-sm btn-edit" onclick="bukaModalEdit('${tiket.kode}')">Edit</button>` : ''}
+          ${statusText === 'PENDING' ? `<button class="btn-sm btn-delete" onclick="hapusTiket('${tiket.kode}')">Hapus</button>` : ''}
+        </td>
+      </tr>`;
+    });
+    html += `</tbody></table>`;
+    document.getElementById('containerRiwayatStaff').innerHTML = html;
+  }
 
-        // TAMBAH GUDANG
-        document.getElementById('addGudangForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const unitName = document.getElementById('masterUnitSelect').value;
-            const newGudang = document.getElementById('newGudangName').value.trim();
-            const unitObj = unitsData.find(u => u.name === unitName);
-            if (unitObj && !unitObj.warehouses.includes(newGudang)) {
-                unitObj.warehouses.push(newGudang);
-                if (!API_URL.includes("AKfycb")) {
-                    await fetch(API_URL, {
-                        method: 'POST',
-                        body: JSON.stringify({ action: 'addWarehouse', unitName, newGudang })
-                    });
-                }
-                alert(`Gudang "${newGudang}" berhasil ditambahkan!`);
-                document.getElementById('addGudangForm').reset();
-                refreshAllUI();
-            }
-        });
+  function bukaModalEdit(kode) {
+    const tiket = staffOriginalData.find(i => i.kode === kode);
+    if (!tiket) return;
 
-        // INPUT STOK AWAL / MASTER BARANG
-        document.getElementById('addItemForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const unit = document.getElementById('addItemUnit').value;
-            const gudang = document.getElementById('addItemGudang').value;
-            const newItem = {
-                id: `ITM-${Math.floor(1000 + Math.random() * 9000)}`,
-                name: document.getElementById('addItemName').value.trim(),
-                category: document.getElementById('addItemCategory').value,
-                unit: unit,
-                gudang: gudang,
-                qty: parseInt(document.getElementById('addItemQty').value),
-                unitType: document.getElementById('addItemUnitType').value.trim()
-            };
-            inventoryData.push(newItem);
+    document.getElementById('editKodeTiket').value = tiket.kode;
+    document.getElementById('editKodeLabel').innerText = tiket.kode;
+    document.getElementById('editTglPermintaan').value = tiket.tglPermintaan || '';
+    document.getElementById('editTglDibutuhkan').value = tiket.tglDibutuhkan || '';
+    document.getElementById('editUrgensi').value = tiket.urgensi || 'REGULER';
+    document.getElementById('editKeterangan').value = tiket.keterangan !== '-' ? tiket.keterangan : '';
 
-            if (!API_URL.includes("AKfycb")) {
-                await fetch(API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'addInventoryItem', ...newItem })
-                });
-            }
-            alert('Master barang & stok awal berhasil disimpan!');
-            bootstrap.Modal.getInstance(document.getElementById('addItemModal')).hide();
-            document.getElementById('addItemForm').reset();
-            refreshAllUI();
-        });
+    document.getElementById('listEditItemsContainer').innerHTML = "";
+    tiket.items.forEach(item => {
+      tambahBarisItemEdit(item);
+    });
 
-        // PENGAJUAN MUTASI
-        document.getElementById('mutationForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const itemId = document.getElementById('mutItemSelect').value;
-            const itemObj = inventoryData.find(i => i.id === itemId);
-            const qty = parseInt(document.getElementById('mutQty').value);
+    document.getElementById('modalEdit').style.display = 'block';
+  }
 
-            if (!itemObj || qty > itemObj.qty) {
-                alert('Stok tidak mencukupi!');
-                return;
-            }
+  function tutupModalEdit() {
+    document.getElementById('modalEdit').style.display = 'none';
+  }
 
-            const newMut = {
-                id: `MUT-${Math.floor(1000 + Math.random() * 9000)}`,
-                itemId: itemObj.id,
-                itemName: itemObj.name,
-                fromUnit: itemObj.unit,
-                fromGudang: itemObj.gudang,
-                toUnit: document.getElementById('mutTargetUnit').value,
-                toGudang: document.getElementById('mutTargetGudang').value,
-                qty: qty,
-                status: 'PENDING',
-                requester: currentUser.name
-            };
-            mutationData.unshift(newMut);
+  document.getElementById('formEditPermintaan').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const kode = document.getElementById('editKodeTiket').value;
+    const rows = document.querySelectorAll('#listEditItemsContainer .item-row-container');
+    if (rows.length === 0) { alert("Minimal 1 barang!"); return; }
 
-            if (!API_URL.includes("AKfycb")) {
-                await fetch(API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'addMutation', ...newMut })
-                });
-            }
-            alert('Pengajuan mutasi berhasil dikirim.');
-            document.getElementById('mutationForm').reset();
-            refreshAllUI();
-        });
+    let itemsArray = [];
+    rows.forEach(r => {
+      itemsArray.push({
+        kodeItem: r.querySelector('.item-kode').value.trim() || "-",
+        kategori: r.querySelector('.item-kategori').value,
+        namaBarang: r.querySelector('.item-nama').value.trim(),
+        jumlah: r.querySelector('.item-jumlah').value,
+        satuan: r.querySelector('.item-satuan').value.trim(),
+        supplier: r.querySelector('.item-supplier').value.trim() || "-"
+      });
+    });
 
-        async function processApproval(mutId, isApproved) {
-            const mutIndex = mutationData.findIndex(m => m.id === mutId);
-            if (mutIndex === -1) return;
-            const decision = isApproved ? 'APPROVED' : 'REJECTED';
-            mutationData[mutIndex].status = decision;
+    try {
+      const payload = {
+        action: "editPermintaan",
+        kodeBarang: kode,
+        namaPemohon: sesiUser.nama, divisi: sesiUser.divisi, unitLokasi: sesiUser.unitLokasi,
+        tglPermintaan: document.getElementById('editTglPermintaan').value,
+        tglDibutuhkan: document.getElementById('editTglDibutuhkan').value,
+        urgensi: document.getElementById('editUrgensi').value,
+        keterangan: document.getElementById('editKeterangan').value.trim() || "-",
+        items: itemsArray
+      };
+      const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+      const json = await res.json();
+      if (json.status === "success") {
+        alert("Tiket berhasil diperbarui!");
+        tutupModalEdit();
+        muatRiwayatStaff();
+      } else { alert("Gagal: " + json.message); }
+    } catch(err) { alert("Kesalahan jaringan."); }
+  });
 
-            if (isApproved) {
-                const mut = mutationData[mutIndex];
-                const sourceItem = inventoryData.find(i => i.id === mut.itemId);
-                if (sourceItem) sourceItem.qty -= mut.qty;
+  function eksporKeCSVStaff() {
+    const filterBulan = document.getElementById('filterBulanStaff').value;
+    const filterStatus = document.getElementById('filterStatusStaff').value;
+    let filtered = staffOriginalData.filter(item => {
+      if (filterBulan && !(item.tglPermintaan || "").startsWith(filterBulan)) return false;
+      if (filterStatus && item.status !== filterStatus) return false;
+      return true;
+    });
+    if (filtered.length === 0) { alert("Tidak ada data!"); return; }
+    let csv = "\ufeffKode;Tanggal;Pemohon;Unit;Kode_Barang;Kategori;Barang;Jumlah;Satuan;Status;Catatan;PDF\n";
+    filtered.forEach(tiket => {
+      tiket.items.forEach(i => {
+        csv += `"${tiket.kode}";"${tiket.tglPermintaan}";"${tiket.pemohon}";"${tiket.unit}";"${i.kodeItem}";"${i.kategori}";"${i.barang}";"${i.jumlah}";"${i.satuan}";"${tiket.status}";"${tiket.catatan}";"${tiket.pdfUrl}"\n`;
+      });
+    });
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute("download", `Rekap_Permintaan_${sesiUser.nama.replace(/\s+/g, '_')}.csv`);
+    document.body.appendChild(link); link.click(); document.body.removeChild(link);
+  }
 
-                const targetItem = inventoryData.find(i => i.name === mut.itemName && i.unit === mut.toUnit && i.gudang === mut.toGudang);
-                if (targetItem) {
-                    targetItem.qty += mut.qty;
-                } else {
-                    inventoryData.push({
-                        id: `ITM-${Math.floor(1000 + Math.random() * 9000)}`,
-                        name: mut.itemName,
-                        category: sourceItem ? sourceItem.category : 'Umum',
-                        unit: mut.toUnit,
-                        gudang: mut.toGudang,
-                        qty: mut.qty,
-                        unitType: sourceItem ? sourceItem.unitType : 'Pcs'
-                    });
-                }
-            }
+  function triggerUploadPdf(kode) { targetKodeUpload = kode; document.getElementById('hiddenFileInput').click(); }
 
-            if (!API_URL.includes("AKfycb")) {
-                await fetch(API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'processApproval', mutId, decision })
-                });
-            }
-            alert(`Mutasi diproses: ${decision}`);
-            refreshAllUI();
-        }
+  async function prosesUploadPdfHistory(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    if (file.type !== "application/pdf") { alert("Harap unggah PDF!"); return; }
+    try {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = async () => {
+        const payload = { action: "uploadPdfOnly", kodeBarang: targetKodeUpload, fileName: file.name, mimeType: file.type, fileData: reader.result };
+        const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+        const json = await res.json();
+        if (json.status === "success") { alert("PDF berhasil diunggah!"); muatRiwayatStaff(); }
+        else { alert("Gagal: " + json.message); }
+      };
+    } catch(e) { alert("Kesalahan jaringan."); }
+    finally { event.target.value = ""; }
+  }
 
-        function populateDropdowns() {
-            const filterUnit = document.getElementById('filterUnit');
-            filterUnit.innerHTML = '<option value="ALL">Semua Unit</option>';
-            const masterUnitSelect = document.getElementById('masterUnitSelect');
-            const mutTargetUnit = document.getElementById('mutTargetUnit');
-            const addItemUnit = document.getElementById('addItemUnit');
-            const newUserUnit = document.getElementById('newUserUnit');
+  function cetakFormulirA5(kode) {
+    const tiket = groupedTiketList.find(i => i.kode === kode);
+    if (!tiket) return;
+    document.getElementById('p_kode').innerText = tiket.kode;
+    const printDate = (tiket.tglSistem && !tiket.tglSistem.includes('1970')) ? tiket.tglSistem : new Date().toISOString().replace('T', ' ').substring(0, 19);
+    document.getElementById('p_tglSistem').innerText = printDate;
+    
+    document.getElementById('p_nama').innerText = tiket.pemohon;
+    document.getElementById('p_unit').innerText = tiket.unit;
+    document.getElementById('p_tglDiminta').innerText = tiket.tglPermintaan;
+    document.getElementById('p_tglDibutuhkan').innerText = tiket.tglDibutuhkan;
+    document.getElementById('p_urgensi').innerText = tiket.urgensi;
+    document.getElementById('t_pemohon').innerText = tiket.pemohon;
 
-            masterUnitSelect.innerHTML = '';
-            mutTargetUnit.innerHTML = '';
-            addItemUnit.innerHTML = '';
-            newUserUnit.innerHTML = '<option value="ALL">Semua Unit (Superadmin)</option>';
+    let tbodyHtml = "";
+    tiket.items.forEach((itm) => {
+      tbodyHtml += `<tr><td>${itm.kodeItem !== '-' ? itm.kodeItem : '-'}</td><td><b>${itm.barang}</b></td><td>${itm.jumlah} ${itm.satuan}</td><td>${itm.supplier}</td><td>${tiket.keterangan}</td></tr>`;
+    });
+    document.getElementById('p_tabelItems').innerHTML = tbodyHtml;
+    setTimeout(() => { window.print(); }, 150);
+  }
 
-            unitsData.forEach(u => {
-                filterUnit.innerHTML += `<option value="${u.name}">${u.name}</option>`;
-                masterUnitSelect.innerHTML += `<option value="${u.name}">${u.name}</option>`;
-                mutTargetUnit.innerHTML += `<option value="${u.name}">${u.name}</option>`;
-                addItemUnit.innerHTML += `<option value="${u.name}">${u.name}</option>`;
-                newUserUnit.innerHTML += `<option value="${u.name}">${u.name}</option>`;
-            });
+  async function hapusTiket(kode) {
+    if (!confirm(`Hapus tiket ${kode}?`)) return;
+    try {
+      const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "deletePermintaan", kodeBarang: kode }) });
+      const json = await res.json();
+      if (json.status === "success") { alert("Tiket dihapus!"); muatRiwayatStaff(); }
+    } catch(e) { alert("Kesalahan jaringan."); }
+  }
 
-            const mutItemSelect = document.getElementById('mutItemSelect');
-            mutItemSelect.innerHTML = '';
-            inventoryData.forEach(item => {
-                mutItemSelect.innerHTML += `<option value="${item.id}">${item.name} [${item.unit} - ${item.gudang}] (Stok: ${item.qty} ${item.unitType})</option>`;
-            });
+  async function muatDataAdmin() {
+    try {
+      const res = await fetch(GAS_URL + "?action=getPermintaanAdmin");
+      const json = await res.json();
+      if (json.status === "success") {
+        rawAdminData = groupTiketData(json.data);
+        populateUnitFilter(rawAdminData);
+        terapkanFilterAdmin();
+      }
+    } catch(e) {}
+  }
 
-            updateMutationFormDetails();
-            updateTargetGudangDropdown();
-            updateAddItemGudangOptions();
-        }
+  function populateUnitFilter(data) {
+    const selectUnit = document.getElementById('filterUnit');
+    selectUnit.innerHTML = '<option value="">-- Semua Unit --</option>';
+    [...new Set(data.map(item => item.unit).filter(Boolean))].forEach(u => {
+      const opt = document.createElement('option'); opt.value = u; opt.innerText = u; selectUnit.appendChild(opt);
+    });
+  }
 
-        function updateMutationFormDetails() {
-            const selectedId = document.getElementById('mutItemSelect').value;
-            const item = inventoryData.find(i => i.id === selectedId);
-            if (item) {
-                document.getElementById('mutSourceUnit').value = item.unit;
-                document.getElementById('mutSourceGudang').value = item.gudang;
-            } else {
-                document.getElementById('mutSourceUnit').value = '';
-                document.getElementById('mutSourceGudang').value = '';
-            }
-        }
+  function terapkanFilterAdmin() {
+    const filterBulan = document.getElementById('filterBulan').value;
+    const filterUnit = document.getElementById('filterUnit').value;
+    const filterStatus = document.getElementById('filterStatus').value;
+    const searchVal = document.getElementById('searchAdmin').value.toLowerCase().trim();
 
-        function updateTargetGudangDropdown() {
-            const selectedUnitName = document.getElementById('mutTargetUnit').value;
-            const unitObj = unitsData.find(u => u.name === selectedUnitName);
-            const targetGudangSelect = document.getElementById('mutTargetGudang');
-            targetGudangSelect.innerHTML = '';
-            if (unitObj && unitObj.warehouses.length > 0) {
-                unitObj.warehouses.forEach(w => { targetGudangSelect.innerHTML += `<option value="${w}">${w}</option>`; });
-            }
-        }
+    let filtered = rawAdminData.filter(item => {
+      if (filterBulan && !(item.tglPermintaan || "").startsWith(filterBulan)) return false;
+      if (filterUnit && item.unit !== filterUnit) return false;
+      if (filterStatus && item.status !== filterStatus) return false;
+      if (searchVal && !item.kode.toLowerCase().includes(searchVal) && !item.pemohon.toLowerCase().includes(searchVal) && !item.items.some(i => i.barang.toLowerCase().includes(searchVal))) return false;
+      return true;
+    });
+    renderStatistik(filtered);
+    renderTabelAdmin(filtered);
+  }
 
-        function updateAddItemGudangOptions() {
-            const selectedUnitName = document.getElementById('addItemUnit').value;
-            const unitObj = unitsData.find(u => u.name === selectedUnitName);
-            const addItemGudangSelect = document.getElementById('addItemGudang');
-            addItemGudangSelect.innerHTML = '';
-            if (unitObj && unitObj.warehouses.length > 0) {
-                unitObj.warehouses.forEach(w => { addItemGudangSelect.innerHTML += `<option value="${w}">${w}</option>`; });
-            }
-        }
+  function renderStatistik(data) {
+    document.getElementById('statTotal').innerText = data.length;
+    document.getElementById('statPending').innerText = data.filter(i => i.status === 'PENDING').length;
+    document.getElementById('statACC').innerText = data.filter(i => i.status === 'ACC').length;
+    document.getElementById('statTolak').innerText = data.filter(i => i.status === 'REVISI' || i.status === 'DITOLAK').length;
+  }
 
-        function renderDashboard() {
-            document.getElementById('dashPendingCount').innerText = `${mutationData.filter(m => m.status === 'PENDING').length} Trax`;
-            document.getElementById('dashTotalUnit').innerText = `${unitsData.length} Unit`;
-            document.getElementById('dashTotalItem').innerText = `${inventoryData.length} Item`;
-            document.getElementById('dashTotalUser').innerText = `${usersData.length} User`;
-        }
+  function formatGoogleDriveUrl(url) {
+    if (!url || url === '-') return '-';
+    if (url.includes('/file/d/')) {
+      const match = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+      if (match && match[1]) return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+    }
+    return url;
+  }
 
-        function renderInventoryTable() {
-            const tbody = document.getElementById('inventoryTableBody');
-            tbody.innerHTML = '';
-            if (inventoryData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted">Belum ada data barang.</td></tr>`;
-                return;
-            }
-            inventoryData.forEach(item => {
-                tbody.innerHTML += `<tr><td class="fw-bold">${item.id}</td><td>${item.name}</td><td><span class="badge bg-secondary">${item.category}</span></td><td>${item.unit}</td><td>${item.gudang}</td><td class="fw-bold text-success">${item.qty}</td><td>${item.unitType}</td></tr>`;
-            });
-        }
+  function renderTabelAdmin(data) {
+    if (data.length === 0) { document.getElementById('containerTabelAdmin').innerHTML = "<p style='text-align:center; padding:20px; color:var(--text-muted);'>Tidak ada data.</p>"; return; }
+    let html = `<table><thead><tr><th>Tiket & Tanggal</th><th>Pemohon / Unit</th><th>Daftar Barang</th><th>Status</th><th>PDF TTD</th><th>Aksi Admin</th></tr></thead><tbody>`;
+    data.forEach(tiket => {
+      let badgeClass = 'badge-pending';
+      let statusText = tiket.status && tiket.status !== '-' ? tiket.status : 'PENDING';
+      
+      if(statusText === 'ACC') badgeClass = 'badge-acc';
+      else if(statusText === 'REVISI') badgeClass = 'badge-revisi';
+      else if(statusText === 'DITOLAK') badgeClass = 'badge-tolak';
 
-        function renderMutationHistory() {
-            const tbody = document.getElementById('mutationHistoryTable');
-            tbody.innerHTML = '';
-            if (mutationData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">Belum ada riwayat.</td></tr>`;
-                return;
-            }
-            mutationData.forEach(m => {
-                let badge = m.status === 'PENDING' ? '<span class="badge badge-pending">PENDING</span>' : (m.status === 'APPROVED' ? '<span class="badge badge-approved">DISETUJUI</span>' : '<span class="badge badge-rejected">DITOLAK</span>');
-                tbody.innerHTML += `<tr><td><small>${m.id}</small></td><td>${m.itemName}</td><td><small>${m.fromUnit} (${m.fromGudang}) → ${m.toUnit} (${m.toGudang})</small></td><td class="fw-bold">${m.qty}</td><td>${badge}</td></tr>`;
-            });
-        }
+      const cleanPdfUrl = formatGoogleDriveUrl(tiket.pdfUrl);
+      let itemSummary = tiket.items.map(i => `• [${i.kodeItem !== '-' ? i.kodeItem : '-'}] <b>${i.barang}</b> (${i.jumlah} ${i.satuan})`).join('<br>');
 
-        function renderApprovalTable() {
-            const tbody = document.getElementById('approvalTableBody');
-            tbody.innerHTML = '';
-            const pendingList = mutationData.filter(m => m.status === 'PENDING');
-            if (pendingList.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted">Tidak ada mutasi pending.</td></tr>`;
-                return;
-            }
-            pendingList.forEach(m => {
-                tbody.innerHTML += `<tr><td><b>${m.id}</b></td><td>${m.itemName}</td><td><small>${m.fromUnit} [${m.fromGudang}]</small></td><td><small>${m.toUnit} [${m.toGudang}]</small></td><td><b>${m.qty}</b></td><td><small>${m.requester}</small></td><td><button class="btn btn-success btn-sm me-1" onclick="processApproval('${m.id}', true)">Approve</button><button class="btn btn-danger btn-sm" onclick="processApproval('${m.id}', false)">Tolak</button></td></tr>`;
-            });
-        }
+      html += `<tr>
+        <td><b>${tiket.kode}</b><br><small>${tiket.tglPermintaan}</small></td>
+        <td><b>${tiket.pemohon}</b><br><small>${tiket.unit}</small></td>
+        <td>${itemSummary}</td>
+        <td><span class="badge ${badgeClass}">${statusText}</span><br><small>${tiket.catatan !== '-' ? tiket.catatan : ''}</small></td>
+        <td>${cleanPdfUrl !== '-' ? `<a href="${cleanPdfUrl}" target="_blank">Lihat PDF</a>` : '-'}</td>
+        <td>
+          <select id="status_${tiket.kode}" style="padding:6px; font-size:12px; margin-bottom:4px;">
+            <option value="PENDING" ${statusText==='PENDING'?'selected':''}>PENDING</option>
+            <option value="ACC" ${statusText==='ACC'?'selected':''}>ACC</option>
+            <option value="REVISI" ${statusText==='REVISI'?'selected':''}>REVISI</option>
+            <option value="DITOLAK" ${statusText==='DITOLAK'?'selected':''}>DITOLAK</option>
+          </select><br>
+          <input type="text" id="catatan_${tiket.kode}" value="${tiket.catatan !== '-' ? tiket.catatan : ''}" placeholder="Catatan..." style="font-size:12px; padding:6px;"><br>
+          <button onclick="updateStatusAdmin('${tiket.kode}')" style="padding:6px 12px; font-size:12px; margin-top:6px; width:100%;">Simpan</button>
+        </td>
+      </tr>`;
+    });
+    html += `</tbody></table>`;
+    document.getElementById('containerTabelAdmin').innerHTML = html;
+  }
 
-        function renderUnitMasterTable() {
-            const tbody = document.getElementById('unitMasterTableBody');
-            tbody.innerHTML = '';
-            if (unitsData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted">Belum ada unit.</td></tr>`;
-                return;
-            }
-            unitsData.forEach(u => {
-                const gudangTags = u.warehouses.length > 0 ? u.warehouses.map(w => `<span class="badge bg-info text-dark me-1">${w}</span>`).join('') : '<span class="text-muted small">Kosong</span>';
-                tbody.innerHTML += `<tr><td><b>${u.id}</b></td><td>${u.name}</td><td>${gudangTags}</td><td><span class="badge bg-secondary">${u.warehouses.length}</span></td></tr>`;
-            });
-        }
+  async function updateStatusAdmin(kodeTiket) {
+    const selectEl = document.getElementById(`status_${kodeTiket}`);
+    const catatanEl = document.getElementById(`catatan_${kodeTiket}`);
 
-        function renderUserTable() {
-            const tbody = document.getElementById('userTableBody');
-            tbody.innerHTML = '';
-            if (usersData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="3" class="text-center text-muted">Belum ada user.</td></tr>`;
-                return;
-            }
-            usersData.forEach(u => {
-                tbody.innerHTML += `<tr><td><b>${u.Username || u.username}</b></td><td><span class="badge ${(u.Role || u.role) === 'superadmin' ? 'bg-danger' : 'bg-primary'}">${u.Role || u.role}</span></td><td>${u.Unit_Assignment || u.unit}</td></tr>`;
-            });
-        }
-    </script>
+    const status = selectEl ? selectEl.value : "PENDING";
+    const catatan = catatanEl ? catatanEl.value : "-";
+
+    try {
+      const res = await fetch(GAS_URL, { 
+        method: 'POST', 
+        body: JSON.stringify({ 
+          action: "updateStatus", 
+          kodeBarang: kodeTiket, 
+          status: status, 
+          catatan: catatan 
+        }) 
+      });
+      const json = await res.json();
+      if(json.status === "success") { 
+        alert("Status berhasil diperbarui!"); 
+        muatDataAdmin(); 
+      } else {
+        alert("Gagal memperbarui: " + json.message);
+      }
+    } catch(e) { 
+      alert("Terjadi kesalahan jaringan."); 
+    }
+  }
+
+  function eksporKeCSV() {
+    let csv = "\ufeffKode;Tanggal;Pemohon;Unit;Kode_Barang;Kategori;Barang;Jumlah;Satuan;Status;Catatan;PDF\n";
+    rawAdminData.forEach(tiket => {
+      tiket.items.forEach(i => {
+        csv += `"${tiket.kode}";"${tiket.tglPermintaan}";"${tiket.pemohon}";"${tiket.unit}";"${i.kodeItem}";"${i.kategori}";"${i.barang}";"${i.jumlah}";"${i.satuan}";"${tiket.status}";"${tiket.catatan}";"${tiket.pdfUrl}"\n`;
+      });
+    });
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute("download", "Rekap_Tiket_Permintaan.csv");
+    document.body.appendChild(link); link.click(); document.body.removeChild(link);
+  }
+</script>
+
 </body>
 </html>
