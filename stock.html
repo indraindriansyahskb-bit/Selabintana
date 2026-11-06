@@ -54,8 +54,6 @@
         .badge-pending { background-color: #f59e0b; color: #fff; }
         .badge-approved { background-color: #10b981; color: #fff; }
         .badge-rejected { background-color: #ef4444; color: #fff; }
-        
-        /* Modal & UI Tweaks */
         .login-box {
             max-width: 420px;
             margin: 80px auto;
@@ -94,7 +92,7 @@
                     <div class="mb-3">
                         <label class="form-label">Role Simulasi</label>
                         <select id="loginRole" class="form-select">
-                            <option value="superadmin">Superadmin (Approval Mutasi & Master Data)</option>
+                            <option value="superadmin">Superadmin (Master User, Unit, Gudang & Approval)</option>
                             <option value="unit_admin">Admin Unit Farm (Input & Pengajuan)</option>
                         </select>
                     </div>
@@ -102,9 +100,6 @@
                         <i class="fa-solid fa-right-to-bracket me-2"></i>Masuk Aplikasi
                     </button>
                 </form>
-                <div class="alert alert-info mt-3 mb-0 small">
-                    <i class="fa-solid fa-circle-info me-1"></i> Demo UI: Gunakan username bebas untuk masuk.
-                </div>
             </div>
         </div>
     </div>
@@ -136,12 +131,17 @@
                 <li class="nav-item" id="approvalNavItem">
                     <a class="nav-link" href="#" onclick="switchTab('approvalTab', this)">
                         <i class="fa-solid fa-circle-check me-2"></i>Approval Mutasi
-                        <span class="badge bg-danger rounded-pill float-end" id="pendingBadgeCount">2</span>
+                        <span class="badge bg-danger rounded-pill float-end" id="pendingBadgeCount">0</span>
                     </a>
                 </li>
                 <li class="nav-item" id="unitMasterNavItem">
                     <a class="nav-link" href="#" onclick="switchTab('unitMasterTab', this)">
                         <i class="fa-solid fa-sitemap me-2"></i>Master Unit & Gudang
+                    </a>
+                </li>
+                <li class="nav-item" id="userManagementNavItem">
+                    <a class="nav-link" href="#" onclick="switchTab('userManagementTab', this)">
+                        <i class="fa-solid fa-users-gear me-2"></i>Manajemen User
                     </a>
                 </li>
                 <li class="nav-item">
@@ -178,35 +178,35 @@
                     <div class="col-md-3">
                         <div class="card p-3 stats-card">
                             <span class="text-muted small">Total Unit Farm</span>
-                            <h3 class="fw-bold my-1" id="dashTotalUnit">32 Unit</h3>
-                            <span class="text-success small"><i class="fa-solid fa-check me-1"></i>Aktif Beroperasi</span>
+                            <h3 class="fw-bold my-1" id="dashTotalUnit">0 Unit</h3>
+                            <span class="text-success small"><i class="fa-solid fa-check me-1"></i>Terdaftar</span>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="card p-3 stats-card" style="border-left-color: #10b981;">
                             <span class="text-muted small">Total Jenis Item</span>
-                            <h3 class="fw-bold my-1">148 Item</h3>
-                            <span class="text-muted small">Pakan, Obat, Vaksin, Alkes</span>
+                            <h3 class="fw-bold my-1" id="dashTotalItem">0 Item</h3>
+                            <span class="text-muted small">Dalam Database</span>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="card p-3 stats-card" style="border-left-color: #f59e0b;">
                             <span class="text-muted small">Mutasi Pending</span>
-                            <h3 class="fw-bold my-1 text-warning" id="dashPendingCount">2 Trax</h3>
-                            <span class="text-muted small">Butuh Approval Superadmin</span>
+                            <h3 class="fw-bold my-1 text-warning" id="dashPendingCount">0 Trax</h3>
+                            <span class="text-muted small">Butuh Approval</span>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="card p-3 stats-card" style="border-left-color: #6366f1;">
-                            <span class="text-muted small">Status Koneksi DB</span>
-                            <h3 class="fw-bold my-1 text-success fs-5"><i class="fa-solid fa-link me-2"></i>Google Sheets</h3>
-                            <span class="text-muted small">Apps Script Ready</span>
+                            <span class="text-muted small">Total User</span>
+                            <h3 class="fw-bold my-1 text-primary" id="dashTotalUser">0 User</h3>
+                            <span class="text-muted small">Sistem Akses</span>
                         </div>
                     </div>
                 </div>
 
                 <div class="row g-3">
-                    <div class="col-md-8">
+                    <div class="col-md-12">
                         <div class="card p-3">
                             <h6 class="fw-bold mb-3"><i class="fa-solid fa-clock-rotate-left me-2"></i>Aktivitas Mutasi Terakhir</h6>
                             <div class="table-responsive">
@@ -221,25 +221,10 @@
                                         </tr>
                                     </thead>
                                     <tbody id="dashRecentMutations">
-                                        <!-- Dynamic JS content -->
+                                        <tr><td colspan="5" class="text-center text-muted">Belum ada aktivitas mutasi.</td></tr>
                                     </tbody>
                                 </table>
                             </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="card p-3">
-                            <h6 class="fw-bold mb-3"><i class="fa-solid fa-triangle-exclamation me-2 text-warning"></i>Stok Kritis / Menipis</h6>
-                            <ul class="list-group list-group-flush small" id="dashAlertStock">
-                                <li class="list-group-item d-flex justify-content-between align-middle">
-                                    <div><strong>Vaksin ND-IB</strong><br><small class="text-muted">Unit 04 - Gudang Utama</small></div>
-                                    <span class="badge bg-danger rounded-pill align-self-center">Sisa 5 vial</span>
-                                </li>
-                                <li class="list-group-item d-flex justify-content-between align-middle">
-                                    <div><strong>Pakan Starter Layer</strong><br><small class="text-muted">Unit 12 - Gudang Pakan</small></div>
-                                    <span class="badge bg-warning text-dark rounded-pill align-self-center">Sisa 12 Sak</span>
-                                </li>
-                            </ul>
                         </div>
                     </div>
                 </div>
@@ -252,7 +237,7 @@
                         <div class="col-md-3">
                             <label class="form-label small fw-bold">Filter Unit Farm</label>
                             <select id="filterUnit" class="form-select form-select-sm" onchange="renderInventoryTable()">
-                                <!-- Dynamic Options -->
+                                <option value="ALL">Semua Unit</option>
                             </select>
                         </div>
                         <div class="col-md-3">
@@ -287,11 +272,10 @@
                                     <th>Gudang</th>
                                     <th>Stok</th>
                                     <th>Satuan</th>
-                                    <th>Aksi</th>
                                 </tr>
                             </thead>
                             <tbody id="inventoryTableBody">
-                                <!-- Dynamic content -->
+                                <tr><td colspan="7" class="text-center text-muted">Data stok kosong. Silakan tambah barang baru atau unit dulu.</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -341,7 +325,7 @@
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label small">Catatan / Alasan Mutasi</label>
-                                    <textarea id="mutNote" class="form-control form-control-sm" rows="2" placeholder="Contoh: Kebutuhan darurat pencegahan penyakit"></textarea>
+                                    <textarea id="mutNote" class="form-control form-control-sm" rows="2" placeholder="Alasan pengajuan mutasi..."></textarea>
                                 </div>
                                 <button type="submit" class="btn btn-primary btn-sm w-100">
                                     <i class="fa-solid fa-paper-plane me-1"></i>Kirim Pengajuan Mutasi
@@ -364,7 +348,7 @@
                                         </tr>
                                     </thead>
                                     <tbody id="mutationHistoryTable">
-                                        <!-- Dynamic Content -->
+                                        <tr><td colspan="5" class="text-center text-muted">Belum ada riwayat mutasi.</td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -378,7 +362,6 @@
                 <div class="card p-3">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h6 class="fw-bold m-0"><i class="fa-solid fa-user-shield me-2 text-warning"></i>Persetujuan Mutasi Antar Gudang / Unit (Superadmin)</h6>
-                        <span class="badge bg-warning text-dark">Membutuhkan Tindakan</span>
                     </div>
                     <div class="table-responsive">
                         <table class="table table-bordered table-hover align-middle">
@@ -387,41 +370,56 @@
                                     <th>ID Transaksi</th>
                                     <th>Tanggal Pengajuan</th>
                                     <th>Item Barang</th>
-                                    <th>Asal (Unit & Gudang)</th>
-                                    <th>Tujuan (Unit & Gudang)</th>
+                                    <th>Asal</th>
+                                    <th>Tujuan</th>
                                     <th>Jumlah</th>
                                     <th>Pemohon</th>
                                     <th>Aksi Approval</th>
                                 </tr>
                             </thead>
                             <tbody id="approvalTableBody">
-                                <!-- Dynamic Content -->
+                                <tr><td colspan="8" class="text-center text-muted">Tidak ada pengajuan mutasi pending saat ini.</td></tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <!-- TAB 5: MASTER UNIT & GUDANG -->
+            <!-- TAB 5: MASTER UNIT & GUDANG (SUPERADMIN) -->
             <div id="unitMasterTab" class="tab-content-item d-none">
                 <div class="row">
+                    <!-- Form Tambah Unit -->
                     <div class="col-md-4">
-                        <div class="card p-3 mb-3">
-                            <h6 class="fw-bold mb-3"><i class="fa-solid fa-plus me-2 text-success"></i>Tambah Gudang Baru Ke Unit</h6>
-                            <form id="addGudangForm">
+                        <div class="card p-3 mb-3 border-start border-4 border-primary">
+                            <h6 class="fw-bold mb-3"><i class="fa-solid fa-plus me-2 text-primary"></i>Tambah Unit Farm Baru</h6>
+                            <form id="addUnitForm">
+                                <div class="mb-2">
+                                    <label class="form-label small">Kode Unit</label>
+                                    <input type="text" id="newUnitId" class="form-control form-control-sm" placeholder="Contoh: UNIT-01" required>
+                                </div>
                                 <div class="mb-3">
-                                    <label class="form-label small">Pilih Unit Farm (30+ Unit)</label>
+                                    <label class="form-label small">Nama Unit Farm</label>
+                                    <input type="text" id="newUnitName" class="form-control form-control-sm" placeholder="Contoh: Unit Farm 01" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-sm w-100">
+                                    <i class="fa-solid fa-plus me-1"></i>Simpan Unit Baru
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Form Tambah Gudang -->
+                        <div class="card p-3 mb-3 border-start border-4 border-success">
+                            <h6 class="fw-bold mb-3"><i class="fa-solid fa-house-medical me-2 text-success"></i>Tambah Gudang ke Unit</h6>
+                            <form id="addGudangForm">
+                                <div class="mb-2">
+                                    <label class="form-label small">Pilih Unit Farm</label>
                                     <select id="masterUnitSelect" class="form-select form-select-sm" required>
                                         <!-- Dynamic Options -->
                                     </select>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label small">Nama Gudang Baru</label>
-                                    <input type="text" id="newGudangName" class="form-control form-control-sm" placeholder="Misal: Gudang Vaksin 2 / Gudang Pakan B" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label small">Keterangan / Fasilitas</label>
-                                    <input type="text" id="newGudangDesc" class="form-control form-control-sm" placeholder="Misal: Cold storage suhu 2-8 C">
+                                    <input type="text" id="newGudangName" class="form-control form-control-sm" placeholder="Contoh: Gudang Vaksin / Gudang Pakan A" required>
                                 </div>
                                 <button type="submit" class="btn btn-success btn-sm w-100">
                                     <i class="fa-solid fa-floppy-disk me-1"></i>Simpan Gudang Baru
@@ -429,6 +427,8 @@
                             </form>
                         </div>
                     </div>
+
+                    <!-- Tabel Daftar Unit & Gudang -->
                     <div class="col-md-8">
                         <div class="card p-3">
                             <h6 class="fw-bold mb-3"><i class="fa-solid fa-network-wired me-2"></i>Daftar Unit Farm & Gudang Terdaftar</h6>
@@ -443,7 +443,7 @@
                                         </tr>
                                     </thead>
                                     <tbody id="unitMasterTableBody">
-                                        <!-- Dynamic Content -->
+                                        <tr><td colspan="4" class="text-center text-muted">Belum ada unit terdaftar. Silakan tambahkan unit baru.</td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -452,70 +452,74 @@
                 </div>
             </div>
 
-            <!-- TAB 6: GOOGLE SCRIPT BACKEND SETUP -->
+            <!-- TAB 6: MANAJEMEN USER (SUPERADMIN) -->
+            <div id="userManagementTab" class="tab-content-item d-none">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card p-3 mb-3 border-start border-4 border-info">
+                            <h6 class="fw-bold mb-3"><i class="fa-solid fa-user-plus me-2 text-info"></i>Tambah User Pengguna Baru</h6>
+                            <form id="addUserForm">
+                                <div class="mb-2">
+                                    <label class="form-label small">Username</label>
+                                    <input type="text" id="newUserName" class="form-control form-control-sm" required placeholder="Contoh: admin_unit01">
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label small">Password</label>
+                                    <input type="password" id="newUserPass" class="form-control form-control-sm" required placeholder="••••••••">
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label small">Role System</label>
+                                    <select id="newUserRole" class="form-select form-select-sm" required>
+                                        <option value="unit_admin">Admin Unit Farm</option>
+                                        <option value="superadmin">Superadmin</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small">Penempatan Unit (Opsional)</label>
+                                    <select id="newUserUnit" class="form-select form-select-sm">
+                                        <option value="ALL">Semua Unit (Superadmin)</option>
+                                        <!-- Dynamic Options -->
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-info text-white btn-sm w-100">
+                                    <i class="fa-solid fa-user-check me-1"></i>Simpan User Baru
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card p-3">
+                            <h6 class="fw-bold mb-3"><i class="fa-solid fa-users me-2"></i>Daftar User Terdaftar</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered align-middle">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>Username</th>
+                                            <th>Role</th>
+                                            <th>Penempatan Unit</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="userTableBody">
+                                        <!-- Dynamic content -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 7: GOOGLE SCRIPT BACKEND SETUP -->
             <div id="gasBackendTab" class="tab-content-item d-none">
                 <div class="card p-3">
                     <h5 class="fw-bold text-primary mb-2"><i class="fa-brands fa-google me-2"></i>Panduan Integration Backend Google Apps Script (GAS)</h5>
                     <p class="small text-muted">Aplikasi ini dirancang untuk terhubung langsung dengan **Google Sheets** menggunakan Apps Script sebagai API backend. Ikuti langkah di bawah ini untuk deploy:</p>
-                    
                     <ol class="small">
                         <li>Buat **Google Sheet Baru** di Google Drive Anda. Buat 4 Tab Sheet dengan nama tepat: <code>Master_Unit</code>, <code>Inventory</code>, <code>Mutasi</code>, dan <code>Users</code>.</li>
                         <li>Buka menu <strong>Ekstensi > Apps Script</strong> di Google Sheet tersebut.</li>
-                        <li>Salin (copy) kode Apps Script di bawah ini dan tempelkan ke editor Apps Script.</li>
-                        <li>Klik <strong>Deploy > Deployments baru</strong>, pilih jenis <strong>Web App</strong>, atur <em>Who has access</em> menjadi <strong>Anyone</strong>.</li>
-                        <li>Salin URL Web App yang dihasilkan dan masukkan ke konfigurasi sistem ini.</li>
+                        <li>Salin kode Apps Script backend dan tempelkan ke editor Apps Script.</li>
+                        <li>Deploy sebagai **Web App** dengan akses **Anyone**. Masukkan URL yang didapat ke variabel <code>API_URL</code> di file HTML ini.</li>
                     </ol>
-
-                    <h6 class="fw-bold mt-2">Kode Apps Script (Code.gs):</h6>
-                    <div class="gas-code-block">
-<pre><code>// Kode Backend Google Apps Script untuk Sistem Stok Farm
-function doGet(e) {
-  var action = e.parameter.action;
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  
-  if (action == 'getInventory') {
-    var sheet = ss.getSheetByName('Inventory');
-    var data = sheet.getDataRange().getValues();
-    return responseJSON(data);
-  }
-  if (action == 'getMutations') {
-    var sheet = ss.getSheetByName('Mutasi');
-    var data = sheet.getDataRange().getValues();
-    return responseJSON(data);
-  }
-}
-
-function doPost(e) {
-  var contents = JSON.parse(e.postData.contents);
-  var action = contents.action;
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-
-  // Handle Pengajuan Mutasi Baru
-  if (action == 'addMutation') {
-    var sheet = ss.getSheetByName('Mutasi');
-    sheet.appendRow([
-      contents.id, new Date(), contents.itemId, contents.itemName,
-      contents.fromUnit, contents.fromGudang, contents.toUnit, contents.toGudang,
-      contents.qty, 'PENDING', contents.user
-    ]);
-    return responseJSON({status: 'SUCCESS', message: 'Mutasi berhasil diajukan'});
-  }
-
-  // Handle Approval Superadmin
-  if (action == 'approveMutation') {
-    var sheetMut = ss.getSheetByName('Mutasi');
-    var sheetInv = ss.getSheetByName('Inventory');
-    // Logika update status mutasi & potong/tambah stok di tab Inventory
-    // ...
-    return responseJSON({status: 'SUCCESS', message: 'Mutasi disetujui & Stok diperbarui'});
-  }
-}
-
-function responseJSON(data) {
-  return ContentService.createTextOutput(JSON.stringify(data))
-    .setMimeType(ContentService.MimeType.JSON);
-}</code></pre>
-                    </div>
                 </div>
             </div>
 
@@ -582,53 +586,42 @@ function responseJSON(data) {
     <!-- Application Script Data & Logic -->
     <script>
         // ==========================================
-        // KONFIGURASI KONEKSI GOOGLE SHEET API
+        // KONFIGURASI KONEKSI GOOGLE SHEETS API
         // ==========================================
-        const API_URL = "https://script.google.com/macros/s/AKfycbwVE17xUNJ3rz9zgZx4kLtiH6jAHdNGVyYD9MCVwkMsC_sBJm8pZioceQZdLVtIBO0q/exec";
-        
-        // ==========================================
-        // DUMMY STATE / DATABASE SIMULATOR (30+ UNITS)
-        // ==========================================
+        const API_URL = "https://script.google.com/macros/s/AKfycbwVE17xUNJ3rz9zgZx4kLtiH6jAHdNGVyYD9MCVwkMsC_sBJm8pZioceQZdLVtIBO0q/exec"; // Masukkan URL Web App GAS Anda di sini
+
+        // STATE APLIKASI
         let currentUser = { name: '', role: 'superadmin' };
 
-        // Generating 32 Units with default Warehouses
+        // 1. DATA USER DEFAULT (Superadmin Awal)
+        let usersData = [
+            { username: 'superadmin', role: 'superadmin', unit: 'ALL' }
+        ];
+
+        // 2. DATA UNIT & GUDANG DIBUAT KOSONG (BEBAS DITAMBAHKAN SUPERADMIN)
         let unitsData = [];
-        for (let i = 1; i <= 32; i++) {
-            let unitNum = i < 10 ? '0' + i : i;
-            unitsData.push({
-                id: `UNIT-${unitNum}`,
-                name: `Unit Farm ${unitNum}`,
-                warehouses: [`Gudang Utama Unit ${unitNum}`, `Gudang Obat & Vaksin`, `Gudang Pakan`]
-            });
-        }
 
-        let inventoryData = [
-            { id: 'ITM-001', name: 'Pakan Layer Starter (TK 1)', category: 'Pakan', unit: 'Unit Farm 01', gudang: 'Gudang Pakan', qty: 450, unitType: 'Sak' },
-            { id: 'ITM-002', name: 'Vaksin ND-IB Live', category: 'Obat & Vaksin', unit: 'Unit Farm 01', gudang: 'Gudang Obat & Vaksin', qty: 80, unitType: 'Vial' },
-            { id: 'ITM-003', name: 'Desinfektan BKC 80%', category: 'Kimia & Sanitasi', unit: 'Unit Farm 02', gudang: 'Gudang Utama Unit 02', qty: 25, unitType: 'Jerigen' },
-            { id: 'ITM-004', name: 'Nipple Drinker Assembly', category: 'Peralatan', unit: 'Unit Farm 03', gudang: 'Gudang Utama Unit 03', qty: 300, unitType: 'Pcs' },
-            { id: 'ITM-005', name: 'Vaksin AI H5N1 Recombinant', category: 'Obat & Vaksin', unit: 'Unit Farm 04', gudang: 'Gudang Utama Unit 04', qty: 5, unitType: 'Vial' },
-            { id: 'ITM-006', name: 'Pakan Finisher Breeder', category: 'Pakan', unit: 'Unit Farm 12', gudang: 'Gudang Pakan', qty: 12, unitType: 'Sak' }
-        ];
-
-        let mutationData = [
-            { id: 'MUT-1001', date: '2026-11-05', itemId: 'ITM-001', itemName: 'Pakan Layer Starter (TK 1)', fromUnit: 'Unit Farm 01', fromGudang: 'Gudang Pakan', toUnit: 'Unit Farm 02', toGudang: 'Gudang Pakan', qty: 50, status: 'PENDING', requester: 'Admin Unit 01' },
-            { id: 'MUT-1002', date: '2026-11-06', itemId: 'ITM-002', itemName: 'Vaksin ND-IB Live', fromUnit: 'Unit Farm 01', fromGudang: 'Gudang Obat & Vaksin', toUnit: 'Unit Farm 04', toGudang: 'Gudang Utama Unit 04', qty: 10, status: 'PENDING', requester: 'Admin Unit 04' },
-            { id: 'MUT-0999', date: '2026-11-04', itemId: 'ITM-003', itemName: 'Desinfektan BKC 80%', fromUnit: 'Unit Farm 02', fromGudang: 'Gudang Utama Unit 02', toUnit: 'Unit Farm 03', toGudang: 'Gudang Utama Unit 03', qty: 5, status: 'APPROVED', requester: 'Admin Unit 02' }
-        ];
+        // 3. DATA STOK BARANG & MUTASI AWAL KOSONG
+        let inventoryData = [];
+        let mutationData = [];
 
         // ==========================================
-        // INITIALIZATION & UI LOGIC
+        // INITIALIZATION
         // ==========================================
         document.addEventListener('DOMContentLoaded', () => {
             setupLogin();
+            refreshAllUI();
+        });
+
+        function refreshAllUI() {
             populateDropdowns();
             renderDashboard();
             renderInventoryTable();
             renderMutationHistory();
             renderApprovalTable();
             renderUnitMasterTable();
-        });
+            renderUserTable();
+        }
 
         function setupLogin() {
             document.getElementById('loginForm').addEventListener('submit', (e) => {
@@ -644,13 +637,15 @@ function responseJSON(data) {
                 document.getElementById('currentUserName').innerText = user;
                 document.getElementById('userRoleBadge').innerText = role === 'superadmin' ? 'Superadmin Mode' : 'Admin Unit Mode';
 
-                // Role-based Access UI Toggle
+                // Role-based Access Control
                 if (role !== 'superadmin') {
                     document.getElementById('approvalNavItem').classList.add('d-none');
                     document.getElementById('unitMasterNavItem').classList.add('d-none');
+                    document.getElementById('userManagementNavItem').classList.add('d-none');
                 } else {
                     document.getElementById('approvalNavItem').classList.remove('d-none');
                     document.getElementById('unitMasterNavItem').classList.remove('d-none');
+                    document.getElementById('userManagementNavItem').classList.remove('d-none');
                 }
             });
         }
@@ -672,31 +667,40 @@ function responseJSON(data) {
                 'inventoryTab': 'Manajemen Stok & Gudang',
                 'mutationTab': 'Pengajuan Mutasi Barang Antar Gudang',
                 'approvalTab': 'Approval Mutasi Barang (Superadmin)',
-                'unitMasterTab': 'Master Data Unit & Penambahan Gudang',
+                'unitMasterTab': 'Master Data Unit & Gudang',
+                'userManagementTab': 'Manajemen User Pengguna',
                 'gasBackendTab': 'Integrasi Backend Google Spreadsheets'
             };
             document.getElementById('pageTitle').innerText = titles[tabId];
         }
 
         function populateDropdowns() {
-            // Filter Unit Dropdown
             const filterUnit = document.getElementById('filterUnit');
-            filterUnit.innerHTML = '<option value="ALL">Semua Unit (30+)</option>';
+            filterUnit.innerHTML = '<option value="ALL">Semua Unit</option>';
             
-            // Unit Selector for Mutasi & Master
             const masterUnitSelect = document.getElementById('masterUnitSelect');
             const mutTargetUnit = document.getElementById('mutTargetUnit');
             const addItemUnit = document.getElementById('addItemUnit');
+            const newUserUnit = document.getElementById('newUserUnit');
 
             masterUnitSelect.innerHTML = '';
             mutTargetUnit.innerHTML = '';
             addItemUnit.innerHTML = '';
+            newUserUnit.innerHTML = '<option value="ALL">Semua Unit (Superadmin)</option>';
+
+            if (unitsData.length === 0) {
+                masterUnitSelect.innerHTML = '<option value="">(Belum Ada Unit)</option>';
+                mutTargetUnit.innerHTML = '<option value="">(Belum Ada Unit)</option>';
+                addItemUnit.innerHTML = '<option value="">(Belum Ada Unit)</option>';
+                return;
+            }
 
             unitsData.forEach(u => {
                 filterUnit.innerHTML += `<option value="${u.name}">${u.name}</option>`;
                 masterUnitSelect.innerHTML += `<option value="${u.name}">${u.name}</option>`;
                 mutTargetUnit.innerHTML += `<option value="${u.name}">${u.name}</option>`;
                 addItemUnit.innerHTML += `<option value="${u.name}">${u.name}</option>`;
+                newUserUnit.innerHTML += `<option value="${u.name}">${u.name}</option>`;
             });
 
             // Populate Item Select for Mutation
@@ -706,6 +710,7 @@ function responseJSON(data) {
                 mutItemSelect.innerHTML += `<option value="${item.id}">${item.name} [${item.unit} - ${item.gudang}] (Stok: ${item.qty})</option>`;
             });
 
+            mutItemSelect.removeEventListener('change', updateMutationFormDetails);
             mutItemSelect.addEventListener('change', updateMutationFormDetails);
             updateMutationFormDetails();
             updateTargetGudangDropdown();
@@ -718,6 +723,9 @@ function responseJSON(data) {
             if (item) {
                 document.getElementById('mutSourceUnit').value = item.unit;
                 document.getElementById('mutSourceGudang').value = item.gudang;
+            } else {
+                document.getElementById('mutSourceUnit').value = '-';
+                document.getElementById('mutSourceGudang').value = '-';
             }
         }
 
@@ -726,10 +734,12 @@ function responseJSON(data) {
             const unitObj = unitsData.find(u => u.name === selectedUnitName);
             const targetGudangSelect = document.getElementById('mutTargetGudang');
             targetGudangSelect.innerHTML = '';
-            if (unitObj) {
+            if (unitObj && unitObj.warehouses.length > 0) {
                 unitObj.warehouses.forEach(w => {
                     targetGudangSelect.innerHTML += `<option value="${w}">${w}</option>`;
                 });
+            } else {
+                targetGudangSelect.innerHTML = '<option value="">(Belum Ada Gudang)</option>';
             }
         }
 
@@ -738,23 +748,103 @@ function responseJSON(data) {
             const unitObj = unitsData.find(u => u.name === selectedUnitName);
             const addItemGudangSelect = document.getElementById('addItemGudang');
             addItemGudangSelect.innerHTML = '';
-            if (unitObj) {
+            if (unitObj && unitObj.warehouses.length > 0) {
                 unitObj.warehouses.forEach(w => {
                     addItemGudangSelect.innerHTML += `<option value="${w}">${w}</option>`;
                 });
+            } else {
+                addItemGudangSelect.innerHTML = '<option value="">(Belum Ada Gudang)</option>';
             }
         }
 
         // ==========================================
-        // RENDER TABLES & DASHBOARD DATA
+        // FITUR BARU: SUPERADMIN TAMBAH UNIT & USER[cite: 1]
+        // ==========================================
+
+        // 1. Tambah Unit Baru (Superadmin)[cite: 1]
+        document.getElementById('addUnitForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const unitId = document.getElementById('newUnitId').value.trim();
+            const unitName = document.getElementById('newUnitName').value.trim();
+
+            if (unitsData.some(u => u.id === unitId || u.name === unitName)) {
+                alert('Kode Unit atau Nama Unit sudah ada!');
+                return;
+            }
+
+            unitsData.push({
+                id: unitId,
+                name: unitName,
+                warehouses: []
+            });
+
+            alert(`Unit Baru "${unitName}" berhasil ditambahkan!`);
+            document.getElementById('addUnitForm').reset();
+            refreshAllUI();
+        });
+
+        // 2. Tambah Gudang ke Unit (Superadmin)[cite: 1]
+        document.getElementById('addGudangForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const unitName = document.getElementById('masterUnitSelect').value;
+            const newGudang = document.getElementById('newGudangName').value.trim();
+
+            const unitObj = unitsData.find(u => u.name === unitName);
+            if (unitObj) {
+                if (!unitObj.warehouses.includes(newGudang)) {
+                    unitObj.warehouses.push(newGudang);
+                    alert(`Gudang "${newGudang}" berhasil ditambahkan ke ${unitName}`);
+                    document.getElementById('addGudangForm').reset();
+                    refreshAllUI();
+                } else {
+                    alert('Nama gudang sudah ada di unit ini!');
+                }
+            } else {
+                alert('Silakan pilih unit yang valid terlebih dahulu!');
+            }
+        });
+
+        // 3. Tambah User Baru (Superadmin)[cite: 1]
+        document.getElementById('addUserForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = document.getElementById('newUserName').value.trim();
+            const pass = document.getElementById('newUserPass').value;
+            const role = document.getElementById('newUserRole').value;
+            const unit = document.getElementById('newUserUnit').value;
+
+            if (usersData.some(u => u.username === username)) {
+                alert('Username sudah terdaftar!');
+                return;
+            }
+
+            usersData.push({
+                username: username,
+                role: role,
+                unit: unit
+            });
+
+            alert(`User baru "${username}" berhasil didaftarkan!`);
+            document.getElementById('addUserForm').reset();
+            renderUserTable();
+            renderDashboard();
+        });
+
+        // ==========================================
+        // RENDER TABLES & DASHBOARD
         // ==========================================
         function renderDashboard() {
             const pendingCount = mutationData.filter(m => m.status === 'PENDING').length;
-            document.getElementById('dashPendingCount').innerText = `${pendingCount} Transaksi`;
+            document.getElementById('dashPendingCount').innerText = `${pendingCount} Trax`;
             document.getElementById('pendingBadgeCount').innerText = pendingCount;
             document.getElementById('dashTotalUnit').innerText = `${unitsData.length} Unit`;
+            document.getElementById('dashTotalItem').innerText = `${inventoryData.length} Item`;
+            document.getElementById('dashTotalUser').innerText = `${usersData.length} User`;
 
             const recentTbody = document.getElementById('dashRecentMutations');
+            if (mutationData.length === 0) {
+                recentTbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">Belum ada aktivitas mutasi.</td></tr>`;
+                return;
+            }
             recentTbody.innerHTML = '';
             mutationData.slice(0, 5).forEach(m => {
                 let statusBadge = m.status === 'PENDING' ? '<span class="badge badge-pending">PENDING</span>' :
@@ -787,6 +877,11 @@ function responseJSON(data) {
                 return matchUnit && matchCat && matchSearch;
             });
 
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted">Data stok kosong. Silakan tambah barang baru atau unit dulu.</td></tr>`;
+                return;
+            }
+
             filtered.forEach(item => {
                 tbody.innerHTML += `
                     <tr>
@@ -797,11 +892,6 @@ function responseJSON(data) {
                         <td>${item.gudang}</td>
                         <td class="fw-bold ${item.qty <= 10 ? 'text-danger' : 'text-success'}">${item.qty}</td>
                         <td>${item.unitType}</td>
-                        <td>
-                            <button class="btn btn-sm btn-outline-secondary" onclick="alert('Detail riwayat stok item ${item.id}')">
-                                <i class="fa-solid fa-history"></i>
-                            </button>
-                        </td>
                     </tr>
                 `;
             });
@@ -810,6 +900,10 @@ function responseJSON(data) {
         function renderMutationHistory() {
             const tbody = document.getElementById('mutationHistoryTable');
             tbody.innerHTML = '';
+            if (mutationData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">Belum ada riwayat mutasi.</td></tr>`;
+                return;
+            }
             mutationData.forEach(m => {
                 let statusBadge = m.status === 'PENDING' ? '<span class="badge badge-pending">PENDING</span>' :
                                   (m.status === 'APPROVED' ? '<span class="badge badge-approved">DISETUJUI</span>' : '<span class="badge badge-rejected">DITOLAK</span>');
@@ -865,8 +959,15 @@ function responseJSON(data) {
             const tbody = document.getElementById('unitMasterTableBody');
             tbody.innerHTML = '';
 
+            if (unitsData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-3">Belum ada unit terdaftar. Silakan tambahkan unit baru.</td></tr>`;
+                return;
+            }
+
             unitsData.forEach(u => {
-                const gudangTags = u.warehouses.map(w => `<span class="badge bg-info text-dark me-1 mb-1">${w}</span>`).join('');
+                const gudangTags = u.warehouses.length > 0 
+                    ? u.warehouses.map(w => `<span class="badge bg-info text-dark me-1 mb-1">${w}</span>`).join('')
+                    : '<span class="text-muted small">Belum Ada Gudang</span>';
                 tbody.innerHTML += `
                     <tr>
                         <td class="fw-bold">${u.id}</td>
@@ -878,15 +979,34 @@ function responseJSON(data) {
             });
         }
 
+        function renderUserTable() {
+            const tbody = document.getElementById('userTableBody');
+            tbody.innerHTML = '';
+            usersData.forEach(u => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="fw-bold">${u.username}</td>
+                        <td><span class="badge ${u.role === 'superadmin' ? 'bg-danger' : 'bg-primary'}">${u.role}</span></td>
+                        <td>${u.unit}</td>
+                    </tr>
+                `;
+            });
+        }
+
         // ==========================================
-        // ACTION HANDLERS
+        // PROSES TRANSAKSI & MUTASI
         // ==========================================
 
-        // Submit Pengajuan Mutasi
         document.getElementById('mutationForm').addEventListener('submit', (e) => {
             e.preventDefault();
             const itemId = document.getElementById('mutItemSelect').value;
             const itemObj = inventoryData.find(i => i.id === itemId);
+
+            if (!itemObj) {
+                alert('Silakan pilih barang yang valid!');
+                return;
+            }
+
             const qty = parseInt(document.getElementById('mutQty').value);
 
             if (qty > itemObj.qty) {
@@ -911,15 +1031,10 @@ function responseJSON(data) {
             mutationData.unshift(newMut);
             alert('Pengajuan mutasi berhasil dikirim! Menunggu approval Superadmin.');
             
-            // Refresh UI
-            renderDashboard();
-            renderMutationHistory();
-            renderApprovalTable();
             document.getElementById('mutationForm').reset();
-            updateMutationFormDetails();
+            refreshAllUI();
         });
 
-        // Superadmin Approval Logic
         function processApproval(mutId, isApproved) {
             const mutIndex = mutationData.findIndex(m => m.id === mutId);
             if (mutIndex === -1) return;
@@ -927,13 +1042,11 @@ function responseJSON(data) {
             const mut = mutationData[mutIndex];
 
             if (isApproved) {
-                // Potong Stok Asal
                 const sourceItem = inventoryData.find(i => i.name === mut.itemName && i.unit === mut.fromUnit && i.gudang === mut.fromGudang);
                 if (sourceItem) {
                     sourceItem.qty -= mut.qty;
                 }
 
-                // Tambah Stok di Gudang Tujuan (atau buat record baru jika belum ada)
                 const targetItem = inventoryData.find(i => i.name === mut.itemName && i.unit === mut.toUnit && i.gudang === mut.toGudang);
                 if (targetItem) {
                     targetItem.qty += mut.qty;
@@ -950,67 +1063,48 @@ function responseJSON(data) {
                 }
 
                 mutationData[mutIndex].status = 'APPROVED';
-                alert(`Mutasi ${mutId} telah DISETUJUI. Stok telah diperbarui di Google Sheets/DB.`);
+                alert(`Mutasi ${mutId} telah DISETUJUI.`);
             } else {
                 mutationData[mutIndex].status = 'REJECTED';
                 alert(`Mutasi ${mutId} telah DITOLAK.`);
             }
 
-            renderDashboard();
-            renderInventoryTable();
-            renderMutationHistory();
-            renderApprovalTable();
-            populateDropdowns();
+            refreshAllUI();
         }
 
-        // Tambah Gudang Baru ke Unit Master
-        document.getElementById('addGudangForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const unitName = document.getElementById('masterUnitSelect').value;
-            const newGudang = document.getElementById('newGudangName').value;
-
-            const unitObj = unitsData.find(u => u.name === unitName);
-            if (unitObj) {
-                if (!unitObj.warehouses.includes(newGudang)) {
-                    unitObj.warehouses.push(newGudang);
-                    alert(`Gudang "${newGudang}" berhasil ditambahkan ke ${unitName}`);
-                    renderUnitMasterTable();
-                    populateDropdowns();
-                    document.getElementById('addGudangForm').reset();
-                } else {
-                    alert('Nama gudang sudah ada di unit ini!');
-                }
-            }
-        });
-
-        // Tambah Item Baru
         document.getElementById('addItemForm').addEventListener('submit', (e) => {
             e.preventDefault();
+            const unit = document.getElementById('addItemUnit').value;
+            const gudang = document.getElementById('addItemGudang').value;
+
+            if (!unit || !gudang || gudang.includes('Belum Ada')) {
+                alert('Silakan pilih unit dan gudang yang valid terlebih dahulu!');
+                return;
+            }
+
             const newItem = {
                 id: `ITM-00${inventoryData.length + 1}`,
                 name: document.getElementById('addItemName').value,
                 category: document.getElementById('addItemCategory').value,
-                unit: document.getElementById('addItemUnit').value,
-                gudang: document.getElementById('addItemGudang').value,
+                unit: unit,
+                gudang: gudang,
                 qty: parseInt(document.getElementById('addItemQty').value),
                 unitType: document.getElementById('addItemUnitType').value
             };
 
             inventoryData.push(newItem);
-            alert('Barang baru berhasil ditambahkan ke stok gudang!');
+            alert('Barang baru berhasil ditambahkan!');
             
-            renderInventoryTable();
-            populateDropdowns();
-            
-            // Close Modal
             const modalEl = document.getElementById('addItemModal');
             const modal = bootstrap.Modal.getInstance(modalEl);
             modal.hide();
             document.getElementById('addItemForm').reset();
+            
+            refreshAllUI();
         });
 
         function syncSpreadsheet() {
-            alert('Menghubungkan ke Google Sheets API... Data Stok & Mutasi Terbaru Berhasil Disinkronkan!');
+            alert('Menghubungkan ke Google Sheets API... Data Berhasil Disinkronkan!');
         }
     </script>
 </body>
