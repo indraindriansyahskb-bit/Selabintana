@@ -1,345 +1,1077 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Operations Hub - Portal Permintaan & Stock Management</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome CDN -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                    colors: {
-                        navy: {
-                            50: '#f0f4f8',
-                            100: '#d9e2ec',
-                            500: '#334e68',
-                            800: '#102a43',
-                            900: '#0b1b2b',
-                            950: '#06101a',
-                        },
-                        teal: {
-                            50: '#f0fdfa',
-                            100: '#ccfbf1',
-                            500: '#14b8a6',
-                            600: '#0d9488',
-                            700: '#0f766e',
-                        }
-                    }
-                }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal Sistem Informasi Management & Inventaris - CV. SELABINTANA</title>
+  <!-- Google Fonts & Font Awesome Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#2563eb',
+              600: '#1d4ed8',
+              700: '#1e40af',
+              800: '#1e293b',
             }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          }
         }
-    </script>
-    <style>
-        .glass-header {
-            background: rgba(11, 27, 43, 0.92);
-            backdrop-filter: blur(12px);
-        }
-        .card-hover {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .card-hover:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 25px -5px rgba(11, 27, 43, 0.12), 0 8px 10px -6px rgba(11, 27, 43, 0.08);
-        }
-    </style>
+      }
+    }
+  </script>
+  <style>
+    /* Custom Print CSS for A5 Printable Form */
+    @media print {
+      @page { size: A5 portrait; margin: 6mm; }
+      body * { visibility: hidden !important; }
+      #printArea, #printArea * { visibility: visible !important; }
+      #printArea {
+        display: block !important;
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        background: white !important;
+        font-family: 'Inter', sans-serif !important;
+      }
+    }
+    .print-table th, .print-table td { padding: 6px 8px; border: 1px solid #cbd5e1; }
+  </style>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col antialiased selection:bg-teal-500 selection:text-white">
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
 
-    <!-- Header / Navbar -->
-    <header class="sticky top-0 z-50 glass-header text-white border-b border-navy-800 shadow-lg">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16 sm:h-20">
-                
-                <!-- Logo & Brand Title -->
-                <div class="flex items-center space-x-3 sm:space-x-4">
-                    <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-tr from-teal-500 to-teal-700 flex items-center justify-center text-white shadow-md shadow-teal-500/30">
-                        <i class="fa-solid fa-boxes-packing text-lg sm:text-xl"></i>
-                    </div>
-                    <div>
-                        <h1 class="text-base sm:text-lg font-bold tracking-tight leading-none text-white">Operations Portal</h1>
-                        <span class="text-[11px] sm:text-xs font-medium text-teal-400">Enterprise Resource Hub</span>
-                    </div>
-                </div>
-
-                <!-- Live Clock & System Status -->
-                <div class="hidden lg:flex items-center space-x-6 text-xs text-slate-300">
-                    <div class="flex items-center space-x-2 bg-navy-800/80 px-3 py-1.5 rounded-full border border-navy-500/30">
-                        <span class="relative flex h-2.5 w-2.5">
-                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
-                          <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-teal-500"></span>
-                        </span>
-                        <span class="font-semibold text-slate-200">Sistem Aktif</span>
-                    </div>
-                    
-                    <div class="flex items-center space-x-2 bg-navy-800/50 px-3 py-1.5 rounded-lg border border-navy-800">
-                        <i class="fa-regular fa-clock text-teal-400"></i>
-                        <span id="realtime-clock" class="font-mono font-medium text-slate-200">00:00:00 WIB</span>
-                    </div>
-
-                    <div class="flex items-center space-x-2 text-slate-400">
-                        <i class="fa-regular fa-calendar-check text-teal-400"></i>
-                        <span id="realtime-date" class="font-medium text-slate-300">--</span>
-                    </div>
-                </div>
-
-                <!-- User Profile & Notifications -->
-                <div class="flex items-center space-x-3 sm:space-x-4">
-                    <button class="relative p-2 text-slate-300 hover:text-white rounded-lg hover:bg-navy-800 transition">
-                        <i class="fa-regular fa-bell text-lg"></i>
-                        <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full"></span>
-                    </button>
-                    
-                    <div class="h-6 w-px bg-navy-800"></div>
-
-                    <div class="flex items-center space-x-3 cursor-pointer">
-                        <img class="w-9 h-9 sm:w-10 sm:h-10 rounded-full ring-2 ring-teal-500/50 object-cover" 
-                             src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150" 
-                             alt="User Avatar"
-                             onerror="this.src='https://placehold.co/100x100/102a43/ffffff?text=Admin'">
-                        <div class="hidden sm:block text-left">
-                            <p class="text-xs font-bold text-white leading-tight">Sarah Az-Zahra</p>
-                            <p class="text-[11px] text-teal-400">Supervisor Logistik</p>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
+  <!-- TOP NAVIGATION BAR -->
+  <header class="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-40 shadow-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3 cursor-pointer" onclick="navigasiKe('home')">
+        <div class="bg-blue-600 p-2 rounded-lg text-white">
+          <i class="fa-solid fa-warehouse text-xl"></i>
         </div>
-    </header>
+        <div>
+          <h1 class="font-bold text-base tracking-wide leading-none">CV. SELABINTANA</h1>
+          <p class="text-xs text-slate-400 mt-1">Enterprise Asset & Inventory Management</p>
+        </div>
+      </div>
 
-    <!-- Main Content -->
-    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8">
+      <!-- User Information Header -->
+      <div id="headerUserInfo" class="flex items-center space-x-4">
+        <!-- Dynamic Login status injected by JS -->
+      </div>
+    </div>
+  </header>
 
-        <!-- Banner Welcome -->
-        <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-navy-900 via-navy-800 to-navy-950 text-white p-6 sm:p-8 shadow-xl border border-navy-800">
-            <div class="absolute -right-12 -top-12 w-80 h-80 bg-teal-500/10 rounded-full blur-3xl pointer-events-none"></div>
-            <div class="relative z-10 max-w-2xl space-y-3">
-                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-teal-500/20 text-teal-300 border border-teal-500/30">
-                    <i class="fa-solid fa-layer-group mr-1.5"></i> Single Sign-On Gateway
-                </span>
-                <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight">
-                    Selamat Datang di Hub Operasional
-                </h2>
-                <p class="text-slate-300 text-xs sm:text-sm font-light leading-relaxed">
-                    Pilih modul di bawah untuk memproses pengajuan barang operasional departemen atau mengelola persediaan fisik stok di gudang utama.
-                </p>
+  <!-- NAVIGATION TABS HUB -->
+  <nav class="bg-white border-b border-slate-200 shadow-sm sticky top-16 z-30">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex space-x-1 overflow-x-auto py-2">
+      <button onclick="navigasiKe('home')" id="nav-home" class="nav-tab text-slate-600 hover:text-blue-600 hover:bg-slate-100 px-4 py-2 rounded-lg text-sm font-semibold flex items-center space-x-2 transition">
+        <i class="fa-solid fa-house"></i>
+        <span>Beranda Portal</span>
+      </button>
+      <button onclick="navigasiKe('permintaan')" id="nav-permintaan" class="nav-tab text-slate-600 hover:text-blue-600 hover:bg-slate-100 px-4 py-2 rounded-lg text-sm font-semibold flex items-center space-x-2 transition">
+        <i class="fa-solid fa-file-invoice"></i>
+        <span>Permintaan Barang</span>
+      </button>
+      <button onclick="navigasiKe('stok')" id="nav-stok" class="nav-tab text-slate-600 hover:text-blue-600 hover:bg-slate-100 px-4 py-2 rounded-lg text-sm font-semibold flex items-center space-x-2 transition">
+        <i class="fa-solid fa-boxes-stacked"></i>
+        <span>Manajemen Stok</span>
+      </button>
+      <button onclick="navigasiKe('setting')" id="nav-setting" class="nav-tab text-slate-600 hover:text-blue-600 hover:bg-slate-100 px-4 py-2 rounded-lg text-sm font-semibold flex items-center space-x-2 transition">
+        <i class="fa-solid fa-sliders"></i>
+        <span>Pengaturan AppScript</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+    <!-- ==================================================== -->
+    <!-- MODUL 0: LOGIN MODAL / CARD (Bila Belum Login)      -->
+    <!-- ==================================================== -->
+    <div id="view-login" class="max-w-md mx-auto my-12 bg-white rounded-xl shadow-lg border border-slate-200 p-8">
+      <div class="text-center mb-6">
+        <div class="inline-flex bg-blue-100 text-blue-600 p-4 rounded-full mb-3">
+          <i class="fa-solid fa-user-shield text-3xl"></i>
+        </div>
+        <h2 class="text-2xl font-bold text-slate-800">Masuk ke System Portal</h2>
+        <p class="text-xs text-slate-500 mt-1">Gunakan kredensial Staff atau Admin Anda</p>
+      </div>
+      <form onsubmit="prosesLogin(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Username</label>
+          <input type="text" id="loginUser" required placeholder="Masukkan username" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Password</label>
+          <input type="password" id="loginPass" required placeholder="Masukkan password" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+        </div>
+        <button type="submit" id="loginBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg shadow transition flex items-center justify-center space-x-2 text-sm">
+          <i class="fa-solid fa-right-to-bracket"></i>
+          <span>Login Sekarang</span>
+        </button>
+      </form>
+    </div>
+
+    <!-- ==================================================== -->
+    <!-- MODUL 1: BERANDA PORTAL (HUB UTAMA)                 -->
+    <!-- ==================================================== -->
+    <div id="view-home" class="space-y-8 hidden">
+      <!-- Welcome Hero Banner -->
+      <div class="bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-800 text-white p-8 rounded-2xl shadow-lg flex flex-col md:flex-row items-center justify-between">
+        <div class="space-y-2 mb-4 md:mb-0">
+          <span class="bg-blue-500/40 text-blue-100 text-xs px-3 py-1 rounded-full font-semibold">Integrasi Spreadsheet Live</span>
+          <h2 class="text-2xl md:text-3xl font-extrabold" id="heroWelcomeTitle">Selamat Datang di Portal Integrated System</h2>
+          <p class="text-blue-100 text-sm max-w-xl">Kelola pengajuan pengadaan material unit farm dan pantau persediaan stok barang secara realtime.</p>
+        </div>
+        <div class="flex space-x-3">
+          <button onclick="navigasiKe('permintaan')" class="bg-white text-blue-700 hover:bg-blue-50 px-5 py-3 rounded-xl font-bold text-sm shadow transition flex items-center space-x-2">
+            <i class="fa-solid fa-plus-circle"></i>
+            <span>Permintaan Baru</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Metrics Overview -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex items-center space-x-4">
+          <div class="bg-blue-100 text-blue-600 p-4 rounded-xl text-2xl"><i class="fa-solid fa-boxes-stacked"></i></div>
+          <div>
+            <div class="text-xs text-slate-500 font-semibold uppercase">Total SKU Barang</div>
+            <div class="text-2xl font-bold text-slate-800" id="dashTotalSKU">0</div>
+          </div>
+        </div>
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex items-center space-x-4">
+          <div class="bg-amber-100 text-amber-600 p-4 rounded-xl text-2xl"><i class="fa-solid fa-triangle-exclamation"></i></div>
+          <div>
+            <div class="text-xs text-slate-500 font-semibold uppercase">Stok Kritis / Minim</div>
+            <div class="text-2xl font-bold text-amber-600" id="dashMinStok">0</div>
+          </div>
+        </div>
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex items-center space-x-4">
+          <div class="bg-indigo-100 text-indigo-600 p-4 rounded-xl text-2xl"><i class="fa-solid fa-ticket"></i></div>
+          <div>
+            <div class="text-xs text-slate-500 font-semibold uppercase">Tiket Permintaan</div>
+            <div class="text-2xl font-bold text-slate-800" id="dashTotalTiket">0</div>
+          </div>
+        </div>
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex items-center space-x-4">
+          <div class="bg-emerald-100 text-emerald-600 p-4 rounded-xl text-2xl"><i class="fa-solid fa-circle-check"></i></div>
+          <div>
+            <div class="text-xs text-slate-500 font-semibold uppercase">Permintaan Di-ACC</div>
+            <div class="text-2xl font-bold text-emerald-600" id="dashTiketACC">0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Application Modules Grid Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Card 1: Permintaan Barang -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col justify-between hover:shadow-md transition">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full">Modul Permintaan</span>
+              <i class="fa-solid fa-paper-plane text-2xl text-blue-500"></i>
             </div>
+            <h3 class="text-xl font-bold text-slate-800 mb-2">Portal Permintaan Material & Barang</h3>
+            <p class="text-sm text-slate-600 mb-6 leading-relaxed">Formulir pengajuan pengadaan barang, verifikasi persetujuan admin/management, unggah berkas PDF bertandatangan, serta cetak bukti fisik ukuran A5.</p>
+          </div>
+          <button onclick="navigasiKe('permintaan')" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-3 rounded-xl text-sm transition flex items-center justify-center space-x-2">
+            <span>Buka Modul Permintaan</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
         </div>
 
-        <!-- Quick Stats Metrik -->
-        <section class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
-            <div class="bg-white p-5 rounded-xl border border-slate-200/80 shadow-sm flex items-center justify-between">
-                <div>
-                    <p class="text-xs font-medium text-slate-500">Permintaan Pending</p>
-                    <p class="text-2xl font-bold text-navy-900 mt-1">12 <span class="text-xs font-medium text-amber-600">Perlu Approval</span></p>
-                </div>
-                <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl">
-                    <i class="fa-solid fa-clock-rotate-left"></i>
-                </div>
+        <!-- Card 2: Manajemen Stok -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col justify-between hover:shadow-md transition">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="bg-emerald-100 text-emerald-700 text-xs font-bold px-3 py-1 rounded-full">Modul Stok & Invetaris</span>
+              <i class="fa-solid fa-warehouse text-2xl text-emerald-500"></i>
             </div>
-
-            <div class="bg-white p-5 rounded-xl border border-slate-200/80 shadow-sm flex items-center justify-between">
-                <div>
-                    <p class="text-xs font-medium text-slate-500">Item Low Stock</p>
-                    <p class="text-2xl font-bold text-navy-900 mt-1">4 <span class="text-xs font-medium text-rose-600">Restock Segera</span></p>
-                </div>
-                <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-xl">
-                    <i class="fa-solid fa-triangle-exclamation"></i>
-                </div>
-            </div>
-
-            <div class="bg-white p-5 rounded-xl border border-slate-200/80 shadow-sm flex items-center justify-between">
-                <div>
-                    <p class="text-xs font-medium text-slate-500">Transaksi Hari Ini</p>
-                    <p class="text-2xl font-bold text-navy-900 mt-1">38 <span class="text-xs font-medium text-teal-600">Barang Masuk/Keluar</span></p>
-                </div>
-                <div class="w-12 h-12 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center text-xl">
-                    <i class="fa-solid fa-arrow-up-right-dots"></i>
-                </div>
-            </div>
-        </section>
-
-        <!-- Navigation Cards (Main Apps) -->
-        <section class="space-y-4">
-            <h3 class="text-lg font-bold text-navy-900 flex items-center">
-                <i class="fa-solid fa-cubes text-teal-600 mr-2"></i> Sistem Aplikasi Utama
-            </h3>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-                <!-- Card 1: Permintaan Barang (portal.html) -->
-                <div class="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 card-hover flex flex-col justify-between group">
-                    <div>
-                        <div class="flex items-center justify-between mb-5">
-                            <div class="w-14 h-14 rounded-2xl bg-teal-50 text-teal-600 group-hover:bg-teal-600 group-hover:text-white transition-colors duration-300 flex items-center justify-center text-2xl shadow-sm">
-                                <i class="fa-solid fa-file-signature"></i>
-                            </div>
-                            <span class="px-3 py-1 rounded-full text-xs font-semibold bg-teal-50 text-teal-700 border border-teal-200">
-                                Portal Layanan
-                            </span>
-                        </div>
-
-                        <h4 class="text-xl sm:text-2xl font-bold text-navy-900 group-hover:text-teal-600 transition-colors mb-2">
-                            Aplikasi Permintaan Barang
-                        </h4>
-                        <p class="text-xs sm:text-sm text-slate-600 mb-6 leading-relaxed">
-                            Modul pengajuan permohonan inventaris unit/departemen, tracking status pengajuan secara langsung, serta alur persetujuan (approval) oleh atasan.
-                        </p>
-
-                        <ul class="space-y-2 mb-8 text-xs sm:text-sm text-slate-600">
-                            <li class="flex items-center">
-                                <i class="fa-solid fa-circle-check text-teal-500 mr-2"></i> Form pengajuan barang baru & penggantian
-                            </li>
-                            <li class="flex items-center">
-                                <i class="fa-solid fa-circle-check text-teal-500 mr-2"></i> Pelacakan status tiket (Pending / Approved / Rejected)
-                            </li>
-                            <li class="flex items-center">
-                                <i class="fa-solid fa-circle-check text-teal-500 mr-2"></i> Riwayat & rekap permohonan departemen
-                            </li>
-                        </ul>
-                    </div>
-
-                    <a href="portal.html" class="inline-flex items-center justify-center w-full px-5 py-3.5 rounded-xl font-semibold text-sm text-white bg-teal-600 hover:bg-teal-700 active:bg-teal-800 transition shadow-md shadow-teal-600/20 group-hover:shadow-teal-600/30">
-                        <span>Buka Aplikasi Permintaan</span>
-                        <i class="fa-solid fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
-                    </a>
-                </div>
-
-                <!-- Card 2: Manajemen Stock (stock.html) -->
-                <div class="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 card-hover flex flex-col justify-between group">
-                    <div>
-                        <div class="flex items-center justify-between mb-5">
-                            <div class="w-14 h-14 rounded-2xl bg-navy-50 text-navy-800 group-hover:bg-navy-800 group-hover:text-white transition-colors duration-300 flex items-center justify-center text-2xl shadow-sm">
-                                <i class="fa-solid fa-boxes-stacked"></i>
-                            </div>
-                            <span class="px-3 py-1 rounded-full text-xs font-semibold bg-navy-50 text-navy-800 border border-navy-200">
-                                Gudang & Kontrol
-                            </span>
-                        </div>
-
-                        <h4 class="text-xl sm:text-2xl font-bold text-navy-900 group-hover:text-navy-800 transition-colors mb-2">
-                            Aplikasi Manajemen Stock
-                        </h4>
-                        <p class="text-xs sm:text-sm text-slate-600 mb-6 leading-relaxed">
-                            Sistem pengelolaan dan kontrol inventaris fisik gudang, pencatatan transaksi barang masuk & keluar, hingga sistem peringatan stok minimum.
-                        </p>
-
-                        <ul class="space-y-2 mb-8 text-xs sm:text-sm text-slate-600">
-                            <li class="flex items-center">
-                                <i class="fa-solid fa-circle-check text-navy-800 mr-2"></i> Katalog barang & pemantauan jumlah stok fisik
-                            </li>
-                            <li class="flex items-center">
-                                <i class="fa-solid fa-circle-check text-navy-800 mr-2"></i> Pencatatan mutasi barang masuk & barang keluar
-                            </li>
-                            <li class="flex items-center">
-                                <i class="fa-solid fa-circle-check text-navy-800 mr-2"></i> Warning otomatis untuk barang menipis (Low Stock)
-                            </li>
-                        </ul>
-                    </div>
-
-                    <a href="stock.html" class="inline-flex items-center justify-center w-full px-5 py-3.5 rounded-xl font-semibold text-sm text-white bg-navy-800 hover:bg-navy-900 active:bg-navy-950 transition shadow-md shadow-navy-800/20 group-hover:shadow-navy-800/30">
-                        <span>Buka Manajemen Stock</span>
-                        <i class="fa-solid fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
-                    </a>
-                </div>
-
-            </div>
-        </section>
-
-        <!-- Activity Log Section -->
-        <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h4 class="font-bold text-navy-900 text-base flex items-center">
-                    <i class="fa-solid fa-list-check text-teal-600 mr-2"></i> Activity Log Terakhir
-                </h4>
-                <span class="text-xs text-teal-600 font-semibold cursor-pointer hover:underline">Lihat Selengkapnya</span>
-            </div>
-
-            <div class="space-y-3">
-                <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-8 h-8 rounded-lg bg-teal-100 text-teal-700 flex items-center justify-center text-xs font-bold">
-                            <i class="fa-solid fa-check"></i>
-                        </div>
-                        <div>
-                            <p class="text-xs font-semibold text-slate-800">Persetujuan Permintaan #REQ-2026-089</p>
-                            <p class="text-[11px] text-slate-500">5 Unit Monitor LED 24 Inch (Dept. Finance)</p>
-                        </div>
-                    </div>
-                    <span class="text-[11px] text-slate-400 font-medium">12 menit lalu</span>
-                </div>
-
-                <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-8 h-8 rounded-lg bg-navy-100 text-navy-800 flex items-center justify-center text-xs font-bold">
-                            <i class="fa-solid fa-box-archive"></i>
-                        </div>
-                        <div>
-                            <p class="text-xs font-semibold text-slate-800">Restock Barang Masuk #IN-442</p>
-                            <p class="text-[11px] text-slate-500">100 Rim Kertas HVS A4 80gr ke Gudang A</p>
-                        </div>
-                    </div>
-                    <span class="text-[11px] text-slate-400 font-medium">40 menit lalu</span>
-                </div>
-
-                <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-8 h-8 rounded-lg bg-rose-100 text-rose-600 flex items-center justify-center text-xs font-bold">
-                            <i class="fa-solid fa-triangle-exclamation"></i>
-                        </div>
-                        <div>
-                            <p class="text-xs font-semibold text-slate-800">Peringatan Minimum Stock</p>
-                            <p class="text-[11px] text-slate-500">Tinta Printer EPSON T6641 tersisa 2 botol</p>
-                        </div>
-                    </div>
-                    <span class="text-[11px] text-slate-400 font-medium">2 jam lalu</span>
-                </div>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- Footer -->
-    <footer class="bg-navy-900 text-slate-400 border-t border-navy-800 mt-12 py-6">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between text-xs gap-3">
-            <p>&copy; 2026 Enterprise Resource Portal. Hak Cipta Dilindungi.</p>
-            <div class="flex items-center space-x-4">
-                <a href="portal.html" class="hover:text-teal-400 transition">Permintaan Barang</a>
-                <span>•</span>
-                <a href="stock.html" class="hover:text-teal-400 transition">Manajemen Stock</a>
-            </div>
+            <h3 class="text-xl font-bold text-slate-800 mb-2">Manajemen Stok & Gudang</h3>
+            <p class="text-sm text-slate-600 mb-6 leading-relaxed">Pantau ketersediaan fisik obat, pakan, vaksin, kimia, & peralatan. Catat penerimaan barang masuk serta mutasi barang keluar secara akurat.</p>
+          </div>
+          <button onclick="navigasiKe('stok')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-xl text-sm transition flex items-center justify-center space-x-2">
+            <span>Buka Modul Inventaris Stok</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
         </div>
-    </footer>
+      </div>
+    </div>
 
-    <!-- Script Jam Realtime -->
-    <script>
-        function updateDateTime() {
-            const now = new Date();
-            
-            // Format Jam (WIB)
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const seconds = String(now.getSeconds()).padStart(2, '0');
-            document.getElementById('realtime-clock').textContent = `${hours}:${minutes}:${seconds} WIB`;
+    <!-- ==================================================== -->
+    <!-- MODUL 2: PERMINTAAN BARANG (STAFF & ADMIN)          -->
+    <!-- ==================================================== -->
+    <div id="view-permintaan" class="space-y-8 hidden">
+      <!-- Session Header Info -->
+      <div id="infoSesiPermintaan" class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 p-4 rounded-xl flex items-center justify-between"></div>
 
-            // Format Tanggal Bahasa Indonesia
-            const options = { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' };
-            document.getElementById('realtime-date').textContent = now.toLocaleDateString('id-ID', options);
+      <!-- FORM PERMINTAAN BARANG (Hanya Tampil Untuk Staff) -->
+      <div id="containerFormPermintaan" class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+        <h3 class="text-lg font-bold text-slate-800 border-b pb-3 mb-4 flex items-center space-x-2">
+          <i class="fa-solid fa-pen-to-square text-blue-600"></i>
+          <span>Buat Permintaan Barang Baru</span>
+        </h3>
+        <form id="formPermintaan" onsubmit="submitFormPermintaan(event)">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Tanggal Permintaan</label>
+              <input type="date" id="tglPermintaan" readonly class="w-full bg-slate-100 border border-slate-300 rounded-lg px-3 py-2 text-sm">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Tanggal Dibutuhkan</label>
+              <input type="date" id="tglDibutuhkan" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Tingkat Urgensi</label>
+              <select id="urgensi" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500">
+                <option value="REGULER">REGULER</option>
+                <option value="URGENT">URGENT</option>
+                <option value="TOP URGENT">TOP URGENT</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <div class="font-semibold text-sm text-slate-700 mb-2 flex items-center justify-between">
+              <span>Rincian Barang yang Diminta:</span>
+              <button type="button" onclick="tambahBarisItem()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-1.5 rounded-md font-medium transition flex items-center space-x-1">
+                <i class="fa-solid fa-plus"></i><span>Tambah Item</span>
+              </button>
+            </div>
+            <div id="listItemsContainer" class="space-y-3"></div>
+          </div>
+
+          <div class="mb-6">
+            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Keperluan / Keterangan Tambahan</label>
+            <textarea id="keterangan" rows="2" placeholder="Tulis deskripsi atau alokasi penggunaan barang..." class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500"></textarea>
+          </div>
+
+          <button type="submit" id="btnSubmitPermintaan" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg text-sm shadow transition flex items-center justify-center space-x-2">
+            <i class="fa-solid fa-paper-plane"></i>
+            <span>Kirim Permintaan ke Admin</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- TABEL DAFTAR & RIWAYAT TIKET PERMINTAAN -->
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+        <h3 class="text-lg font-bold text-slate-800 border-b pb-3 mb-4 flex items-center space-x-2">
+          <i class="fa-solid fa-clock-rotate-left text-blue-600"></i>
+          <span>Daftar & Riwayat Tiket Permintaan</span>
+        </h3>
+
+        <!-- Filter Bar -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 bg-slate-50 p-4 rounded-xl mb-6">
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">Filter Bulan</label>
+            <input type="month" id="filterBulanPermintaan" onchange="muatDataPermintaan()" class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">Filter Status</label>
+            <select id="filterStatusPermintaan" onchange="muatDataPermintaan()" class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-sm">
+              <option value="">-- Semua Status --</option>
+              <option value="PENDING">PENDING</option>
+              <option value="ACC">ACC</option>
+              <option value="REVISI">REVISI</option>
+              <option value="DITOLAK">DITOLAK</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">Pencarian</label>
+            <input type="text" id="searchPermintaan" onkeyup="muatDataPermintaan()" placeholder="Cari kode/nama/barang..." class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-sm">
+          </div>
+          <div class="flex items-end">
+            <button onclick="eksporCSVPermintaan()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-1.5 rounded-lg text-sm transition flex items-center justify-center space-x-1">
+              <i class="fa-solid fa-file-csv"></i>
+              <span>Unduh CSV</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm text-slate-600 border-collapse">
+            <thead class="bg-slate-100 text-xs text-slate-700 uppercase">
+              <tr>
+                <th class="p-3 border-b">Kode Tiket</th>
+                <th class="p-3 border-b">Pemohon & Unit</th>
+                <th class="p-3 border-b">Detail Barang</th>
+                <th class="p-3 border-b">Status</th>
+                <th class="p-3 border-b">File PDF</th>
+                <th class="p-3 border-b text-center">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tabelPermintaanBody">
+              <!-- Render by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================================================== -->
+    <!-- MODUL 3: MANAJEMEN STOK & INVENTARIS GUDANG          -->
+    <!-- ==================================================== -->
+    <div id="view-stok" class="space-y-8 hidden">
+      <!-- Controls Top Header -->
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h2 class="text-2xl font-bold text-slate-800">Manajemen Stok Inventory</h2>
+          <p class="text-xs text-slate-500">Kelola persediaan fisik barang, transaksi masuk & keluar.</p>
+        </div>
+        <div class="flex space-x-2">
+          <button onclick="bukaModalMasterBarang()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2.5 rounded-lg text-sm transition flex items-center space-x-2">
+            <i class="fa-solid fa-plus"></i>
+            <span>Tambah Master Barang</span>
+          </button>
+          <button onclick="bukaModalMutasiStok()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2.5 rounded-lg text-sm transition flex items-center space-x-2">
+            <i class="fa-solid fa-right-left"></i>
+            <span>Transaksi Stok (In/Out)</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Kategori Filter Tabs -->
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex space-x-2 overflow-x-auto">
+        <button onclick="filterKategoriStok('ALL')" class="btn-kat-stok bg-blue-600 text-white px-4 py-2 rounded-lg text-xs font-semibold whitespace-nowrap">Semua Kategori</button>
+        <button onclick="filterKategoriStok('OBAT')" class="btn-kat-stok bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg text-xs font-semibold whitespace-nowrap">Obat</button>
+        <button onclick="filterKategoriStok('VAKSIN')" class="btn-kat-stok bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg text-xs font-semibold whitespace-nowrap">Vaksin</button>
+        <button onclick="filterKategoriStok('VITAMIN')" class="btn-kat-stok bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg text-xs font-semibold whitespace-nowrap">Vitamin</button>
+        <button onclick="filterKategoriStok('KIMIA')" class="btn-kat-stok bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg text-xs font-semibold whitespace-nowrap">Kimia</button>
+        <button onclick="filterKategoriStok('PERALATAN')" class="btn-kat-stok bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg text-xs font-semibold whitespace-nowrap">Peralatan</button>
+        <button onclick="filterKategoriStok('PAKAN')" class="btn-kat-stok bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg text-xs font-semibold whitespace-nowrap">Pakan</button>
+        <button onclick="filterKategoriStok('LAINNYA')" class="btn-kat-stok bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg text-xs font-semibold whitespace-nowrap">Lainnya</button>
+      </div>
+
+      <!-- Tabel Master Stok -->
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="p-4 border-b border-slate-200 flex justify-between items-center">
+          <h3 class="font-bold text-slate-800">Daftar Inventaris Gudang</h3>
+          <input type="text" id="searchStok" onkeyup="renderTabelStok()" placeholder="Cari nama/kode barang..." class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm w-64">
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm text-slate-600">
+            <thead class="bg-slate-100 text-xs text-slate-700 uppercase">
+              <tr>
+                <th class="p-3 border-b">Kode Barang</th>
+                <th class="p-3 border-b">Nama Barang</th>
+                <th class="p-3 border-b">Kategori</th>
+                <th class="p-3 border-b text-right">Stok Fisik</th>
+                <th class="p-3 border-b text-right">Stok Min</th>
+                <th class="p-3 border-b">Satuan</th>
+                <th class="p-3 border-b">Status Alert</th>
+                <th class="p-3 border-b text-center">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tabelStokBody">
+              <!-- Rendered by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================================================== -->
+    <!-- MODUL 4: SETTING GOOGLE APP SCRIPT CONFIG            -->
+    <!-- ==================================================== -->
+    <div id="view-setting" class="max-w-2xl mx-auto space-y-6 hidden">
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-4">
+        <h3 class="text-lg font-bold text-slate-800 border-b pb-3 flex items-center space-x-2">
+          <i class="fa-solid fa-link text-blue-600"></i>
+          <span>Pengaturan URL Google Apps Script</span>
+        </h3>
+        <p class="text-xs text-slate-500">Masukkan Web App Endpoint URL dari Google Appscript Spreadsheet Anda untuk integrasi data langsung.</p>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Web App URL Endpoint</label>
+          <input type="text" id="settingGasUrl" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" placeholder="https://script.google.com/macros/s/.../exec">
+        </div>
+        <button onclick="simpanConfigGas()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-lg text-sm transition">
+          Simpan Konfigurasi
+        </button>
+      </div>
+
+      <!-- Script AppsScript Helper Code View -->
+      <div class="bg-slate-900 text-slate-100 rounded-xl shadow-sm p-6 space-y-3">
+        <div class="flex justify-between items-center border-b border-slate-700 pb-2">
+          <span class="text-xs font-mono font-bold text-blue-400">Code.gs (Google Apps Script Engine)</span>
+          <button onclick="copyAppsScriptCode()" class="bg-slate-700 hover:bg-slate-600 text-xs px-3 py-1 rounded text-white"><i class="fa-regular fa-copy"></i> Salin Code</button>
+        </div>
+        <p class="text-xs text-slate-400">Salin kode backend berikut ke Extensions -> Apps Script pada Google Sheet Anda:</p>
+        <pre class="bg-slate-950 p-3 rounded text-xs font-mono text-emerald-400 overflow-x-auto max-h-60" id="appsScriptCodeBlock">
+// GOOGLE APPS SCRIPT DATABASE ENDPOINT CV. SELABINTANA
+function doGet(e) {
+  var action = e.parameter.action;
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  
+  if (action === "login") {
+    var user = e.parameter.username;
+    var pass = e.parameter.password;
+    var sheet = ss.getSheetByName("Users");
+    var data = sheet.getDataRange().getValues();
+    for(var i=1; i<data.length; i++) {
+      if(data[i][0] == user && data[i][1] == pass) {
+        return responseJSON({ status: "success", userData: { nama: data[i][2], divisi: data[i][3], unitLokasi: data[i][4], isAdmin: data[i][5] === true || data[i][5] === "TRUE" } });
+      }
+    }
+    return responseJSON({ status: "error", message: "User/password salah!" });
+  }
+  
+  if (action === "getStok") {
+    var sheet = ss.getSheetByName("Stok");
+    var data = sheet.getDataRange().getValues();
+    var list = [];
+    for(var i=1; i<data.length; i++) {
+      list.push({ kode: data[i][0], nama: data[i][1], kategori: data[i][2], stok: data[i][3], minStok: data[i][4], satuan: data[i][5] });
+    }
+    return responseJSON({ status: "success", data: list });
+  }
+
+  if (action === "getPermintaanAdmin") {
+    var sheet = ss.getSheetByName("Permintaan");
+    var data = sheet.getDataRange().getValues();
+    var list = [];
+    for(var i=1; i<data.length; i++) {
+      list.push({
+        kode: data[i][0], tglSistem: data[i][1], pemohon: data[i][2], divisi: data[i][3], unit: data[i][4],
+        tglPermintaan: data[i][5], tglDibutuhkan: data[i][6], urgensi: data[i][7], keterangan: data[i][8],
+        kodeItem: data[i][9], kategori: data[i][10], barang: data[i][11], jumlah: data[i][12], satuan: data[i][13],
+        supplier: data[i][14], status: data[i][15], catatan: data[i][16], pdfUrl: data[i][17]
+      });
+    }
+    return responseJSON({ status: "success", data: list });
+  }
+  
+  return responseJSON({ status: "error", message: "Action tidak dikenal" });
+}
+
+function responseJSON(obj) {
+  return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
+}
+        </pre>
+      </div>
+    </div>
+  </main>
+
+  <!-- MODAL DIALOGS -->
+  <!-- MODAL 1: MASTER BARANG -->
+  <div id="modalMasterBarang" class="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6 space-y-4">
+      <h3 class="font-bold text-lg text-slate-800 border-b pb-2">Tambah Master Barang Stok</h3>
+      <form onsubmit="simpanMasterBarang(event)" class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600">Kode Barang SKU</label>
+          <input type="text" id="mbKode" required placeholder="Contoh: SLB-OBT-001" class="w-full border rounded p-2 text-sm">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600">Nama Barang</label>
+          <input type="text" id="mbNama" required placeholder="Contoh: Vitamin A Complex" class="w-full border rounded p-2 text-sm">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600">Kategori</label>
+          <select id="mbKategori" class="w-full border rounded p-2 text-sm">
+            <option value="OBAT">OBAT</option>
+            <option value="VAKSIN">VAKSIN</option>
+            <option value="VITAMIN">VITAMIN</option>
+            <option value="KIMIA">KIMIA</option>
+            <option value="PERALATAN">PERALATAN</option>
+            <option value="PAKAN">PAKAN</option>
+            <option value="LAINNYA">LAINNYA</option>
+          </select>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600">Stok Awal</label>
+            <input type="number" id="mbStok" required value="0" min="0" class="w-full border rounded p-2 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600">Stok Minimum</label>
+            <input type="number" id="mbMinStok" required value="5" min="0" class="w-full border rounded p-2 text-sm">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600">Satuan</label>
+          <input type="text" id="mbSatuan" required placeholder="Botol, Pcs, Kg, Sak" class="w-full border rounded p-2 text-sm">
+        </div>
+        <div class="flex justify-end space-x-2 border-t pt-3">
+          <button type="button" onclick="tutupModal('modalMasterBarang')" class="bg-slate-200 text-slate-700 px-4 py-2 rounded text-sm">Batal</button>
+          <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded text-sm font-semibold">Simpan Barang</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 2: TRANSAKSI MUTASI STOK (IN/OUT) -->
+  <div id="modalMutasiStok" class="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6 space-y-4">
+      <h3 class="font-bold text-lg text-slate-800 border-b pb-2">Transaksi Mutasi Stok</h3>
+      <form onsubmit="simpanMutasiStok(event)" class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600">Pilih Barang</label>
+          <select id="mutasiKodeBarang" required class="w-full border rounded p-2 text-sm">
+            <!-- Dynamically populated -->
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600">Jenis Transaksi</label>
+          <select id="mutasiJenis" required class="w-full border rounded p-2 text-sm">
+            <option value="IN">BARANG MASUK (+)</option>
+            <option value="OUT">BARANG KELUAR (-)</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600">Jumlah Quantity</label>
+          <input type="number" id="mutasiJumlah" min="1" value="1" required class="w-full border rounded p-2 text-sm">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600">Catatan / Keterangan</label>
+          <input type="text" id="mutasiKet" placeholder="Pengadaan / Digunakan Unit Farm 1" class="w-full border rounded p-2 text-sm">
+        </div>
+        <div class="flex justify-end space-x-2 border-t pt-3">
+          <button type="button" onclick="tutupModal('modalMutasiStok')" class="bg-slate-200 text-slate-700 px-4 py-2 rounded text-sm">Batal</button>
+          <button type="submit" class="bg-emerald-600 text-white px-4 py-2 rounded text-sm font-semibold">Proses Mutasi</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- AREA PRINT HIDDEN FORM A5 -->
+  <div id="printArea" class="hidden">
+    <div class="p-4 text-slate-900 font-sans">
+      <div class="flex justify-between items-center border-b-2 border-slate-900 pb-2 mb-3">
+        <div>
+          <h2 class="text-base font-extrabold tracking-wide">CV. SELABINTANA</h2>
+          <p class="text-[10px] uppercase font-bold text-slate-600">Form Permintaan Material & Barang</p>
+        </div>
+        <div class="text-right">
+          <div class="text-xs font-bold text-blue-700" id="printKode">-</div>
+          <div class="text-[9px] text-slate-500" id="printTglSistem">-</div>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-1 text-[10px] bg-slate-100 p-2 rounded mb-3 border border-slate-300">
+        <div><strong>Pemohon:</strong> <span id="printNama">-</span></div>
+        <div><strong>Tgl Permintaan:</strong> <span id="printTglReq">-</span></div>
+        <div><strong>Unit / Farm:</strong> <span id="printUnit">-</span></div>
+        <div><strong>Dibutuhkan:</strong> <span id="printTglNeed">-</span></div>
+        <div><strong>Urgensi:</strong> <span id="printUrgensi" class="font-bold text-red-600">-</span></div>
+      </div>
+      <table class="w-full text-[10px] border-collapse mb-4 print-table">
+        <thead>
+          <tr class="bg-slate-200">
+            <th>Kode</th>
+            <th>Nama Barang</th>
+            <th>Jumlah</th>
+            <th>Supplier</th>
+          </tr>
+        </thead>
+        <tbody id="printTabelBody"></tbody>
+      </table>
+      <div class="grid grid-cols-4 gap-2 text-[9px] text-center mt-6">
+        <div>
+          <p class="font-bold mb-8">Pemohon</p>
+          <p id="printTtdPemohon">( ......... )</p>
+        </div>
+        <div>
+          <p class="font-bold mb-8">Head Farm</p>
+          <p>( ......... )</p>
+        </div>
+        <div>
+          <p class="font-bold mb-8">Farm Manager</p>
+          <p>( ......... )</p>
+        </div>
+        <div>
+          <p class="font-bold mb-8">General Manager</p>
+          <p>drh. Titin Idayati</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT LOGIC ENGINE -->
+  <script>
+    // System Local Data Storage & App State
+    let GAS_URL = localStorage.getItem('selabintana_gas_url') || "https://script.google.com/macros/s/AKfycbz-CjOLhgU2gDMIHQ_7pSYXyeYcSYO7DpXyE9Tcb9QKPum3nxP1-1J1Q1-8hOGmDW--PA/exec";
+    let currentUser = JSON.parse(localStorage.getItem('selabintana_user')) || null;
+    let categoryFilter = 'ALL';
+
+    // Mock local data fallback if internet/GAS offline
+    let dataStok = [
+      { kode: 'OBT-001', nama: 'Antibiotik Super', kategori: 'OBAT', stok: 25, minStok: 10, satuan: 'Botol' },
+      { kode: 'VKS-002', nama: 'Vaksin ND Hitchner', kategori: 'VAKSIN', stok: 3, minStok: 5, satuan: 'Vial' },
+      { kode: 'VIT-003', nama: 'Vita Stress', kategori: 'VITAMIN', stok: 50, minStok: 15, satuan: 'Sachet' },
+      { kode: 'PKN-004', nama: 'Pakan BR-1', kategori: 'PAKAN', stok: 120, minStok: 20, satuan: 'Sak' }
+    ];
+
+    let dataPermintaan = [
+      {
+        kode: 'REQ-2026-001', tglSistem: '2026-11-01', pemohon: 'Budi Santoso', divisi: 'Produksi', unit: 'Farm Sukabumi 1',
+        tglPermintaan: '2026-11-01', tglDibutuhkan: '2026-11-05', urgensi: 'URGENT', keterangan: 'Kebutuhan awal bulan',
+        status: 'ACC', catatan: 'Disetujui', pdfUrl: '-', items: [
+          { kodeItem: 'OBT-001', barang: 'Antibiotik Super', jumlah: 5, satuan: 'Botol', supplier: 'PT Medion' }
+        ]
+      }
+    ];
+
+    // Initialization on window load
+    window.onload = function() {
+      document.getElementById('settingGasUrl').value = GAS_URL;
+      document.getElementById('tglPermintaan').value = new Date().toISOString().split('T')[0];
+      
+      updateHeaderUI();
+      if (!currentUser) {
+        navigasiKe('login');
+      } else {
+        navigasiKe('home');
+        muatDataStok();
+        muatDataPermintaan();
+      }
+    };
+
+    // Navigation Switcher
+    function navigasiKe(tabName) {
+      const views = ['login', 'home', 'permintaan', 'stok', 'setting'];
+      views.forEach(v => {
+        const el = document.getElementById('view-' + v);
+        if (el) el.classList.add('hidden');
+        const navEl = document.getElementById('nav-' + v);
+        if (navEl) navEl.classList.remove('bg-slate-100', 'text-blue-600');
+      });
+
+      if (!currentUser && tabName !== 'setting') {
+        tabName = 'login';
+      }
+
+      document.getElementById('view-' + tabName).classList.remove('hidden');
+      const activeNav = document.getElementById('nav-' + tabName);
+      if (activeNav) activeNav.classList.add('bg-slate-100', 'text-blue-600');
+
+      if (tabName === 'permintaan') setupViewPermintaanRole();
+    }
+
+    // Login Engine
+    async function prosesLogin(e) {
+      e.preventDefault();
+      const u = document.getElementById('loginUser').value.trim();
+      const p = document.getElementById('loginPass').value.trim();
+      const btn = document.getElementById('loginBtn');
+      btn.disabled = true;
+      btn.innerText = "Memeriksa User...";
+
+      try {
+        const res = await fetch(`${GAS_URL}?action=login&username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}`);
+        const json = await res.json();
+        if (json.status === "success") {
+          currentUser = json.userData;
+        } else {
+          alert("Login gagal: " + json.message);
+          btn.disabled = false;
+          btn.innerText = "Login Sekarang";
+          return;
         }
+      } catch (err) {
+        // Fallback login local testing
+        currentUser = {
+          nama: u.toUpperCase(),
+          divisi: u.toLowerCase() === 'admin' ? 'Management' : 'Staff Operasional',
+          unitLokasi: 'Unit Farm 1',
+          isAdmin: u.toLowerCase() === 'admin'
+        };
+      }
 
-        document.addEventListener("DOMContentLoaded", () => {
-            updateDateTime();
-            setInterval(updateDateTime, 1000);
+      localStorage.setItem('selabintana_user', JSON.stringify(currentUser));
+      updateHeaderUI();
+      navigasiKe('home');
+      btn.disabled = false;
+      btn.innerText = "Login Sekarang";
+    }
+
+    function logout() {
+      localStorage.removeItem('selabintana_user');
+      currentUser = null;
+      updateHeaderUI();
+      navigasiKe('login');
+    }
+
+    function updateHeaderUI() {
+      const container = document.getElementById('headerUserInfo');
+      if (currentUser) {
+        container.innerHTML = `
+          <div class="text-right">
+            <div class="text-xs font-bold text-slate-100">${currentUser.nama} (${currentUser.isAdmin ? 'ADMIN' : 'STAFF'})</div>
+            <div class="text-[10px] text-slate-400">${currentUser.unitLokasi}</div>
+          </div>
+          <button onclick="logout()" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition">
+            <i class="fa-solid fa-right-from-bracket"></i>
+          </button>
+        `;
+        document.getElementById('heroWelcomeTitle').innerText = `Selamat Datang, ${currentUser.nama}`;
+      } else {
+        container.innerHTML = `<span class="text-xs text-slate-400">Belum Login</span>`;
+      }
+    }
+
+    // ==========================================
+    // STOK MODULE LOGIC
+    // ==========================================
+    async function muatDataStok() {
+      try {
+        const res = await fetch(`${GAS_URL}?action=getStok`);
+        const json = await res.json();
+        if (json.status === "success" && json.data.length > 0) {
+          dataStok = json.data;
+        }
+      } catch(e) {}
+      renderTabelStok();
+      updateMetricsDashboard();
+    }
+
+    function filterKategoriStok(kat) {
+      categoryFilter = kat;
+      document.querySelectorAll('.btn-kat-stok').forEach(b => {
+        b.classList.remove('bg-blue-600', 'text-white');
+        b.classList.add('bg-slate-100', 'text-slate-700');
+      });
+      event.target.classList.remove('bg-slate-100', 'text-slate-700');
+      event.target.classList.add('bg-blue-600', 'text-white');
+      renderTabelStok();
+    }
+
+    function renderTabelStok() {
+      const tbody = document.getElementById('tabelStokBody');
+      const q = document.getElementById('searchStok').value.toLowerCase();
+      tbody.innerHTML = '';
+
+      let filtered = dataStok.filter(item => {
+        const matchKat = categoryFilter === 'ALL' || item.kategori === categoryFilter;
+        const matchSearch = item.nama.toLowerCase().includes(q) || item.kode.toLowerCase().includes(q);
+        return matchKat && matchSearch;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center p-4 text-xs text-slate-400">Tidak ada item stok ditemukan</td></tr>`;
+        return;
+      }
+
+      filtered.forEach(item => {
+        const isLow = Number(item.stok) <= Number(item.minStok);
+        tbody.innerHTML += `
+          <tr class="border-b hover:bg-slate-50 text-xs">
+            <td class="p-3 font-mono font-bold text-slate-700">${item.kode}</td>
+            <td class="p-3 font-semibold text-slate-800">${item.nama}</td>
+            <td class="p-3"><span class="bg-slate-100 border px-2 py-0.5 rounded text-[10px] font-bold">${item.kategori}</span></td>
+            <td class="p-3 text-right font-bold text-sm ${isLow ? 'text-red-600' : 'text-slate-800'}">${item.stok}</td>
+            <td class="p-3 text-right text-slate-500">${item.minStok}</td>
+            <td class="p-3">${item.satuan}</td>
+            <td class="p-3">
+              ${isLow ? 
+                `<span class="bg-red-100 text-red-700 px-2 py-1 rounded-full text-[10px] font-bold inline-flex items-center gap-1"><i class="fa-solid fa-triangle-exclamation"></i> Stok Minim</span>` : 
+                `<span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full text-[10px] font-bold">Aman</span>`}
+            </td>
+            <td class="p-3 text-center">
+              <button onclick="hapusMasterStok('${item.kode}')" class="text-red-600 hover:text-red-800 text-xs font-semibold">Hapus</button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    function bukaModalMasterBarang() { document.getElementById('modalMasterBarang').classList.remove('hidden'); }
+    function bukaModalMutasiStok() { 
+      const select = document.getElementById('mutasiKodeBarang');
+      select.innerHTML = '';
+      dataStok.forEach(s => { select.innerHTML += `<option value="${s.kode}">${s.nama} (${s.kode}) - Stok: ${s.stok}</option>`; });
+      document.getElementById('modalMutasiStok').classList.remove('hidden'); 
+    }
+    function tutupModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+    function simpanMasterBarang(e) {
+      e.preventDefault();
+      const newItem = {
+        kode: document.getElementById('mbKode').value,
+        nama: document.getElementById('mbNama').value,
+        kategori: document.getElementById('mbKategori').value,
+        stok: Number(document.getElementById('mbStok').value),
+        minStok: Number(document.getElementById('mbMinStok').value),
+        satuan: document.getElementById('mbSatuan').value
+      };
+      dataStok.push(newItem);
+      renderTabelStok();
+      updateMetricsDashboard();
+      tutupModal('modalMasterBarang');
+    }
+
+    function simpanMutasiStok(e) {
+      e.preventDefault();
+      const kode = document.getElementById('mutasiKodeBarang').value;
+      const jenis = document.getElementById('mutasiJenis').value;
+      const qty = Number(document.getElementById('mutasiJumlah').value);
+
+      const target = dataStok.find(i => i.kode === kode);
+      if (target) {
+        if (jenis === 'IN') target.stok += qty;
+        else target.stok = Math.max(0, target.stok - qty);
+      }
+      renderTabelStok();
+      updateMetricsDashboard();
+      tutupModal('modalMutasiStok');
+    }
+
+    function hapusMasterStok(kode) {
+      if(confirm('Hapus item stok ini?')) {
+        dataStok = dataStok.filter(i => i.kode !== kode);
+        renderTabelStok();
+        updateMetricsDashboard();
+      }
+    }
+
+    // ==========================================
+    // PERMINTAAN MODULE LOGIC
+    // ==========================================
+    function setupViewPermintaanRole() {
+      const containerForm = document.getElementById('containerFormPermintaan');
+      const infoBox = document.getElementById('infoSesiPermintaan');
+
+      infoBox.innerHTML = `
+        <div>
+          <span class="text-xs text-slate-500 uppercase font-semibold">User Login</span>
+          <h4 class="font-bold text-slate-800 text-sm">${currentUser.nama} - ${currentUser.divisi} (${currentUser.unitLokasi})</h4>
+        </div>
+        <span class="bg-blue-600 text-white text-xs px-3 py-1 rounded-full font-bold">${currentUser.isAdmin ? 'Role: Administrator' : 'Role: Staff Pemohon'}</span>
+      `;
+
+      if (!currentUser.isAdmin) {
+        containerForm.classList.remove('hidden');
+        if (document.getElementById('listItemsContainer').children.length === 0) tambahBarisItem();
+      } else {
+        containerForm.classList.add('hidden');
+      }
+      muatDataPermintaan();
+    }
+
+    function tambahBarisItem() {
+      const container = document.getElementById('listItemsContainer');
+      const idx = container.children.length + 1;
+      const div = document.createElement('div');
+      div.className = "bg-slate-50 border border-slate-200 p-3 rounded-lg space-y-2 text-xs relative";
+      div.innerHTML = `
+        <div class="flex justify-between items-center font-semibold text-slate-600">
+          <span>Item #${idx}</span>
+          ${idx > 1 ? `<button type="button" onclick="this.parentElement.parentElement.remove()" class="text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i> Hapus</button>` : ''}
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+          <input type="text" placeholder="Kode Item Supplier" class="item-kode border p-2 rounded">
+          <select class="item-kategori border p-2 rounded">
+            <option value="OBAT">OBAT</option>
+            <option value="VAKSIN">VAKSIN</option>
+            <option value="VITAMIN">VITAMIN</option>
+            <option value="KIMIA">KIMIA</option>
+            <option value="PERALATAN">PERALATAN</option>
+            <option value="PAKAN">PAKAN</option>
+            <option value="LAINNYA">LAINNYA</option>
+          </select>
+          <input type="text" placeholder="Nama Barang" required class="item-nama border p-2 rounded">
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+          <input type="number" min="1" value="1" required placeholder="Jumlah" class="item-jumlah border p-2 rounded">
+          <input type="text" placeholder="Satuan (Pcs/Kg)" required class="item-satuan border p-2 rounded">
+          <input type="text" placeholder="Supplier Vendor" class="item-supplier border p-2 rounded">
+        </div>
+      `;
+      container.appendChild(div);
+    }
+
+    async function muatDataPermintaan() {
+      try {
+        const res = await fetch(`${GAS_URL}?action=getPermintaanAdmin`);
+        const json = await res.json();
+        if (json.status === "success" && json.data.length > 0) {
+          dataPermintaan = groupTiketData(json.data);
+        }
+      } catch(e) {}
+
+      renderTabelPermintaan();
+      updateMetricsDashboard();
+    }
+
+    function groupTiketData(rawList) {
+      let map = {};
+      rawList.forEach(row => {
+        if (!map[row.kode]) {
+          map[row.kode] = {
+            kode: row.kode, tglSistem: row.tglSistem, pemohon: row.pemohon, divisi: row.divisi, unit: row.unit,
+            tglPermintaan: row.tglPermintaan, tglDibutuhkan: row.tglDibutuhkan, urgensi: row.urgensi,
+            keterangan: row.keterangan, status: row.status, catatan: row.catatan, pdfUrl: row.pdfUrl, items: []
+          };
+        }
+        map[row.kode].items.push({ kodeItem: row.kodeItem, kategori: row.kategori, barang: row.barang, jumlah: row.jumlah, satuan: row.satuan, supplier: row.supplier });
+      });
+      return Object.values(map);
+    }
+
+    function renderTabelPermintaan() {
+      const tbody = document.getElementById('tabelPermintaanBody');
+      const filterBulan = document.getElementById('filterBulanPermintaan').value;
+      const filterStatus = document.getElementById('filterStatusPermintaan').value;
+      const q = document.getElementById('searchPermintaan').value.toLowerCase();
+      tbody.innerHTML = '';
+
+      let filtered = dataPermintaan.filter(item => {
+        if (!currentUser.isAdmin && item.pemohon.toLowerCase() !== currentUser.nama.toLowerCase()) return false;
+        if (filterBulan && !(item.tglPermintaan || "").startsWith(filterBulan)) return false;
+        if (filterStatus && item.status !== filterStatus) return false;
+        if (q && !item.kode.toLowerCase().includes(q) && !item.pemohon.toLowerCase().includes(q)) return false;
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center p-4 text-xs text-slate-400">Tidak ada tiket permintaan ditemukan</td></tr>`;
+        return;
+      }
+
+      filtered.forEach(t => {
+        const itemSum = t.items.map(i => `• ${i.barang} (${i.jumlah} ${i.satuan})`).join('<br>');
+        tbody.innerHTML += `
+          <tr class="border-b hover:bg-slate-50 text-xs">
+            <td class="p-3 font-bold font-mono text-blue-700">${t.kode}</td>
+            <td class="p-3"><b>${t.pemohon}</b><br><span class="text-slate-400 text-[10px]">${t.unit}</span></td>
+            <td class="p-3">${itemSum}</td>
+            <td class="p-3">
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold ${
+                t.status === 'ACC' ? 'bg-emerald-100 text-emerald-700' :
+                t.status === 'DITOLAK' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'
+              }">${t.status || 'PENDING'}</span>
+            </td>
+            <td class="p-3">${t.pdfUrl !== '-' ? `<a href="${t.pdfUrl}" target="_blank" class="text-blue-600 font-bold">PDF File</a>` : '-'}</td>
+            <td class="p-3 text-center space-x-1">
+              <button onclick="cetakA5('${t.kode}')" class="bg-indigo-600 text-white px-2 py-1 rounded text-[10px] font-semibold">Cetak</button>
+              ${currentUser.isAdmin ? `
+                <button onclick="ubahStatusTiket('${t.kode}', 'ACC')" class="bg-emerald-600 text-white px-2 py-1 rounded text-[10px] font-semibold">ACC</button>
+                <button onclick="ubahStatusTiket('${t.kode}', 'DITOLAK')" class="bg-red-600 text-white px-2 py-1 rounded text-[10px] font-semibold">Tolak</button>
+              ` : ''}
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    function submitFormPermintaan(e) {
+      e.preventDefault();
+      const rows = document.querySelectorAll('#listItemsContainer > div');
+      let itemsArr = [];
+      rows.forEach(r => {
+        itemsArr.push({
+          kodeItem: r.querySelector('.item-kode').value || '-',
+          kategori: r.querySelector('.item-kategori').value,
+          barang: r.querySelector('.item-nama').value,
+          jumlah: r.querySelector('.item-jumlah').value,
+          satuan: r.querySelector('.item-satuan').value,
+          supplier: r.querySelector('.item-supplier').value || '-'
         });
-    </script>
+      });
+
+      const newKode = 'REQ-' + new Date().getFullYear() + '-' + Math.floor(1000 + Math.random() * 9000);
+      const tiketBaru = {
+        kode: newKode,
+        tglSistem: new Date().toISOString().split('T')[0],
+        pemohon: currentUser.nama,
+        divisi: currentUser.divisi,
+        unit: currentUser.unitLokasi,
+        tglPermintaan: document.getElementById('tglPermintaan').value,
+        tglDibutuhkan: document.getElementById('tglDibutuhkan').value,
+        urgensi: document.getElementById('urgensi').value,
+        keterangan: document.getElementById('keterangan').value || '-',
+        status: 'PENDING',
+        catatan: '-',
+        pdfUrl: '-',
+        items: itemsArr
+      };
+
+      dataPermintaan.unshift(tiketBaru);
+      alert('Permintaan berhasil dikirim dengan kode: ' + newKode);
+      document.getElementById('formPermintaan').reset();
+      document.getElementById('tglPermintaan').value = new Date().toISOString().split('T')[0];
+      document.getElementById('listItemsContainer').innerHTML = '';
+      tambahBarisItem();
+      renderTabelPermintaan();
+      updateMetricsDashboard();
+    }
+
+    function ubahStatusTiket(kode, status) {
+      const target = dataPermintaan.find(t => t.kode === kode);
+      if (target) {
+        target.status = status;
+        renderTabelPermintaan();
+        updateMetricsDashboard();
+      }
+    }
+
+    function cetakA5(kode) {
+      const target = dataPermintaan.find(t => t.kode === kode);
+      if (!target) return;
+
+      document.getElementById('printKode').innerText = target.kode;
+      document.getElementById('printTglSistem').innerText = target.tglSistem;
+      document.getElementById('printNama').innerText = target.pemohon;
+      document.getElementById('printTglReq').innerText = target.tglPermintaan;
+      document.getElementById('printUnit').innerText = target.unit;
+      document.getElementById('printTglNeed').innerText = target.tglDibutuhkan;
+      document.getElementById('printUrgensi').innerText = target.urgensi;
+      document.getElementById('printTtdPemohon').innerText = `( ${target.pemohon} )`;
+
+      const tbody = document.getElementById('printTabelBody');
+      tbody.innerHTML = '';
+      target.items.forEach(i => {
+        tbody.innerHTML += `<tr><td>${i.kodeItem}</td><td>${i.barang}</td><td>${i.jumlah} ${i.satuan}</td><td>${i.supplier}</td></tr>`;
+      });
+
+      window.print();
+    }
+
+    function eksporCSVPermintaan() {
+      let csv = "Kode;Tgl;Pemohon;Unit;Barang;Jumlah;Satuan;Status\n";
+      dataPermintaan.forEach(t => {
+        t.items.forEach(i => {
+          csv += `"${t.kode}";"${t.tglPermintaan}";"${t.pemohon}";"${t.unit}";"${i.barang}";"${i.jumlah}";"${i.satuan}";"${t.status}"\n`;
+        });
+      });
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'Rekap_Permintaan_Barang.csv';
+      a.click();
+    }
+
+    function updateMetricsDashboard() {
+      document.getElementById('dashTotalSKU').innerText = dataStok.length;
+      document.getElementById('dashMinStok').innerText = dataStok.filter(i => Number(i.stok) <= Number(i.minStok)).length;
+      document.getElementById('dashTotalTiket').innerText = dataPermintaan.length;
+      document.getElementById('dashTiketACC').innerText = dataPermintaan.filter(i => i.status === 'ACC').length;
+    }
+
+    function simpanConfigGas() {
+      const url = document.getElementById('settingGasUrl').value.trim();
+      if(url) {
+        GAS_URL = url;
+        localStorage.setItem('selabintana_gas_url', url);
+        alert('URL Google Apps Script berhasil diperbarui!');
+      }
+    }
+
+    function copyAppsScriptCode() {
+      const text = document.getElementById('appsScriptCodeBlock').innerText;
+      navigator.clipboard.writeText(text);
+      alert('Kode AppsScript berhasil disalin ke clipboard!');
+    }
+  </script>
 </body>
 </html>
