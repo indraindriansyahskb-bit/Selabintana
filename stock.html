@@ -3,17 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aplikasi Stok & History Transaksi Multi Unit</title>
+  <title>Aplikasi Jurnal Stok & Transaksi Multi Unit</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <style>
-    :root { --primary: #0284c7; --primary-hover: #0369a1; --bg-body: #f8fafc; --card-bg: #ffffff; --text-main: #0f172a; --text-muted: #64748b; --border-color: #e2e8f0; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+    :root { --primary: #0284c7; --primary-hover: #0369a1; --bg-body: #f8fafc; --card-bg: #ffffff; --text-main: #0f172a; --border-color: #e2e8f0; }
     * { box-sizing: border-box; }
     body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); margin: 0; padding: 25px 15px; }
-    .wrapper { max-width: 1250px; margin: auto; }
+    .wrapper { max-width: 1300px; margin: auto; }
     .app-header { text-align: center; margin-bottom: 25px; }
     .card { background: var(--card-bg); padding: 24px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid var(--border-color); margin-bottom: 22px; }
     .section-title { font-size: 16px; font-weight: 600; color: #1e293b; margin-top: 0; margin-bottom: 18px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
@@ -47,8 +47,8 @@
 
 <div class="wrapper">
   <div class="app-header">
-    <h2><i class="fa-solid fa-warehouse" style="color: var(--primary);"></i> Sistem Stok & History Semua Transaksi</h2>
-    <p>Rekap Stok, Penerimaan, Pemakaian Kandang & Mutasi Antar Unit</p>
+    <h2><i class="fa-solid fa-warehouse" style="color: var(--primary);"></i> Jurnal Rincian Transaksi Stok Multi-Unit</h2>
+    <p>Pencatatan Rinci Transaksi Barang Masuk, Pemakaian Kandang & Mutasi Transfer</p>
   </div>
 
   <div id="loginSection" class="card" style="max-width: 380px; margin: 40px auto;">
@@ -62,28 +62,29 @@
     <div class="user-info-box" id="infoSesiUser"></div>
 
     <div class="nav-tabs">
-      <button class="tab-btn active" id="tabStokBtn" onclick="switchTab('stok')"><i class="fa-solid fa-boxes-stacked"></i> Stok & Rekap</button>
+      <button class="tab-btn active" id="tabStokBtn" onclick="switchTab('stok')"><i class="fa-solid fa-list-check"></i> Jurnal Transaksi Barang</button>
       <button class="tab-btn" id="tabTransaksiBtn" onclick="switchTab('transaksi')" style="background:#059669; color:white;"><i class="fa-solid fa-right-left"></i> Menu Transaksi Stok</button>
-      <button class="tab-btn" id="tabHistoryBtn" onclick="switchTab('history')"><i class="fa-solid fa-clock-rotate-left"></i> History Semua Transaksi</button>
+      <button class="tab-btn" id="tabHistoryBtn" onclick="switchTab('history')"><i class="fa-solid fa-clock-rotate-left"></i> Monitoring Status Mutasi</button>
     </div>
 
-    <!-- TAB 1: STOK VIEW -->
+    <!-- TAB 1: JURNAL RINCIAN TRANSAKSI BARANG (URUT NAMA BARANG) -->
     <div id="tabStokView" class="card">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
-        <h3 class="section-title" style="margin:0; border:none;"><i class="fa-solid fa-boxes-packing"></i> Rekap Inventaris Barang</h3>
-        <button onclick="eksporKeExcel()" style="background:#16a34a;"><i class="fa-solid fa-file-excel"></i> Ekspor Rekap Ke Excel (.xlsx)</button>
+        <h3 class="section-title" style="margin:0; border:none;"><i class="fa-solid fa-boxes-packing"></i> Transaksi Rinci Per Barang (Urut Nama Barang A-Z)</h3>
+        <button onclick="eksporKeExcel()" style="background:#16a34a;"><i class="fa-solid fa-file-excel"></i> Ekspor Jurnal Ke Excel (.xlsx)</button>
       </div>
+
       <div class="filter-card">
-        <div style="flex:1; min-width:140px;"><label>Periode Dari:</label><input type="date" id="filterTglAwal" onchange="muatDataStok()"></div>
-        <div style="flex:1; min-width:140px;"><label>Sampai Tanggal:</label><input type="date" id="filterTglAkhir" onchange="muatDataStok()"></div>
-        <div style="flex:1; min-width:150px;"><label>Unit / Farm:</label><select id="filterUnit" onchange="onUnitFilterChange()"></select></div>
-        <div style="flex:1; min-width:150px;"><label>Gudang Spesifik:</label><select id="filterGudang" onchange="terapkanFilterStok()"></select></div>
-        <div style="flex:2; min-width:200px;"><label>Cari Barang:</label><input type="text" id="searchStok" placeholder="Ketik nama barang..." onkeyup="terapkanFilterStok()"></div>
+        <div style="flex:1; min-width:140px;"><label>Periode Dari:</label><input type="date" id="filterTglAwal" onchange="muatJurnalTransaksiBarang()"></div>
+        <div style="flex:1; min-width:140px;"><label>Sampai Tanggal:</label><input type="date" id="filterTglAkhir" onchange="muatJurnalTransaksiBarang()"></div>
+        <div style="flex:1; min-width:150px;"><label>Unit / Farm:</label><select id="filterUnit" onchange="terapkanFilterJurnal()"></select></div>
+        <div style="flex:2; min-width:200px;"><label>Cari Barang / Ket:</label><input type="text" id="searchJurnal" placeholder="Ketik nama barang..." onkeyup="terapkanFilterJurnal()"></div>
       </div>
-      <div class="table-responsive" id="containerTabelStok"><p style="text-align:center; padding:20px;">Memuat data stok...</p></div>
+      
+      <div class="table-responsive" id="containerTabelJurnal"><p style="text-align:center; padding:20px;">Memuat data jurnal transaksi...</p></div>
     </div>
 
-    <!-- TAB 2: TRANSAKSI -->
+    <!-- TAB 2: MENU TRANSAKSI STOK -->
     <div id="tabTransaksiView" class="card" style="display: none;">
       <h3 class="section-title"><i class="fa-solid fa-right-left"></i> Pusat Transaksi Gudang</h3>
       <div class="row-group" style="margin-bottom: 25px;">
@@ -98,18 +99,10 @@
       </div>
     </div>
 
-    <!-- TAB 3: HISTORY SEMUA TRANSAKSI -->
+    <!-- TAB 3: MONITORING MUTASI STATUS -->
     <div id="tabHistoryView" class="card" style="display: none;">
-      <h3 class="section-title"><i class="fa-solid fa-clock-rotate-left"></i> History Semua Transaksi Barang</h3>
-      <p style="font-size:12px; color:#64748b; margin-top:-10px;">*Menampilkan seluruh riwayat penerimaan, pemakaian kandang, dan status mutasi antar unit berdasarkan filter periode tanggal.</p>
-      
-      <div class="filter-card">
-        <div style="flex:1; min-width:140px;"><label>Periode Dari:</label><input type="date" id="histTglAwal" onchange="muatHistoryMutasi()"></div>
-        <div style="flex:1; min-width:140px;"><label>Sampai Tanggal:</label><input type="date" id="histTglAkhir" onchange="muatHistoryMutasi()"></div>
-        <div style="flex:2; min-width:200px;"><label>Cari Kata Kunci:</label><input type="text" id="searchHistory" placeholder="Nama barang / keterangan..." onkeyup="terapkanFilterHistory()"></div>
-      </div>
-
-      <div class="table-responsive" id="containerTabelHistory"><p style="text-align:center; padding:20px;">Memuat history transaksi...</p></div>
+      <h3 class="section-title"><i class="fa-solid fa-clock-rotate-left"></i> Status Verifikasi Mutasi Antar Unit</h3>
+      <div class="table-responsive" id="containerTabelHistory"><p style="text-align:center; padding:20px;">Memuat history mutasi...</p></div>
     </div>
   </div>
 </div>
@@ -120,14 +113,10 @@
     <h3 class="section-title"><i class="fa-solid fa-circle-arrow-down" style="color:#10b981;"></i> Penerimaan Barang Masuk</h3>
     <form id="formPenerimaan">
       <div class="form-group"><label>Sumber Penerimaan</label>
-        <select id="penSumber" onchange="toggleSumberPenerimaan()" required>
+        <select id="penSumber" required>
           <option value="PEMBELIAN_SUPPLIER">Penerimaan Langsung (Supplier / Pembelian)</option>
           <option value="PERMINTAAN_ACC">Dari Tiket Permintaan Barang (ACC)</option>
         </select>
-      </div>
-      <div id="groupTiketAcc" class="form-group" style="display:none;">
-        <label>Pilih Tiket Permintaan (ACC)</label>
-        <select id="penTiketAcc" onchange="autofillTiketAcc()"><option value="">-- Pilih Tiket --</option></select>
       </div>
       <div class="row-group">
         <div class="form-group"><label>Masuk Ke Unit</label><select id="penUnit" onchange="updateSubGudangPilih('penUnit', 'penGudang')" required></select></div>
@@ -182,7 +171,7 @@
 <script>
   const GAS_URL = "https://script.google.com/macros/s/AKfycbw6msj-_8KlMWw97-efAZZwcf91NJt7yFMuMqIJTXz2Sc2pKmK1eFp4OqKlGozF2OyYMQ/exec";
 
-  let sesiUser = {}; let masterUnits = []; let allUnits = []; let masterGudang = []; let rawStokData = []; let rawHistoryData = [];
+  let sesiUser = {}; let masterUnits = []; let allUnits = []; let masterGudang = []; let rawJurnalData = []; let rawStokList = [];
 
   window.onload = function() {
     const savedUser = localStorage.getItem('stok_app_user_session');
@@ -206,7 +195,8 @@
     document.getElementById('mainPanel').style.display = 'block';
     document.getElementById('infoSesiUser').innerHTML = `<div><b>Pengguna: ${sesiUser.nama}</b> (${sesiUser.jabatan} | Unit: <b>${sesiUser.unitLokasi}</b>)</div><button onclick="logoutSesi()" style="background:#fee2e2; color:#dc2626; border:1px solid #fca5a5; padding:5px 10px; font-size:12px;">Keluar</button>`;
     muatMetaUnitsGudang();
-    muatDataStok();
+    muatJurnalTransaksiBarang();
+    muatMasterStokBarang();
   }
 
   function logoutSesi() { localStorage.removeItem('stok_app_user_session'); location.reload(); }
@@ -219,7 +209,7 @@
     document.getElementById('tabTransaksiView').style.display = tab === 'transaksi' ? 'block' : 'none';
     document.getElementById('tabHistoryView').style.display = tab === 'history' ? 'block' : 'none';
     if (tab === 'transaksi') muatPendingTransfers();
-    if (tab === 'history') muatHistoryMutasi();
+    if (tab === 'history') muatPendingTransfers();
   }
 
   async function muatMetaUnitsGudang() {
@@ -227,9 +217,7 @@
       const res = await fetch(`${GAS_URL}?action=getUnitsAndGudang&unitLokasi=${encodeURIComponent(sesiUser.unitLokasi)}&isAdmin=${sesiUser.isAdmin}`);
       const json = await res.json();
       if (json.status === "success") { 
-        masterUnits = json.units; 
-        allUnits = json.allUnits || json.units;
-        masterGudang = json.gudang; 
+        masterUnits = json.units; allUnits = json.allUnits || json.units; masterGudang = json.gudang; 
         populateUnitDropdowns(); 
       }
     } catch(e) {}
@@ -253,16 +241,6 @@
       let targetList = allUnits.filter(u => u.kodeUnit.toLowerCase() !== sesiUser.unitLokasi.toLowerCase());
       trUnitTujuan.innerHTML = '<option value="">-- Pilih Unit Farm Tujuan --</option>' + targetList.map(u => `<option value="${u.kodeUnit}">${u.namaUnit}</option>`).join('');
     }
-    onUnitFilterChange();
-  }
-
-  function onUnitFilterChange() {
-    const selectedUnit = document.getElementById('filterUnit').value || (masterUnits[0] ? masterUnits[0].kodeUnit : '');
-    const filterGudang = document.getElementById('filterGudang');
-    let listG = masterGudang.filter(g => g.kodeUnit === selectedUnit);
-    filterGudang.innerHTML = '<option value="">-- Semua Gudang --</option>' + listG.map(g => `<option value="${g.kodeGudang}">${g.namaGudang}</option>`).join('');
-    if(document.getElementById('penGudang')) updateSubGudangPilih('penUnit', 'penGudang');
-    terapkanFilterStok();
   }
 
   function updateSubGudangPilih(unitSelectId, gudangSelectId) {
@@ -272,66 +250,161 @@
     gudangSelect.innerHTML = listG.length > 0 ? listG.map(g => `<option value="${g.kodeGudang}">${g.namaGudang}</option>`).join('') : '<option value="">-- Tidak ada gudang --</option>';
   }
 
-  async function muatDataStok() {
-    const tAwal = document.getElementById('filterTglAwal').value;
-    const tAkhir = document.getElementById('filterTglAkhir').value;
+  async function muatMasterStokBarang() {
     try {
-      const res = await fetch(`${GAS_URL}?action=getStokBarang&unitLokasi=${encodeURIComponent(sesiUser.unitLokasi)}&isAdmin=${sesiUser.isAdmin}&tglAwal=${tAwal}&tglAkhir=${tAkhir}`);
+      const res = await fetch(`${GAS_URL}?action=getStokBarang&unitLokasi=${encodeURIComponent(sesiUser.unitLokasi)}&isAdmin=${sesiUser.isAdmin}`);
       const json = await res.json();
-      if (json.status === "success") { rawStokData = json.data; terapkanFilterStok(); populateBarangSelects(); }
+      if (json.status === "success") { rawStokList = json.data; populateBarangSelects(); }
     } catch(e) {}
   }
 
   function populateBarangSelects() {
     const pemBarangPilih = document.getElementById('pemBarangPilih');
     const trBarangAsal = document.getElementById('trBarangAsal');
-    let opts = '<option value="">-- Pilih Barang Stok --</option>' + rawStokData.map(i => `<option value="${i.kodeBarang}">${i.namaBarang} (Stok: ${i.sisaStok} ${i.satuan})</option>`).join('');
+    let opts = '<option value="">-- Pilih Barang Stok --</option>' + rawStokList.map(i => `<option value="${i.kodeBarang}">${i.namaBarang} (Sisa: ${i.sisaStok} ${i.satuan})</option>`).join('');
     if(pemBarangPilih) pemBarangPilih.innerHTML = opts;
     if(trBarangAsal) trBarangAsal.innerHTML = opts;
   }
 
-  function terapkanFilterStok() {
-    const selectedUnit = document.getElementById('filterUnit').value;
-    const selectedGudang = document.getElementById('filterGudang').value;
-    const searchVal = document.getElementById('searchStok').value.toLowerCase().trim();
+  // 1. MEMUAT SEMUA RINCIAN TRANSAKSI PER BARANG (URUT NAMA BARANG A-Z)
+  async function muatJurnalTransaksiBarang() {
+    const tAwal = document.getElementById('filterTglAwal').value;
+    const tAkhir = document.getElementById('filterTglAkhir').value;
+    try {
+      const res = await fetch(`${GAS_URL}?action=getHistoryMutasi&unitLokasi=${encodeURIComponent(sesiUser.unitLokasi)}&isAdmin=${sesiUser.isAdmin}&tglAwal=${tAwal}&tglAkhir=${tAkhir}`);
+      const json = await res.json();
+      if (json.status === "success") {
+        rawJurnalData = json.data;
 
-    let filtered = rawStokData.filter(item => {
+        // Urutkan alfabetis per Nama Barang (A-Z) lalu Tanggal Transaksi (Lama -> Baru)
+        rawJurnalData.sort((a, b) => {
+          let nameA = (a.namaBarang || "").toLowerCase();
+          let nameB = (b.namaBarang || "").toLowerCase();
+          if (nameA < nameB) return -1;
+          if (nameA > nameB) return 1;
+          return new Date(a.tglSistem) - new Date(b.tglSistem);
+        });
+
+        terapkanFilterJurnal();
+      }
+    } catch(e) {}
+  }
+
+  function terapkanFilterJurnal() {
+    const selectedUnit = document.getElementById('filterUnit').value;
+    const searchVal = document.getElementById('searchJurnal').value.toLowerCase().trim();
+
+    let filtered = rawJurnalData.filter(item => {
       if (selectedUnit && item.kodeUnit !== selectedUnit) return false;
-      if (selectedGudang && item.kodeGudang !== selectedGudang) return false;
-      if (searchVal && !item.namaBarang.toLowerCase().includes(searchVal)) return false;
+      if (searchVal && !item.namaBarang.toLowerCase().includes(searchVal) && !item.keterangan.toLowerCase().includes(searchVal)) return false;
       return true;
     });
-    renderTabelStok(filtered);
+    renderTabelJurnal(filtered);
   }
 
-  function renderTabelStok(data) {
-    if (data.length === 0) { document.getElementById('containerTabelStok').innerHTML = "<p style='text-align:center; padding:20px;'>Barang tidak ditemukan.</p>"; return; }
-    let html = `<table><thead><tr><th>Kode</th><th>Nama Barang</th><th>Kategori</th><th>Lokasi Unit</th><th>Gudang</th><th>Stok Awal</th><th>Masuk</th><th>Keluar</th><th>Sisa Stok</th><th>Status</th></tr></thead><tbody>`;
-    data.forEach(item => {
-      let gObj = masterGudang.find(g => g.kodeGudang === item.kodeGudang);
-      let isMenipis = item.sisaStok <= item.stokMin;
-      html += `<tr><td><b>${item.kodeBarang}</b></td><td><b>${item.namaBarang}</b></td><td>${item.kategori}</td><td>${item.kodeUnit}</td><td>${gObj ? gObj.namaGudang : item.kodeGudang}</td><td>${item.stokAwal}</td><td>${item.stokMasuk}</td><td>${item.stokKeluar}</td><td style="font-size:14px; font-weight:700; color:${isMenipis?'#dc2626':'#0284c7'};">${item.sisaStok} ${item.satuan}</td><td>${isMenipis?'<span class="badge badge-warning">Menipis</span>':'<span class="badge badge-ok">Aman</span>'}</td></tr>`;
+  function renderTabelJurnal(data) {
+    if (data.length === 0) { 
+      document.getElementById('containerTabelJurnal').innerHTML = "<p style='text-align:center; padding:20px;'>Tidak ada rincian transaksi barang pada periode ini.</p>"; 
+      return; 
+    }
+
+    let html = `<table><thead><tr>
+      <th>No</th><th>Waktu Transaksi</th><th>Kode</th><th>Nama Barang</th><th>Jenis Transaksi</th><th>Masuk</th><th>Keluar</th><th>Running Stok</th><th>Satuan</th><th>Unit / Gudang</th><th>Keterangan Detail</th>
+    </tr></thead><tbody>`;
+
+    let currentBarang = "";
+    let runningSaldo = 0;
+
+    data.forEach((item, idx) => {
+      if (item.namaBarang !== currentBarang) {
+        currentBarang = item.namaBarang;
+        runningSaldo = 0;
+      }
+
+      let mas = 0; let kel = 0;
+      let tipe = (item.tipeMutasi || "").toUpperCase();
+      if (tipe === "MASUK") { mas = Number(item.jumlah || 0); runningSaldo += mas; }
+      else if (tipe === "KELUAR" || tipe === "TRANSFER") { kel = Number(item.jumlah || 0); runningSaldo -= kel; }
+
+      html += `<tr>
+        <td>${idx + 1}</td>
+        <td><small>${item.tglSistem}</small></td>
+        <td><b>${item.kodeBarang}</b></td>
+        <td><b>${item.namaBarang}</b></td>
+        <td><b>${item.tipeMutasi}</b></td>
+        <td style="color:#047857; font-weight:600;">${mas > 0 ? mas : '-'}</td>
+        <td style="color:#b91c1c; font-weight:600;">${kel > 0 ? kel : '-'}</td>
+        <td style="font-weight:700; color:#0284c7;">${runningSaldo}</td>
+        <td>${item.satuan}</td>
+        <td>${item.kodeUnit} (${item.kodeGudang})</td>
+        <td><small>${item.keterangan}</small></td>
+      </tr>`;
     });
+
     html += `</tbody></table>`;
-    document.getElementById('containerTabelStok').innerHTML = html;
+    document.getElementById('containerTabelJurnal').innerHTML = html;
   }
 
+  // 2. EKSPOR JURNAL RINCI TRANSAKSI PER BARANG KE EXCEL (.XLSX)
   function eksporKeExcel() {
-    if (rawStokData.length === 0) return alert("Tidak ada data stok untuk diekspor!");
-    let dataExcel = rawStokData.map((item, idx) => {
-      let gObj = masterGudang.find(g => g.kodeGudang === item.kodeGudang);
-      return {
-        "No": idx + 1, "Kode Barang": item.kodeBarang, "Nama Barang": item.namaBarang, "Kategori": item.kategori,
-        "Lokasi Unit": item.kodeUnit, "Gudang": gObj ? gObj.namaGudang : item.kodeGudang, "Stok Awal": item.stokAwal,
-        "Stok Masuk": item.stokMasuk, "Stok Keluar": item.stokKeluar, "Sisa Stok Akhir": item.sisaStok, "Satuan": item.satuan
-      };
+    if (rawJurnalData.length === 0) return alert("Tidak ada rincian transaksi untuk diekspor!");
+
+    let dataExcel = [];
+    let currentBarang = "";
+    let runningSaldo = 0;
+
+    rawJurnalData.forEach((item, idx) => {
+      if (item.namaBarang !== currentBarang) {
+        currentBarang = item.namaBarang;
+        runningSaldo = 0;
+      }
+
+      let mas = 0; let kel = 0;
+      let tipe = (item.tipeMutasi || "").toUpperCase();
+      if (tipe === "MASUK") { mas = Number(item.jumlah || 0); runningSaldo += mas; }
+      else if (tipe === "KELUAR" || tipe === "TRANSFER") { kel = Number(item.jumlah || 0); runningSaldo -= kel; }
+
+      let labelStatus = "Selesai";
+      if (item.status === "PENDING_ADMIN") labelStatus = "Menunggu ACC Admin";
+      else if (item.status === "ACC_ADMIN") labelStatus = "ACC Admin (Dalam Pengiriman)";
+      else if (item.status === "DITERIMA" || item.status === "COMPLETED") labelStatus = "Diterima / Selesai";
+      else if (item.status === "DITOLAK_ADMIN") labelStatus = "Ditolak Admin";
+
+      dataExcel.push({
+        "No": idx + 1,
+        "Waktu Transaksi": item.tglSistem || "-",
+        "Kode Barang": item.kodeBarang || "-",
+        "Nama Barang": item.namaBarang || "-",
+        "Kategori": item.kategori || "-",
+        "Jenis Transaksi": item.tipeMutasi || "-",
+        "Masuk": mas,
+        "Keluar": kel,
+        "Sisa Stok Current": runningSaldo,
+        "Satuan": item.satuan || "pcs",
+        "Lokasi Unit": item.kodeUnit || "-",
+        "Gudang": item.kodeGudang || "-",
+        "Keterangan Detail": item.keterangan || "-",
+        "Status Transaksi": labelStatus
+      });
     });
+
     const worksheet = XLSX.utils.json_to_sheet(dataExcel);
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Rekap Stok");
-    XLSX.writeFile(workbook, `Rekap_Stok_${sesiUser.unitLokasi}_${new Date().toISOString().slice(0,10)}.xlsx`);
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Jurnal Transaksi Barang");
+
+    worksheet["!cols"] = [
+      { wch: 5 }, { wch: 20 }, { wch: 12 }, { wch: 25 }, { wch: 15 },
+      { wch: 15 }, { wch: 10 }, { wch: 10 }, { wch: 16 }, { wch: 8 },
+      { wch: 18 }, { wch: 18 }, { wch: 35 }, { wch: 22 }
+    ];
+
+    let tAwal = document.getElementById('filterTglAwal').value;
+    let tAkhir = document.getElementById('filterTglAkhir').value;
+    let tglText = tAwal && tAkhir ? `${tAwal}_s-d_${tAkhir}` : "Semua_Periode";
+    XLSX.writeFile(workbook, `Jurnal_Transaksi_Stok_${sesiUser.unitLokasi}_${tglText}.xlsx`);
   }
 
+  // 3. ACC ADMIN & KONFIRMASI DITERIMA
   async function muatPendingTransfers() {
     try {
       const res = await fetch(`${GAS_URL}?action=getPendingTransfers&unitLokasi=${encodeURIComponent(sesiUser.unitLokasi)}&isAdmin=${sesiUser.isAdmin}`);
@@ -339,9 +412,10 @@
       if (json.status === "success") {
         if(json.data.length === 0) {
           document.getElementById('containerPendingTransfer').innerHTML = "<p style='font-size:13px; color:#64748b; margin:0;'>Tidak ada mutasi yang memerlukan tindakan saat ini.</p>";
+          document.getElementById('containerTabelHistory').innerHTML = "<p style='font-size:13px; color:#64748b; margin:0;'>Tidak ada mutasi yang memerlukan tindakan saat ini.</p>";
           return;
         }
-        let html = `<table><thead><tr><th>Tgl Pengajuan</th><th>Barang</th><th>Dari Unit Asal</th><th>Ke Unit Tujuan</th><th>Jumlah Transfer</th><th>Status Saat Ini</th><th>Aksi Verifikasi</th></tr></thead><tbody>`;
+        let html = `<table><thead><tr><th>Tgl Pengajuan</th><th>Barang</th><th>Dari Unit Asal</th><th>Ke Unit Tujuan</th><th>Jumlah Transfer</th><th>Status saat Ini</th><th>Aksi Verifikasi</th></tr></thead><tbody>`;
         json.data.forEach(t => {
           let badgeStatus = ""; let btnAksi = "";
           if (t.status === "PENDING_ADMIN") {
@@ -364,6 +438,7 @@
         });
         html += `</tbody></table>`;
         document.getElementById('containerPendingTransfer').innerHTML = html;
+        document.getElementById('containerTabelHistory').innerHTML = html;
       }
     } catch(e){}
   }
@@ -373,7 +448,7 @@
     const payload = { action: "prosesAccAdminMutasi", idTransfer: idTransfer, keputusan: keputusan };
     const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
     const json = await res.json();
-    if(json.status === "success") { alert(json.message); muatPendingTransfers(); }
+    if(json.status === "success") { alert(json.message); muatPendingTransfers(); muatJurnalTransaksiBarang(); }
   }
 
   async function konfirmasiTerimaTransfer(idTransfer) {
@@ -381,71 +456,16 @@
     const payload = { action: "konfirmasiTerimaTransfer", idTransfer: idTransfer };
     const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
     const json = await res.json();
-    if(json.status === "success") { alert(json.message); muatPendingTransfers(); muatDataStok(); }
-  }
-
-  // LOAD HISTORY SEMUA TRANSAKSI DENGAN STATUS LENGKAP
-  async function muatHistoryMutasi() {
-    const tAwal = document.getElementById('histTglAwal').value;
-    const tAkhir = document.getElementById('histTglAkhir').value;
-    try {
-      const res = await fetch(`${GAS_URL}?action=getHistoryMutasi&unitLokasi=${encodeURIComponent(sesiUser.unitLokasi)}&isAdmin=${sesiUser.isAdmin}&tglAwal=${tAwal}&tglAkhir=${tAkhir}`);
-      const json = await res.json();
-      if(json.status === "success") {
-        rawHistoryData = json.data;
-        terapkanFilterHistory();
-      }
-    } catch(e){}
-  }
-
-  function terapkanFilterHistory() {
-    const searchVal = document.getElementById('searchHistory').value.toLowerCase().trim();
-    let filtered = rawHistoryData.filter(i => {
-      if (searchVal && !i.namaBarang.toLowerCase().includes(searchVal) && !i.keterangan.toLowerCase().includes(searchVal)) return false;
-      return true;
-    });
-
-    if (filtered.length === 0) {
-      document.getElementById('containerTabelHistory').innerHTML = "<p style='text-align:center; padding:20px;'>Tidak ada riwayat transaksi pada periode ini.</p>";
-      return;
-    }
-
-    let html = `<table><thead><tr><th>Waktu Transaksi</th><th>Nama Barang</th><th>Jenis</th><th>Jumlah</th><th>Unit / Gudang</th><th>Keterangan Detail</th><th>Status</th></tr></thead><tbody>`;
-    filtered.forEach(i => {
-      let bClass = "badge-ok";
-      let labelStatus = "Selesai";
-
-      if (i.status === "PENDING_ADMIN") { bClass = "badge-warning"; labelStatus = "Menunggu ACC Admin"; }
-      else if (i.status === "ACC_ADMIN") { bClass = "badge-info"; labelStatus = "ACC Admin (Pengiriman)"; }
-      else if (i.status === "DITERIMA" || i.status === "COMPLETED") { bClass = "badge-ok"; labelStatus = "Diterima / Selesai"; }
-      else if (i.status === "DITOLAK_ADMIN") { bClass = "badge-danger"; labelStatus = "Ditolak Admin"; }
-
-      html += `<tr>
-        <td><small>${i.tglSistem}</small></td>
-        <td><b>${i.namaBarang}</b></td>
-        <td><b>${i.tipeMutasi}</b></td>
-        <td><b>${i.jumlah} ${i.satuan}</b></td>
-        <td>${i.kodeUnit} (${i.kodeGudang})</td>
-        <td><small>${i.keterangan}</small></td>
-        <td><span class="badge ${bClass}">${labelStatus}</span></td>
-      </tr>`;
-    });
-    html += `</tbody></table>`;
-    document.getElementById('containerTabelHistory').innerHTML = html;
+    if(json.status === "success") { alert(json.message); muatPendingTransfers(); muatJurnalTransaksiBarang(); muatMasterStokBarang(); }
   }
 
   function bukaModalPenerimaan() { updateSubGudangPilih('penUnit', 'penGudang'); document.getElementById('modalPenerimaan').style.display = 'block'; }
-  function toggleSumberPenerimaan() {
-    const val = document.getElementById('penSumber').value;
-    document.getElementById('groupTiketAcc').style.display = val === 'PERMINTAAN_ACC' ? 'block' : 'none';
-  }
-
   document.getElementById('formPenerimaan').addEventListener('submit', async function(e) {
     e.preventDefault();
     const payload = {
       action: "prosesPenerimaanBarang",
       sumberPenerimaan: document.getElementById('penSumber').value,
-      refInfo: document.getElementById('penSumber').value === 'PERMINTAAN_ACC' ? document.getElementById('penTiketAcc').value : "Pembelian Supplier",
+      refInfo: "Pembelian Supplier",
       kodeUnit: document.getElementById('penUnit').value,
       kodeGudang: document.getElementById('penGudang').value,
       namaBarang: document.getElementById('penNamaBarang').value.trim(),
@@ -455,7 +475,7 @@
     };
     const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
     const json = await res.json();
-    if(json.status === "success") { alert("Penerimaan Berhasil!"); tutupModal('modalPenerimaan'); muatDataStok(); }
+    if(json.status === "success") { alert("Penerimaan Berhasil!"); tutupModal('modalPenerimaan'); muatJurnalTransaksiBarang(); muatMasterStokBarang(); }
   });
 
   function bukaModalPemakaian() { document.getElementById('modalPemakaian').style.display = 'block'; }
@@ -470,7 +490,7 @@
     };
     const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
     const json = await res.json();
-    if(json.status === "success") { alert("Pemakaian Berhasil!"); tutupModal('modalPemakaian'); muatDataStok(); }
+    if(json.status === "success") { alert("Pemakaian Berhasil!"); tutupModal('modalPemakaian'); muatJurnalTransaksiBarang(); muatMasterStokBarang(); }
   });
 
   function bukaModalTransferDirect() { 
@@ -489,7 +509,7 @@
     };
     const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
     const json = await res.json();
-    if(json.status === "success") { alert(json.message); tutupModal('modalTransfer'); muatPendingTransfers(); }
+    if(json.status === "success") { alert(json.message); tutupModal('modalTransfer'); muatPendingTransfers(); muatJurnalTransaksiBarang(); }
   });
 
   function tutupModal(id) { document.getElementById(id).style.display = 'none'; }
