@@ -17,20 +17,15 @@
     .section-title { font-size: 16px; font-weight: 600; color: #1e293b; margin-top: 0; margin-bottom: 18px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
     .form-group { margin-bottom: 14px; }
     label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 13px; color: #334155; }
-    input[type="text"], input[type="password"], select, input[type="number"] { width: 100%; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 13px; font-family: inherit; }
+    input[type="text"], input[type="password"], select, input[type="number"], input[type="date"] { width: 100%; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 13px; font-family: inherit; }
     .row-group { display: flex; gap: 14px; flex-wrap: wrap; }
     .row-group .form-group { flex: 1; min-width: 170px; }
     button { background-color: var(--primary); color: white; padding: 10px 16px; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
     button:hover { background-color: var(--primary-hover); }
     .user-info-box { background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%); border: 1px solid #7dd3fc; padding: 14px 18px; border-radius: 10px; margin-bottom: 20px; font-size: 14px; color: #0369a1; display: flex; justify-content: space-between; align-items: center; }
-    .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 22px; }
-    .stat-card { background: #fff; border: 1px solid var(--border-color); padding: 16px; border-radius: 10px; display: flex; align-items: center; gap: 14px; }
-    .stat-icon { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
-    .stat-card .val { font-size: 20px; font-weight: 700; color: #0f172a; }
-    .stat-card label { font-size: 11px; color: var(--text-muted); font-weight: 500; }
-    .stat-card.total .stat-icon { background: #e0f2fe; color: var(--primary); }
-    .stat-card.warning .stat-icon { background: #fef3c7; color: var(--warning); }
-    .stat-card.danger .stat-icon { background: #fee2e2; color: var(--danger); }
+    .nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid var(--border-color); padding-bottom: 10px; }
+    .tab-btn { background: #e2e8f0; color: #475569; padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; }
+    .tab-btn.active { background: var(--primary); color: white; }
     .filter-card { background: #f8fafc; border: 1px solid var(--border-color); padding: 16px; border-radius: 10px; margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
     .table-responsive { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border-color); }
     table { width: 100%; border-collapse: collapse; font-size: 13px; background: white; text-align: left; }
@@ -39,6 +34,8 @@
     .badge { display: inline-flex; align-items: center; padding: 4px 8px; border-radius: 15px; font-size: 11px; font-weight: 600; }
     .badge-ok { background: #d1fae5; color: #047857; }
     .badge-warning { background: #fee2e2; color: #b91c1c; }
+    .badge-in { background: #d1fae5; color: #047857; }
+    .badge-out { background: #fef3c7; color: #b45309; }
     .btn-sm { padding: 5px 9px; font-size: 11px; border-radius: 6px; }
     .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; overflow-y: auto; padding: 20px; }
     .modal-content { background: white; max-width: 520px; margin: 40px auto; padding: 22px; border-radius: 12px; }
@@ -48,8 +45,8 @@
 
 <div class="wrapper">
   <div class="app-header">
-    <h2><i class="fa-solid fa-warehouse" style="color: var(--primary);"></i> Management Stok Multi-Gudang</h2>
-    <p>Unit Diambil Otomatis Dari Database Users</p>
+    <h2><i class="fa-solid fa-warehouse" style="color: var(--primary);"></i> Management Stok Multi-Gudang (Auto 3 Gudang Utama)</h2>
+    <p>Fitur Rekap Periode, History Mutasi, & Transfer Stok Antar Farm</p>
   </div>
 
   <!-- Login Section -->
@@ -64,51 +61,63 @@
   <div id="mainPanel" style="display: none;">
     <div class="user-info-box" id="infoSesiUser"></div>
 
-    <div class="summary-grid">
-      <div class="stat-card total"><div class="stat-icon"><i class="fa-solid fa-boxes-stacked"></i></div><div><label>Total Item Stok Unit</label><div class="val" id="statTotalJenis">0</div></div></div>
-      <div class="stat-card warning"><div class="stat-icon"><i class="fa-solid fa-warehouse"></i></div><div><label>Unit Yang Dikelola</label><div class="val" id="statTotalUnit">0</div></div></div>
-      <div class="stat-card danger"><div class="stat-icon"><i class="fa-solid fa-triangle-exclamation"></i></div><div><label>Stok Menipis</label><div class="val" id="statStokKritis">0</div></div></div>
+    <!-- Navigation Tabs -->
+    <div class="nav-tabs">
+      <button class="tab-btn active" id="tabStokBtn" onclick="switchTab('stok')"><i class="fa-solid fa-boxes-stacked"></i> Realtime & Rekap Stok</button>
+      <button class="tab-btn" id="tabHistoryBtn" onclick="switchTab('history')"><i class="fa-solid fa-clock-rotate-left"></i> History Log Mutasi</button>
     </div>
 
-    <!-- Inventory Monitoring Card -->
-    <div class="card">
+    <!-- TAB 1: REALTIME & REKAP PERIODE STOK -->
+    <div id="tabStokView" class="card">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
-        <h3 class="section-title" style="margin: 0; border: none;"><i class="fa-solid fa-boxes-packing"></i> Data Stok Barang Unit Anda</h3>
-        <div id="actionGroup" style="display: flex; gap: 8px;">
+        <h3 class="section-title" style="margin: 0; border: none;"><i class="fa-solid fa-boxes-packing"></i> Data Stok Barang Gudang</h3>
+        <div style="display: flex; gap: 8px;">
           <button id="btnTambahGudang" onclick="bukaModalGudang()" style="background:#0891b2; display:none;"><i class="fa-solid fa-plus"></i> Tambah Gudang</button>
           <button onclick="bukaModalTambahBarang()" style="background:#059669;"><i class="fa-solid fa-plus"></i> Tambah Barang</button>
         </div>
       </div>
 
-      <!-- Live Search & Filter -->
+      <!-- Live Search & Periode Tanggal Filter -->
       <div class="filter-card">
-        <div style="flex:1; min-width:160px;"><label>Unit / Farm:</label>
-          <select id="filterUnit" onchange="onUnitFilterChange()">
-            <option value="">-- Pilih Unit --</option>
-          </select>
+        <div style="flex:1; min-width:140px;"><label>Periode Dari:</label><input type="date" id="filterTglAwal" onchange="muatDataStok()"></div>
+        <div style="flex:1; min-width:140px;"><label>Sampai Tanggal:</label><input type="date" id="filterTglAkhir" onchange="muatDataStok()"></div>
+        <div style="flex:1; min-width:150px;"><label>Unit / Farm:</label>
+          <select id="filterUnit" onchange="onUnitFilterChange()"><option value="">-- Pilih Unit --</option></select>
         </div>
-        <div style="flex:1; min-width:160px;"><label>Gudang Spesifik:</label>
-          <select id="filterGudang" onchange="terapkanFilterStok()">
-            <option value="">-- Semua Gudang --</option>
-          </select>
+        <div style="flex:1; min-width:150px;"><label>Gudang Spesifik:</label>
+          <select id="filterGudang" onchange="terapkanFilterStok()"><option value="">-- Semua Gudang --</option></select>
         </div>
-        <div style="flex:2; min-width:220px;"><label><i class="fa-solid fa-magnifying-glass"></i> Cari Nama Barang:</label>
-          <input type="text" id="searchStok" placeholder="Ketik nama barang..." onkeyup="terapkanFilterStok()">
+        <div style="flex:2; min-width:200px;"><label><i class="fa-solid fa-magnifying-glass"></i> Cari Barang:</label>
+          <input type="text" id="searchStok" placeholder="Nama / Kode barang..." onkeyup="terapkanFilterStok()">
         </div>
       </div>
 
       <div class="table-responsive" id="containerTabelStok"><p style="text-align:center; padding:20px;">Memuat data stok...</p></div>
     </div>
+
+    <!-- TAB 2: HISTORY LOG MUTASI -->
+    <div id="tabHistoryView" class="card" style="display: none;">
+      <h3 class="section-title"><i class="fa-solid fa-clock-rotate-left"></i> History Log Mutasi Barang</h3>
+      <div class="filter-card">
+        <div style="flex:1; min-width:150px;"><label>Filter Gudang:</label>
+          <select id="filterHistoryGudang" onchange="terapkanFilterHistory()"><option value="">-- Semua Gudang --</option></select>
+        </div>
+        <div style="flex:2; min-width:200px;"><label>Cari Barang / Transaksi:</label>
+          <input type="text" id="searchHistory" placeholder="Ketik kata kunci..." onkeyup="terapkanFilterHistory()">
+        </div>
+      </div>
+      <div class="table-responsive" id="containerTabelHistory"><p style="text-align:center; padding:20px;">Memuat log history...</p></div>
+    </div>
   </div>
 </div>
 
-<!-- MODAL TAMBAH GUDANG (KHUSUS ADMIN) -->
+<!-- MODAL TAMBAH GUDANG -->
 <div id="modalGudang" class="modal">
   <div class="modal-content">
-    <h3 class="section-title">Tambah Gudang Pada Unit</h3>
+    <h3 class="section-title">Tambah Gudang Kustom</h3>
     <form id="formTambahGudang">
-      <div class="form-group"><label>Pilih Unit / Farm (Dari Data Users)</label><select id="gudangUnitPilih" required></select></div>
-      <div class="form-group"><label>Nama Gudang</label><input type="text" id="namaGudangBaru" placeholder="Contoh: Gudang Obat / Gudang Pakan 1" required></div>
+      <div class="form-group"><label>Pilih Unit / Farm</label><select id="gudangUnitPilih" required></select></div>
+      <div class="form-group"><label>Nama Gudang</label><input type="text" id="namaGudangBaru" placeholder="Contoh: Gudang Telur / Gudang Peralatan 2" required></div>
       <div style="display:flex; justify-content:flex-end; gap:8px;"><button type="button" onclick="tutupModal('modalGudang')" style="background:#64748b;">Batal</button><button type="submit">Simpan Gudang</button></div>
     </form>
   </div>
@@ -142,7 +151,7 @@
   </div>
 </div>
 
-<!-- MODAL MUTASI STOK -->
+<!-- MODAL MUTASI STOK INDIVIDUAL -->
 <div id="modalMutasi" class="modal">
   <div class="modal-content">
     <h3 class="section-title" id="mutasiTitle">Transaksi Mutasi Stok</h3>
@@ -150,7 +159,25 @@
       <input type="hidden" id="mutasiKodeBarang"><input type="hidden" id="mutasiTipe">
       <div class="form-group"><label>Nama Barang</label><input type="text" id="mutasiNamaBarang" readonly style="background:#f1f5f9;"></div>
       <div class="form-group"><label>Jumlah Mutasi</label><input type="number" id="mutasiJumlah" min="1" required></div>
+      <div class="form-group"><label>Keterangan / Keperluan</label><input type="text" id="mutasiKet" placeholder="Penanggung jawab / alasan..."></div>
       <div style="display:flex; justify-content:flex-end; gap:8px;"><button type="button" onclick="tutupModal('modalMutasi')" style="background:#64748b;">Batal</button><button type="submit" id="btnSubmitMutasi">Proses</button></div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL TRANSFER BARANG ANTAR UNIT FARM -->
+<div id="modalTransfer" class="modal">
+  <div class="modal-content">
+    <h3 class="section-title"><i class="fa-solid fa-truck-ramp-box"></i> Transfer Barang Ke Unit Farm Lain</h3>
+    <form id="formTransferStok">
+      <input type="hidden" id="trKodeBarangAsal">
+      <div class="form-group"><label>Barang Yang Ditransfer</label><input type="text" id="trNamaBarang" readonly style="background:#f1f5f9;"></div>
+      <div class="row-group">
+        <div class="form-group"><label>Unit Farm Tujuan</label><select id="trUnitTujuan" onchange="updateSubGudangPilih('trUnitTujuan', 'trGudangTujuan')" required></select></div>
+        <div class="form-group"><label>Gudang Tujuan</label><select id="trGudangTujuan" required></select></div>
+      </div>
+      <div class="form-group"><label>Jumlah Transfer</label><input type="number" id="trJumlah" min="1" required></div>
+      <div style="display:flex; justify-content:flex-end; gap:8px;"><button type="button" onclick="tutupModal('modalTransfer')" style="background:#64748b;">Batal</button><button type="submit" style="background:#0284c7;">Kirim Transfer</button></div>
     </form>
   </div>
 </div>
@@ -162,6 +189,7 @@
   let masterUnits = [];
   let masterGudang = [];
   let rawStokData = [];
+  let rawHistoryData = [];
 
   window.onload = function() {
     const savedUser = localStorage.getItem('stok_app_user_session');
@@ -191,15 +219,22 @@
       <button onclick="logoutSesi()" style="background:#fee2e2; color:#dc2626; border:1px solid #fca5a5; padding:5px 10px; font-size:12px;">Keluar</button>
     `;
     
-    if (sesiUser.isAdmin) {
-      document.getElementById('btnTambahGudang').style.display = 'inline-flex';
-    }
+    if (sesiUser.isAdmin) document.getElementById('btnTambahGudang').style.display = 'inline-flex';
 
     muatMetaUnitsGudang();
     muatDataStok();
   }
 
   function logoutSesi() { localStorage.removeItem('stok_app_user_session'); location.reload(); }
+
+  function switchTab(tab) {
+    document.getElementById('tabStokBtn').classList.toggle('active', tab === 'stok');
+    document.getElementById('tabHistoryBtn').classList.toggle('active', tab === 'history');
+    document.getElementById('tabStokView').style.display = tab === 'stok' ? 'block' : 'none';
+    document.getElementById('tabHistoryView').style.display = tab === 'history' ? 'block' : 'none';
+
+    if (tab === 'history') muatHistoryMutasi();
+  }
 
   async function muatMetaUnitsGudang() {
     try {
@@ -217,12 +252,14 @@
     const filterUnit = document.getElementById('filterUnit');
     const gudangUnitPilih = document.getElementById('gudangUnitPilih');
     const barangUnitPilih = document.getElementById('barangUnitPilih');
+    const trUnitTujuan = document.getElementById('trUnitTujuan');
 
     if (sesiUser.isAdmin) {
       filterUnit.innerHTML = '<option value="">-- Semua Unit --</option>' + masterUnits.map(u => `<option value="${u.kodeUnit}">${u.namaUnit}</option>`).join('');
       let optHtml = '<option value="">-- Pilih Unit --</option>' + masterUnits.map(u => `<option value="${u.kodeUnit}">${u.namaUnit}</option>`).join('');
       if(gudangUnitPilih) gudangUnitPilih.innerHTML = optHtml;
       if(barangUnitPilih) barangUnitPilih.innerHTML = optHtml;
+      if(trUnitTujuan) trUnitTujuan.innerHTML = optHtml;
     } else {
       filterUnit.innerHTML = masterUnits.map(u => `<option value="${u.kodeUnit}">${u.namaUnit}</option>`).join('');
       filterUnit.disabled = true;
@@ -230,23 +267,25 @@
         barangUnitPilih.innerHTML = masterUnits.map(u => `<option value="${u.kodeUnit}">${u.namaUnit}</option>`).join('');
         barangUnitPilih.disabled = true;
       }
+      if(trUnitTujuan) {
+        trUnitTujuan.innerHTML = '<option value="">-- Pilih Unit Tujuan --</option>' + masterUnits.map(u => `<option value="${u.kodeUnit}">${u.namaUnit}</option>`).join('');
+      }
       onUnitFilterChange();
     }
-
-    document.getElementById('statTotalUnit').innerText = masterUnits.length;
   }
 
   function onUnitFilterChange() {
     const selectedUnit = document.getElementById('filterUnit').value || (masterUnits[0] ? masterUnits[0].kodeUnit : '');
     const filterGudang = document.getElementById('filterGudang');
+    const filterHistoryGudang = document.getElementById('filterHistoryGudang');
     
     let filteredGudang = masterGudang.filter(g => g.kodeUnit === selectedUnit);
-    filterGudang.innerHTML = '<option value="">-- Semua Gudang --</option>' + filteredGudang.map(g => `<option value="${g.kodeGudang}">${g.namaGudang}</option>`).join('');
+    let gOpt = '<option value="">-- Semua Gudang --</option>' + filteredGudang.map(g => `<option value="${g.kodeGudang}">${g.namaGudang}</option>`).join('');
     
-    if (document.getElementById('barangGudangPilih')) {
-      updateSubGudangPilih('barangUnitPilih', 'barangGudangPilih');
-    }
+    filterGudang.innerHTML = gOpt;
+    if(filterHistoryGudang) filterHistoryGudang.innerHTML = gOpt;
     
+    if (document.getElementById('barangGudangPilih')) updateSubGudangPilih('barangUnitPilih', 'barangGudangPilih');
     terapkanFilterStok();
   }
 
@@ -260,8 +299,10 @@
   }
 
   async function muatDataStok() {
+    const tAwal = document.getElementById('filterTglAwal').value;
+    const tAkhir = document.getElementById('filterTglAkhir').value;
     try {
-      const res = await fetch(`${GAS_URL}?action=getStokBarang&unitLokasi=${encodeURIComponent(sesiUser.unitLokasi)}&isAdmin=${sesiUser.isAdmin}`);
+      const res = await fetch(`${GAS_URL}?action=getStokBarang&unitLokasi=${encodeURIComponent(sesiUser.unitLokasi)}&isAdmin=${sesiUser.isAdmin}&tglAwal=${tAwal}&tglAkhir=${tAkhir}`);
       const json = await res.json();
       if (json.status === "success") {
         rawStokData = json.data;
@@ -281,9 +322,6 @@
       if (searchVal && !item.namaBarang.toLowerCase().includes(searchVal) && !item.kodeBarang.toLowerCase().includes(searchVal)) return false;
       return true;
     });
-
-    document.getElementById('statTotalJenis').innerText = filtered.length;
-    document.getElementById('statStokKritis').innerText = filtered.filter(i => i.sisaStok <= i.stokMin).length;
     renderTabelStok(filtered);
   }
 
@@ -295,7 +333,7 @@
 
     let html = `<table><thead><tr>
       <th>Kode</th><th>Nama Barang</th><th>Kategori</th>
-      <th>Lokasi Unit</th><th>Gudang</th><th>Sisa Stok</th><th>Status</th><th>Aksi Mutasi</th>
+      <th>Lokasi Unit</th><th>Gudang</th><th>Sisa Stok</th><th>Status</th><th>Aksi Stok</th>
     </tr></thead><tbody>`;
 
     data.forEach(item => {
@@ -314,6 +352,7 @@
         <td>
           <button class="btn-sm" style="background:#10b981;" onclick="bukaModalMutasi('${item.kodeBarang}', '${item.namaBarang}', 'MASUK')">+ Masuk</button>
           <button class="btn-sm" style="background:#f59e0b;" onclick="bukaModalMutasi('${item.kodeBarang}', '${item.namaBarang}', 'KELUAR')">- Keluar</button>
+          <button class="btn-sm" style="background:#0284c7;" onclick="bukaModalTransfer('${item.kodeBarang}', '${item.namaBarang}')"><i class="fa-solid fa-arrow-right-arrow-left"></i> Transfer</button>
         </td>
       </tr>`;
     });
@@ -321,20 +360,64 @@
     document.getElementById('containerTabelStok').innerHTML = html;
   }
 
+  async function muatHistoryMutasi() {
+    try {
+      const res = await fetch(`${GAS_URL}?action=getHistoryMutasi&unitLokasi=${encodeURIComponent(sesiUser.unitLokasi)}&isAdmin=${sesiUser.isAdmin}`);
+      const json = await res.json();
+      if (json.status === "success") {
+        rawHistoryData = json.data;
+        terapkanFilterHistory();
+      }
+    } catch(e) { document.getElementById('containerTabelHistory').innerHTML = "Gagal memuat history."; }
+  }
+
+  function terapkanFilterHistory() {
+    const filterGudang = document.getElementById('filterHistoryGudang').value;
+    const search = document.getElementById('searchHistory').value.toLowerCase().trim();
+
+    let filtered = rawHistoryData.filter(i => {
+      if (filterGudang && i.kodeGudang !== filterGudang) return false;
+      if (search && !i.namaBarang.toLowerCase().includes(search) && !i.keterangan.toLowerCase().includes(search)) return false;
+      return true;
+    });
+
+    if (filtered.length === 0) {
+      document.getElementById('containerTabelHistory').innerHTML = "<p style='text-align:center; padding:20px;'>Tidak ada riwayat mutasi.</p>";
+      return;
+    }
+
+    let html = `<table><thead><tr><th>Waktu</th><th>Barang</th><th>Jenis</th><th>Jumlah</th><th>Gudang</th><th>Keterangan</th></tr></thead><tbody>`;
+    filtered.forEach(i => {
+      let gudangObj = masterGudang.find(g => g.kodeGudang === i.kodeGudang);
+      let nGudang = gudangObj ? gudangObj.namaGudang : i.kodeGudang;
+      let isMasuk = i.tipeMutasi === 'MASUK';
+
+      html += `<tr>
+        <td><small>${i.tglSistem}</small></td>
+        <td><b>${i.namaBarang}</b></td>
+        <td><span class="badge ${isMasuk ? 'badge-in' : 'badge-out'}">${i.tipeMutasi}</span></td>
+        <td><b>${i.jumlah} ${i.satuan}</b></td>
+        <td>${nGudang}</td>
+        <td><small>${i.keterangan}</small></td>
+      </tr>`;
+    });
+    html += `</tbody></table>`;
+    document.getElementById('containerTabelHistory').innerHTML = html;
+  }
+
   function bukaModalGudang() { document.getElementById('modalGudang').style.display = 'block'; }
-  function bukaModalTambahBarang() { 
-    updateSubGudangPilih('barangUnitPilih', 'barangGudangPilih');
-    document.getElementById('modalBarang').style.display = 'block'; 
+  function bukaModalTambahBarang() { updateSubGudangPilih('barangUnitPilih', 'barangGudangPilih'); document.getElementById('modalBarang').style.display = 'block'; }
+  function bukaModalTransfer(kode, nama) {
+    document.getElementById('trKodeBarangAsal').value = kode;
+    document.getElementById('trNamaBarang').value = nama;
+    updateSubGudangPilih('trUnitTujuan', 'trGudangTujuan');
+    document.getElementById('modalTransfer').style.display = 'block';
   }
   function tutupModal(id) { document.getElementById(id).style.display = 'none'; }
 
   document.getElementById('formTambahGudang').addEventListener('submit', async function(e) {
     e.preventDefault();
-    const payload = {
-      action: "tambahGudang",
-      kodeUnit: document.getElementById('gudangUnitPilih').value,
-      namaGudang: document.getElementById('namaGudangBaru').value.trim()
-    };
+    const payload = { action: "tambahGudang", kodeUnit: document.getElementById('gudangUnitPilih').value, namaGudang: document.getElementById('namaGudangBaru').value.trim() };
     const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
     const json = await res.json();
     if (json.status === "success") { alert("Gudang Ditambahkan!"); tutupModal('modalGudang'); muatMetaUnitsGudang(); }
@@ -371,11 +454,26 @@
       action: "updateMutasiStok",
       kodeBarang: document.getElementById('mutasiKodeBarang').value,
       tipeMutasi: document.getElementById('mutasiTipe').value,
-      jumlah: document.getElementById('mutasiJumlah').value
+      jumlah: document.getElementById('mutasiJumlah').value,
+      keterangan: document.getElementById('mutasiKet').value.trim() || "Mutasi Stok"
     };
     const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
     const json = await res.json();
     if (json.status === "success") { alert("Stok Diperbarui!"); tutupModal('modalMutasi'); muatDataStok(); }
+  });
+
+  document.getElementById('formTransferStok').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const payload = {
+      action: "transferStokAntarUnit",
+      kodeBarangAsal: document.getElementById('trKodeBarangAsal').value,
+      unitTujuan: document.getElementById('trUnitTujuan').value,
+      gudangTujuan: document.getElementById('trGudangTujuan').value,
+      jumlahTransfer: document.getElementById('trJumlah').value
+    };
+    const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+    const json = await res.json();
+    if (json.status === "success") { alert("Transfer Barang Berhasil!"); tutupModal('modalTransfer'); muatDataStok(); }
   });
 </script>
 
