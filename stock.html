@@ -3,10 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aplikasi Manajemen Stok Transaksi - Peternakan Ayam</title>
+  <title>Aplikasi Stok & Ekspor Excel Multi Unit</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
+  <!-- SheetJS Library untuk Ekspor Excel Rapi -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
   <style>
     :root { --primary: #0284c7; --primary-hover: #0369a1; --bg-body: #f8fafc; --card-bg: #ffffff; --text-main: #0f172a; --text-muted: #64748b; --border-color: #e2e8f0; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
     * { box-sizing: border-box; }
@@ -43,8 +46,8 @@
 
 <div class="wrapper">
   <div class="app-header">
-    <h2><i class="fa-solid fa-warehouse" style="color: var(--primary);"></i> Sistem Stok & Transaksi Gudang Farm</h2>
-    <p>Menu Penerimaan, Pemakaian Kandang, & Transfer Antar Unit</p>
+    <h2><i class="fa-solid fa-warehouse" style="color: var(--primary);"></i> Sistem Stok Multi-Unit Farm & Ekspor Excel</h2>
+    <p>Fitur Ekspor Rekap Excel & Konfirmasi Terima Mutasi Antar Unit</p>
   </div>
 
   <!-- Login Section -->
@@ -66,14 +69,20 @@
       <button class="tab-btn" id="tabHistoryBtn" onclick="switchTab('history')"><i class="fa-solid fa-clock-rotate-left"></i> History Mutasi</button>
     </div>
 
-    <!-- TAB 1: STOK VIEW -->
+    <!-- TAB 1: STOK & REKAP (LENGKAP EKSPOR EXCEL) -->
     <div id="tabStokView" class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
+        <h3 class="section-title" style="margin:0; border:none;"><i class="fa-solid fa-boxes-packing"></i> Rekap Inventaris Barang</h3>
+        <!-- TIKET EKSPOR EXCEL -->
+        <button onclick="eksporKeExcel()" style="background:#16a34a;"><i class="fa-solid fa-file-excel"></i> Ekspor Rekap Ke Excel (.xlsx)</button>
+      </div>
+
       <div class="filter-card">
         <div style="flex:1; min-width:140px;"><label>Periode Dari:</label><input type="date" id="filterTglAwal" onchange="muatDataStok()"></div>
         <div style="flex:1; min-width:140px;"><label>Sampai Tanggal:</label><input type="date" id="filterTglAkhir" onchange="muatDataStok()"></div>
         <div style="flex:1; min-width:150px;"><label>Unit / Farm:</label><select id="filterUnit" onchange="onUnitFilterChange()"></select></div>
         <div style="flex:1; min-width:150px;"><label>Gudang Spesifik:</label><select id="filterGudang" onchange="terapkanFilterStok()"></select></div>
-        <div style="flex:2; min-width:200px;"><label>Cari Barang:</label><input type="text" id="searchStok" placeholder="Ketik barang..." onkeyup="terapkanFilterStok()"></div>
+        <div style="flex:2; min-width:200px;"><label>Cari Barang:</label><input type="text" id="searchStok" placeholder="Ketik nama barang..." onkeyup="terapkanFilterStok()"></div>
       </div>
       <div class="table-responsive" id="containerTabelStok"><p style="text-align:center; padding:20px;">Memuat data stok...</p></div>
     </div>
@@ -86,6 +95,13 @@
         <button onclick="bukaModalPemakaian()" style="background:#f59e0b; flex:1; padding:18px; font-size:14px;"><i class="fa-solid fa-circle-arrow-up fa-xl"></i> 2. Pemakaian / Keluar Kandang</button>
         <button onclick="bukaModalTransferDirect()" style="background:#0284c7; flex:1; padding:18px; font-size:14px;"><i class="fa-solid fa-truck-ramp-box fa-xl"></i> 3. Mutasi Antar Unit Farm</button>
       </div>
+
+      <!-- PANEL KONFIRMASI PENDING TRANSFER MASUK -->
+      <div style="background:#fffbe6; border:1px solid #ffe58f; padding:16px; border-radius:10px;">
+        <h4 style="margin-top:0; color:#b78103;"><i class="fa-solid fa-clock"></i> Daftar Mutasi Masuk Menunggu Konfirmasi Terima (Pending Transfer)</h4>
+        <p style="font-size:12px; color:#725002;">*Stok unit pengirim belum berkurang dan stok unit penerima belum bertambah sebelum Anda menekan tombol "Konfirmasi Diterima".</p>
+        <div class="table-responsive" id="containerPendingTransfer"></div>
+      </div>
     </div>
 
     <!-- TAB 3: HISTORY LOG -->
@@ -96,18 +112,18 @@
   </div>
 </div>
 
-<!-- MODAL 1: TRANSAKSI PENERIMAAN BARANG MASUK -->
+<!-- MODAL 1: PENERIMAAN BARANG MASUK -->
 <div id="modalPenerimaan" class="modal">
   <div class="modal-content">
-    <h3 class="section-title"><i class="fa-solid fa-circle-arrow-down" style="color:#10b981;"></i> Transaksi Penerimaan Barang Masuk</h3>
+    <h3 class="section-title"><i class="fa-solid fa-circle-arrow-down" style="color:#10b981;"></i> Penerimaan Barang Masuk</h3>
     <form id="formPenerimaan">
       <div class="form-group"><label>Sumber Penerimaan</label>
         <select id="penSumber" onchange="toggleSumberPenerimaan()" required>
-          <option value="PERMINTAAN_ACC">Dari Tiket Permintaan Barang (ACC)</option>
           <option value="PEMBELIAN_SUPPLIER">Penerimaan Langsung (Supplier / Pembelian)</option>
+          <option value="PERMINTAAN_ACC">Dari Tiket Permintaan Barang (ACC)</option>
         </select>
       </div>
-      <div id="groupTiketAcc" class="form-group">
+      <div id="groupTiketAcc" class="form-group" style="display:none;">
         <label>Pilih Tiket Permintaan (ACC)</label>
         <select id="penTiketAcc" onchange="autofillTiketAcc()"><option value="">-- Pilih Tiket --</option></select>
       </div>
@@ -131,19 +147,15 @@
   </div>
 </div>
 
-<!-- MODAL 2: TRANSAKSI PEMAKAIAN / KELUAR KANDANG -->
+<!-- MODAL 2: PEMAKAIAN KANDANG -->
 <div id="modalPemakaian" class="modal">
   <div class="modal-content">
-    <h3 class="section-title"><i class="fa-solid fa-circle-arrow-up" style="color:#f59e0b;"></i> Transaksi Pemakaian Barang (Kandang)</h3>
+    <h3 class="section-title"><i class="fa-solid fa-circle-arrow-up" style="color:#f59e0b;"></i> Pemakaian Barang (Kandang)</h3>
     <form id="formPemakaian">
-      <div class="form-group"><label>Pilih Barang Dari Gudang</label>
-        <select id="pemBarangPilih" required></select>
-      </div>
-      <div class="form-group"><label>Lokasi Kandang / Peruntukan</label>
-        <input type="text" id="pemLokasiKandang" placeholder="Contoh: Kandang 01 / Kandang Brood A" required>
-      </div>
+      <div class="form-group"><label>Pilih Barang Dari Gudang</label><select id="pemBarangPilih" required></select></div>
+      <div class="form-group"><label>Lokasi Kandang / Peruntukan</label><input type="text" id="pemLokasiKandang" placeholder="Contoh: Kandang 01 / Brood A" required></div>
       <div class="form-group"><label>Jumlah Pemakaian</label><input type="number" id="pemJumlah" min="1" required></div>
-      <div class="form-group"><label>Keterangan Tambahan</label><input type="text" id="pemKet" placeholder="Catatan petugas..."></div>
+      <div class="form-group"><label>Keterangan Tambahan</label><input type="text" id="pemKet"></div>
       <div style="display:flex; justify-content:flex-end; gap:8px;"><button type="button" onclick="tutupModal('modalPemakaian')" style="background:#64748b;">Batal</button><button type="submit" style="background:#f59e0b;">Simpan Pemakaian</button></div>
     </form>
   </div>
@@ -152,15 +164,15 @@
 <!-- MODAL 3: MUTASI / TRANSFER ANTAR FARM -->
 <div id="modalTransfer" class="modal">
   <div class="modal-content">
-    <h3 class="section-title"><i class="fa-solid fa-truck-ramp-box" style="color:#0284c7;"></i> Mutasi Barang Antar Unit Farm</h3>
+    <h3 class="section-title"><i class="fa-solid fa-truck-ramp-box" style="color:#0284c7;"></i> Mutasi / Transfer Antar Unit Farm</h3>
     <form id="formTransferStok">
       <div class="form-group"><label>Pilih Barang Asal</label><select id="trBarangAsal" required></select></div>
       <div class="row-group">
-        <div class="form-group"><label>Unit Tujuan</label><select id="trUnitTujuan" onchange="updateSubGudangPilih('trUnitTujuan', 'trGudangTujuan')" required></select></div>
+        <div class="form-group"><label>Unit Farm Tujuan</label><select id="trUnitTujuan" onchange="updateSubGudangPilih('trUnitTujuan', 'trGudangTujuan')" required></select></div>
         <div class="form-group"><label>Gudang Tujuan</label><select id="trGudangTujuan" required></select></div>
       </div>
       <div class="form-group"><label>Jumlah Transfer</label><input type="number" id="trJumlah" min="1" required></div>
-      <div style="display:flex; justify-content:flex-end; gap:8px;"><button type="button" onclick="tutupModal('modalTransfer')" style="background:#64748b;">Batal</button><button type="submit" style="background:#0284c7;">Proses Transfer</button></div>
+      <div style="display:flex; justify-content:flex-end; gap:8px;"><button type="button" onclick="tutupModal('modalTransfer')" style="background:#64748b;">Batal</button><button type="submit" style="background:#0284c7;">Kirim Pengajuan Mutasi</button></div>
     </form>
   </div>
 </div>
@@ -204,6 +216,7 @@
     document.getElementById('tabStokView').style.display = tab === 'stok' ? 'block' : 'none';
     document.getElementById('tabTransaksiView').style.display = tab === 'transaksi' ? 'block' : 'none';
     document.getElementById('tabHistoryView').style.display = tab === 'history' ? 'block' : 'none';
+    if (tab === 'transaksi') muatPendingTransfers();
     if (tab === 'history') muatHistoryMutasi();
   }
 
@@ -280,52 +293,93 @@
 
   function renderTabelStok(data) {
     if (data.length === 0) { document.getElementById('containerTabelStok').innerHTML = "<p style='text-align:center; padding:20px;'>Barang tidak ditemukan.</p>"; return; }
-    let html = `<table><thead><tr><th>Kode</th><th>Nama Barang</th><th>Kategori</th><th>Unit</th><th>Gudang</th><th>Sisa Stok</th><th>Status</th></tr></thead><tbody>`;
+    let html = `<table><thead><tr><th>Kode</th><th>Nama Barang</th><th>Kategori</th><th>Lokasi Unit</th><th>Gudang</th><th>Stok Awal</th><th>Masuk</th><th>Keluar</th><th>Sisa Stok</th><th>Status</th></tr></thead><tbody>`;
     data.forEach(item => {
       let gObj = masterGudang.find(g => g.kodeGudang === item.kodeGudang);
       let isMenipis = item.sisaStok <= item.stokMin;
-      html += `<tr><td><b>${item.kodeBarang}</b></td><td><b>${item.namaBarang}</b></td><td>${item.kategori}</td><td>${item.kodeUnit}</td><td>${gObj ? gObj.namaGudang : item.kodeGudang}</td><td style="font-size:14px; font-weight:700; color:${isMenipis?'#dc2626':'#0284c7'};">${item.sisaStok} ${item.satuan}</td><td>${isMenipis?'<span class="badge badge-warning">Menipis</span>':'<span class="badge badge-ok">Aman</span>'}</td></tr>`;
+      html += `<tr><td><b>${item.kodeBarang}</b></td><td><b>${item.namaBarang}</b></td><td>${item.kategori}</td><td>${item.kodeUnit}</td><td>${gObj ? gObj.namaGudang : item.kodeGudang}</td><td>${item.stokAwal}</td><td>${item.stokMasuk}</td><td>${item.stokKeluar}</td><td style="font-size:14px; font-weight:700; color:${isMenipis?'#dc2626':'#0284c7'};">${item.sisaStok} ${item.satuan}</td><td>${isMenipis?'<span class="badge badge-warning">Menipis</span>':'<span class="badge badge-ok">Aman</span>'}</td></tr>`;
     });
     html += `</tbody></table>`;
     document.getElementById('containerTabelStok').innerHTML = html;
   }
 
-  async function bukaModalPenerimaan() {
-    updateSubGudangPilih('penUnit', 'penGudang');
-    document.getElementById('modalPenerimaan').style.display = 'block';
+  // FITUR EKSPOR REKAP KE EXCEL RAPI (.XLSX)
+  function eksporKeExcel() {
+    if (rawStokData.length === 0) return alert("Tidak ada data stok untuk diekspor!");
+    
+    let selectedUnit = document.getElementById('filterUnit').value || "Semua Unit";
+    let selectedGudang = document.getElementById('filterGudang').value || "Semua Gudang";
+
+    let dataExcel = rawStokData.map((item, idx) => {
+      let gObj = masterGudang.find(g => g.kodeGudang === item.kodeGudang);
+      return {
+        "No": idx + 1,
+        "Kode Barang": item.kodeBarang,
+        "Nama Barang": item.namaBarang,
+        "Kategori": item.kategori,
+        "Lokasi Unit": item.kodeUnit,
+        "Gudang": gObj ? gObj.namaGudang : item.kodeGudang,
+        "Stok Awal": item.stokAwal,
+        "Stok Masuk": item.stokMasuk,
+        "Stok Keluar": item.stokKeluar,
+        "Sisa Stok Akhir": item.sisaStok,
+        "Satuan": item.satuan,
+        "Status Stok": item.sisaStok <= item.stokMin ? "MENIPIS" : "AMAN"
+      };
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(dataExcel);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Rekap Stok");
+
+    // Auto Column Width
+    const max_width = dataExcel.reduce((w, r) => Math.max(w, r["Nama Barang"].length), 10);
+    worksheet["!cols"] = [ { wch: 5 }, { wch: 12 }, { wch: max_width + 5 }, { wch: 12 }, { wch: 15 }, { wch: 18 }, { wch: 10 }, { wch: 10 }, { wch: 10 }, { wch: 15 }, { wch: 8 }, { wch: 12 } ];
+
+    let fileName = `Rekap_Stok_${sesiUser.unitLokasi}_${new Date().toISOString().slice(0,10)}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
+  }
+
+  // PENDING TRANSFERS
+  async function muatPendingTransfers() {
     try {
-      const res = await fetch(GAS_URL + "?action=getTiketAcc");
+      const res = await fetch(`${GAS_URL}?action=getPendingTransfers&unitLokasi=${encodeURIComponent(sesiUser.unitLokasi)}`);
       const json = await res.json();
-      if(json.status === "success") {
-        tiketAccList = json.data;
-        document.getElementById('penTiketAcc').innerHTML = '<option value="">-- Pilih Tiket ACC --</option>' + tiketAccList.map(t => `<option value="${t.kodeTiket}">${t.kodeTiket} - ${t.namaBarang} (${t.jumlah} ${t.satuan})</option>`).join('');
+      if (json.status === "success") {
+        if(json.data.length === 0) {
+          document.getElementById('containerPendingTransfer').innerHTML = "<p style='font-size:13px; color:#64748b; margin:0;'>Tidak ada mutasi masuk yang menggantung.</p>";
+          return;
+        }
+        let html = `<table><thead><tr><th>Tgl Pengiriman</th><th>Barang</th><th>Dari Unit Asal</th><th>Jumlah Transfer</th><th>Aksi Terima</th></tr></thead><tbody>`;
+        json.data.forEach(t => {
+          html += `<tr><td><small>${t.tgl}</small></td><td><b>${t.namaBarang}</b></td><td>${t.unitAsal} (${t.gudangAsal})</td><td><b>${t.jumlah} ${t.satuan}</b></td><td><button class="btn-sm" style="background:#10b981;" onclick="konfirmasiTerimaTransfer('${t.idTransfer}')"><i class="fa-solid fa-check"></i> Konfirmasi Diterima</button></td></tr>`;
+        });
+        html += `</tbody></table>`;
+        document.getElementById('containerPendingTransfer').innerHTML = html;
       }
     } catch(e){}
   }
 
+  async function konfirmasiTerimaTransfer(idTransfer) {
+    if(!confirm("Apakah Anda yakin barang mutasi ini sudah tiba & sesuai?")) return;
+    const payload = { action: "konfirmasiTerimaTransfer", idTransfer: idTransfer };
+    const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+    const json = await res.json();
+    if(json.status === "success") { alert(json.message); muatPendingTransfers(); muatDataStok(); }
+  }
+
+  function bukaModalPenerimaan() { updateSubGudangPilih('penUnit', 'penGudang'); document.getElementById('modalPenerimaan').style.display = 'block'; }
   function toggleSumberPenerimaan() {
     const val = document.getElementById('penSumber').value;
     document.getElementById('groupTiketAcc').style.display = val === 'PERMINTAAN_ACC' ? 'block' : 'none';
   }
 
-  function autofillTiketAcc() {
-    const kode = document.getElementById('penTiketAcc').value;
-    const item = tiketAccList.find(t => t.kodeTiket === kode);
-    if(item) {
-      document.getElementById('penNamaBarang').value = item.namaBarang;
-      document.getElementById('penJumlah').value = item.jumlah;
-      document.getElementById('penSatuan').value = item.satuan;
-      document.getElementById('penKategori').value = item.kategori || 'UMUM';
-    }
-  }
-
   document.getElementById('formPenerimaan').addEventListener('submit', async function(e) {
     e.preventDefault();
-    const sumber = document.getElementById('penSumber').value;
     const payload = {
       action: "prosesPenerimaanBarang",
-      sumberPenerimaan: sumber,
-      refInfo: sumber === 'PERMINTAAN_ACC' ? document.getElementById('penTiketAcc').value : "Pembelian Supplier",
+      sumberPenerimaan: document.getElementById('penSumber').value,
+      refInfo: document.getElementById('penSumber').value === 'PERMINTAAN_ACC' ? document.getElementById('penTiketAcc').value : "Pembelian Supplier",
       kodeUnit: document.getElementById('penUnit').value,
       kodeGudang: document.getElementById('penGudang').value,
       namaBarang: document.getElementById('penNamaBarang').value.trim(),
@@ -357,7 +411,7 @@
   document.getElementById('formTransferStok').addEventListener('submit', async function(e) {
     e.preventDefault();
     const payload = {
-      action: "transferStokAntarUnit",
+      action: "ajukanTransferAntarUnit",
       kodeBarangAsal: document.getElementById('trBarangAsal').value,
       unitTujuan: document.getElementById('trUnitTujuan').value,
       gudangTujuan: document.getElementById('trGudangTujuan').value,
@@ -365,7 +419,7 @@
     };
     const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
     const json = await res.json();
-    if(json.status === "success") { alert("Mutasi Transfer Berhasil!"); tutupModal('modalTransfer'); muatDataStok(); }
+    if(json.status === "success") { alert(json.message); tutupModal('modalTransfer'); muatDataStok(); }
   });
 
   async function muatHistoryMutasi() {
