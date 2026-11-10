@@ -48,8 +48,8 @@
 
 <div class="wrapper">
   <div class="app-header">
-    <h2><i class="fa-solid fa-warehouse" style="color: var(--primary);"></i> Management Stok Multi-Gudang (Akses Terkunci Per Unit)</h2>
-    <p>Sistem Pengelolaan Stok Berdasarkan Hak Akses Unit Users</p>
+    <h2><i class="fa-solid fa-warehouse" style="color: var(--primary);"></i> Management Stok Multi-Gudang</h2>
+    <p>Unit Diambil Otomatis Dari Database Users</p>
   </div>
 
   <!-- Login Section -->
@@ -75,7 +75,6 @@
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
         <h3 class="section-title" style="margin: 0; border: none;"><i class="fa-solid fa-boxes-packing"></i> Data Stok Barang Unit Anda</h3>
         <div id="actionGroup" style="display: flex; gap: 8px;">
-          <button id="btnTambahUnit" onclick="bukaModalUnit()" style="background:#4f46e5; display:none;"><i class="fa-solid fa-plus"></i> Tambah Unit</button>
           <button id="btnTambahGudang" onclick="bukaModalGudang()" style="background:#0891b2; display:none;"><i class="fa-solid fa-plus"></i> Tambah Gudang</button>
           <button onclick="bukaModalTambahBarang()" style="background:#059669;"><i class="fa-solid fa-plus"></i> Tambah Barang</button>
         </div>
@@ -103,23 +102,12 @@
   </div>
 </div>
 
-<!-- MODAL TAMBAH UNIT -->
-<div id="modalUnit" class="modal">
-  <div class="modal-content">
-    <h3 class="section-title">Tambah Unit / Farm Baru</h3>
-    <form id="formTambahUnit">
-      <div class="form-group"><label>Nama Unit / Farm</label><input type="text" id="namaUnitBaru" placeholder="Contoh: Sukajaya 2 / Farm Cikabayan" required></div>
-      <div style="display:flex; justify-content:flex-end; gap:8px;"><button type="button" onclick="tutupModal('modalUnit')" style="background:#64748b;">Batal</button><button type="submit">Simpan Unit</button></div>
-    </form>
-  </div>
-</div>
-
-<!-- MODAL TAMBAH GUDANG -->
+<!-- MODAL TAMBAH GUDANG (KHUSUS ADMIN) -->
 <div id="modalGudang" class="modal">
   <div class="modal-content">
     <h3 class="section-title">Tambah Gudang Pada Unit</h3>
     <form id="formTambahGudang">
-      <div class="form-group"><label>Pilih Unit / Farm</label><select id="gudangUnitPilih" required></select></div>
+      <div class="form-group"><label>Pilih Unit / Farm (Dari Data Users)</label><select id="gudangUnitPilih" required></select></div>
       <div class="form-group"><label>Nama Gudang</label><input type="text" id="namaGudangBaru" placeholder="Contoh: Gudang Obat / Gudang Pakan 1" required></div>
       <div style="display:flex; justify-content:flex-end; gap:8px;"><button type="button" onclick="tutupModal('modalGudang')" style="background:#64748b;">Batal</button><button type="submit">Simpan Gudang</button></div>
     </form>
@@ -204,7 +192,6 @@
     `;
     
     if (sesiUser.isAdmin) {
-      document.getElementById('btnTambahUnit').style.display = 'inline-flex';
       document.getElementById('btnTambahGudang').style.display = 'inline-flex';
     }
 
@@ -237,9 +224,8 @@
       if(gudangUnitPilih) gudangUnitPilih.innerHTML = optHtml;
       if(barangUnitPilih) barangUnitPilih.innerHTML = optHtml;
     } else {
-      // UNTUK STAFF: TERKUNCI HANYA UNIT MILIKNYA
       filterUnit.innerHTML = masterUnits.map(u => `<option value="${u.kodeUnit}">${u.namaUnit}</option>`).join('');
-      filterUnit.disabled = true; // Kunci dropdown filter unit untuk staff
+      filterUnit.disabled = true;
       if(barangUnitPilih) {
         barangUnitPilih.innerHTML = masterUnits.map(u => `<option value="${u.kodeUnit}">${u.namaUnit}</option>`).join('');
         barangUnitPilih.disabled = true;
@@ -257,7 +243,7 @@
     let filteredGudang = masterGudang.filter(g => g.kodeUnit === selectedUnit);
     filterGudang.innerHTML = '<option value="">-- Semua Gudang --</option>' + filteredGudang.map(g => `<option value="${g.kodeGudang}">${g.namaGudang}</option>`).join('');
     
-    if (!sesiUser.isAdmin && document.getElementById('barangGudangPilih')) {
+    if (document.getElementById('barangGudangPilih')) {
       updateSubGudangPilih('barangUnitPilih', 'barangGudangPilih');
     }
     
@@ -313,10 +299,7 @@
     </tr></thead><tbody>`;
 
     data.forEach(item => {
-      let unitObj = masterUnits.find(u => u.kodeUnit === item.kodeUnit);
       let gudangObj = masterGudang.find(g => g.kodeGudang === item.kodeGudang);
-
-      let namaUnit = unitObj ? unitObj.namaUnit : item.kodeUnit;
       let namaGudang = gudangObj ? gudangObj.namaGudang : item.kodeGudang;
       let isMenipis = item.sisaStok <= item.stokMin;
 
@@ -324,7 +307,7 @@
         <td><b>${item.kodeBarang}</b></td>
         <td><b>${item.namaBarang}</b></td>
         <td>${item.kategori}</td>
-        <td><i class="fa-solid fa-location-dot" style="color:#0284c7;"></i> ${namaUnit}</td>
+        <td><i class="fa-solid fa-location-dot" style="color:#0284c7;"></i> ${item.kodeUnit}</td>
         <td><i class="fa-solid fa-warehouse" style="color:#4f46e5;"></i> ${namaGudang}</td>
         <td style="font-size:14px; font-weight:700; color:${isMenipis ? '#dc2626' : '#0284c7'};">${item.sisaStok} ${item.satuan}</td>
         <td>${isMenipis ? `<span class="badge badge-warning">Menipis (Min: ${item.stokMin})</span>` : `<span class="badge badge-ok">Aman</span>`}</td>
@@ -338,21 +321,12 @@
     document.getElementById('containerTabelStok').innerHTML = html;
   }
 
-  function bukaModalUnit() { document.getElementById('modalUnit').style.display = 'block'; }
   function bukaModalGudang() { document.getElementById('modalGudang').style.display = 'block'; }
   function bukaModalTambahBarang() { 
     updateSubGudangPilih('barangUnitPilih', 'barangGudangPilih');
     document.getElementById('modalBarang').style.display = 'block'; 
   }
   function tutupModal(id) { document.getElementById(id).style.display = 'none'; }
-
-  document.getElementById('formTambahUnit').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const payload = { action: "tambahUnit", namaUnit: document.getElementById('namaUnitBaru').value.trim() };
-    const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
-    const json = await res.json();
-    if (json.status === "success") { alert("Unit Ditambahkan!"); tutupModal('modalUnit'); muatMetaUnitsGudang(); }
-  });
 
   document.getElementById('formTambahGudang').addEventListener('submit', async function(e) {
     e.preventDefault();
