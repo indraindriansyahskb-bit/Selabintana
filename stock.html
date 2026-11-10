@@ -74,13 +74,16 @@
         <button onclick="eksporKeExcel()" style="background:#16a34a;"><i class="fa-solid fa-file-excel"></i> Ekspor Jurnal Ke Excel (.xlsx)</button>
       </div>
 
-      <!-- FILTER CARD DENGAN DROPDOWN PILIH BARANG & INPUT PENCARIAN TEKS -->
+      <!-- FILTER CARD: TANPA INPUT KATA KUNCI, DROPDOWN BARANG DISERTAI PENCARIAN -->
       <div class="filter-card">
-        <div style="flex:1; min-width:130px;"><label>Periode Dari:</label><input type="date" id="filterTglAwal" onchange="muatJurnalTransaksiBarang()"></div>
-        <div style="flex:1; min-width:130px;"><label>Sampai Tanggal:</label><input type="date" id="filterTglAkhir" onchange="muatJurnalTransaksiBarang()"></div>
-        <div style="flex:1; min-width:140px;"><label>Unit / Farm:</label><select id="filterUnit" onchange="terapkanFilterJurnal()"></select></div>
-        <div style="flex:1.5; min-width:170px;"><label>Pilih Barang:</label><select id="filterBarangPilih" onchange="terapkanFilterJurnal()"><option value="">-- Semua Barang --</option></select></div>
-        <div style="flex:1.5; min-width:170px;"><label>Cari Kata Kunci:</label><input type="text" id="searchJurnal" placeholder="Cari di keterangan..." onkeyup="terapkanFilterJurnal()"></div>
+        <div style="flex:1; min-width:140px;"><label>Periode Dari:</label><input type="date" id="filterTglAwal" onchange="muatJurnalTransaksiBarang()"></div>
+        <div style="flex:1; min-width:140px;"><label>Sampai Tanggal:</label><input type="date" id="filterTglAkhir" onchange="muatJurnalTransaksiBarang()"></div>
+        <div style="flex:1; min-width:160px;"><label>Unit / Farm:</label><select id="filterUnit" onchange="terapkanFilterJurnal()"></select></div>
+        <div style="flex:2; min-width:240px;">
+          <label>Pilih / Cari Barang:</label>
+          <input type="text" id="filterBarangPilih" list="listOptionsBarang" placeholder="-- Ketik / Pilih Barang --" oninput="terapkanFilterJurnal()">
+          <datalist id="listOptionsBarang"></datalist>
+        </div>
       </div>
       
       <div class="table-responsive" id="containerTabelJurnal"><p style="text-align:center; padding:20px;">Memuat data jurnal transaksi...</p></div>
@@ -259,7 +262,7 @@
       if (json.status === "success") { 
         rawStokList = json.data; 
         populateBarangSelects(); 
-        populateFilterBarangDropdown();
+        populateFilterBarangDatalist();
       }
     } catch(e) {}
   }
@@ -272,15 +275,14 @@
     if(trBarangAsal) trBarangAsal.innerHTML = opts;
   }
 
-  // ISI DROPDOWN PILIH BARANG PADA FILTER JURNAL TRANSAKSI
-  function populateFilterBarangDropdown() {
-    const filterBarangSelect = document.getElementById('filterBarangPilih');
-    if (!filterBarangSelect) return;
+  // POPULATE DATALIST AGAR BISA DICARI & DIPILIH SEKALIGUS
+  function populateFilterBarangDatalist() {
+    const dataListElement = document.getElementById('listOptionsBarang');
+    if (!dataListElement) return;
 
-    // Ambil daftar unik nama barang
     let uniqueNames = [...new Set(rawStokList.map(i => i.namaBarang))].sort();
-    let opts = '<option value="">-- Semua Barang --</option>' + uniqueNames.map(name => `<option value="${name}">${name}</option>`).join('');
-    filterBarangSelect.innerHTML = opts;
+    let opts = uniqueNames.map(name => `<option value="${name}"></option>`).join('');
+    dataListElement.innerHTML = opts;
   }
 
   // MEMUAT RINCIAN TRANSAKSI PER BARANG (URUT NAMA BARANG A-Z)
@@ -307,16 +309,14 @@
     } catch(e) {}
   }
 
-  // FILTER BERDASARKAN UNIT, DROPDOWN NAMA BARANG, DAN KATA KUNCI TEKS
+  // FILTER BERDASARKAN UNIT DAN PENCARIAN / PILIHAN BARANG
   function terapkanFilterJurnal() {
     const selectedUnit = document.getElementById('filterUnit').value;
-    const selectedBarang = document.getElementById('filterBarangPilih').value;
-    const searchVal = document.getElementById('searchJurnal').value.toLowerCase().trim();
+    const searchBarangVal = document.getElementById('filterBarangPilih').value.toLowerCase().trim();
 
     let filtered = rawJurnalData.filter(item => {
       if (selectedUnit && item.kodeUnit !== selectedUnit) return false;
-      if (selectedBarang && item.namaBarang.toLowerCase() !== selectedBarang.toLowerCase()) return false;
-      if (searchVal && !item.namaBarang.toLowerCase().includes(searchVal) && !item.keterangan.toLowerCase().includes(searchVal)) return false;
+      if (searchBarangVal && !item.namaBarang.toLowerCase().includes(searchBarangVal) && !item.keterangan.toLowerCase().includes(searchBarangVal)) return false;
       return true;
     });
     renderTabelJurnal(filtered);
@@ -365,15 +365,26 @@
     document.getElementById('containerTabelJurnal').innerHTML = html;
   }
 
-  // EKSPOR JURNAL RINCI TRANSAKSI PER BARANG KE EXCEL (.XLSX)
+  // EKSPOR JURNAL RINCI TRANSAKSI PER BARANG KE EXCEL (.XLSX) SESUAI FILTER
   function eksporKeExcel() {
-    if (rawJurnalData.length === 0) return alert("Tidak ada rincian transaksi untuk diekspor!");
+    const selectedUnit = document.getElementById('filterUnit').value;
+    const searchBarangVal = document.getElementById('filterBarangPilih').value.toLowerCase().trim();
+
+    let filteredData = rawJurnalData.filter(item => {
+      if (selectedUnit && item.kodeUnit !== selectedUnit) return false;
+      if (searchBarangVal && !item.namaBarang.toLowerCase().includes(searchBarangVal) && !item.keterangan.toLowerCase().includes(searchBarangVal)) return false;
+      return true;
+    });
+
+    if (filteredData.length === 0) {
+      return alert("Tidak ada rincian transaksi barang yang sesuai dengan filter/pilihan untuk diekspor!");
+    }
 
     let dataExcel = [];
     let currentBarang = "";
     let runningSaldo = 0;
 
-    rawJurnalData.forEach((item, idx) => {
+    filteredData.forEach((item, idx) => {
       if (item.namaBarang !== currentBarang) {
         currentBarang = item.namaBarang;
         runningSaldo = 0;
@@ -399,7 +410,7 @@
         "Jenis Transaksi": item.tipeMutasi || "-",
         "Masuk": mas,
         "Keluar": kel,
-        "Sisa Stok Current": runningSaldo,
+        "Running Stok": runningSaldo,
         "Satuan": item.satuan || "pcs",
         "Lokasi Unit": item.kodeUnit || "-",
         "Gudang": item.kodeGudang || "-",
@@ -410,18 +421,21 @@
 
     const worksheet = XLSX.utils.json_to_sheet(dataExcel);
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Jurnal Transaksi Barang");
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Jurnal Transaksi");
 
     worksheet["!cols"] = [
       { wch: 5 }, { wch: 20 }, { wch: 12 }, { wch: 25 }, { wch: 15 },
-      { wch: 15 }, { wch: 10 }, { wch: 10 }, { wch: 16 }, { wch: 8 },
+      { wch: 15 }, { wch: 10 }, { wch: 10 }, { wch: 14 }, { wch: 8 },
       { wch: 18 }, { wch: 18 }, { wch: 35 }, { wch: 22 }
     ];
 
     let tAwal = document.getElementById('filterTglAwal').value;
     let tAkhir = document.getElementById('filterTglAkhir').value;
     let tglText = tAwal && tAkhir ? `${tAwal}_s-d_${tAkhir}` : "Semua_Periode";
-    XLSX.writeFile(workbook, `Jurnal_Transaksi_Stok_${sesiUser.unitLokasi}_${tglText}.xlsx`);
+    let barangText = searchBarangVal ? searchBarangVal.replace(/[^a-zA-Z0-9]/g, "_") : "Semua_Barang";
+
+    let fileName = `Jurnal_Stok_${barangText}_${sesiUser.unitLokasi}_${tglText}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
   }
 
   // ACC ADMIN & KONFIRMASI DITERIMA
