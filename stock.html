@@ -3,11 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aplikasi Stok & Ekspor Excel Multi Unit</title>
+  <title>Aplikasi Stok & Mutasi Multi Unit Farm</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
-  <!-- SheetJS Library untuk Ekspor Excel Rapi -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <style>
@@ -36,7 +35,9 @@
     th { background-color: #f8fafc; font-weight: 600; color: #475569; font-size: 11px; text-transform: uppercase; }
     .badge { display: inline-flex; align-items: center; padding: 4px 8px; border-radius: 15px; font-size: 11px; font-weight: 600; }
     .badge-ok { background: #d1fae5; color: #047857; }
-    .badge-warning { background: #fee2e2; color: #b91c1c; }
+    .badge-warning { background: #fef3c7; color: #b45309; }
+    .badge-danger { background: #fee2e2; color: #b91c1c; }
+    .badge-info { background: #e0f2fe; color: #0369a1; }
     .btn-sm { padding: 5px 9px; font-size: 11px; border-radius: 6px; }
     .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; overflow-y: auto; padding: 20px; }
     .modal-content { background: white; max-width: 520px; margin: 40px auto; padding: 22px; border-radius: 12px; }
@@ -46,11 +47,10 @@
 
 <div class="wrapper">
   <div class="app-header">
-    <h2><i class="fa-solid fa-warehouse" style="color: var(--primary);"></i> Sistem Stok Multi-Unit Farm & Ekspor Excel</h2>
-    <p>Fitur Ekspor Rekap Excel & Konfirmasi Terima Mutasi Antar Unit</p>
+    <h2><i class="fa-solid fa-warehouse" style="color: var(--primary);"></i> Sistem Manajemen Stock</h2>
+    <p>All Unit</p>
   </div>
 
-  <!-- Login Section -->
   <div id="loginSection" class="card" style="max-width: 380px; margin: 40px auto;">
     <h3 class="section-title"><i class="fa-solid fa-right-to-bracket"></i> Login App Stok</h3>
     <div class="form-group"><label>Username</label><input type="text" id="loginUser" required></div>
@@ -58,25 +58,21 @@
     <button type="button" onclick="prosesLogin()" style="width:100%; margin-top: 8px;"><i class="fa-solid fa-sign-in-alt"></i> Masuk</button>
   </div>
 
-  <!-- Main Panel -->
   <div id="mainPanel" style="display: none;">
     <div class="user-info-box" id="infoSesiUser"></div>
 
-    <!-- Navigation Tabs -->
     <div class="nav-tabs">
       <button class="tab-btn active" id="tabStokBtn" onclick="switchTab('stok')"><i class="fa-solid fa-boxes-stacked"></i> Stok & Rekap</button>
       <button class="tab-btn" id="tabTransaksiBtn" onclick="switchTab('transaksi')" style="background:#059669; color:white;"><i class="fa-solid fa-right-left"></i> Menu Transaksi Stok</button>
-      <button class="tab-btn" id="tabHistoryBtn" onclick="switchTab('history')"><i class="fa-solid fa-clock-rotate-left"></i> History Mutasi</button>
+      <button class="tab-btn" id="tabHistoryBtn" onclick="switchTab('history')"><i class="fa-solid fa-clock-rotate-left"></i> History Mutasi Status</button>
     </div>
 
-    <!-- TAB 1: STOK & REKAP (LENGKAP EKSPOR EXCEL) -->
+    <!-- TAB 1: STOK VIEW -->
     <div id="tabStokView" class="card">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
         <h3 class="section-title" style="margin:0; border:none;"><i class="fa-solid fa-boxes-packing"></i> Rekap Inventaris Barang</h3>
-        <!-- TIKET EKSPOR EXCEL -->
         <button onclick="eksporKeExcel()" style="background:#16a34a;"><i class="fa-solid fa-file-excel"></i> Ekspor Rekap Ke Excel (.xlsx)</button>
       </div>
-
       <div class="filter-card">
         <div style="flex:1; min-width:140px;"><label>Periode Dari:</label><input type="date" id="filterTglAwal" onchange="muatDataStok()"></div>
         <div style="flex:1; min-width:140px;"><label>Sampai Tanggal:</label><input type="date" id="filterTglAkhir" onchange="muatDataStok()"></div>
@@ -87,7 +83,7 @@
       <div class="table-responsive" id="containerTabelStok"><p style="text-align:center; padding:20px;">Memuat data stok...</p></div>
     </div>
 
-    <!-- TAB 2: MENU TRANSAKSI STOK -->
+    <!-- TAB 2: TRANSAKSI & VERIFIKASI MUTASI -->
     <div id="tabTransaksiView" class="card" style="display: none;">
       <h3 class="section-title"><i class="fa-solid fa-right-left"></i> Pusat Transaksi Gudang</h3>
       <div class="row-group" style="margin-bottom: 25px;">
@@ -96,18 +92,17 @@
         <button onclick="bukaModalTransferDirect()" style="background:#0284c7; flex:1; padding:18px; font-size:14px;"><i class="fa-solid fa-truck-ramp-box fa-xl"></i> 3. Mutasi Antar Unit Farm</button>
       </div>
 
-      <!-- PANEL KONFIRMASI PENDING TRANSFER MASUK -->
+      <!-- PANEL STATUS VERIFIKASI MUTASI (ACC ADMIN & CONFIRM TERIMA) -->
       <div style="background:#fffbe6; border:1px solid #ffe58f; padding:16px; border-radius:10px;">
-        <h4 style="margin-top:0; color:#b78103;"><i class="fa-solid fa-clock"></i> Daftar Mutasi Masuk Menunggu Konfirmasi Terima (Pending Transfer)</h4>
-        <p style="font-size:12px; color:#725002;">*Stok unit pengirim belum berkurang dan stok unit penerima belum bertambah sebelum Anda menekan tombol "Konfirmasi Diterima".</p>
+        <h4 style="margin-top:0; color:#b78103;"><i class="fa-solid fa-clock"></i> Daftar Pengajuan Mutasi (ACC Admin & Konfirmasi Penerimaan)</h4>
         <div class="table-responsive" id="containerPendingTransfer"></div>
       </div>
     </div>
 
-    <!-- TAB 3: HISTORY LOG -->
+    <!-- TAB 3: HISTORY MUTASI STATUS -->
     <div id="tabHistoryView" class="card" style="display: none;">
-      <h3 class="section-title"><i class="fa-solid fa-clock-rotate-left"></i> History Log Mutasi Barang</h3>
-      <div class="table-responsive" id="containerTabelHistory"><p style="text-align:center; padding:20px;">Memuat history...</p></div>
+      <h3 class="section-title"><i class="fa-solid fa-clock-rotate-left"></i> Daftar History Mutasi Antar Unit</h3>
+      <div class="table-responsive" id="containerTabelHistory"><p style="text-align:center; padding:20px;">Memuat history mutasi...</p></div>
     </div>
   </div>
 </div>
@@ -180,7 +175,7 @@
 <script>
   const GAS_URL = "https://script.google.com/macros/s/AKfycbw6msj-_8KlMWw97-efAZZwcf91NJt7yFMuMqIJTXz2Sc2pKmK1eFp4OqKlGozF2OyYMQ/exec";
 
-  let sesiUser = {}; let masterUnits = []; let masterGudang = []; let rawStokData = []; let tiketAccList = [];
+  let sesiUser = {}; let masterUnits = []; let allUnits = []; let masterGudang = []; let rawStokData = []; let tiketAccList = [];
 
   window.onload = function() {
     const savedUser = localStorage.getItem('stok_app_user_session');
@@ -224,7 +219,12 @@
     try {
       const res = await fetch(`${GAS_URL}?action=getUnitsAndGudang&unitLokasi=${encodeURIComponent(sesiUser.unitLokasi)}&isAdmin=${sesiUser.isAdmin}`);
       const json = await res.json();
-      if (json.status === "success") { masterUnits = json.units; masterGudang = json.gudang; populateUnitDropdowns(); }
+      if (json.status === "success") { 
+        masterUnits = json.units; 
+        allUnits = json.allUnits || json.units;
+        masterGudang = json.gudang; 
+        populateUnitDropdowns(); 
+      }
     } catch(e) {}
   }
 
@@ -241,7 +241,12 @@
       filterUnit.disabled = true;
       if(penUnit) { penUnit.innerHTML = masterUnits.map(u => `<option value="${u.kodeUnit}">${u.namaUnit}</option>`).join(''); penUnit.disabled = true; }
     }
-    if(trUnitTujuan) trUnitTujuan.innerHTML = '<option value="">-- Pilih Unit Tujuan --</option>' + masterUnits.map(u => `<option value="${u.kodeUnit}">${u.namaUnit}</option>`).join('');
+
+    // MEMUAT SELURUH UNIT FARM TUJUAN KECUALI UNIT ASAL PETUGAS
+    if(trUnitTujuan) {
+      let targetList = allUnits.filter(u => u.kodeUnit.toLowerCase() !== sesiUser.unitLokasi.toLowerCase());
+      trUnitTujuan.innerHTML = '<option value="">-- Pilih Unit Farm Tujuan --</option>' + targetList.map(u => `<option value="${u.kodeUnit}">${u.namaUnit}</option>`).join('');
+    }
     onUnitFilterChange();
   }
 
@@ -257,7 +262,7 @@
   function updateSubGudangPilih(unitSelectId, gudangSelectId) {
     const unitKode = document.getElementById(unitSelectId).value;
     const gudangSelect = document.getElementById(gudangSelectId);
-    let listG = masterGudang.filter(g => g.kodeUnit === unitKode);
+    let listG = masterGudang.filter(g => g.kodeUnit.toLowerCase() === unitKode.toLowerCase());
     gudangSelect.innerHTML = listG.length > 0 ? listG.map(g => `<option value="${g.kodeGudang}">${g.namaGudang}</option>`).join('') : '<option value="">-- Tidak ada gudang --</option>';
   }
 
@@ -303,56 +308,67 @@
     document.getElementById('containerTabelStok').innerHTML = html;
   }
 
-  // FITUR EKSPOR REKAP KE EXCEL RAPI (.XLSX)
   function eksporKeExcel() {
     if (rawStokData.length === 0) return alert("Tidak ada data stok untuk diekspor!");
-    
-    let selectedUnit = document.getElementById('filterUnit').value || "Semua Unit";
-    let selectedGudang = document.getElementById('filterGudang').value || "Semua Gudang";
-
     let dataExcel = rawStokData.map((item, idx) => {
       let gObj = masterGudang.find(g => g.kodeGudang === item.kodeGudang);
       return {
-        "No": idx + 1,
-        "Kode Barang": item.kodeBarang,
-        "Nama Barang": item.namaBarang,
-        "Kategori": item.kategori,
-        "Lokasi Unit": item.kodeUnit,
-        "Gudang": gObj ? gObj.namaGudang : item.kodeGudang,
-        "Stok Awal": item.stokAwal,
-        "Stok Masuk": item.stokMasuk,
-        "Stok Keluar": item.stokKeluar,
-        "Sisa Stok Akhir": item.sisaStok,
-        "Satuan": item.satuan,
-        "Status Stok": item.sisaStok <= item.stokMin ? "MENIPIS" : "AMAN"
+        "No": idx + 1, "Kode Barang": item.kodeBarang, "Nama Barang": item.namaBarang, "Kategori": item.kategori,
+        "Lokasi Unit": item.kodeUnit, "Gudang": gObj ? gObj.namaGudang : item.kodeGudang, "Stok Awal": item.stokAwal,
+        "Stok Masuk": item.stokMasuk, "Stok Keluar": item.stokKeluar, "Sisa Stok Akhir": item.sisaStok, "Satuan": item.satuan
       };
     });
-
     const worksheet = XLSX.utils.json_to_sheet(dataExcel);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Rekap Stok");
-
-    // Auto Column Width
-    const max_width = dataExcel.reduce((w, r) => Math.max(w, r["Nama Barang"].length), 10);
-    worksheet["!cols"] = [ { wch: 5 }, { wch: 12 }, { wch: max_width + 5 }, { wch: 12 }, { wch: 15 }, { wch: 18 }, { wch: 10 }, { wch: 10 }, { wch: 10 }, { wch: 15 }, { wch: 8 }, { wch: 12 } ];
-
-    let fileName = `Rekap_Stok_${sesiUser.unitLokasi}_${new Date().toISOString().slice(0,10)}.xlsx`;
-    XLSX.writeFile(workbook, fileName);
+    XLSX.writeFile(workbook, `Rekap_Stok_${sesiUser.unitLokasi}_${new Date().toISOString().slice(0,10)}.xlsx`);
   }
 
-  // PENDING TRANSFERS
+  // LOAD DAFTAR TRANSFERS DENGAN AKSI SESUAI ROLE (ACC ADMIN ATAU TERIMA UNIT)
   async function muatPendingTransfers() {
     try {
-      const res = await fetch(`${GAS_URL}?action=getPendingTransfers&unitLokasi=${encodeURIComponent(sesiUser.unitLokasi)}`);
+      const res = await fetch(`${GAS_URL}?action=getPendingTransfers&unitLokasi=${encodeURIComponent(sesiUser.unitLokasi)}&isAdmin=${sesiUser.isAdmin}`);
       const json = await res.json();
       if (json.status === "success") {
         if(json.data.length === 0) {
-          document.getElementById('containerPendingTransfer').innerHTML = "<p style='font-size:13px; color:#64748b; margin:0;'>Tidak ada mutasi masuk yang menggantung.</p>";
+          document.getElementById('containerPendingTransfer').innerHTML = "<p style='font-size:13px; color:#64748b; margin:0;'>Tidak ada mutasi yang memerlukan tindakan saat ini.</p>";
           return;
         }
-        let html = `<table><thead><tr><th>Tgl Pengiriman</th><th>Barang</th><th>Dari Unit Asal</th><th>Jumlah Transfer</th><th>Aksi Terima</th></tr></thead><tbody>`;
+        let html = `<table><thead><tr><th>Tgl Pengajuan</th><th>Barang</th><th>Dari Unit Asal</th><th>Ke Unit Tujuan</th><th>Jumlah Transfer</th><th>Status Saat Ini</th><th>Aksi Verifikasi</th></tr></thead><tbody>`;
         json.data.forEach(t => {
-          html += `<tr><td><small>${t.tgl}</small></td><td><b>${t.namaBarang}</b></td><td>${t.unitAsal} (${t.gudangAsal})</td><td><b>${t.jumlah} ${t.satuan}</b></td><td><button class="btn-sm" style="background:#10b981;" onclick="konfirmasiTerimaTransfer('${t.idTransfer}')"><i class="fa-solid fa-check"></i> Konfirmasi Diterima</button></td></tr>`;
+          let badgeStatus = "";
+          let btnAksi = "";
+
+          if (t.status === "PENDING_ADMIN") {
+            badgeStatus = `<span class="badge badge-warning">Menunggu ACC Admin</span>`;
+            if (sesiUser.isAdmin) {
+              btnAksi = `
+                <button class="btn-sm" style="background:#10b981;" onclick="prosesAccAdmin('${t.idTransfer}', 'ACC')"><i class="fa-solid fa-check"></i> ACC Admin</button>
+                <button class="btn-sm" style="background:#ef4444;" onclick="prosesAccAdmin('${t.idTransfer}', 'TOLAK')"><i class="fa-solid fa-xmark"></i> Tolak</button>
+              `;
+            } else { btnAksi = `<small style="color:#94a3b8;">Menunggu Admin</small>`; }
+          } else if (t.status === "ACC_ADMIN") {
+            badgeStatus = `<span class="badge badge-info">ACC Admin (Menunggu Diterima Unit)</span>`;
+            if (t.unitTujuan.toLowerCase() === sesiUser.unitLokasi.toLowerCase() || sesiUser.isAdmin) {
+              btnAksi = `<button class="btn-sm" style="background:#0284c7;" onclick="konfirmasiTerimaTransfer('${t.idTransfer}')"><i class="fa-solid fa-box-open"></i> Konfirmasi Diterima</button>`;
+            } else { btnAksi = `<small style="color:#94a3b8;">Menunggu Penerima</small>`; }
+          } else if (t.status === "DITERIMA") {
+            badgeStatus = `<span class="badge badge-ok">Selesai (Diterima)</span>`;
+            btnAksi = `<i class="fa-solid fa-check-double" style="color:#10b981;"></i>`;
+          } else if (t.status === "DITOLAK_ADMIN") {
+            badgeStatus = `<span class="badge badge-danger">Ditolak Admin</span>`;
+            btnAksi = `-`;
+          }
+
+          html += `<tr>
+            <td><small>${t.tgl}</small></td>
+            <td><b>${t.namaBarang}</b></td>
+            <td>${t.unitAsal} (${t.gudangAsal})</td>
+            <td><b>${t.unitTujuan}</b> (${t.gudangTujuan})</td>
+            <td><b>${t.jumlah} ${t.satuan}</b></td>
+            <td>${badgeStatus}</td>
+            <td>${btnAksi}</td>
+          </tr>`;
         });
         html += `</tbody></table>`;
         document.getElementById('containerPendingTransfer').innerHTML = html;
@@ -360,12 +376,49 @@
     } catch(e){}
   }
 
+  async function prosesAccAdmin(idTransfer, keputusan) {
+    if(!confirm(`Apakah Anda yakin ingin ${keputusan} pengajuan mutasi ini?`)) return;
+    const payload = { action: "prosesAccAdminMutasi", idTransfer: idTransfer, keputusan: keputusan };
+    const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+    const json = await res.json();
+    if(json.status === "success") { alert(json.message); muatPendingTransfers(); }
+  }
+
   async function konfirmasiTerimaTransfer(idTransfer) {
-    if(!confirm("Apakah Anda yakin barang mutasi ini sudah tiba & sesuai?")) return;
+    if(!confirm("Apakah Anda yakin barang mutasi ini sudah fisik diterima secara lengkap?")) return;
     const payload = { action: "konfirmasiTerimaTransfer", idTransfer: idTransfer };
     const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
     const json = await res.json();
     if(json.status === "success") { alert(json.message); muatPendingTransfers(); muatDataStok(); }
+  }
+
+  async function muatHistoryMutasi() {
+    try {
+      const res = await fetch(`${GAS_URL}?action=getHistoryMutasi&unitLokasi=${encodeURIComponent(sesiUser.unitLokasi)}&isAdmin=${sesiUser.isAdmin}`);
+      const json = await res.json();
+      if(json.status === "success") {
+        let html = `<table><thead><tr><th>Waktu Pengajuan</th><th>Nama Barang</th><th>Dari Unit Asal</th><th>Ke Unit Tujuan</th><th>Jumlah</th><th>Status Mutasi</th></tr></thead><tbody>`;
+        json.data.forEach(i => {
+          let bClass = "badge-warning";
+          let label = i.status;
+          if (i.status === "PENDING_ADMIN") { bClass = "badge-warning"; label = "Menunggu ACC Admin"; }
+          else if (i.status === "ACC_ADMIN") { bClass = "badge-info"; label = "ACC Admin (Dalam Pengiriman)"; }
+          else if (i.status === "DITERIMA") { bClass = "badge-ok"; label = "Diterima Unit Tujuan"; }
+          else if (i.status === "DITOLAK_ADMIN") { bClass = "badge-danger"; label = "Ditolak Admin"; }
+
+          html += `<tr>
+            <td><small>${i.tglSistem}</small></td>
+            <td><b>${i.namaBarang}</b></td>
+            <td>${i.unitAsal} (${i.gudangAsal})</td>
+            <td>${i.unitTujuan} (${i.gudangTujuan})</td>
+            <td><b>${i.jumlah} ${i.satuan}</b></td>
+            <td><span class="badge ${bClass}">${label}</span></td>
+          </tr>`;
+        });
+        html += `</tbody></table>`;
+        document.getElementById('containerTabelHistory').innerHTML = html;
+      }
+    } catch(e){}
   }
 
   function bukaModalPenerimaan() { updateSubGudangPilih('penUnit', 'penGudang'); document.getElementById('modalPenerimaan').style.display = 'block'; }
@@ -407,7 +460,11 @@
     if(json.status === "success") { alert("Pemakaian Berhasil!"); tutupModal('modalPemakaian'); muatDataStok(); }
   });
 
-  function bukaModalTransferDirect() { document.getElementById('modalTransfer').style.display = 'block'; }
+  function bukaModalTransferDirect() { 
+    updateSubGudangPilih('trUnitTujuan', 'trGudangTujuan'); 
+    document.getElementById('modalTransfer').style.display = 'block'; 
+  }
+
   document.getElementById('formTransferStok').addEventListener('submit', async function(e) {
     e.preventDefault();
     const payload = {
@@ -419,23 +476,8 @@
     };
     const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
     const json = await res.json();
-    if(json.status === "success") { alert(json.message); tutupModal('modalTransfer'); muatDataStok(); }
+    if(json.status === "success") { alert(json.message); tutupModal('modalTransfer'); muatPendingTransfers(); }
   });
-
-  async function muatHistoryMutasi() {
-    try {
-      const res = await fetch(`${GAS_URL}?action=getHistoryMutasi&unitLokasi=${encodeURIComponent(sesiUser.unitLokasi)}&isAdmin=${sesiUser.isAdmin}`);
-      const json = await res.json();
-      if(json.status === "success") {
-        let html = `<table><thead><tr><th>Waktu</th><th>Barang</th><th>Jenis</th><th>Jumlah</th><th>Gudang</th><th>Keterangan</th></tr></thead><tbody>`;
-        json.data.forEach(i => {
-          html += `<tr><td><small>${i.tglSistem}</small></td><td><b>${i.namaBarang}</b></td><td><b>${i.tipeMutasi}</b></td><td><b>${i.jumlah} ${i.satuan}</b></td><td>${i.kodeGudang}</td><td><small>${i.keterangan}</small></td></tr>`;
-        });
-        html += `</tbody></table>`;
-        document.getElementById('containerTabelHistory').innerHTML = html;
-      }
-    } catch(e){}
-  }
 
   function tutupModal(id) { document.getElementById(id).style.display = 'none'; }
 </script>
