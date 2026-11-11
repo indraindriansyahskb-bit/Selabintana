@@ -472,37 +472,84 @@
       return;
     }
 
-    let rows = [];
-    rows.push(["No. Tiket", "Tanggal Permintaan", "Tgl Dibutuhkan", "Pemohon", "Unit / Farm", "Urgensi", "Nama Barang", "Kategori", "Jumlah", "Satuan", "Status ERP", "Catatan Admin"]);
+    // Membuat struktur tabel HTML untuk Excel (.xls)
+    let html = `
+      <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+      <head>
+        <meta charset="UTF-8">
+        <!--[if gte mso 9]>
+        <xml>
+          <x:ExcelWorkbook>
+            <x:ExcelWorksheets>
+              <x:ExcelWorksheet>
+                <x:Name>Laporan Permintaan</x:Name>
+                <x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions>
+              </x:ExcelWorksheet>
+            </x:ExcelWorksheets>
+          </x:ExcelWorkbook>
+        </xml>
+        <![endif]-->
+        <style>
+          table { border-collapse: collapse; width: 100%; }
+          th { background-color: #2d6a43; color: #ffffff; font-weight: bold; border: 1px solid #000000; padding: 8px; text-align: center; }
+          td { border: 1px solid #cbd5e1; padding: 6px 8px; vertical-align: middle; }
+          .text { mso-number-format:"\@"; }
+        </style>
+      </head>
+      <body>
+        <table>
+          <thead>
+            <tr>
+              <th>No. Tiket</th>
+              <th>Tanggal Permintaan</th>
+              <th>Tgl Dibutuhkan</th>
+              <th>Pemohon</th>
+              <th>Unit / Farm</th>
+              <th>Urgensi</th>
+              <th>Nama Barang</th>
+              <th>Kategori</th>
+              <th>Jumlah</th>
+              <th>Satuan</th>
+              <th>Status ERP</th>
+              <th>Catatan Admin</th>
+            </tr>
+          </thead>
+          <tbody>
+    `;
 
+    let rowCount = 0;
     dataToExport.forEach(t => {
       t.items.forEach(it => {
         if (namaBarangFilter && !it.namaBarang.toLowerCase().includes(namaBarangFilter)) return;
+        rowCount++;
 
-        rows.push([
-          t.kodeTiket,
-          t.tglPermintaan,
-          t.tglDibutuhkan,
-          t.pemohon,
-          t.unitLokasi,
-          t.urgensi,
-          it.namaBarang,
-          it.kategori,
-          it.jumlah,
-          it.satuan,
-          t.statusPermintaan,
-          t.catatanAdmin
-        ]);
+        html += `
+          <tr>
+            <td class="text">${t.kodeTiket}</td>
+            <td class="text">${t.tglPermintaan}</td>
+            <td class="text">${t.tglDibutuhkan}</td>
+            <td>${t.pemohon}</td>
+            <td>${t.unitLokasi}</td>
+            <td>${t.urgensi}</td>
+            <td><b>${it.namaBarang}</b></td>
+            <td>${it.kategori}</td>
+            <td>${it.jumlah}</td>
+            <td>${it.satuan}</td>
+            <td>${t.statusPermintaan}</td>
+            <td>${t.catatanAdmin}</td>
+          </tr>
+        `;
       });
     });
 
-    if (rows.length === 1) {
+    if (rowCount === 0) {
       alert("Tidak ada item barang yang cocok dengan filter tersebut.");
       return;
     }
 
-    let excelContent = "\ufeff" + rows.map(e => e.join("\t")).join("\n");
-    let blob = new Blob([excelContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+    html += `</tbody></table></body></html>`;
+
+    let blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
     let url = URL.createObjectURL(blob);
     
     let link = document.createElement("a");
@@ -512,7 +559,7 @@
     link.click();
     document.body.removeChild(link);
     
-    showToast("File Excel berhasil di-export dengan rapi!", "success");
+    showToast("File Excel berhasil di-export dengan format rapi!", "success");
   }
 
   function bukaDetailTiket(kode) {
