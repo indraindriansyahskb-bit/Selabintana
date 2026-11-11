@@ -468,31 +468,131 @@
 
   function tutupModal() { document.getElementById('modalDetailTiket').style.display = 'none'; }
 
-  // FUNGSI CETAK PDF (WINDOW PRINT)
+// ==========================================
+  // FUNGSI CETAK STRUK PDF (SESUAI GAMBAR 2)
+  // ==========================================
   function cetakStruk(kode) {
     const t = groupedTickets.find(x => x.kodeTiket === kode);
+    if(!t) return;
+
     let printWin = window.open('', '_blank');
-    let htmlItems = t.items.map((it, idx) => `<tr><td style="padding:8px; border:1px solid #ccc;">${idx+1}</td><td style="padding:8px; border:1px solid #ccc;">${it.namaBarang}</td><td style="padding:8px; border:1px solid #ccc; text-align:center;">${it.jumlah} ${it.satuan}</td></tr>`).join('');
+    
+    // Looping baris tabel item barang
+    let htmlItems = t.items.map((it) => `
+      <tr>
+        <td style="padding: 8px 10px; border-bottom: 1px solid #cbd5e1; font-family: 'JetBrains Mono', monospace; font-size: 11px;">${it.kodeSupplier || '-'}</td>
+        <td style="padding: 8px 10px; border-bottom: 1px solid #cbd5e1; font-weight: 700; font-size: 11px;">${it.namaBarang}</td>
+        <td style="padding: 8px 10px; border-bottom: 1px solid #cbd5e1; font-size: 11px;">${it.jumlah} ${it.satuan}</td>
+        <td style="padding: 8px 10px; border-bottom: 1px solid #cbd5e1; font-size: 11px;">${it.supplier || '-'}</td>
+        <td style="padding: 8px 10px; border-bottom: 1px solid #cbd5e1; font-size: 11px;">${t.keterangan || '-'}</td>
+      </tr>
+    `).join('');
     
     let printHTML = `
-      <html><head><title>Cetak Tiket ${kode}</title>
-      <style>body{font-family: Arial, sans-serif; font-size:12px; color:#000;} .header{text-align:center; border-bottom:2px solid #000; padding-bottom:10px; margin-bottom:20px;}
-      table{width:100%; border-collapse:collapse; margin-bottom:20px;} th{background:#eee; font-weight:bold; padding:8px; border:1px solid #ccc;}</style>
-      </head><body onload="window.print(); window.close();">
-        <div class="header">
-          <h2 style="margin:0;">CV. SELABINTANA</h2><p style="margin:2px 0;">Formulir Pengajuan Kebutuhan Material (ERP)</p>
+      <!DOCTYPE html>
+      <html lang="id">
+      <head>
+        <meta charset="UTF-8">
+        <title>Cetak Form - ${t.kodeTiket}</title>
+        <style>
+          body { font-family: 'Inter', Arial, sans-serif; color: #0f172a; font-size: 12px; margin: 0; padding: 20px; line-height: 1.4; }
+          .header-container { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #0f172a; padding-bottom: 8px; margin-bottom: 15px; }
+          .company-title { font-size: 20px; font-weight: 800; color: #0f172a; letter-spacing: 0.5px; }
+          .form-subtitle { font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase; margin-top: 3px; }
+          .ticket-code { font-size: 14px; font-weight: 700; color: #047857; text-align: right; font-family: monospace; }
+          .ticket-date { font-size: 10px; color: #64748b; text-align: right; margin-top: 2px; }
+          
+          .info-box { border: 1px solid #cbd5e1; border-radius: 6px; padding: 12px 16px; margin-bottom: 20px; background: #ffffff; display: flex; justify-content: space-between; }
+          .info-col { width: 48%; }
+          .info-row { display: flex; margin-bottom: 6px; }
+          .info-label { width: 110px; font-weight: 600; color: #475569; }
+          .info-val { flex: 1; font-weight: 600; color: #0f172a; }
+          
+          table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+          th { background: #f8fafc; color: #1e293b; font-weight: 700; text-transform: uppercase; font-size: 10px; padding: 8px 10px; border-top: 1px solid #cbd5e1; border-bottom: 2px solid #0f172a; text-align: left; letter-spacing: 0.5px; }
+          
+          .sig-table { width: 100%; border-collapse: collapse; margin-top: 40px; page-break-inside: avoid; }
+          .sig-cell { width: 25%; text-align: center; vertical-align: top; padding: 0 8px; }
+          .sig-title { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #334155; margin-bottom: 45px; letter-spacing: 0.5px; }
+          .sig-line { border-bottom: 1px dashed #475569; margin-bottom: 5px; width: 85%; margin-left: auto; margin-right: auto; }
+          .sig-name { font-size: 11px; font-weight: 700; color: #0f172a; }
+        </style>
+      </head>
+      <body onload="window.print(); window.close();">
+        
+        <!-- HEADER -->
+        <div class="header-container">
+          <div>
+            <div class="company-title">CV. SELABINTANA</div>
+            <div class="form-subtitle">FORM PERMINTAAN MATERIAL & BARANG</div>
+          </div>
+          <div>
+            <div class="ticket-code">${t.kodeTiket}</div>
+            <div class="ticket-date">${t.tglPermintaan}</div>
+          </div>
         </div>
-        <table style="border:none; margin-bottom:10px;">
-          <tr><td width="120"><b>No. Tiket</b></td><td>: ${t.kodeTiket}</td><td width="120"><b>Tanggal Req</b></td><td>: ${t.tglPermintaan}</td></tr>
-          <tr><td><b>Pemohon / Unit</b></td><td>: ${t.pemohon} (${t.unitLokasi})</td><td><b>Tgl Butuh</b></td><td>: ${t.tglDibutuhkan}</td></tr>
+
+        <!-- INFO BOX -->
+        <div class="info-box">
+          <div class="info-col">
+            <div class="info-row"><div class="info-label">Pemohon</div><div class="info-val">: ${t.pemohon}</div></div>
+            <div class="info-row"><div class="info-label">Unit / Farm</div><div class="info-val">: ${t.unitLokasi}</div></div>
+            <div class="info-row"><div class="info-label">Urgensi</div><div class="info-val" style="color: ${t.urgensi.includes('URGENT') ? '#b91c1c' : '#047857'};">: ${t.urgensi}</div></div>
+          </div>
+          <div class="info-col">
+            <div class="info-row"><div class="info-label">Tgl Diminta</div><div class="info-val">: ${t.tglPermintaan.split(' ')[0]}</div></div>
+            <div class="info-row"><div class="info-label">Dibutuhkan</div><div class="info-val">: ${t.tglDibutuhkan}</div></div>
+          </div>
+        </div>
+
+        <!-- TABLE ITEM -->
+        <table>
+          <thead>
+            <tr>
+              <th width="18%">KODE BARANG</th>
+              <th width="35%">NAMA BARANG</th>
+              <th width="15%">JUMLAH</th>
+              <th width="15%">SUPPLIER</th>
+              <th width="17%">KETERANGAN</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${htmlItems}
+          </tbody>
         </table>
-        <table><thead><tr><th>No</th><th>Nama Barang / Material</th><th>Kuantitas</th></tr></thead><tbody>${htmlItems}</tbody></table>
-        <p><b>Keterangan:</b> ${t.keterangan || '-'}</p><br><br>
-        <table style="border:none; text-align:center; margin-top:30px;">
-          <tr><td width="50%">Pemohon,<br><br><br><br><b>${t.pemohon}</b></td><td width="50%">Mengetahui (Admin/Gudang),<br><br><br><br><b>____________________</b></td></tr>
+
+        <!-- SIGNATURE BLOCK (4 KOLOM) -->
+        <table class="sig-table">
+          <tr>
+            <td class="sig-cell">
+              <div class="sig-title">PEMOHON</div>
+              <div class="sig-line"></div>
+              <div class="sig-name">(${t.pemohon})</div>
+            </td>
+            <td class="sig-cell">
+              <div class="sig-title">HEAD FARM</div>
+              <div class="sig-line"></div>
+              <div class="sig-name">( ....................... )</div>
+            </td>
+            <td class="sig-cell">
+              <div class="sig-title">FARM MANAGER</div>
+              <div class="sig-line"></div>
+              <div class="sig-name">( ....................... )</div>
+            </td>
+            <td class="sig-cell">
+              <div class="sig-title">GENERAL MANAGER</div>
+              <div class="sig-line"></div>
+              <div class="sig-name" style="margin-top: 18px;">drh. Titin Idayati</div>
+            </td>
+          </tr>
         </table>
-      </body></html>`;
-    printWin.document.write(printHTML); printWin.document.close();
+
+      </body>
+      </html>
+    `;
+    
+    printWin.document.write(printHTML);
+    printWin.document.close();
   }
 
   // FUNGSI HAPUS (KIRIM REQUEST KE BACKEND)
