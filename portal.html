@@ -8,796 +8,270 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <style>
-    :root {
-      --primary: #2563eb;
-      --primary-hover: #1d4ed8;
-      --bg-body: #f8fafc;
-      --card-bg: #ffffff;
-      --text-main: #0f172a;
-      --text-muted: #64748b;
-      --border-color: #e2e8f0;
-      --success: #10b981;
-      --warning: #f59e0b;
-      --danger: #ef4444;
-    }
+    :root { --primary: #2563eb; --primary-hover: #1d4ed8; --bg-body: #f8fafc; --card-bg: #ffffff; --text-main: #0f172a; --border-color: #e2e8f0; }
     * { box-sizing: border-box; }
-    body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); margin: 0; padding: 30px 15px; line-height: 1.5; }
-    .wrapper { max-width: 1200px; margin: auto; }
-    .app-header { text-align: center; margin-bottom: 25px; }
-    .app-header h2 { font-size: 26px; font-weight: 700; color: #1e293b; margin: 0 0 6px 0; }
-    .app-header p { font-size: 14px; color: var(--text-muted); margin: 0; }
-    .card { background: var(--card-bg); padding: 28px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid var(--border-color); margin-bottom: 25px; }
-    .section-title { font-size: 16px; font-weight: 600; color: #1e293b; margin-top: 0; margin-bottom: 18px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
-    .form-group { margin-bottom: 16px; }
+    body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); margin: 0; padding: 25px 15px; }
+    .wrapper { max-width: 1100px; margin: auto; }
+    .card { background: var(--card-bg); padding: 24px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid var(--border-color); margin-bottom: 22px; }
+    .section-title { font-size: 16px; font-weight: 600; color: #1e293b; margin-top: 0; margin-bottom: 18px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+    .form-group { margin-bottom: 14px; }
     label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 13px; color: #334155; }
-    input[type="text"], input[type="password"], select, textarea, input[type="date"], input[type="number"], input[type="month"] {
-      width: 100%; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 13px; font-family: inherit;
-    }
-    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
-    textarea { resize: vertical; height: 75px; }
-    .row-group { display: flex; gap: 16px; flex-wrap: wrap; }
-    .row-group .form-group { flex: 1; min-width: 180px; }
-    button { background-color: var(--primary); color: white; padding: 10px 18px; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; }
+    input[type="text"], input[type="password"], select, input[type="number"], input[type="date"], textarea { width: 100%; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 13px; font-family: inherit; }
+    .row-group { display: flex; gap: 14px; flex-wrap: wrap; }
+    .row-group .form-group { flex: 1; min-width: 170px; }
+    button { background-color: var(--primary); color: white; padding: 10px 16px; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
     button:hover { background-color: var(--primary-hover); }
-    button:disabled { background-color: #94a3b8; cursor: not-allowed; }
-    .user-info-box { background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 1px solid #bfdbfe; padding: 14px 18px; border-radius: 10px; margin-bottom: 22px; font-size: 14px; color: #1e40af; display: flex; justify-content: space-between; align-items: center; }
-    .logout-btn { background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; padding: 6px 12px; font-size: 12px; }
-    .logout-btn:hover { background: #fecaca; }
-    .item-row-container { background: #f8fafc; border: 1px solid var(--border-color); padding: 18px; border-radius: 10px; margin-bottom: 14px; position: relative; }
-    .btn-hapus-item { background: #ef4444; padding: 6px 10px; font-size: 12px; }
-    .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 22px; }
-    .stat-card { background: #fff; border: 1px solid var(--border-color); padding: 18px; border-radius: 10px; display: flex; align-items: center; gap: 16px; }
-    .stat-icon { width: 48px; height: 48px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
-    .stat-card .val { font-size: 22px; font-weight: 700; color: #0f172a; margin-top: 4px; }
-    .stat-card label { font-size: 12px; color: var(--text-muted); font-weight: 500; margin: 0; }
-    .stat-card.total .stat-icon { background: #eff6ff; color: var(--primary); }
-    .stat-card.acc .stat-icon { background: #ecfdf5; color: var(--success); }
-    .stat-card.pending .stat-icon { background: #fffbeb; color: var(--warning); }
-    .stat-card.tolak .stat-icon { background: #fef2f2; color: var(--danger); }
-    .filter-card { background: #f8fafc; border: 1px solid var(--border-color); padding: 16px 20px; border-radius: 10px; margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+    .user-info-box { background: #e0f2fe; border: 1px solid #7dd3fc; padding: 14px 18px; border-radius: 10px; margin-bottom: 20px; font-size: 14px; color: #0369a1; display: flex; justify-content: space-between; align-items: center; }
+    .item-box { background: #f8fafc; border: 1px solid var(--border-color); padding: 16px; border-radius: 8px; margin-bottom: 12px; position: relative; }
     .table-responsive { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border-color); }
     table { width: 100%; border-collapse: collapse; font-size: 13px; background: white; text-align: left; }
-    th, td { padding: 12px 14px; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
-    th { background-color: #f8fafc; font-weight: 600; color: #475569; font-size: 12px; text-transform: uppercase; }
-    tr:hover { background-color: #f8fafc; }
-    .badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+    th, td { padding: 11px 13px; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
+    th { background-color: #f8fafc; font-weight: 600; color: #475569; font-size: 11px; text-transform: uppercase; }
+    .badge { display: inline-flex; align-items: center; padding: 4px 8px; border-radius: 15px; font-size: 11px; font-weight: 600; }
     .badge-pending { background: #fef3c7; color: #b45309; }
     .badge-acc { background: #d1fae5; color: #047857; }
-    .badge-revisi { background: #e0f2fe; color: #0369a1; }
-    .badge-tolak { background: #fee2e2; color: #b91c1c; }
-    .btn-sm { padding: 6px 10px; font-size: 11px; margin-right: 4px; margin-bottom: 4px; border-radius: 6px; }
-    .btn-print { background-color: #6366f1; }
-    .btn-edit { background-color: #f59e0b; }
-    .btn-edit:hover { background-color: #d97706; }
-    .btn-delete { background-color: #ef4444; }
-    .btn-upload { background-color: #10b981; }
-
-    #modalEdit { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; overflow-y: auto; padding: 20px; }
-    .modal-content { background: white; max-width: 750px; margin: 30px auto; padding: 25px; border-radius: 12px; position: relative; }
-
-    @media print {
-      @page { size: A5 portrait; margin: 6mm; }
-      body * { visibility: hidden !important; }
-      #printArea, #printArea * { visibility: visible !important; }
-      #printArea { display: block !important; position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important; background: white !important; font-family: 'Inter', sans-serif !important; padding: 0 !important; margin: 0 !important; box-sizing: border-box !important; }
-      html, body { height: auto !important; overflow: visible !important; background: white !important; }
-    }
-
-    .print-container { width: 100%; color: #1e293b; }
-    .print-header { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #0f172a; padding-bottom: 6px; margin-bottom: 10px; }
-    .print-header h2 { font-size: 14px; font-weight: 800; margin: 0; letter-spacing: 0.5px; color: #0f172a; }
-    .print-header p { font-size: 9px; margin: 2px 0 0 0; color: #475569; font-weight: 500; text-transform: uppercase; }
-    .print-meta { text-align: right; }
-    .print-meta .req-code { font-size: 11px; font-weight: 800; color: #059669; }
-    .print-meta .req-date { font-size: 8px; color: #64748b; margin-top: 2px; }
-    .print-info-box { border: 1px solid #94a3b8; border-radius: 6px; padding: 8px 12px; margin-bottom: 10px; background-color: #f8fafc; }
-    .print-info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px 15px; font-size: 9px; }
-    .print-info-row { display: flex; align-items: baseline; }
-    .print-info-row label { font-weight: 700; color: #334155; width: 85px; flex-shrink: 0; margin: 0; font-size: 9px; }
-    .print-info-row span { font-weight: 600; color: #0f172a; font-size: 9px; }
-    .print-table { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
-    .print-table th { font-size: 8.5px; font-weight: 700; background: #f1f5f9; color: #334155; padding: 6px 5px; border-top: 1px solid #94a3b8; border-bottom: 2px solid #64748b; text-align: left; text-transform: uppercase; }
-    .print-table td { font-size: 9px; font-weight: 500; padding: 6px 5px; border-bottom: 1px solid #e2e8f0; color: #0f172a; }
-    .print-ttd-container { display: flex; justify-content: space-between; margin-top: 12px; page-break-inside: avoid; }
-    .print-ttd-box { flex: 1; text-align: center; padding: 0 3px; position: relative; }
-    .print-ttd-box:not(:last-child)::after { content: ""; position: absolute; right: 0; top: 10%; height: 80%; border-right: 1px solid #cbd5e1; }
-    .print-ttd-title { font-size: 7.5px; font-weight: 800; color: #334155; text-transform: uppercase; margin-bottom: 26px; letter-spacing: 0.3px; }
-    .print-ttd-line { border-bottom: 1px dashed #64748b; margin: 0 6px 4px 6px; }
-    .print-ttd-name { font-size: 8px; font-weight: 700; color: #0f172a; }
-    #printArea { display: none; }
+    .badge-reject { background: #fee2e2; color: #b91c1c; }
   </style>
 </head>
 <body>
 
 <div class="wrapper">
-  <div class="app-header">
-    <h2><i class="fa-solid fa-boxes-packing" style="color: var(--primary);"></i> Portal Permintaan Material & Barang</h2>
-    <p>Sistem Informasi Pengadaan & Manajemen Permintaan Unit</p>
+  <!-- FORM LOGIN -->
+  <div id="loginSection" class="card" style="max-width: 380px; margin: 40px auto;">
+    <h3 class="section-title"><i class="fa-solid fa-right-to-bracket"></i> Login Portal Permintaan</h3>
+    <div class="form-group"><label>Username</label><input type="text" id="loginUser" required></div>
+    <div class="form-group"><label>Password</label><input type="password" id="loginPass" required></div>
+    <button type="button" onclick="prosesLogin()" style="width:100%; margin-top: 8px;"><i class="fa-solid fa-sign-in-alt"></i> Masuk</button>
   </div>
 
-  <!-- Login Section -->
-  <div id="loginSection" class="card login-container" style="max-width: 420px; margin: 40px auto;">
-    <h3 class="section-title"><i class="fa-solid fa-right-to-bracket"></i> Masuk ke Akun Anda</h3>
-    <div class="form-group"><label>Username</label><input type="text" id="loginUser" placeholder="Masukkan username..." required></div>
-    <div class="form-group"><label>Password</label><input type="password" id="loginPass" placeholder="Masukkan password..." required></div>
-    <button type="button" onclick="prosesLogin()" style="width:100%; margin-top: 10px; padding: 12px;"><i class="fa-solid fa-arrow-right-to-bracket"></i> Login</button>
-    <div id="loginLoading" style="display:none; text-align:center; margin-top:14px; font-size:13px; color:var(--primary);"><i class="fa-solid fa-circle-notch fa-spin"></i> Memeriksa kredensial...</div>
-  </div>
+  <!-- DASHBOARD PORTAL PERMINTAAN -->
+  <div id="mainPanel" style="display: none;">
+    <div class="user-info-box" id="infoSesiUser"></div>
 
-  <!-- Panel Staff -->
-  <div id="panelStaff" style="display: none;">
-    <div class="user-info-box" id="infoSesiStaff"></div>
-
+    <!-- FORM BUAT PERMINTAAN -->
     <div class="card">
       <h3 class="section-title"><i class="fa-solid fa-pen-to-square"></i> Buat Permintaan Barang Baru</h3>
       <form id="formPermintaan">
         <div class="row-group">
           <div class="form-group">
-            <label>Tanggal Permintaan <small style="color:var(--text-muted);">(Otomatis Hari Ini)</small></label>
-            <input type="date" id="tglPermintaan" readonly style="background-color: #f1f5f9; cursor: not-allowed;" required>
+            <label>Tanggal Permintaan</label>
+            <input type="text" id="tglPermintaan" readonly style="background:#e2e8f0;">
           </div>
-          <div class="form-group"><label>Tanggal Dibutuhkan</label><input type="date" id="tglDibutuhkan" required></div>
-          <div class="form-group"><label>Urgensi</label>
-            <select id="urgensi" required>
+          <div class="form-group">
+            <label>Tanggal Dibutuhkan</label>
+            <input type="date" id="tglDibutuhkan" required>
+          </div>
+          <div class="form-group">
+            <label>Urgensi</label>
+            <select id="urgensi">
               <option value="REGULER">REGULER</option>
               <option value="URGENT">URGENT</option>
               <option value="TOP URGENT">TOP URGENT</option>
             </select>
           </div>
         </div>
-        <div style="margin: 15px 0 10px 0; font-weight: 600; font-size: 14px;"><i class="fa-solid fa-list-check"></i> Daftar Rincian Barang:</div>
-        <div id="listItemsContainer"></div>
-        <button type="button" onclick="tambahBarisItem()" style="background:#059669; margin-bottom:20px;"><i class="fa-solid fa-plus"></i> Tambah Item Barang</button>
-        <div class="form-group"><label>Keperluan / Keterangan</label><textarea id="keterangan" placeholder="Jelaskan keperluan..."></textarea></div>
-        <button type="submit" id="submitBtn" style="width:100%; padding:14px;"><i class="fa-solid fa-paper-plane"></i> Kirim Permintaan ke Admin</button>
+
+        <div class="section-title" style="font-size:14px; margin-top:15px;"><i class="fa-solid fa-list-check"></i> Daftar Rincian Barang:</div>
+        <div id="containerItems"></div>
+        <button type="button" onclick="tambahItemForm()" style="background:#059669; margin-bottom:15px;"><i class="fa-solid fa-plus"></i> Tambah Item Barang</button>
+
+        <div class="form-group">
+          <label>Keperluan / Keterangan</label>
+          <textarea id="keterangan" rows="3" placeholder="Jelaskan keperluan permintaan barang..."></textarea>
+        </div>
+
+        <button type="submit" id="btnSubmit" style="width:100%; padding:12px; font-size:14px;"><i class="fa-solid fa-paper-plane"></i> Kirim Permintaan ke Admin</button>
       </form>
     </div>
 
-    <!-- Riwayat Staff -->
+    <!-- RIWAYAT & STATUS -->
     <div class="card">
       <h3 class="section-title"><i class="fa-solid fa-clock-rotate-left"></i> Riwayat & Status Pengajuan Anda</h3>
-      <div class="filter-card">
-        <div style="flex:1; min-width:160px;"><label>Filter Bulan:</label><input type="month" id="filterBulanStaff" onchange="terapkanFilterStaff()"></div>
-        <div style="flex:1; min-width:160px;"><label>Status:</label>
-          <select id="filterStatusStaff" onchange="terapkanFilterStaff()">
-            <option value="">-- Semua Status --</option>
-            <option value="PENDING">PENDING</option>
-            <option value="ACC">ACC</option>
-            <option value="REVISI">REVISI</option>
-            <option value="DITOLAK">DITOLAK</option>
-          </select>
-        </div>
-        <div style="flex:2; min-width:200px;"><label>Cari Barang / Tiket:</label><input type="text" id="searchStaff" placeholder="Ketik kata kunci..." onkeyup="terapkanFilterStaff()"></div>
-        <div><button onclick="eksporKeCSVStaff()" style="background:#059669;"><i class="fa-solid fa-file-csv"></i> Unduh CSV</button></div>
-      </div>
-      <div class="table-responsive" id="containerRiwayatStaff"><p style="text-align:center; padding:20px; color:var(--text-muted);">Memuat riwayat...</p></div>
-      <input type="file" id="hiddenFileInput" accept="application/pdf" style="display:none;" onchange="prosesUploadPdfHistory(event)">
-    </div>
-  </div>
-
-  <!-- Panel Admin -->
-  <div id="panelAdmin" style="display: none;">
-    <div class="user-info-box" id="infoSesiAdmin"></div>
-    <div class="summary-grid">
-      <div class="stat-card total"><div class="stat-icon"><i class="fa-solid fa-ticket"></i></div><div><label>Total Tiket</label><div class="val" id="statTotal">0</div></div></div>
-      <div class="stat-card pending"><div class="stat-icon"><i class="fa-solid fa-hourglass-half"></i></div><div><label>Pending</label><div class="val" id="statPending">0</div></div></div>
-      <div class="stat-card acc"><div class="stat-icon"><i class="fa-solid fa-circle-check"></i></div><div><label>Di ACC</label><div class="val" id="statACC">0</div></div></div>
-      <div class="stat-card tolak"><div class="stat-icon"><i class="fa-solid fa-circle-xmark"></i></div><div><label>Revisi / Ditolak</label><div class="val" id="statTolak">0</div></div></div>
-    </div>
-    <div class="card">
-      <h3 class="section-title"><i class="fa-solid fa-list-check"></i> Daftar & Rekapitulasi Tiket Masuk</h3>
-      <div class="filter-card">
-        <div style="flex:1; min-width:140px;"><label>Bulan:</label><input type="month" id="filterBulan" onchange="terapkanFilterAdmin()"></div>
-        <div style="flex:1; min-width:140px;"><label>Unit:</label><select id="filterUnit" onchange="terapkanFilterAdmin()"><option value="">-- Semua Unit --</option></select></div>
-        <div style="flex:1; min-width:140px;"><label>Status:</label>
-          <select id="filterStatus" onchange="terapkanFilterAdmin()">
-            <option value="">-- Semua Status --</option>
-            <option value="PENDING">PENDING</option>
-            <option value="ACC">ACC</option>
-            <option value="REVISI">REVISI</option>
-            <option value="DITOLAK">DITOLAK</option>
-          </select>
-        </div>
-        <div style="flex:2; min-width:180px;"><label>Cari Pemohon / Barang:</label><input type="text" id="searchAdmin" placeholder="Ketik kata kunci..." onkeyup="terapkanFilterAdmin()"></div>
-        <div><button onclick="eksporKeCSV()" style="background:#059669;"><i class="fa-solid fa-file-csv"></i> Unduh CSV</button></div>
-      </div>
-      <div class="table-responsive" id="containerTabelAdmin"><p style="text-align:center; padding:20px; color:var(--text-muted);">Memuat data...</p></div>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL EDIT TIKET -->
-<div id="modalEdit">
-  <div class="modal-content">
-    <h3 class="section-title"><i class="fa-solid fa-pen-to-square"></i> Edit Tiket Permintaan (<span id="editKodeLabel"></span>)</h3>
-    <form id="formEditPermintaan">
-      <input type="hidden" id="editKodeTiket">
-      <div class="row-group">
-        <div class="form-group">
-          <label>Tanggal Permintaan</label>
-          <input type="date" id="editTglPermintaan" readonly style="background-color: #f1f5f9; cursor: not-allowed;" required>
-        </div>
-        <div class="form-group"><label>Tanggal Dibutuhkan</label><input type="date" id="editTglDibutuhkan" required></div>
-        <div class="form-group"><label>Urgensi</label>
-          <select id="editUrgensi" required>
-            <option value="REGULER">REGULER</option>
-            <option value="URGENT">URGENT</option>
-            <option value="TOP URGENT">TOP URGENT</option>
-          </select>
-        </div>
-      </div>
-      <div style="margin: 15px 0 10px 0; font-weight: 600; font-size: 14px;">Daftar Barang:</div>
-      <div id="listEditItemsContainer"></div>
-      <button type="button" onclick="tambahBarisItemEdit()" style="background:#059669; margin-bottom:15px; font-size:12px; padding:6px 12px;"><i class="fa-solid fa-plus"></i> Tambah Barang</button>
-      <div class="form-group"><label>Keterangan</label><textarea id="editKeterangan"></textarea></div>
-      <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
-        <button type="button" onclick="tutupModalEdit()" style="background:#64748b;">Batal</button>
-        <button type="submit" id="btnSimpanEdit" style="background:#2563eb;">Simpan Perubahan</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- Area Cetak A5 -->
-<div id="printArea">
-  <div class="print-container">
-    <div class="print-header">
-      <div>
-        <h2>CV. SELABINTANA</h2>
-        <p>Form Permintaan Material & Barang</p>
-      </div>
-      <div class="print-meta">
-        <div class="req-code" id="p_kode">-</div>
-        <div class="req-date" id="p_tglSistem">-</div>
-      </div>
-    </div>
-    
-    <div class="print-info-box">
-      <div class="print-info-grid">
-        <div class="print-info-row"><label>Pemohon</label>: <span id="p_nama">-</span></div>
-        <div class="print-info-row"><label>Tgl Diminta</label>: <span id="p_tglDiminta">-</span></div>
-        <div class="print-info-row"><label>Unit / Farm</label>: <span id="p_unit">-</span></div>
-        <div class="print-info-row"><label>Dibutuhkan</label>: <span id="p_tglDibutuhkan">-</span></div>
-        <div class="print-info-row"><label>Urgensi</label>: <span id="p_urgensi" style="font-weight:800; color:#dc2626;">-</span></div>
-        <div class="print-info-row"></div>
-      </div>
-    </div>
-
-    <table class="print-table">
-      <thead>
-        <tr>
-          <th style="width: 18%;">Kode Barang</th>
-          <th style="width: 32%;">Nama Barang</th>
-          <th style="width: 15%;">Jumlah</th>
-          <th style="width: 15%;">Supplier</th>
-          <th style="width: 20%;">Keterangan</th>
-        </tr>
-      </thead>
-      <tbody id="p_tabelItems"></tbody>
-    </table>
-
-    <div class="print-ttd-container">
-      <div class="print-ttd-box">
-        <div class="print-ttd-title">Pemohon</div>
-        <div class="print-ttd-line"></div>
-        <div class="print-ttd-name">( <span id="t_pemohon">-</span> )</div>
-      </div>
-      <div class="print-ttd-box">
-        <div class="print-ttd-title">Head Farm</div>
-        <div class="print-ttd-line"></div>
-        <div class="print-ttd-name">( .................... )</div>
-      </div>
-      <div class="print-ttd-box">
-        <div class="print-ttd-title">Farm Manager</div>
-        <div class="print-ttd-line"></div>
-        <div class="print-ttd-name">( .................... )</div>
-      </div>
-      <div class="print-ttd-box">
-        <div class="print-ttd-title">General Manager</div>
-        <div class="print-ttd-line"></div>
-        <div class="print-ttd-name">drh. Titin Idayati</div>
+      <div class="table-responsive" id="containerRiwayat">
+        <p style="text-align:center; padding:20px;">Memuat data riwayat pengajuan...</p>
       </div>
     </div>
   </div>
 </div>
 
 <script>
+  // GANTI DENGAN URL WEB APP HASIL DEPLOY TERBARU ANDA
   const GAS_URL = "https://script.google.com/macros/s/AKfycbzLzwltzMnAawduEJQZouDlwnh64nPFVAlGCP5Y3S_nOivyh3vUsIdiSgTO9CEZrjjPBg/exec";
 
   let sesiUser = {};
-  let masterBarangData = [];
-  let rawAdminData = [];
-  let groupedTiketList = [];
-  let staffOriginalData = [];
-  let targetKodeUpload = "";
+  let itemCounter = 0;
 
   window.onload = function() {
-    const savedUser = localStorage.getItem('portal_user_session');
-    if (savedUser) { sesiUser = JSON.parse(savedUser); tampilkanDashboard(); }
-    
-    const today = new Date().toISOString().split('T')[0];
-    const tgl = document.getElementById('tglPermintaan');
-    if(tgl) tgl.value = today;
+    const saved = localStorage.getItem('portal_user_session');
+    if (saved) {
+      sesiUser = JSON.parse(saved);
+      tampilkanDashboard();
+    }
   };
 
   async function prosesLogin() {
-    const username = document.getElementById('loginUser').value.trim();
-    const password = document.getElementById('loginPass').value.trim();
-    const loading = document.getElementById('loginLoading');
-    if (!username || !password) { alert("Masukkan Username dan Password!"); return; }
-    loading.style.display = "block";
+    const u = document.getElementById('loginUser').value.trim();
+    const p = document.getElementById('loginPass').value.trim();
+    if (!u || !p) return alert("Masukkan Username & Password!");
+
     try {
-      const res = await fetch(`${GAS_URL}?action=login&username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`);
+      const res = await fetch(`${GAS_URL}?action=login&username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}`);
       const result = await res.json();
       if (result.status === "success") {
         sesiUser = result.userData;
         localStorage.setItem('portal_user_session', JSON.stringify(sesiUser));
         tampilkanDashboard();
-      } else { alert("Login Gagal: " + result.message); }
-    } catch (err) { alert("Terjadi kesalahan koneksi."); }
-    finally { loading.style.display = "none"; }
+      } else {
+        alert("Login Gagal: " + result.message);
+      }
+    } catch (e) {
+      alert("Kesalahan koneksi ke server Apps Script.");
+    }
   }
 
   function tampilkanDashboard() {
     document.getElementById('loginSection').style.display = 'none';
-    if (sesiUser.isAdmin) {
-      document.getElementById('panelAdmin').style.display = 'block';
-      document.getElementById('infoSesiAdmin').innerHTML = `<div><b>ADMIN: ${sesiUser.nama}</b></div><button onclick="logoutSesi()" class="logout-btn">Keluar</button>`;
-      muatDataAdmin();
-    } else {
-      document.getElementById('panelStaff').style.display = 'block';
-      document.getElementById('infoSesiStaff').innerHTML = `<div><b>Pemohon: ${sesiUser.nama}</b> (${sesiUser.divisi} | ${sesiUser.unitLokasi})</div><button onclick="logoutSesi()" class="logout-btn">Keluar</button>`;
-      muatMasterBarang();
-      muatRiwayatStaff();
-      tambahBarisItem();
-    }
-  }
-
-  function logoutSesi() { localStorage.clear(); location.reload(); }
-
-  async function muatMasterBarang() {
-    try {
-      const res = await fetch(GAS_URL + "?action=getMasterBarang");
-      const json = await res.json();
-      if (json.status === "success") masterBarangData = json.data;
-    } catch (e) { console.error(e); }
-  }
-
-  function tambahBarisItem(containerId = 'listItemsContainer', dataItem = null) {
-    const container = document.getElementById(containerId);
-    const index = container.children.length;
-    let optionsKategori = `<option value="">-- Pilih Kategori --</option>`;
-    ['OBAT', 'VAKSIN', 'VITAMIN', 'KIMIA', 'PERALATAN', 'PAKAN', 'LAINNYA'].forEach(kat => {
-      let sel = (dataItem && dataItem.kategori === kat) ? 'selected' : '';
-      optionsKategori += `<option value="${kat}" ${sel}>${kat}</option>`;
-    });
-
-    let datalistOptions = "";
-    masterBarangData.forEach(item => { datalistOptions += `<option value="${item.namaBarang}">`; });
-
-    const namaValue = dataItem ? (dataItem.namaBarang || dataItem.barang || '') : '';
-
-    const div = document.createElement('div');
-    div.className = 'item-row-container';
-    div.innerHTML = `
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-        <span style="font-size:12px; font-weight:600; color:var(--primary);">Barang #${index + 1}</span>
-        ${index > 0 ? `<button type="button" class="btn-sm btn-hapus-item" onclick="this.parentElement.parentElement.remove()">Hapus</button>` : ''}
-      </div>
-      <div class="row-group">
-        <div class="form-group" style="flex:1;"><label>Kode Barang (Supplier)</label><input type="text" class="item-kode" value="${dataItem && dataItem.kodeItem !== '-' ? dataItem.kodeItem : ''}" placeholder="Kode supplier..."></div>
-        <div class="form-group" style="flex:1;"><label>Kategori</label><select class="item-kategori" required>${optionsKategori}</select></div>
-        <div class="form-group" style="flex:2;"><label>Nama Barang</label><input type="text" class="item-nama" list="listMasterDinamis" required value="${namaValue}" placeholder="Nama barang..."></div>
-      </div>
-      <div class="row-group">
-        <div class="form-group" style="flex:1;"><label>Jumlah</label><input type="number" class="item-jumlah" min="1" required value="${dataItem ? dataItem.jumlah : ''}"></div>
-        <div class="form-group" style="flex:1;"><label>Satuan</label><input type="text" class="item-satuan" required value="${dataItem ? dataItem.satuan : ''}" placeholder="pcs/kg"></div>
-        <div class="form-group" style="flex:2;"><label>Supplier</label><input type="text" class="item-supplier" value="${dataItem && dataItem.supplier !== '-' ? dataItem.supplier : ''}" placeholder="Supplier"></div>
-      </div>
+    document.getElementById('mainPanel').style.display = 'block';
+    
+    document.getElementById('infoSesiUser').innerHTML = `
+      <div><b>Pemohon: ${sesiUser.nama}</b> (${sesiUser.divisi} | Unit: <b>${sesiUser.unitLokasi}</b>)</div>
+      <button onclick="logoutSesi()" style="background:#fee2e2; color:#dc2626; border:1px solid #fca5a5; padding:5px 10px; font-size:12px;">Keluar</button>
     `;
-    if (!document.getElementById('listMasterDinamis')) {
-      const dl = document.createElement('datalist'); dl.id = 'listMasterDinamis'; dl.innerHTML = datalistOptions; document.body.appendChild(dl);
-    }
-    container.appendChild(div);
+
+    let today = new Date().toISOString().split('T')[0];
+    document.getElementById('tglPermintaan').value = today;
+
+    document.getElementById('containerItems').innerHTML = "";
+    itemCounter = 0;
+    tambahItemForm();
+    muatRiwayatPermintaan();
   }
 
-  function tambahBarisItemEdit(dataItem = null) {
-    tambahBarisItem('listEditItemsContainer', dataItem);
+  function logoutSesi() {
+    localStorage.removeItem('portal_user_session');
+    location.reload();
+  }
+
+  function tambahItemForm() {
+    itemCounter++;
+    const div = document.createElement('div');
+    div.className = 'item-box';
+    div.id = `itemRow_${itemCounter}`;
+    div.innerHTML = `
+      <div style="font-weight:600; font-size:13px; color:#0284c7; margin-bottom:10px;">Barang #${itemCounter}</div>
+      <div class="row-group">
+        <div class="form-group"><label>Kode Barang (Supplier)</label><input type="text" class="it-kode" placeholder="Kode supplier..."></div>
+        <div class="form-group"><label>Kategori</label>
+          <select class="it-kategori">
+            <option value="PAKAN">PAKAN</option><option value="OBAT">OBAT</option><option value="VAKSIN">VAKSIN</option>
+            <option value="VITAMIN">VITAMIN</option><option value="KIMIA">KIMIA</option><option value="PERALATAN">PERALATAN</option><option value="LAINNYA" selected>LAINNYA</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Nama Barang</label><input type="text" class="it-nama" placeholder="Nama barang..." required></div>
+      </div>
+      <div class="row-group">
+        <div class="form-group"><label>Jumlah</label><input type="number" class="it-jumlah" min="1" required></div>
+        <div class="form-group"><label>Satuan</label><input type="text" class="it-satuan" placeholder="pcs/kg/zak" required></div>
+        <div class="form-group"><label>Supplier</label><input type="text" class="it-supplier" placeholder="Supplier"></div>
+      </div>
+      ${itemCounter > 1 ? `<button type="button" onclick="hapusItemForm('itemRow_${itemCounter}')" style="background:#ef4444; padding:4px 8px; font-size:11px; margin-top:5px;">Hapus Item</button>` : ''}
+    `;
+    document.getElementById('containerItems').appendChild(div);
+  }
+
+  function hapusItemForm(id) {
+    const elem = document.getElementById(id);
+    if (elem) elem.remove();
   }
 
   document.getElementById('formPermintaan').addEventListener('submit', async function(e) {
     e.preventDefault();
-    const btn = document.getElementById('submitBtn');
-    const rows = document.querySelectorAll('#listItemsContainer .item-row-container');
-    if (rows.length === 0) { alert("Minimal 1 barang!"); return; }
+    const btn = document.getElementById('btnSubmit');
+    btn.disabled = true;
+    btn.innerHTML = "Mengirim...";
 
-    let itemsArray = [];
-    rows.forEach(r => {
-      const valNama = r.querySelector('.item-nama').value.trim();
-      itemsArray.push({
-        kodeItem: r.querySelector('.item-kode').value.trim() || "-",
-        kategori: r.querySelector('.item-kategori').value,
-        namaBarang: valNama,
-        barang: valNama,
-        jumlah: r.querySelector('.item-jumlah').value,
-        satuan: r.querySelector('.item-satuan').value.trim(),
-        supplier: r.querySelector('.item-supplier').value.trim() || "-"
+    let itemsArr = [];
+    const itemBoxes = document.querySelectorAll('.item-box');
+    itemBoxes.forEach(box => {
+      itemsArr.push({
+        kodeSupplier: box.querySelector('.it-kode').value.trim(),
+        kategori: box.querySelector('.it-kategori').value,
+        namaBarang: box.querySelector('.it-nama').value.trim(),
+        jumlah: box.querySelector('.it-jumlah').value,
+        satuan: box.querySelector('.it-satuan').value.trim(),
+        supplier: box.querySelector('.it-supplier').value.trim()
       });
     });
 
-    btn.disabled = true; btn.innerText = "Mengirim...";
+    const payload = {
+      action: "submitPermintaan",
+      pemohon: sesiUser.nama || sesiUser.username,
+      divisi: sesiUser.divisi,
+      unitLokasi: sesiUser.unitLokasi,
+      tglPermintaan: document.getElementById('tglPermintaan').value,
+      tglDibutuhkan: document.getElementById('tglDibutuhkan').value,
+      urgensi: document.getElementById('urgensi').value,
+      keterangan: document.getElementById('keterangan').value.trim(),
+      items: itemsArr
+    };
+
     try {
-      const payload = {
-        action: "submitPermintaan",
-        namaPemohon: sesiUser.nama, divisi: sesiUser.divisi, unitLokasi: sesiUser.unitLokasi,
-        tglPermintaan: document.getElementById('tglPermintaan').value,
-        tglDibutuhkan: document.getElementById('tglDibutuhkan').value,
-        urgensi: document.getElementById('urgensi').value,
-        keterangan: document.getElementById('keterangan').value.trim() || "-",
-        items: itemsArray
-      };
       const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
       const json = await res.json();
       if (json.status === "success") {
-        alert("Tiket berhasil dikirim!");
+        alert(json.message);
         document.getElementById('formPermintaan').reset();
-        document.getElementById('tglPermintaan').value = new Date().toISOString().split('T')[0];
-        document.getElementById('listItemsContainer').innerHTML = "";
-        tambahBarisItem();
-        muatRiwayatStaff();
-      } else { alert("Gagal: " + json.message); }
-    } catch(e) { alert("Kesalahan jaringan."); }
-    finally { btn.disabled = false; btn.innerText = "Kirim Permintaan ke Admin"; }
-  });
-
-  function groupTiketData(dataList) {
-    let map = {};
-    dataList.forEach(row => {
-      if (!map[row.kode]) {
-        map[row.kode] = {
-          kode: row.kode, tglSistem: row.tglSistem, pemohon: row.pemohon, divisi: row.divisi, unit: row.unit,
-          tglPermintaan: row.tglPermintaan, tglDibutuhkan: row.tglDibutuhkan, urgensi: row.urgensi,
-          keterangan: row.keterangan, status: row.status, catatan: row.catatan, pdfUrl: row.pdfUrl, items: []
-        };
-      }
-      map[row.kode].items.push({ kodeItem: row.kodeItem, kategori: row.kategori, barang: row.barang, namaBarang: row.barang, jumlah: row.jumlah, satuan: row.satuan, supplier: row.supplier });
-    });
-    return Object.values(map);
-  }
-
-  async function muatRiwayatStaff() {
-    try {
-      const res = await fetch(GAS_URL + "?action=getPermintaanAdmin");
-      const json = await res.json();
-      if (json.status === "success") {
-        let staffRows = json.data.filter(item => item.pemohon.toLowerCase() === sesiUser.nama.toLowerCase());
-        staffOriginalData = groupTiketData(staffRows);
-        terapkanFilterStaff();
-      }
-    } catch(e) { document.getElementById('containerRiwayatStaff').innerHTML = "Gagal memuat."; }
-  }
-
-  function terapkanFilterStaff() {
-    const filterBulan = document.getElementById('filterBulanStaff').value;
-    const filterStatus = document.getElementById('filterStatusStaff').value;
-    const searchVal = document.getElementById('searchStaff').value.toLowerCase().trim();
-
-    let filtered = staffOriginalData.filter(item => {
-      if (filterBulan && !(item.tglPermintaan || "").startsWith(filterBulan)) return false;
-      if (filterStatus && item.status !== filterStatus) return false;
-      if (searchVal && !item.kode.toLowerCase().includes(searchVal) && !item.items.some(i => i.barang.toLowerCase().includes(searchVal))) return false;
-      return true;
-    });
-    renderTabelStaff(filtered);
-  }
-
-  function formatGoogleDriveUrl(url) {
-    if (!url || url === '-') return '-';
-    if (url.includes('/file/d/')) {
-      const match = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-      if (match && match[1]) return `https://drive.google.com/file/d/${match[1]}/preview`;
-    }
-    return url;
-  }
-
-  function renderTabelStaff(dataList) {
-    groupedTiketList = dataList;
-    if (dataList.length === 0) {
-      document.getElementById('containerRiwayatStaff').innerHTML = "<p style='text-align:center; padding:20px; color:var(--text-muted);'>Tidak ada riwayat.</p>";
-      return;
-    }
-
-    let html = `<table><thead><tr><th>Kode Tiket</th><th>Tanggal</th><th>Daftar Barang</th><th>Status & Catatan</th><th>PDF TTD</th><th>Aksi</th></tr></thead><tbody>`;
-    dataList.forEach(tiket => {
-      let badgeClass = 'badge-pending';
-      let statusText = tiket.status && tiket.status !== '-' ? tiket.status : 'PENDING';
-      
-      if(statusText === 'ACC') badgeClass = 'badge-acc';
-      else if(statusText === 'REVISI') badgeClass = 'badge-revisi';
-      else if(statusText === 'DITOLAK') badgeClass = 'badge-tolak';
-
-      const cleanPdfUrl = formatGoogleDriveUrl(tiket.pdfUrl);
-      let itemSummary = tiket.items.map(i => `• [${i.kodeItem !== '-' ? i.kodeItem : '-'}] <b>${i.barang}</b> (${i.jumlah} ${i.satuan})`).join('<br>');
-
-      html += `<tr>
-        <td><b>${tiket.kode}</b></td>
-        <td>${tiket.tglPermintaan || '-'}</td>
-        <td>${itemSummary}</td>
-        <td>
-          <span class="badge ${badgeClass}">${statusText}</span>
-          ${tiket.catatan && tiket.catatan !== '-' ? `<br><small style="color:var(--text-muted);">${tiket.catatan}</small>` : ''}
-        </td>
-        <td>${cleanPdfUrl !== '-' ? `<a href="${cleanPdfUrl}" target="_blank" style="color:var(--primary); font-weight:600;"><i class="fa-solid fa-file-pdf"></i> Lihat PDF</a>` : '<span style="color:#94a3b8;">Belum ada</span>'}</td>
-        <td>
-          <button class="btn-sm btn-print" onclick="cetakFormulirA5('${tiket.kode}')">Cetak</button>
-          <button class="btn-sm btn-upload" onclick="triggerUploadPdf('${tiket.kode}')">Upload PDF</button>
-          ${statusText === 'PENDING' ? `<button class="btn-sm btn-edit" onclick="bukaModalEdit('${tiket.kode}')">Edit</button>` : ''}
-          ${statusText === 'PENDING' ? `<button class="btn-sm btn-delete" onclick="hapusTiket('${tiket.kode}')">Hapus</button>` : ''}
-        </td>
-      </tr>`;
-    });
-    html += `</tbody></table>`;
-    document.getElementById('containerRiwayatStaff').innerHTML = html;
-  }
-
-  function bukaModalEdit(kode) {
-    const tiket = staffOriginalData.find(i => i.kode === kode);
-    if (!tiket) return;
-
-    document.getElementById('editKodeTiket').value = tiket.kode;
-    document.getElementById('editKodeLabel').innerText = tiket.kode;
-    document.getElementById('editTglPermintaan').value = tiket.tglPermintaan || '';
-    document.getElementById('editTglDibutuhkan').value = tiket.tglDibutuhkan || '';
-    document.getElementById('editUrgensi').value = tiket.urgensi || 'REGULER';
-    document.getElementById('editKeterangan').value = tiket.keterangan !== '-' ? tiket.keterangan : '';
-
-    document.getElementById('listEditItemsContainer').innerHTML = "";
-    tiket.items.forEach(item => {
-      tambahBarisItemEdit(item);
-    });
-
-    document.getElementById('modalEdit').style.display = 'block';
-  }
-
-  function tutupModalEdit() {
-    document.getElementById('modalEdit').style.display = 'none';
-  }
-
-  document.getElementById('formEditPermintaan').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const kode = document.getElementById('editKodeTiket').value;
-    const rows = document.querySelectorAll('#listEditItemsContainer .item-row-container');
-    if (rows.length === 0) { alert("Minimal 1 barang!"); return; }
-
-    let itemsArray = [];
-    rows.forEach(r => {
-      const valNama = r.querySelector('.item-nama').value.trim();
-      itemsArray.push({
-        kodeItem: r.querySelector('.item-kode').value.trim() || "-",
-        kategori: r.querySelector('.item-kategori').value,
-        namaBarang: valNama,
-        barang: valNama,
-        jumlah: r.querySelector('.item-jumlah').value,
-        satuan: r.querySelector('.item-satuan').value.trim(),
-        supplier: r.querySelector('.item-supplier').value.trim() || "-"
-      });
-    });
-
-    try {
-      const payload = {
-        action: "editPermintaan",
-        kodeBarang: kode,
-        namaPemohon: sesiUser.nama, divisi: sesiUser.divisi, unitLokasi: sesiUser.unitLokasi,
-        tglPermintaan: document.getElementById('editTglPermintaan').value,
-        tglDibutuhkan: document.getElementById('editTglDibutuhkan').value,
-        urgensi: document.getElementById('editUrgensi').value,
-        keterangan: document.getElementById('editKeterangan').value.trim() || "-",
-        items: itemsArray
-      };
-      const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
-      const json = await res.json();
-      if (json.status === "success") {
-        alert("Tiket berhasil diperbarui!");
-        tutupModalEdit();
-        muatRiwayatStaff();
-      } else { alert("Gagal: " + json.message); }
-    } catch(err) { alert("Kesalahan jaringan."); }
-  });
-
-  function eksporKeCSVStaff() {
-    const filterBulan = document.getElementById('filterBulanStaff').value;
-    const filterStatus = document.getElementById('filterStatusStaff').value;
-    let filtered = staffOriginalData.filter(item => {
-      if (filterBulan && !(item.tglPermintaan || "").startsWith(filterBulan)) return false;
-      if (filterStatus && item.status !== filterStatus) return false;
-      return true;
-    });
-    if (filtered.length === 0) { alert("Tidak ada data!"); return; }
-    let csv = "\ufeffKode;Tanggal;Pemohon;Unit;Kode_Barang;Kategori;Barang;Jumlah;Satuan;Status;Catatan;PDF\n";
-    filtered.forEach(tiket => {
-      tiket.items.forEach(i => {
-        csv += `"${tiket.kode}";"${tiket.tglPermintaan}";"${tiket.pemohon}";"${tiket.unit}";"${i.kodeItem}";"${i.kategori}";"${i.barang}";"${i.jumlah}";"${i.satuan}";"${tiket.status}";"${tiket.catatan}";"${tiket.pdfUrl}"\n`;
-      });
-    });
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.setAttribute("download", `Rekap_Permintaan_${sesiUser.nama.replace(/\s+/g, '_')}.csv`);
-    document.body.appendChild(link); link.click(); document.body.removeChild(link);
-  }
-
-  function triggerUploadPdf(kode) { targetKodeUpload = kode; document.getElementById('hiddenFileInput').click(); }
-
-  async function prosesUploadPdfHistory(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    if (file.type !== "application/pdf") { alert("Harap unggah PDF!"); return; }
-    try {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = async () => {
-        const payload = { action: "uploadPdfOnly", kodeBarang: targetKodeUpload, fileName: file.name, mimeType: file.type, fileData: reader.result };
-        const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
-        const json = await res.json();
-        if (json.status === "success") { alert("PDF berhasil diunggah!"); muatRiwayatStaff(); }
-        else { alert("Gagal: " + json.message); }
-      };
-    } catch(e) { alert("Kesalahan jaringan."); }
-    finally { event.target.value = ""; }
-  }
-
-  function cetakFormulirA5(kode) {
-    const tiket = groupedTiketList.find(i => i.kode === kode);
-    if (!tiket) return;
-    document.getElementById('p_kode').innerText = tiket.kode;
-    const printDate = (tiket.tglSistem && !tiket.tglSistem.includes('1970')) ? tiket.tglSistem : new Date().toISOString().replace('T', ' ').substring(0, 19);
-    document.getElementById('p_tglSistem').innerText = printDate;
-    
-    document.getElementById('p_nama').innerText = tiket.pemohon;
-    document.getElementById('p_unit').innerText = tiket.unit;
-    document.getElementById('p_tglDiminta').innerText = tiket.tglPermintaan;
-    document.getElementById('p_tglDibutuhkan').innerText = tiket.tglDibutuhkan;
-    document.getElementById('p_urgensi').innerText = tiket.urgensi;
-    document.getElementById('t_pemohon').innerText = tiket.pemohon;
-
-    let tbodyHtml = "";
-    tiket.items.forEach((itm) => {
-      tbodyHtml += `<tr><td>${itm.kodeItem !== '-' ? itm.kodeItem : '-'}</td><td><b>${itm.barang}</b></td><td>${itm.jumlah} ${itm.satuan}</td><td>${itm.supplier}</td><td>${tiket.keterangan}</td></tr>`;
-    });
-    document.getElementById('p_tabelItems').innerHTML = tbodyHtml;
-    setTimeout(() => { window.print(); }, 150);
-  }
-
-  async function hapusTiket(kode) {
-    if (!confirm(`Hapus tiket ${kode}?`)) return;
-    try {
-      const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "deletePermintaan", kodeBarang: kode }) });
-      const json = await res.json();
-      if (json.status === "success") { alert("Tiket dihapus!"); muatRiwayatStaff(); }
-    } catch(e) { alert("Kesalahan jaringan."); }
-  }
-
-  async function muatDataAdmin() {
-    try {
-      const res = await fetch(GAS_URL + "?action=getPermintaanAdmin");
-      const json = await res.json();
-      if (json.status === "success") {
-        rawAdminData = groupTiketData(json.data);
-        populateUnitFilter(rawAdminData);
-        terapkanFilterAdmin();
-      }
-    } catch(e) {}
-  }
-
-  function populateUnitFilter(data) {
-    const selectUnit = document.getElementById('filterUnit');
-    selectUnit.innerHTML = '<option value="">-- Semua Unit --</option>';
-    [...new Set(data.map(item => item.unit).filter(Boolean))].forEach(u => {
-      const opt = document.createElement('option'); opt.value = u; opt.innerText = u; selectUnit.appendChild(opt);
-    });
-  }
-
-  function terapkanFilterAdmin() {
-    const filterBulan = document.getElementById('filterBulan').value;
-    const filterUnit = document.getElementById('filterUnit').value;
-    const filterStatus = document.getElementById('filterStatus').value;
-    const searchVal = document.getElementById('searchAdmin').value.toLowerCase().trim();
-
-    let filtered = rawAdminData.filter(item => {
-      if (filterBulan && !(item.tglPermintaan || "").startsWith(filterBulan)) return false;
-      if (filterUnit && item.unit !== filterUnit) return false;
-      if (filterStatus && item.status !== filterStatus) return false;
-      if (searchVal && !item.kode.toLowerCase().includes(searchVal) && !item.pemohon.toLowerCase().includes(searchVal) && !item.items.some(i => i.barang.toLowerCase().includes(searchVal))) return false;
-      return true;
-    });
-    renderStatistik(filtered);
-    renderTabelAdmin(filtered);
-  }
-
-  function renderStatistik(data) {
-    document.getElementById('statTotal').innerText = data.length;
-    document.getElementById('statPending').innerText = data.filter(i => i.status === 'PENDING').length;
-    document.getElementById('statACC').innerText = data.filter(i => i.status === 'ACC').length;
-    document.getElementById('statTolak').innerText = data.filter(i => i.status === 'REVISI' || i.status === 'DITOLAK').length;
-  }
-
-  function renderTabelAdmin(data) {
-    if (data.length === 0) { document.getElementById('containerTabelAdmin').innerHTML = "<p style='text-align:center; padding:20px; color:var(--text-muted);'>Tidak ada data.</p>"; return; }
-    let html = `<table><thead><tr><th>Tiket & Tanggal</th><th>Pemohon / Unit</th><th>Daftar Barang</th><th>Status</th><th>PDF TTD</th><th>Aksi Admin</th></tr></thead><tbody>`;
-    data.forEach(tiket => {
-      let badgeClass = 'badge-pending';
-      let statusText = tiket.status && tiket.status !== '-' ? tiket.status : 'PENDING';
-      
-      if(statusText === 'ACC') badgeClass = 'badge-acc';
-      else if(statusText === 'REVISI') badgeClass = 'badge-revisi';
-      else if(statusText === 'DITOLAK') badgeClass = 'badge-tolak';
-
-      const cleanPdfUrl = formatGoogleDriveUrl(tiket.pdfUrl);
-      let itemSummary = tiket.items.map(i => `• [${i.kodeItem !== '-' ? i.kodeItem : '-'}] <b>${i.barang}</b> (${i.jumlah} ${i.satuan})`).join('<br>');
-
-      html += `<tr>
-        <td><b>${tiket.kode}</b><br><small>${tiket.tglPermintaan}</small></td>
-        <td><b>${tiket.pemohon}</b><br><small>${tiket.unit}</small></td>
-        <td>${itemSummary}</td>
-        <td><span class="badge ${badgeClass}">${statusText}</span><br><small>${tiket.catatan !== '-' ? tiket.catatan : ''}</small></td>
-        <td>${cleanPdfUrl !== '-' ? `<a href="${cleanPdfUrl}" target="_blank">Lihat PDF</a>` : '-'}</td>
-        <td>
-          <select id="status_${tiket.kode}" style="padding:6px; font-size:12px; margin-bottom:4px;">
-            <option value="PENDING" ${statusText==='PENDING'?'selected':''}>PENDING</option>
-            <option value="ACC" ${statusText==='ACC'?'selected':''}>ACC</option>
-            <option value="REVISI" ${statusText==='REVISI'?'selected':''}>REVISI</option>
-            <option value="DITOLAK" ${statusText==='DITOLAK'?'selected':''}>DITOLAK</option>
-          </select><br>
-          <input type="text" id="catatan_${tiket.kode}" value="${tiket.catatan !== '-' ? tiket.catatan : ''}" placeholder="Catatan..." style="font-size:12px; padding:6px;"><br>
-          <button onclick="updateStatusAdmin('${tiket.kode}')" style="padding:6px 12px; font-size:12px; margin-top:6px; width:100%;">Simpan</button>
-        </td>
-      </tr>`;
-    });
-    html += `</tbody></table>`;
-    document.getElementById('containerTabelAdmin').innerHTML = html;
-  }
-
-  async function updateStatusAdmin(kodeTiket) {
-    const selectEl = document.getElementById(`status_${kodeTiket}`);
-    const catatanEl = document.getElementById(`catatan_${kodeTiket}`);
-
-    const status = selectEl ? selectEl.value : "PENDING";
-    const catatan = catatanEl ? catatanEl.value : "-";
-
-    try {
-      const res = await fetch(GAS_URL, { 
-        method: 'POST', 
-        body: JSON.stringify({ 
-          action: "updateStatus", 
-          kodeBarang: kodeTiket, 
-          status: status, 
-          catatan: catatan 
-        }) 
-      });
-      const json = await res.json();
-      if(json.status === "success") { 
-        alert("Status berhasil diperbarui!"); 
-        muatDataAdmin(); 
+        tampilkanDashboard();
       } else {
-        alert("Gagal memperbarui: " + json.message);
+        alert("Gagal: " + json.message);
       }
-    } catch(e) { 
-      alert("Terjadi kesalahan jaringan."); 
+    } catch(err) {
+      alert("Kesalahan koneksi pengiriman.");
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Kirim Permintaan ke Admin';
     }
-  }
+  });
 
-  function eksporKeCSV() {
-    let csv = "\ufeffKode;Tanggal;Pemohon;Unit;Kode_Barang;Kategori;Barang;Jumlah;Satuan;Status;Catatan;PDF\n";
-    rawAdminData.forEach(tiket => {
-      tiket.items.forEach(i => {
-        csv += `"${tiket.kode}";"${tiket.tglPermintaan}";"${tiket.pemohon}";"${tiket.unit}";"${i.kodeItem}";"${i.kategori}";"${i.barang}";"${i.jumlah}";"${i.satuan}";"${tiket.status}";"${tiket.catatan}";"${tiket.pdfUrl}"\n`;
-      });
-    });
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.setAttribute("download", "Rekap_Tiket_Permintaan.csv");
-    document.body.appendChild(link); link.click(); document.body.removeChild(link);
+  async function muatRiwayatPermintaan() {
+    try {
+      const res = await fetch(`${GAS_URL}?action=getPermintaan&username=${encodeURIComponent(sesiUser.nama || sesiUser.username)}&unitLokasi=${encodeURIComponent(sesiUser.unitLokasi)}&isAdmin=${sesiUser.isAdmin}`);
+      const json = await res.json();
+
+      if (json.status === "success") {
+        if (json.data.length === 0) {
+          document.getElementById('containerRiwayat').innerHTML = "<p style='text-align:center; padding:20px;'>Belum ada riwayat pengajuan permintaan.</p>";
+          return;
+        }
+
+        let html = `<table><thead><tr>
+          <th>Kode Tiket</th><th>Tgl Pembuatan</th><th>Pemohon</th><th>Unit Farm</th><th>Nama Barang</th><th>Jumlah</th><th>Urgensi</th><th>Status</th>
+        </tr></thead><tbody>`;
+
+        json.data.forEach(item => {
+          let badge = `<span class="badge badge-pending">PENDING</span>`;
+          let st = (item.statusPermintaan || "").toUpperCase();
+          if (st === "ACC" || st === "APPROVED") badge = `<span class="badge badge-acc">ACC</span>`;
+          else if (st === "DITOLAK" || st === "REJECTED") badge = `<span class="badge badge-reject">DITOLAK</span>`;
+
+          html += `<tr>
+            <td><b>${item.kodeTiket}</b></td>
+            <td><small>${item.tglPermintaan}</small></td>
+            <td>${item.pemohon}</td>
+            <td>${item.unitLokasi}</td>
+            <td><b>${item.namaBarang}</b></td>
+            <td>${item.jumlah} ${item.satuan}</td>
+            <td><small>${item.urgensi}</small></td>
+            <td>${badge}</td>
+          </tr>`;
+        });
+
+        html += `</tbody></table>`;
+        document.getElementById('containerRiwayat').innerHTML = html;
+      }
+    } catch(e) {
+      document.getElementById('containerRiwayat').innerHTML = "<p style='text-align:center; color:#ef4444; padding:20px;'>Gagal memuat riwayat.</p>";
+    }
   }
 </script>
 
