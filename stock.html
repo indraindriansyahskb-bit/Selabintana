@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ERP Inventory & Stock Management System</title>
+  <title>ERP Inventory & Stock Management - CV. SELABINTANA</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
@@ -12,20 +12,21 @@
   <style>
     :root {
       --erp-sidebar-width: 250px;
-      --erp-bg-body: #f1f5f9;
-      --erp-sidebar-bg: #0f172a;
-      --erp-sidebar-text: #94a3b8;
-      --erp-sidebar-active: #2563eb;
+      --erp-bg-body: #f0f4f2;
+      --erp-sidebar-bg: #1b3a26;
+      --erp-sidebar-text: #c2d1c7;
+      --erp-sidebar-active: #2d6a43;
       --erp-card-bg: #ffffff;
-      --erp-border: #cbd5e1;
-      --erp-border-light: #e2e8f0;
-      --erp-text-main: #1e293b;
-      --erp-text-muted: #64748b;
-      --erp-primary: #2563eb;
-      --erp-primary-hover: #1d4ed8;
+      --erp-border: #c2d1c7;
+      --erp-border-light: #e3ebe6;
+      --erp-text-main: #19261f;
+      --erp-text-muted: #5e6e64;
+      --erp-primary: #2d6a43;
+      --erp-primary-hover: #1f4f30;
       --erp-success: #10b981;
       --erp-warning: #f59e0b;
       --erp-danger: #ef4444;
+      --erp-accent-yellow: #fde047;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -35,116 +36,126 @@
     .erp-container { display: flex; min-height: 100vh; }
 
     /* SIDEBAR */
-    .erp-sidebar { width: var(--erp-sidebar-width); background-color: var(--erp-sidebar-bg); color: var(--erp-sidebar-text); display: flex; flex-direction: column; flex-shrink: 0; border-right: 1px solid #1e293b; }
-    .erp-brand { padding: 20px 18px; font-size: 16px; font-weight: 700; color: #ffffff; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #1e293b; letter-spacing: 0.5px; }
-    .erp-brand i { color: var(--erp-primary); font-size: 20px; }
+    .erp-sidebar { width: var(--erp-sidebar-width); background-color: var(--erp-sidebar-bg); color: var(--erp-sidebar-text); display: flex; flex-direction: column; flex-shrink: 0; border-right: 1px solid #142b1c; }
+    .erp-brand { padding: 20px 18px; font-size: 15px; font-weight: 700; color: #ffffff; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #142b1c; letter-spacing: 0.5px; }
+    .erp-brand i { color: var(--erp-accent-yellow); font-size: 18px; }
     .erp-menu { list-style: none; padding: 15px 10px; flex: 1; }
-    .erp-menu-label { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #475569; padding: 10px 12px 6px 12px; letter-spacing: 0.8px; }
-    .erp-menu-item { display: flex; align-items: center; gap: 12px; padding: 11px 14px; color: #94a3b8; text-decoration: none; border-radius: 6px; font-weight: 500; cursor: pointer; transition: all 0.15s ease; margin-bottom: 4px; }
-    .erp-menu-item:hover { background: #1e293b; color: #f8fafc; }
-    .erp-menu-item.active { background: var(--erp-sidebar-active); color: #ffffff; font-weight: 600; }
+    .erp-menu-label { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #73907d; padding: 10px 12px 6px 12px; letter-spacing: 0.8px; }
+    .erp-menu-item { display: flex; align-items: center; gap: 12px; padding: 11px 14px; color: var(--erp-sidebar-text); text-decoration: none; border-radius: 6px; font-weight: 500; cursor: pointer; transition: all 0.15s ease; margin-bottom: 4px; }
+    .erp-menu-item:hover { background: #234b32; color: #ffffff; }
+    .erp-menu-item.active { background: var(--erp-sidebar-active); color: #ffffff; font-weight: 600; border-left: 4px solid var(--erp-accent-yellow); }
     .erp-menu-item i { width: 18px; text-align: center; font-size: 14px; }
-    .erp-sidebar-footer { padding: 16px; border-top: 1px solid #1e293b; background: #090d16; font-size: 12px; }
+    .erp-sidebar-footer { padding: 16px; border-top: 1px solid #142b1c; background: #12271a; font-size: 12px; }
 
     /* MAIN CONTENT AREA */
     .erp-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
     
     /* TOP HEADER BAR */
-    .erp-topbar { height: 60px; background: #ffffff; border-bottom: 1px solid var(--erp-border-light); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; position: sticky; top: 0; z-index: 10; }
-    .erp-breadcrumb { font-size: 13px; font-weight: 600; color: var(--erp-text-main); display: flex; align-items: center; gap: 8px; }
+    .erp-topbar { height: 65px; background: #ffffff; border-bottom: 2px solid var(--erp-accent-yellow); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; position: sticky; top: 0; z-index: 10; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+    .erp-breadcrumb { font-size: 14px; font-weight: 700; color: var(--erp-primary); display: flex; align-items: center; gap: 8px; }
     .erp-topbar-actions { display: flex; align-items: center; gap: 15px; }
-    .erp-user-profile { display: flex; align-items: center; gap: 10px; background: #f8fafc; border: 1px solid var(--erp-border-light); padding: 5px 12px; border-radius: 20px; }
-    .erp-avatar { width: 28px; height: 28px; background: var(--erp-primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 11px; }
+    .erp-user-profile { display: flex; align-items: center; gap: 10px; background: #f6f9f7; border: 1px solid var(--erp-border-light); padding: 6px 14px; border-radius: 20px; }
+    .erp-avatar { width: 30px; height: 30px; background: var(--erp-accent-yellow); color: var(--erp-topbar-bg); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px; }
 
     /* CONTENT BODY */
     .erp-content { padding: 24px; flex: 1; overflow-y: auto; }
 
     /* STATS CARDS (KPI DASHBOARD) */
     .erp-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 22px; }
-    .erp-stat-card { background: #ffffff; padding: 18px; border-radius: 8px; border: 1px solid var(--erp-border-light); box-shadow: 0 1px 3px rgba(0,0,0,0.02); display: flex; align-items: center; justify-content: space-between; }
+    .erp-stat-card { background: #ffffff; padding: 18px; border-radius: 8px; border: 1px solid var(--erp-border-light); box-shadow: 0 1px 3px rgba(0,0,0,0.02); display: flex; align-items: center; justify-content: space-between; transition: transform 0.2s; border-bottom: 3px solid transparent; }
+    .erp-stat-card:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(45, 106, 67, 0.08); border-bottom-color: var(--erp-primary); }
     .erp-stat-info .label { font-size: 11px; font-weight: 600; color: var(--erp-text-muted); text-transform: uppercase; margin-bottom: 4px; }
-    .erp-stat-info .value { font-size: 20px; font-weight: 700; color: var(--erp-text-main); }
+    .erp-stat-info .value { font-size: 22px; font-weight: 700; color: var(--erp-text-main); }
     .erp-stat-icon { width: 44px; height: 44px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
 
     /* PANEL & CARDS */
-    .erp-card { background: var(--erp-card-bg); border-radius: 8px; border: 1px solid var(--erp-border-light); box-shadow: 0 1px 3px rgba(0,0,0,0.03); margin-bottom: 22px; }
-    .erp-card-header { padding: 16px 20px; border-bottom: 1px solid var(--erp-border-light); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; background: #ffffff; border-radius: 8px 8px 0 0; }
-    .erp-card-title { font-size: 15px; font-weight: 700; color: var(--erp-text-main); display: flex; align-items: center; gap: 8px; }
+    .erp-card { background: var(--erp-card-bg); border-radius: 8px; border: 1px solid var(--erp-border-light); box-shadow: 0 1px 3px rgba(0,0,0,0.03); margin-bottom: 22px; overflow: hidden; }
+    .erp-card-header { padding: 16px 20px; border-bottom: 1px solid var(--erp-border-light); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; background: #ffffff; }
+    .erp-card-title { font-size: 14px; font-weight: 700; color: var(--erp-primary); display: flex; align-items: center; gap: 8px; }
     .erp-card-body { padding: 20px; }
 
     /* FILTER BAR ERP STYLE */
-    .erp-filter-bar { background: #f8fafc; border: 1px solid var(--erp-border-light); padding: 14px 18px; border-radius: 6px; margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; }
+    .erp-filter-bar { background: #f6f9f7; border: 1px solid var(--erp-border-light); padding: 14px 18px; border-radius: 6px; margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; }
     .erp-filter-group { flex: 1; min-width: 160px; }
     .erp-filter-group label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--erp-text-muted); margin-bottom: 6px; letter-spacing: 0.3px; }
 
     /* FORMS & INPUTS */
     input[type="text"], input[type="password"], select, input[type="number"], input[type="date"] {
-      width: 100%; padding: 8px 12px; border: 1px solid var(--erp-border); border-radius: 6px; font-size: 12px; font-family: inherit; background-color: #ffffff; color: var(--erp-text-main); transition: border-color 0.15s;
+      width: 100%; padding: 9px 12px; border: 1px solid var(--erp-border); border-radius: 6px; font-size: 12px; font-family: inherit; background-color: #ffffff; color: var(--erp-text-main); transition: border-color 0.15s;
     }
-    input:focus, select:focus { outline: none; border-color: var(--erp-primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+    input:focus, select:focus { outline: none; border-color: var(--erp-primary); box-shadow: 0 0 0 3px rgba(45,106,67,0.15); }
 
     /* BUTTONS */
-    .btn { padding: 8px 14px; border-radius: 6px; font-size: 12px; font-weight: 600; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.15s ease; text-decoration: none; }
+    .btn { padding: 9px 16px; border-radius: 6px; font-size: 12px; font-weight: 600; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.15s ease; text-decoration: none; }
     .btn-primary { background: var(--erp-primary); color: white; }
     .btn-primary:hover { background: var(--erp-primary-hover); }
     .btn-success { background: var(--erp-success); color: white; }
     .btn-success:hover { background: #059669; }
-    .btn-warning { background: var(--erp-warning); color: white; }
+    .btn-warning { background: var(--erp-warning); color: #000; }
     .btn-secondary { background: #64748b; color: white; }
     .btn-outline { background: white; border: 1px solid var(--erp-border); color: var(--erp-text-main); }
-    .btn-outline:hover { background: #f1f5f9; }
+    .btn-outline:hover { background: #f0f4f2; border-color: var(--erp-primary); color: var(--erp-primary); }
 
     /* DATA TABLE ERP GRID */
     .erp-table-responsive { overflow-x: auto; border-radius: 6px; border: 1px solid var(--erp-border-light); }
     .erp-table { width: 100%; border-collapse: collapse; font-size: 12px; background: white; text-align: left; }
-    .erp-table th { background: #f8fafc; color: #475569; font-weight: 700; text-transform: uppercase; font-size: 11px; padding: 10px 14px; border-bottom: 2px solid var(--erp-border-light); letter-spacing: 0.5px; white-space: nowrap; }
-    .erp-table td { padding: 10px 14px; border-bottom: 1px solid var(--erp-border-light); color: var(--erp-text-main); vertical-align: middle; }
-    .erp-table tbody tr:hover { background-color: #f8fafc; }
+    .erp-table th { background: #f6f9f7; color: var(--erp-primary); font-weight: 700; text-transform: uppercase; font-size: 11px; padding: 12px 14px; border-bottom: 2px solid var(--erp-border-light); letter-spacing: 0.5px; white-space: nowrap; }
+    .erp-table td { padding: 11px 14px; border-bottom: 1px solid var(--erp-border-light); color: var(--erp-text-main); vertical-align: middle; }
+    .erp-table tbody tr:hover { background-color: #f6f9f7; }
     .mono { font-family: 'JetBrains Mono', monospace; font-weight: 600; }
 
     /* BADGES */
-    .badge { display: inline-flex; align-items: center; padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; }
+    .badge { display: inline-flex; align-items: center; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; }
     .badge-success { background: #d1fae5; color: #047857; }
     .badge-warning { background: #fef3c7; color: #b45309; }
     .badge-danger { background: #fee2e2; color: #b91c1c; }
     .badge-info { background: #e0f2fe; color: #0369a1; }
 
     /* MODAL */
-    .modal { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(2px); z-index: 1000; overflow-y: auto; padding: 20px; }
-    .modal-content { background: white; max-width: 520px; margin: 50px auto; border-radius: 8px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); border: 1px solid var(--erp-border-light); overflow: hidden; }
-    .modal-header { padding: 16px 20px; background: #f8fafc; border-bottom: 1px solid var(--erp-border-light); display: flex; justify-content: space-between; align-items: center; }
-    .modal-body { padding: 20px; }
+    .modal { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(3px); z-index: 1000; overflow-y: auto; padding: 20px; align-items: center; justify-content: center; }
+    .modal-content { background: white; width: 100%; max-width: 525px; border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); overflow: hidden; }
+    .modal-header { padding: 18px 24px; background: #f6f9f7; border-bottom: 1px solid var(--erp-border-light); display: flex; justify-content: space-between; align-items: center; }
+    .modal-body { padding: 24px; }
 
     /* LOGIN SCREEN MODAL */
-    .login-wrapper { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #0f172a; }
-    .login-card { background: white; padding: 32px; border-radius: 12px; width: 100%; max-width: 400px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
+    .login-wrapper { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #1b3a26 0%, #2d6a43 100%); padding: 20px; }
+    .login-card { background: white; padding: 35px 32px; border-radius: 12px; width: 100%; max-width: 380px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4); border-top: 5px solid var(--erp-accent-yellow); }
 
     .form-row { display: flex; gap: 12px; margin-bottom: 12px; }
     .form-row .form-group { flex: 1; margin-bottom: 0; }
     .form-group { margin-bottom: 14px; }
-    .form-group label { display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--erp-text-muted); margin-bottom: 5px; }
+    .form-group label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--erp-text-muted); margin-bottom: 6px; letter-spacing: 0.3px; }
+
+    /* TOAST NOTIFICATION STYLING */
+    #toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+    .toast { min-width: 250px; background: #ffffff; border-left: 4px solid var(--erp-primary); box-shadow: 0 4px 15px rgba(0,0,0,0.15); padding: 14px 18px; border-radius: 4px; display: flex; align-items: center; gap: 12px; font-size: 13px; font-weight: 600; opacity: 0; transform: translateX(100%); transition: all 0.3s; pointer-events: auto; }
+    .toast.show { opacity: 1; transform: translateX(0); }
+    .toast-success { border-color: var(--erp-success); color: var(--erp-success); }
+    .toast-error { border-color: var(--erp-danger); color: var(--erp-danger); }
   </style>
 </head>
 <body>
 
-<!-- SCREEN LOGIN (JIKA BELUM MASUK SESI) -->
+<div id="toast-container"></div>
+
+<!-- SCREEN LOGIN -->
 <div id="loginSection" class="login-wrapper">
   <div class="login-card">
-    <div style="text-align: center; margin-bottom: 24px;">
-      <i class="fa-solid fa-boxes-stacked" style="font-size: 42px; color: var(--erp-primary);"></i>
-      <h2 style="font-size: 20px; font-weight: 700; color: #0f172a; margin-top: 10px;">ERP Inventory System</h2>
-      <p style="font-size: 12px; color: #64748b;">Masuk dengan akun terdaftar Anda</p>
+    <div style="text-align: center; margin-bottom: 25px;">
+      <i class="fa-solid fa-boxes-stacked" style="font-size: 48px; color: var(--erp-primary); margin-bottom: 10px;"></i>
+      <h2 style="font-size: 18px; font-weight: 800; color: var(--erp-primary); margin: 0;">CV. SELABINTANA</h2>
+      <h3 style="font-size: 13px; font-weight: 600; color: var(--erp-text-main); margin-top: 4px;">ERP Inventory & Stock Portal</h3>
     </div>
     <div class="form-group">
-      <label>Username</label>
+      <label>Username SSO</label>
       <input type="text" id="loginUser" placeholder="Ketik username..." required>
     </div>
     <div class="form-group">
       <label>Password</label>
       <input type="password" id="loginPass" placeholder="Ketik password..." required>
     </div>
-    <button type="button" onclick="prosesLogin()" class="btn btn-primary" style="width: 100%; padding: 10px; margin-top: 10px;">
-      <i class="fa-solid fa-right-to-bracket"></i> Masuk Ke System
+    <button type="button" onclick="prosesLogin()" class="btn btn-primary" style="width: 100%; padding: 12px; margin-top: 10px;">
+      <i class="fa-solid fa-right-to-bracket"></i> Masuk Sistem ERP
     </button>
   </div>
 </div>
@@ -156,7 +167,7 @@
   <aside class="erp-sidebar">
     <div class="erp-brand">
       <i class="fa-solid fa-boxes-stacked"></i>
-      <span>ENTERPRISE ERP</span>
+      <span>CV. SELABINTANA</span>
     </div>
     
     <ul class="erp-menu">
@@ -182,9 +193,9 @@
     </ul>
 
     <div class="erp-sidebar-footer">
-      <div style="color: #64748b; font-size: 10px; text-transform: uppercase; font-weight: 700;">Status Koneksi</div>
-      <div style="color: #10b981; font-weight: 600; margin-top: 2px; display: flex; align-items: center; gap: 6px;">
-        <span style="width: 8px; height: 8px; background: #10b981; border-radius: 50%; display: inline-block;"></span> GAS Cloud Connected
+      <div style="color: #73907d; font-size: 10px; text-transform: uppercase; font-weight: 700;">Status Koneksi</div>
+      <div style="color: var(--erp-success); font-weight: 600; margin-top: 2px; display: flex; align-items: center; gap: 6px;">
+        <span style="width: 8px; height: 8px; background: var(--erp-success); border-radius: 50%; display: inline-block;"></span> GAS Cloud Connected
       </div>
     </div>
   </aside>
@@ -195,13 +206,13 @@
     <!-- TOP BAR -->
     <header class="erp-topbar">
       <div class="erp-breadcrumb">
-        <i class="fa-solid fa-warehouse" style="color: var(--erp-primary);"></i>
+        <i class="fa-solid fa-warehouse"></i>
         <span>Manajemen Gudang Multi-Unit Farm</span>
       </div>
       
       <div class="erp-topbar-actions">
         <div class="erp-user-profile" id="userProfileTag"></div>
-        <button onclick="logoutSesi()" class="btn btn-outline" style="padding: 5px 10px; color: var(--erp-danger);">
+        <button onclick="logoutSesi()" class="btn btn-outline" style="padding: 6px 12px; color: var(--erp-danger);">
           <i class="fa-solid fa-power-off"></i> Keluar
         </button>
       </div>
@@ -249,7 +260,7 @@
         <div class="erp-card">
           <div class="erp-card-header">
             <div class="erp-card-title"><i class="fa-solid fa-list-check"></i> Jurnal Transaksi Rinci Per Barang</div>
-            <button onclick="eksporKeExcel()" class="btn btn-success"><i class="fa-solid fa-file-excel"></i> Ekspor Excel (.xlsx)</button>
+            <button onclick="eksporKeExcel()" class="btn btn-success" style="background:#047857; color:#fff;"><i class="fa-solid fa-file-excel"></i> Ekspor Excel (.xlsx)</button>
           </div>
           
           <div class="erp-card-body">
@@ -275,7 +286,7 @@
             </div>
 
             <div class="erp-table-responsive" id="containerTabelJurnal">
-              <p style="text-align:center; padding:30px; color: var(--erp-text-muted);">Memuat data jurnal persediaan...</p>
+              <p style="text-align:center; padding:30px; color: var(--erp-text-muted);"><i class="fa-solid fa-spinner fa-spin"></i> Memuat data jurnal persediaan...</p>
             </div>
           </div>
         </div>
@@ -289,19 +300,19 @@
           </div>
           <div class="erp-card-body">
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 25px;">
-              <button onclick="bukaModalPenerimaan()" class="btn btn-success" style="padding: 20px; font-size: 14px; flex-direction: column;">
+              <button onclick="bukaModalPenerimaan()" class="btn btn-success" style="padding: 20px; font-size: 13px; flex-direction: column; background:#047857; color:#fff;">
                 <i class="fa-solid fa-box-archive fa-2xl" style="margin-bottom: 8px;"></i> 1. Penerimaan Barang Masuk
               </button>
-              <button onclick="bukaModalPemakaian()" class="btn btn-warning" style="padding: 20px; font-size: 14px; flex-direction: column;">
+              <button onclick="bukaModalPemakaian()" class="btn btn-warning" style="padding: 20px; font-size: 13px; flex-direction: column;">
                 <i class="fa-solid fa-dolly fa-2xl" style="margin-bottom: 8px;"></i> 2. Pemakaian / Keluar Kandang
               </button>
-              <button onclick="bukaModalTransferDirect()" class="btn btn-primary" style="padding: 20px; font-size: 14px; flex-direction: column;">
+              <button onclick="bukaModalTransferDirect()" class="btn btn-primary" style="padding: 20px; font-size: 13px; flex-direction: column;">
                 <i class="fa-solid fa-truck-ramp-box fa-2xl" style="margin-bottom: 8px;"></i> 3. Mutasi Inter-Farm
               </button>
             </div>
 
             <div style="background: #fffbe6; border: 1px solid #ffe58f; padding: 18px; border-radius: 8px;">
-              <h4 style="margin-bottom: 12px; color: #b78103; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+              <h4 style="margin-bottom: 12px; color: #b45309; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 8px;">
                 <i class="fa-solid fa-clock-rotate-left"></i> Antrean Mutasi Menunggu Verifikasi & Konfirmasi
               </h4>
               <div class="erp-table-responsive" id="containerPendingTransfer"></div>
@@ -330,8 +341,8 @@
 <div id="modalPenerimaan" class="modal">
   <div class="modal-content">
     <div class="modal-header">
-      <h3 style="font-size:14px; font-weight:700;"><i class="fa-solid fa-circle-arrow-down" style="color:var(--erp-success);"></i> Entry Penerimaan Barang Masuk</h3>
-      <button onclick="tutupModal('modalPenerimaan')" style="background:none; border:none; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+      <h3 style="font-size:14px; font-weight:700; color:var(--erp-primary);"><i class="fa-solid fa-circle-arrow-down" style="color:var(--erp-success);"></i> Entry Penerimaan Barang Masuk</h3>
+      <button onclick="tutupModal('modalPenerimaan')" style="background:none; border:none; cursor:pointer; font-size:16px;"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <form id="formPenerimaan" class="modal-body">
       <div class="form-group"><label>Sumber Penerimaan</label>
@@ -357,7 +368,7 @@
       </div>
       <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:15px;">
         <button type="button" onclick="tutupModal('modalPenerimaan')" class="btn btn-outline">Batal</button>
-        <button type="submit" class="btn btn-success">Simpan Penerimaan</button>
+        <button type="submit" class="btn btn-success" style="background:#047857; color:#fff;">Simpan Penerimaan</button>
       </div>
     </form>
   </div>
@@ -367,8 +378,8 @@
 <div id="modalPemakaian" class="modal">
   <div class="modal-content">
     <div class="modal-header">
-      <h3 style="font-size:14px; font-weight:700;"><i class="fa-solid fa-circle-arrow-up" style="color:var(--erp-warning);"></i> Form Pemakaian / Outflow Barang</h3>
-      <button onclick="tutupModal('modalPemakaian')" style="background:none; border:none; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+      <h3 style="font-size:14px; font-weight:700; color:var(--erp-primary);"><i class="fa-solid fa-circle-arrow-up" style="color:var(--erp-warning);"></i> Form Pemakaian / Outflow Barang</h3>
+      <button onclick="tutupModal('modalPemakaian')" style="background:none; border:none; cursor:pointer; font-size:16px;"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <form id="formPemakaian" class="modal-body">
       <div class="form-group"><label>Pilih Barang Dari Gudang</label><select id="pemBarangPilih" required></select></div>
@@ -387,8 +398,8 @@
 <div id="modalTransfer" class="modal">
   <div class="modal-content">
     <div class="modal-header">
-      <h3 style="font-size:14px; font-weight:700;"><i class="fa-solid fa-truck-ramp-box" style="color:var(--erp-primary);"></i> Pengajuan Mutasi Inter-Farm</h3>
-      <button onclick="tutupModal('modalTransfer')" style="background:none; border:none; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+      <h3 style="font-size:14px; font-weight:700; color:var(--erp-primary);"><i class="fa-solid fa-truck-ramp-box"></i> Pengajuan Mutasi Inter-Farm</h3>
+      <button onclick="tutupModal('modalTransfer')" style="background:none; border:none; cursor:pointer; font-size:16px;"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <form id="formTransferStok" class="modal-body">
       <div class="form-group"><label>Pilih Barang Asal</label><select id="trBarangAsal" required></select></div>
@@ -410,6 +421,17 @@
 
   let sesiUser = {}; let masterUnits = []; let allUnits = []; let masterGudang = []; let rawJurnalData = []; let rawStokList = [];
 
+  function showToast(message, type = 'success') {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    const icon = type === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation';
+    toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${message}</span>`;
+    container.appendChild(toast);
+    setTimeout(() => toast.classList.add('show'), 10);
+    setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, 3500);
+  }
+
   window.onload = function() {
     const savedUser = localStorage.getItem('stok_app_user_session');
     if (savedUser) { sesiUser = JSON.parse(savedUser); tampilkanDashboard(); }
@@ -418,13 +440,18 @@
   async function prosesLogin() {
     const u = document.getElementById('loginUser').value.trim();
     const p = document.getElementById('loginPass').value.trim();
-    if (!u || !p) return alert("Masukkan Username & Password!");
+    if (!u || !p) return showToast("Masukkan Username & Password!", "error");
     try {
       const res = await fetch(`${GAS_URL}?action=login&username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}`);
       const result = await res.json();
-      if (result.status === "success") { sesiUser = result.userData; localStorage.setItem('stok_app_user_session', JSON.stringify(sesiUser)); tampilkanDashboard(); }
-      else alert("Login Gagal: " + result.message);
-    } catch (e) { alert("Kesalahan koneksi server ERP."); }
+      if (result.status === "success") { 
+        sesiUser = result.userData; 
+        localStorage.setItem('stok_app_user_session', JSON.stringify(sesiUser)); 
+        showToast(`Selamat datang, ${sesiUser.nama}!`);
+        tampilkanDashboard(); 
+      }
+      else showToast("Login Gagal: " + result.message, "error");
+    } catch (e) { showToast("Kesalahan koneksi server ERP.", "error"); }
   }
 
   function tampilkanDashboard() {
@@ -436,7 +463,7 @@
       <div class="erp-avatar">${initial}</div>
       <div style="line-height:1.2;">
         <div style="font-weight:700; font-size:12px; color:var(--erp-text-main);">${sesiUser.nama}</div>
-        <div style="font-size:10px; color:var(--erp-text-muted);">${sesiUser.jabatan} | ${sesiUser.unitLokasi}</div>
+        <div style="font-size:10px; color:var(--erp-text-muted);">${sesiUser.jabatan} | <b>${sesiUser.unitLokasi}</b> ${sesiUser.isAdmin?'<span style="color:var(--erp-primary);">(ADMIN)</span>':''}</div>
       </div>
     `;
 
@@ -597,7 +624,7 @@
 
       html += `<tr>
         <td>${idx + 1}</td>
-        <td><small class="mono" style="color:#64748b;">${item.tglSistem}</small></td>
+        <td><small class="mono" style="color:var(--erp-text-muted);">${item.tglSistem}</small></td>
         <td><span class="mono">${item.kodeBarang}</span></td>
         <td><b>${item.namaBarang}</b></td>
         <td><span class="badge ${tipe === 'MASUK' ? 'badge-success' : 'badge-danger'}">${item.tipeMutasi}</span></td>
@@ -605,8 +632,8 @@
         <td class="mono" style="color:#b91c1c; font-weight:600;">${kel > 0 ? kel : '-'}</td>
         <td class="mono" style="font-weight:700; color:var(--erp-primary);">${runningSaldo}</td>
         <td>${item.satuan}</td>
-        <td>${item.kodeUnit} <small style="color:#64748b;">(${item.kodeGudang})</small></td>
-        <td><small style="color:#475569;">${item.keterangan}</small></td>
+        <td>${item.kodeUnit} <small style="color:var(--erp-text-muted);">(${item.kodeGudang})</small></td>
+        <td><small style="color:var(--erp-text-main);">${item.keterangan}</small></td>
       </tr>`;
     });
 
@@ -624,7 +651,7 @@
       return true;
     });
 
-    if (filteredData.length === 0) return alert("Tidak ada rincian transaksi untuk diekspor!");
+    if (filteredData.length === 0) return showToast("Tidak ada rincian transaksi untuk diekspor!", "error");
 
     let dataExcel = [];
     let currentBarang = "";
@@ -664,6 +691,7 @@
 
     let barangText = searchBarangVal ? searchBarangVal.replace(/[^a-zA-Z0-9]/g, "_") : "Semua_Barang";
     XLSX.writeFile(workbook, `ERP_Stock_Journal_${barangText}_${sesiUser.unitLokasi}.xlsx`);
+    showToast("File Excel berhasil diexport!");
   }
 
   async function muatPendingTransfers() {
@@ -674,8 +702,8 @@
         document.getElementById('kpiPendingCount').innerText = json.data.filter(x => x.status === "PENDING_ADMIN").length;
 
         if(json.data.length === 0) {
-          document.getElementById('containerPendingTransfer').innerHTML = "<p style='padding:15px; color:#64748b;'>Tidak ada mutasi yang memerlukan tindakan.</p>";
-          document.getElementById('containerTabelHistory').innerHTML = "<p style='padding:15px; color:#64748b;'>Tidak ada mutasi yang memerlukan tindakan.</p>";
+          document.getElementById('containerPendingTransfer').innerHTML = "<p style='padding:15px; color:var(--erp-text-muted);'>Tidak ada mutasi yang memerlukan tindakan.</p>";
+          document.getElementById('containerTabelHistory').innerHTML = "<p style='padding:15px; color:var(--erp-text-muted);'>Tidak ada mutasi yang memerlukan tindakan.</p>";
           return;
         }
 
@@ -685,15 +713,15 @@
           if (t.status === "PENDING_ADMIN") {
             badgeStatus = `<span class="badge badge-warning">Waiting Approval</span>`;
             if (sesiUser.isAdmin) {
-              btnAksi = `<button class="btn btn-success" style="padding:3px 8px; font-size:10px;" onclick="prosesAccAdmin('${t.idTransfer}', 'ACC')">ACC</button> <button class="btn btn-outline" style="padding:3px 8px; font-size:10px; color:red;" onclick="prosesAccAdmin('${t.idTransfer}', 'TOLAK')">Tolak</button>`;
-            } else btnAksi = `<small style="color:#94a3b8;">Pending Admin</small>`;
+              btnAksi = `<button class="btn btn-success" style="padding:4px 10px; font-size:11px; background:#047857;" onclick="prosesAccAdmin('${t.idTransfer}', 'ACC')">ACC</button> <button class="btn btn-outline" style="padding:4px 10px; font-size:11px; color:red;" onclick="prosesAccAdmin('${t.idTransfer}', 'TOLAK')">Tolak</button>`;
+            } else btnAksi = `<small style="color:var(--erp-text-muted);">Pending Admin</small>`;
           } else if (t.status === "ACC_ADMIN") {
             badgeStatus = `<span class="badge badge-info">In Delivery</span>`;
             if (t.unitTujuan.toLowerCase() === sesiUser.unitLokasi.toLowerCase() || sesiUser.isAdmin) {
-              btnAksi = `<button class="btn btn-primary" style="padding:3px 8px; font-size:10px;" onclick="konfirmasiTerimaTransfer('${t.idTransfer}')">Konfirmasi Terima</button>`;
-            } else btnAksi = `<small style="color:#94a3b8;">Wait Receiver</small>`;
+              btnAksi = `<button class="btn btn-primary" style="padding:4px 10px; font-size:11px;" onclick="konfirmasiTerimaTransfer('${t.idTransfer}')">Konfirmasi Terima</button>`;
+            } else btnAksi = `<small style="color:var(--erp-text-muted);">Wait Receiver</small>`;
           } else if (t.status === "DITERIMA") {
-            badgeStatus = `<span class="badge badge-success">Completed</span>`; btnAksi = `<i class="fa-solid fa-check-double" style="color:#10b981;"></i>`;
+            badgeStatus = `<span class="badge badge-success">Completed</span>`; btnAksi = `<i class="fa-solid fa-check-double" style="color:var(--erp-success);"></i>`;
           } else if (t.status === "DITOLAK_ADMIN") {
             badgeStatus = `<span class="badge badge-danger">Rejected</span>`; btnAksi = `-`;
           }
@@ -712,7 +740,7 @@
     const payload = { action: "prosesAccAdminMutasi", idTransfer: idTransfer, keputusan: keputusan };
     const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
     const json = await res.json();
-    if(json.status === "success") { alert(json.message); muatPendingTransfers(); muatJurnalTransaksiBarang(); }
+    if(json.status === "success") { showToast(json.message); muatPendingTransfers(); muatJurnalTransaksiBarang(); }
   }
 
   async function konfirmasiTerimaTransfer(idTransfer) {
@@ -720,10 +748,10 @@
     const payload = { action: "konfirmasiTerimaTransfer", idTransfer: idTransfer };
     const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
     const json = await res.json();
-    if(json.status === "success") { alert(json.message); muatPendingTransfers(); muatJurnalTransaksiBarang(); muatMasterStokBarang(); }
+    if(json.status === "success") { showToast(json.message); muatPendingTransfers(); muatJurnalTransaksiBarang(); muatMasterStokBarang(); }
   }
 
-  function bukaModalPenerimaan() { updateSubGudangPilih('penUnit', 'penGudang'); document.getElementById('modalPenerimaan').style.display = 'block'; }
+  function bukaModalPenerimaan() { updateSubGudangPilih('penUnit', 'penGudang'); document.getElementById('modalPenerimaan').style.display = 'flex'; }
   document.getElementById('formPenerimaan').addEventListener('submit', async function(e) {
     e.preventDefault();
     const payload = {
@@ -738,10 +766,10 @@
     };
     const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
     const json = await res.json();
-    if(json.status === "success") { alert("Penerimaan Berhasil!"); tutupModal('modalPenerimaan'); muatJurnalTransaksiBarang(); muatMasterStokBarang(); }
+    if(json.status === "success") { showToast("Penerimaan Berhasil!"); tutupModal('modalPenerimaan'); muatJurnalTransaksiBarang(); muatMasterStokBarang(); }
   });
 
-  function bukaModalPemakaian() { document.getElementById('modalPemakaian').style.display = 'block'; }
+  function bukaModalPemakaian() { document.getElementById('modalPemakaian').style.display = 'flex'; }
   document.getElementById('formPemakaian').addEventListener('submit', async function(e) {
     e.preventDefault();
     const payload = {
@@ -753,12 +781,12 @@
     };
     const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
     const json = await res.json();
-    if(json.status === "success") { alert("Pemakaian Berhasil!"); tutupModal('modalPemakaian'); muatJurnalTransaksiBarang(); muatMasterStokBarang(); }
+    if(json.status === "success") { showToast("Pemakaian Berhasil!"); tutupModal('modalPemakaian'); muatJurnalTransaksiBarang(); muatMasterStokBarang(); }
   });
 
   function bukaModalTransferDirect() { 
     updateSubGudangPilih('trUnitTujuan', 'trGudangTujuan'); 
-    document.getElementById('modalTransfer').style.display = 'block'; 
+    document.getElementById('modalTransfer').style.display = 'flex'; 
   }
 
   document.getElementById('formTransferStok').addEventListener('submit', async function(e) {
@@ -772,7 +800,7 @@
     };
     const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
     const json = await res.json();
-    if(json.status === "success") { alert(json.message); tutupModal('modalTransfer'); muatPendingTransfers(); muatJurnalTransaksiBarang(); }
+    if(json.status === "success") { showToast(json.message); tutupModal('modalTransfer'); muatPendingTransfers(); muatJurnalTransaksiBarang(); }
   });
 
   function tutupModal(id) { document.getElementById(id).style.display = 'none'; }
