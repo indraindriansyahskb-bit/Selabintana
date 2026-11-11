@@ -451,8 +451,8 @@
     document.getElementById('btnNextPage').disabled = currentPage === maxPage;
   }
 
-// ==========================================
-  // FUNGSI EXPORT EXCEL (FORMAT RAPI / TAB DELIMITED)
+  // ==========================================
+  // FUNGSI EXPORT EXCEL (.CSV FORMAT)
   // ==========================================
   function exportToExcel() {
     const tglMulai = document.getElementById('filterTglMulai').value;
@@ -472,15 +472,16 @@
       return;
     }
 
-    let rows = [];
-    // Header Kolom
-    rows.push(["No. Tiket", "Tanggal Permintaan", "Tgl Dibutuhkan", "Pemohon", "Unit / Farm", "Urgensi", "Nama Barang", "Kategori", "Jumlah", "Satuan", "Status ERP", "Catatan Admin"]);
+    let csvRows = [];
+    // Header Kolom Excel
+    csvRows.push(["No. Tiket", "Tanggal Permintaan", "Tgl Dibutuhkan", "Pemohon", "Unit / Farm", "Urgensi", "Nama Barang", "Kategori", "Jumlah", "Satuan", "Status ERP", "Catatan Admin"]);
 
     dataToExport.forEach(t => {
       t.items.forEach(it => {
+        // Filter nama barang jika diisi
         if (namaBarangFilter && !it.namaBarang.toLowerCase().includes(namaBarangFilter)) return;
 
-        rows.push([
+        csvRows.push([
           t.kodeTiket,
           t.tglPermintaan,
           t.tglDibutuhkan,
@@ -497,25 +498,10 @@
       });
     });
 
-    if (rows.length === 1) {
-      alert("Tidak ada item barang yang cocok dengan filter tersebut.");
+    if (csvRows.length === 1) {
+      alert("Tidak ada item barang yang cocok dengan filter nama barang tersebut.");
       return;
     }
-
-    // Menggunakan pemisah Tab (\t) agar Excel otomatis memisahkan kolom dengan rapi
-    let excelContent = "\ufeff" + rows.map(e => e.join("\t")).join("\n");
-    let blob = new Blob([excelContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
-    let url = URL.createObjectURL(blob);
-    
-    let link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", `Laporan_Permintaan_Material_${new Date().toISOString().split('T')[0]}.xls`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    showToast("File Excel berhasil di-export dengan rapi!", "success");
-  }
 
     let csvContent = "data:text/csv;charset=utf-8," + csvRows.map(e => e.map(val => `"${val}"`).join(",")).join("\n");
     let encodedUri = encodeURI(csvContent);
