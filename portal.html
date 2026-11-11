@@ -3,66 +3,184 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Portal Permintaan Material & Barang</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <title>ERP Portal Permintaan Barang</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <style>
-    :root { --primary: #2563eb; --primary-hover: #1d4ed8; --bg-body: #f8fafc; --card-bg: #ffffff; --text-main: #0f172a; --border-color: #e2e8f0; }
-    * { box-sizing: border-box; }
-    body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); margin: 0; padding: 25px 15px; }
-    .wrapper { max-width: 1100px; margin: auto; }
-    .card { background: var(--card-bg); padding: 24px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid var(--border-color); margin-bottom: 22px; }
-    .section-title { font-size: 16px; font-weight: 600; color: #1e293b; margin-top: 0; margin-bottom: 18px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+    :root {
+      --erp-bg-body: #f1f5f9;
+      --erp-topbar-bg: #0f172a;
+      --erp-card-bg: #ffffff;
+      --erp-border: #cbd5e1;
+      --erp-border-light: #e2e8f0;
+      --erp-text-main: #1e293b;
+      --erp-text-muted: #64748b;
+      --erp-primary: #2563eb;
+      --erp-primary-hover: #1d4ed8;
+      --erp-success: #10b981;
+      --erp-warning: #f59e0b;
+      --erp-danger: #ef4444;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background-color: var(--erp-bg-body); color: var(--erp-text-main); font-size: 13px; line-height: 1.5; }
+
+    /* LAYOUT ERP TOPBAR & CONTAINER */
+    .erp-header { background-color: var(--erp-topbar-bg); color: #ffffff; padding: 0 24px; height: 60px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #1e293b; position: sticky; top: 0; z-index: 100; }
+    .erp-brand { font-size: 16px; font-weight: 700; color: #ffffff; display: flex; align-items: center; gap: 10px; letter-spacing: 0.5px; }
+    .erp-brand i { color: var(--erp-primary); font-size: 20px; }
+
+    .erp-container { max-width: 1200px; margin: 24px auto; padding: 0 20px; }
+
+    /* USER PROFILE BADGE IN HEADER */
+    .erp-user-badge { display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); padding: 5px 14px; border-radius: 20px; }
+    .erp-avatar { width: 28px; height: 28px; background: var(--erp-primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 11px; }
+
+    /* KPI METRICS CARDS */
+    .erp-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 22px; }
+    .erp-stat-card { background: #ffffff; padding: 18px; border-radius: 8px; border: 1px solid var(--erp-border-light); box-shadow: 0 1px 3px rgba(0,0,0,0.02); display: flex; align-items: center; justify-content: space-between; }
+    .erp-stat-info .label { font-size: 11px; font-weight: 600; color: var(--erp-text-muted); text-transform: uppercase; margin-bottom: 4px; }
+    .erp-stat-info .value { font-size: 20px; font-weight: 700; color: var(--erp-text-main); }
+    .erp-stat-icon { width: 44px; height: 44px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+
+    /* PANELS & CARDS */
+    .erp-card { background: var(--erp-card-bg); border-radius: 8px; border: 1px solid var(--erp-border-light); box-shadow: 0 1px 3px rgba(0,0,0,0.03); margin-bottom: 22px; }
+    .erp-card-header { padding: 16px 20px; border-bottom: 1px solid var(--erp-border-light); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; background: #ffffff; border-radius: 8px 8px 0 0; }
+    .erp-card-title { font-size: 14px; font-weight: 700; color: var(--erp-text-main); display: flex; align-items: center; gap: 8px; }
+    .erp-card-body { padding: 20px; }
+
+    /* FORMS & INPUTS ERP */
+    .row-group { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
+    .row-group .form-group { flex: 1; min-width: 170px; margin-bottom: 0; }
     .form-group { margin-bottom: 14px; }
-    label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 13px; color: #334155; }
-    input[type="text"], input[type="password"], select, input[type="number"], input[type="date"], textarea { width: 100%; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 13px; font-family: inherit; }
-    .row-group { display: flex; gap: 14px; flex-wrap: wrap; }
-    .row-group .form-group { flex: 1; min-width: 170px; }
-    button { background-color: var(--primary); color: white; padding: 10px 16px; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
-    button:hover { background-color: var(--primary-hover); }
-    .user-info-box { background: #e0f2fe; border: 1px solid #7dd3fc; padding: 14px 18px; border-radius: 10px; margin-bottom: 20px; font-size: 14px; color: #0369a1; display: flex; justify-content: space-between; align-items: center; }
-    .item-box { background: #f8fafc; border: 1px solid var(--border-color); padding: 16px; border-radius: 8px; margin-bottom: 12px; position: relative; }
-    .table-responsive { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border-color); }
-    table { width: 100%; border-collapse: collapse; font-size: 13px; background: white; text-align: left; }
-    th, td { padding: 11px 13px; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
-    th { background-color: #f8fafc; font-weight: 600; color: #475569; font-size: 11px; text-transform: uppercase; }
-    .badge { display: inline-flex; align-items: center; padding: 4px 8px; border-radius: 15px; font-size: 11px; font-weight: 600; }
+    .form-group label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--erp-text-muted); margin-bottom: 6px; letter-spacing: 0.3px; }
+    
+    input[type="text"], input[type="password"], select, input[type="number"], input[type="date"], textarea {
+      width: 100%; padding: 9px 12px; border: 1px solid var(--erp-border); border-radius: 6px; font-size: 12px; font-family: inherit; background-color: #ffffff; color: var(--erp-text-main); transition: border-color 0.15s;
+    }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--erp-primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+
+    /* ITEM CONTAINER BOX */
+    .item-box { background: #f8fafc; border: 1px solid var(--erp-border); padding: 16px; border-radius: 6px; margin-bottom: 12px; position: relative; }
+
+    /* BUTTONS ERP */
+    .btn { padding: 9px 16px; border-radius: 6px; font-size: 12px; font-weight: 600; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.15s ease; text-decoration: none; }
+    .btn-primary { background: var(--erp-primary); color: white; }
+    .btn-primary:hover { background: var(--erp-primary-hover); }
+    .btn-success { background: var(--erp-success); color: white; }
+    .btn-success:hover { background: #059669; }
+    .btn-danger { background: var(--erp-danger); color: white; }
+    .btn-outline { background: white; border: 1px solid var(--erp-border); color: var(--erp-text-main); }
+    .btn-outline:hover { background: #f1f5f9; }
+
+    /* TABLE ERP DATA GRID */
+    .erp-table-responsive { overflow-x: auto; border-radius: 6px; border: 1px solid var(--erp-border-light); }
+    .erp-table { width: 100%; border-collapse: collapse; font-size: 12px; background: white; text-align: left; }
+    .erp-table th { background: #f8fafc; color: #475569; font-weight: 700; text-transform: uppercase; font-size: 11px; padding: 10px 14px; border-bottom: 2px solid var(--erp-border-light); letter-spacing: 0.5px; white-space: nowrap; }
+    .erp-table td { padding: 10px 14px; border-bottom: 1px solid var(--erp-border-light); color: var(--erp-text-main); vertical-align: middle; }
+    .erp-table tbody tr:hover { background-color: #f8fafc; }
+    .mono { font-family: 'JetBrains Mono', monospace; font-weight: 600; }
+
+    /* BADGES STATUS */
+    .badge { display: inline-flex; align-items: center; padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; }
     .badge-pending { background: #fef3c7; color: #b45309; }
     .badge-acc { background: #d1fae5; color: #047857; }
     .badge-reject { background: #fee2e2; color: #b91c1c; }
+
+    /* LOGIN WRAPPER ERP */
+    .login-wrapper { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #0f172a; padding: 20px; }
+    .login-card { background: white; padding: 32px; border-radius: 12px; width: 100%; max-width: 380px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
   </style>
 </head>
 <body>
 
-<div class="wrapper">
-  <!-- FORM LOGIN -->
-  <div id="loginSection" class="card" style="max-width: 380px; margin: 40px auto;">
-    <h3 class="section-title"><i class="fa-solid fa-right-to-bracket"></i> Login Portal Permintaan</h3>
-    <div class="form-group"><label>Username</label><input type="text" id="loginUser" required></div>
-    <div class="form-group"><label>Password</label><input type="password" id="loginPass" required></div>
-    <button type="button" onclick="prosesLogin()" style="width:100%; margin-top: 8px;"><i class="fa-solid fa-sign-in-alt"></i> Masuk</button>
+<!-- SCREEN 1: LOGIN PORTAL (ERP STYLE) -->
+<div id="loginSection" class="login-wrapper">
+  <div class="login-card">
+    <div style="text-align: center; margin-bottom: 24px;">
+      <i class="fa-solid fa-file-signature" style="font-size: 42px; color: var(--erp-primary);"></i>
+      <h2 style="font-size: 18px; font-weight: 700; color: #0f172a; margin-top: 10px;">Portal Permintaan ERP</h2>
+      <p style="font-size: 12px; color: #64748b;">Masuk untuk mengajukan kebutuhan barang</p>
+    </div>
+    <div class="form-group">
+      <label>Username</label>
+      <input type="text" id="loginUser" placeholder="Username..." required>
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="loginPass" placeholder="Password..." required>
+    </div>
+    <button type="button" onclick="prosesLogin()" class="btn btn-primary" style="width: 100%; padding: 11px; margin-top: 8px;">
+      <i class="fa-solid fa-right-to-bracket"></i> Masuk Ke Portal
+    </button>
   </div>
+</div>
 
-  <!-- DASHBOARD PORTAL PERMINTAAN -->
-  <div id="mainPanel" style="display: none;">
-    <div class="user-info-box" id="infoSesiUser"></div>
+<!-- SCREEN 2: MAIN DASHBOARD PORTAL ERP -->
+<div id="mainPanel" style="display: none;">
+  
+  <!-- TOP HEADER -->
+  <header class="erp-header">
+    <div class="erp-brand">
+      <i class="fa-solid fa-cubes"></i>
+      <span>ENTERPRISE MATERIAL PORTAL</span>
+    </div>
+    <div id="userInfoHeader" class="erp-user-badge"></div>
+  </header>
 
-    <!-- FORM BUAT PERMINTAAN -->
-    <div class="card">
-      <h3 class="section-title"><i class="fa-solid fa-pen-to-square"></i> Buat Permintaan Barang Baru</h3>
-      <form id="formPermintaan">
+  <div class="erp-container">
+    
+    <!-- DASHBOARD KPI METRICS -->
+    <div class="erp-stats-grid">
+      <div class="erp-stat-card">
+        <div class="erp-stat-info">
+          <div class="label">Total Pengajuan Anda</div>
+          <div class="value" id="kpiTotal">0</div>
+        </div>
+        <div class="erp-stat-icon" style="background: #e0f2fe; color: #0284c7;"><i class="fa-solid fa-paper-plane"></i></div>
+      </div>
+      <div class="erp-stat-card">
+        <div class="erp-stat-info">
+          <div class="label">Menunggu Verification</div>
+          <div class="value" id="kpiPending">0</div>
+        </div>
+        <div class="erp-stat-icon" style="background: #fef3c7; color: #b45309;"><i class="fa-solid fa-hourglass-half"></i></div>
+      </div>
+      <div class="erp-stat-card">
+        <div class="erp-stat-info">
+          <div class="label">Disetujui (ACC)</div>
+          <div class="value" id="kpiAcc">0</div>
+        </div>
+        <div class="erp-stat-icon" style="background: #d1fae5; color: #047857;"><i class="fa-solid fa-circle-check"></i></div>
+      </div>
+      <div class="erp-stat-card">
+        <div class="erp-stat-info">
+          <div class="label">Ditolak / Revised</div>
+          <div class="value" id="kpiReject">0</div>
+        </div>
+        <div class="erp-stat-icon" style="background: #fee2e2; color: #b91c1c;"><i class="fa-solid fa-circle-xmark"></i></div>
+      </div>
+    </div>
+
+    <!-- FORM INPUT TIKET PERMINTAAN BARANG -->
+    <div class="erp-card">
+      <div class="erp-card-header">
+        <div class="erp-card-title"><i class="fa-solid fa-pen-to-square" style="color: var(--erp-primary);"></i> Form Pengajuan Permintaan Material / Barang</div>
+      </div>
+      <form id="formPermintaan" class="erp-card-body">
+        
         <div class="row-group">
           <div class="form-group">
             <label>Tanggal Permintaan</label>
-            <input type="text" id="tglPermintaan" readonly style="background:#e2e8f0;">
+            <input type="text" id="tglPermintaan" readonly style="background:#f1f5f9; color:#64748b; font-weight:600;">
           </div>
           <div class="form-group">
-            <label>Tanggal Dibutuhkan</label>
+            <label>Tanggal Dibutuhkan Fisik</label>
             <input type="date" id="tglDibutuhkan" required>
           </div>
           <div class="form-group">
-            <label>Urgensi</label>
+            <label>Tingkat Urgensi</label>
             <select id="urgensi">
               <option value="REGULER">REGULER</option>
               <option value="URGENT">URGENT</option>
@@ -71,31 +189,47 @@
           </div>
         </div>
 
-        <div class="section-title" style="font-size:14px; margin-top:15px;"><i class="fa-solid fa-list-check"></i> Daftar Rincian Barang:</div>
-        <div id="containerItems"></div>
-        <button type="button" onclick="tambahItemForm()" style="background:#059669; margin-bottom:15px;"><i class="fa-solid fa-plus"></i> Tambah Item Barang</button>
-
-        <div class="form-group">
-          <label>Keperluan / Keterangan</label>
-          <textarea id="keterangan" rows="3" placeholder="Jelaskan keperluan permintaan barang..."></textarea>
+        <div style="font-size:12px; font-weight:700; color:var(--erp-text-main); margin: 18px 0 10px 0; display:flex; align-items:center; gap:6px;">
+          <i class="fa-solid fa-boxes-stacked" style="color:var(--erp-primary);"></i> Rincian Material & Barang:
         </div>
 
-        <button type="submit" id="btnSubmit" style="width:100%; padding:12px; font-size:14px;"><i class="fa-solid fa-paper-plane"></i> Kirim Permintaan ke Admin</button>
+        <div id="containerItems"></div>
+
+        <button type="button" onclick="tambahItemForm()" class="btn btn-success" style="margin-bottom: 18px;">
+          <i class="fa-solid fa-plus"></i> Tambah Item Barang
+        </button>
+
+        <div class="form-group">
+          <label>Keperluan / Keterangan Penggunaan</label>
+          <textarea id="keterangan" rows="3" placeholder="Jelaskan detail peruntukan atau catatan permintaan..."></textarea>
+        </div>
+
+        <button type="submit" id="btnSubmit" class="btn btn-primary" style="width:100%; padding: 12px; font-size:13px;">
+          <i class="fa-solid fa-paper-plane"></i> Kirim Permintaan Ke Admin
+        </button>
       </form>
     </div>
 
-    <!-- RIWAYAT & STATUS -->
-    <div class="card">
-      <h3 class="section-title"><i class="fa-solid fa-clock-rotate-left"></i> Riwayat & Status Pengajuan Anda</h3>
-      <div class="table-responsive" id="containerRiwayat">
-        <p style="text-align:center; padding:20px;">Memuat data riwayat pengajuan...</p>
+    <!-- TABEL RIWAYAT PERMINTAAN BARANG -->
+    <div class="erp-card">
+      <div class="erp-card-header">
+        <div class="erp-card-title"><i class="fa-solid fa-clock-rotate-left"></i> Riwayat & Status Permintaan Anda</div>
+        <button onclick="muatRiwayatPermintaan()" class="btn btn-outline" style="padding: 5px 10px; font-size: 11px;">
+          <i class="fa-solid fa-rotate"></i> Refresh
+        </button>
+      </div>
+      <div class="erp-card-body">
+        <div class="erp-table-responsive" id="containerRiwayat">
+          <p style="text-align:center; padding:30px; color:var(--erp-text-muted);">Memuat riwayat pengajuan...</p>
+        </div>
       </div>
     </div>
+
   </div>
 </div>
 
 <script>
-  // GANTI DENGAN URL WEB APP HASIL DEPLOY TERBARU ANDA
+  // URL WEB APP GAS HASIL DEPLOY VERSI BARU (ANYONE)
   const GAS_URL = "https://script.google.com/macros/s/AKfycbzLzwltzMnAawduEJQZouDlwnh64nPFVAlGCP5Y3S_nOivyh3vUsIdiSgTO9CEZrjjPBg/exec";
 
   let sesiUser = {};
@@ -125,7 +259,7 @@
         alert("Login Gagal: " + result.message);
       }
     } catch (e) {
-      alert("Kesalahan koneksi ke server Apps Script.");
+      alert("Kesalahan koneksi server Apps Script.");
     }
   }
 
@@ -133,9 +267,16 @@
     document.getElementById('loginSection').style.display = 'none';
     document.getElementById('mainPanel').style.display = 'block';
     
-    document.getElementById('infoSesiUser').innerHTML = `
-      <div><b>Pemohon: ${sesiUser.nama}</b> (${sesiUser.divisi} | Unit: <b>${sesiUser.unitLokasi}</b>)</div>
-      <button onclick="logoutSesi()" style="background:#fee2e2; color:#dc2626; border:1px solid #fca5a5; padding:5px 10px; font-size:12px;">Keluar</button>
+    let initials = (sesiUser.nama || "U").substring(0,2).toUpperCase();
+    document.getElementById('userInfoHeader').innerHTML = `
+      <div class="erp-avatar">${initials}</div>
+      <div style="line-height:1.2; color:#f8fafc;">
+        <div style="font-weight:700; font-size:12px;">${sesiUser.nama}</div>
+        <div style="font-size:10px; color:#94a3b8;">${sesiUser.divisi} | Unit: <b>${sesiUser.unitLokasi}</b></div>
+      </div>
+      <button onclick="logoutSesi()" class="btn btn-outline" style="padding:4px 8px; font-size:10px; color:var(--erp-danger); border-color:#334155; margin-left:10px;">
+        <i class="fa-solid fa-power-off"></i>
+      </button>
     `;
 
     let today = new Date().toISOString().split('T')[0];
@@ -158,23 +299,25 @@
     div.className = 'item-box';
     div.id = `itemRow_${itemCounter}`;
     div.innerHTML = `
-      <div style="font-weight:600; font-size:13px; color:#0284c7; margin-bottom:10px;">Barang #${itemCounter}</div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <span style="font-weight:700; font-size:12px; color:var(--erp-primary);">Item #${itemCounter}</span>
+        ${itemCounter > 1 ? `<button type="button" onclick="hapusItemForm('itemRow_${itemCounter}')" class="btn btn-danger" style="padding:3px 8px; font-size:10px;"><i class="fa-solid fa-trash"></i> Hapus</button>` : ''}
+      </div>
       <div class="row-group">
-        <div class="form-group"><label>Kode Barang (Supplier)</label><input type="text" class="it-kode" placeholder="Kode supplier..."></div>
+        <div class="form-group"><label>Kode Supplier / Item</label><input type="text" class="it-kode" placeholder="Kode item..."></div>
         <div class="form-group"><label>Kategori</label>
           <select class="it-kategori">
             <option value="PAKAN">PAKAN</option><option value="OBAT">OBAT</option><option value="VAKSIN">VAKSIN</option>
             <option value="VITAMIN">VITAMIN</option><option value="KIMIA">KIMIA</option><option value="PERALATAN">PERALATAN</option><option value="LAINNYA" selected>LAINNYA</option>
           </select>
         </div>
-        <div class="form-group"><label>Nama Barang</label><input type="text" class="it-nama" placeholder="Nama barang..." required></div>
+        <div class="form-group"><label>Nama Barang</label><input type="text" class="it-nama" placeholder="Ketik nama barang..." required></div>
       </div>
       <div class="row-group">
         <div class="form-group"><label>Jumlah</label><input type="number" class="it-jumlah" min="1" required></div>
-        <div class="form-group"><label>Satuan</label><input type="text" class="it-satuan" placeholder="pcs/kg/zak" required></div>
-        <div class="form-group"><label>Supplier</label><input type="text" class="it-supplier" placeholder="Supplier"></div>
+        <div class="form-group"><label>Satuan</label><input type="text" class="it-satuan" placeholder="pcs / kg / zak" required></div>
+        <div class="form-group"><label>Supplier</label><input type="text" class="it-supplier" placeholder="Nama supplier (jika ada)"></div>
       </div>
-      ${itemCounter > 1 ? `<button type="button" onclick="hapusItemForm('itemRow_${itemCounter}')" style="background:#ef4444; padding:4px 8px; font-size:11px; margin-top:5px;">Hapus Item</button>` : ''}
     `;
     document.getElementById('containerItems').appendChild(div);
   }
@@ -188,7 +331,7 @@
     e.preventDefault();
     const btn = document.getElementById('btnSubmit');
     btn.disabled = true;
-    btn.innerHTML = "Mengirim...";
+    btn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Mengirim Ke System...";
 
     let itemsArr = [];
     const itemBoxes = document.querySelectorAll('.item-box');
@@ -226,10 +369,10 @@
         alert("Gagal: " + json.message);
       }
     } catch(err) {
-      alert("Kesalahan koneksi pengiriman.");
+      alert("Kesalahan koneksi pengiriman data.");
     } finally {
       btn.disabled = false;
-      btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Kirim Permintaan ke Admin';
+      btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Kirim Permintaan Ke Admin';
     }
   });
 
@@ -239,13 +382,28 @@
       const json = await res.json();
 
       if (json.status === "success") {
-        if (json.data.length === 0) {
-          document.getElementById('containerRiwayat').innerHTML = "<p style='text-align:center; padding:20px;'>Belum ada riwayat pengajuan permintaan.</p>";
+        let totalCount = json.data.length;
+        let pendingCount = 0; let accCount = 0; let rejectCount = 0;
+
+        json.data.forEach(item => {
+          let st = (item.statusPermintaan || "").toUpperCase();
+          if (st === "ACC" || st === "APPROVED") accCount++;
+          else if (st === "DITOLAK" || st === "REJECTED") rejectCount++;
+          else pendingCount++;
+        });
+
+        document.getElementById('kpiTotal').innerText = totalCount;
+        document.getElementById('kpiPending').innerText = pendingCount;
+        document.getElementById('kpiAcc').innerText = accCount;
+        document.getElementById('kpiReject').innerText = rejectCount;
+
+        if (totalCount === 0) {
+          document.getElementById('containerRiwayat').innerHTML = "<p style='text-align:center; padding:30px; color:var(--erp-text-muted);'>Belum ada riwayat pengajuan permintaan.</p>";
           return;
         }
 
-        let html = `<table><thead><tr>
-          <th>Kode Tiket</th><th>Tgl Pembuatan</th><th>Pemohon</th><th>Unit Farm</th><th>Nama Barang</th><th>Jumlah</th><th>Urgensi</th><th>Status</th>
+        let html = `<table class="erp-table"><thead><tr>
+          <th>Kode Tiket</th><th>Tanggal Permintaan</th><th>Pemohon</th><th>Unit Farm</th><th>Nama Barang</th><th>Jumlah</th><th>Urgensi</th><th>Status ERP</th>
         </tr></thead><tbody>`;
 
         json.data.forEach(item => {
@@ -255,12 +413,12 @@
           else if (st === "DITOLAK" || st === "REJECTED") badge = `<span class="badge badge-reject">DITOLAK</span>`;
 
           html += `<tr>
-            <td><b>${item.kodeTiket}</b></td>
-            <td><small>${item.tglPermintaan}</small></td>
-            <td>${item.pemohon}</td>
+            <td><span class="mono" style="color:var(--erp-primary);">${item.kodeTiket}</span></td>
+            <td><small class="mono" style="color:#64748b;">${item.tglPermintaan}</small></td>
+            <td><b>${item.pemohon}</b></td>
             <td>${item.unitLokasi}</td>
             <td><b>${item.namaBarang}</b></td>
-            <td>${item.jumlah} ${item.satuan}</td>
+            <td class="mono" style="font-weight:700;">${item.jumlah} ${item.satuan}</td>
             <td><small>${item.urgensi}</small></td>
             <td>${badge}</td>
           </tr>`;
@@ -270,7 +428,7 @@
         document.getElementById('containerRiwayat').innerHTML = html;
       }
     } catch(e) {
-      document.getElementById('containerRiwayat').innerHTML = "<p style='text-align:center; color:#ef4444; padding:20px;'>Gagal memuat riwayat.</p>";
+      document.getElementById('containerRiwayat').innerHTML = "<p style='text-align:center; color:var(--erp-danger); padding:30px;'>Gagal memuat riwayat pengajuan.</p>";
     }
   }
 </script>
