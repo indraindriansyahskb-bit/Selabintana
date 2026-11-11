@@ -3,142 +3,362 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aplikasi Jurnal Stok & Transaksi Multi Unit</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <title>ERP Inventory & Stock Management System</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <style>
-    :root { --primary: #0284c7; --primary-hover: #0369a1; --bg-body: #f8fafc; --card-bg: #ffffff; --text-main: #0f172a; --border-color: #e2e8f0; }
-    * { box-sizing: border-box; }
-    body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); margin: 0; padding: 25px 15px; }
-    .wrapper { max-width: 1300px; margin: auto; }
-    .app-header { text-align: center; margin-bottom: 25px; }
-    .card { background: var(--card-bg); padding: 24px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid var(--border-color); margin-bottom: 22px; }
-    .section-title { font-size: 16px; font-weight: 600; color: #1e293b; margin-top: 0; margin-bottom: 18px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
-    .form-group { margin-bottom: 14px; }
-    label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 13px; color: #334155; }
-    input[type="text"], input[type="password"], select, input[type="number"], input[type="date"] { width: 100%; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 13px; font-family: inherit; }
-    .row-group { display: flex; gap: 14px; flex-wrap: wrap; }
-    .row-group .form-group { flex: 1; min-width: 170px; }
-    button { background-color: var(--primary); color: white; padding: 10px 16px; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
-    button:hover { background-color: var(--primary-hover); }
-    .user-info-box { background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%); border: 1px solid #7dd3fc; padding: 14px 18px; border-radius: 10px; margin-bottom: 20px; font-size: 14px; color: #0369a1; display: flex; justify-content: space-between; align-items: center; }
-    .nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid var(--border-color); padding-bottom: 10px; }
-    .tab-btn { background: #e2e8f0; color: #475569; padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; }
-    .tab-btn.active { background: var(--primary); color: white; }
-    .filter-card { background: #f8fafc; border: 1px solid var(--border-color); padding: 16px; border-radius: 10px; margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
-    .table-responsive { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border-color); }
-    table { width: 100%; border-collapse: collapse; font-size: 13px; background: white; text-align: left; }
-    th, td { padding: 11px 13px; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
-    th { background-color: #f8fafc; font-weight: 600; color: #475569; font-size: 11px; text-transform: uppercase; }
-    .badge { display: inline-flex; align-items: center; padding: 4px 8px; border-radius: 15px; font-size: 11px; font-weight: 600; }
-    .badge-ok { background: #d1fae5; color: #047857; }
+    :root {
+      --erp-sidebar-width: 250px;
+      --erp-bg-body: #f1f5f9;
+      --erp-sidebar-bg: #0f172a;
+      --erp-sidebar-text: #94a3b8;
+      --erp-sidebar-active: #2563eb;
+      --erp-card-bg: #ffffff;
+      --erp-border: #cbd5e1;
+      --erp-border-light: #e2e8f0;
+      --erp-text-main: #1e293b;
+      --erp-text-muted: #64748b;
+      --erp-primary: #2563eb;
+      --erp-primary-hover: #1d4ed8;
+      --erp-success: #10b981;
+      --erp-warning: #f59e0b;
+      --erp-danger: #ef4444;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background-color: var(--erp-bg-body); color: var(--erp-text-main); font-size: 13px; line-height: 1.5; }
+
+    /* LAYOUT ERP CONTAINER */
+    .erp-container { display: flex; min-height: 100vh; }
+
+    /* SIDEBAR */
+    .erp-sidebar { width: var(--erp-sidebar-width); background-color: var(--erp-sidebar-bg); color: var(--erp-sidebar-text); display: flex; flex-direction: column; flex-shrink: 0; border-right: 1px solid #1e293b; }
+    .erp-brand { padding: 20px 18px; font-size: 16px; font-weight: 700; color: #ffffff; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #1e293b; letter-spacing: 0.5px; }
+    .erp-brand i { color: var(--erp-primary); font-size: 20px; }
+    .erp-menu { list-style: none; padding: 15px 10px; flex: 1; }
+    .erp-menu-label { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #475569; padding: 10px 12px 6px 12px; letter-spacing: 0.8px; }
+    .erp-menu-item { display: flex; align-items: center; gap: 12px; padding: 11px 14px; color: #94a3b8; text-decoration: none; border-radius: 6px; font-weight: 500; cursor: pointer; transition: all 0.15s ease; margin-bottom: 4px; }
+    .erp-menu-item:hover { background: #1e293b; color: #f8fafc; }
+    .erp-menu-item.active { background: var(--erp-sidebar-active); color: #ffffff; font-weight: 600; }
+    .erp-menu-item i { width: 18px; text-align: center; font-size: 14px; }
+    .erp-sidebar-footer { padding: 16px; border-top: 1px solid #1e293b; background: #090d16; font-size: 12px; }
+
+    /* MAIN CONTENT AREA */
+    .erp-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+    
+    /* TOP HEADER BAR */
+    .erp-topbar { height: 60px; background: #ffffff; border-bottom: 1px solid var(--erp-border-light); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; position: sticky; top: 0; z-index: 10; }
+    .erp-breadcrumb { font-size: 13px; font-weight: 600; color: var(--erp-text-main); display: flex; align-items: center; gap: 8px; }
+    .erp-topbar-actions { display: flex; align-items: center; gap: 15px; }
+    .erp-user-profile { display: flex; align-items: center; gap: 10px; background: #f8fafc; border: 1px solid var(--erp-border-light); padding: 5px 12px; border-radius: 20px; }
+    .erp-avatar { width: 28px; height: 28px; background: var(--erp-primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 11px; }
+
+    /* CONTENT BODY */
+    .erp-content { padding: 24px; flex: 1; overflow-y: auto; }
+
+    /* STATS CARDS (KPI DASHBOARD) */
+    .erp-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 22px; }
+    .erp-stat-card { background: #ffffff; padding: 18px; border-radius: 8px; border: 1px solid var(--erp-border-light); box-shadow: 0 1px 3px rgba(0,0,0,0.02); display: flex; align-items: center; justify-content: space-between; }
+    .erp-stat-info .label { font-size: 11px; font-weight: 600; color: var(--erp-text-muted); text-transform: uppercase; margin-bottom: 4px; }
+    .erp-stat-info .value { font-size: 20px; font-weight: 700; color: var(--erp-text-main); }
+    .erp-stat-icon { width: 44px; height: 44px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+
+    /* PANEL & CARDS */
+    .erp-card { background: var(--erp-card-bg); border-radius: 8px; border: 1px solid var(--erp-border-light); box-shadow: 0 1px 3px rgba(0,0,0,0.03); margin-bottom: 22px; }
+    .erp-card-header { padding: 16px 20px; border-bottom: 1px solid var(--erp-border-light); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; background: #ffffff; border-radius: 8px 8px 0 0; }
+    .erp-card-title { font-size: 15px; font-weight: 700; color: var(--erp-text-main); display: flex; align-items: center; gap: 8px; }
+    .erp-card-body { padding: 20px; }
+
+    /* FILTER BAR ERP STYLE */
+    .erp-filter-bar { background: #f8fafc; border: 1px solid var(--erp-border-light); padding: 14px 18px; border-radius: 6px; margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; }
+    .erp-filter-group { flex: 1; min-width: 160px; }
+    .erp-filter-group label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--erp-text-muted); margin-bottom: 6px; letter-spacing: 0.3px; }
+
+    /* FORMS & INPUTS */
+    input[type="text"], input[type="password"], select, input[type="number"], input[type="date"] {
+      width: 100%; padding: 8px 12px; border: 1px solid var(--erp-border); border-radius: 6px; font-size: 12px; font-family: inherit; background-color: #ffffff; color: var(--erp-text-main); transition: border-color 0.15s;
+    }
+    input:focus, select:focus { outline: none; border-color: var(--erp-primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+
+    /* BUTTONS */
+    .btn { padding: 8px 14px; border-radius: 6px; font-size: 12px; font-weight: 600; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.15s ease; text-decoration: none; }
+    .btn-primary { background: var(--erp-primary); color: white; }
+    .btn-primary:hover { background: var(--erp-primary-hover); }
+    .btn-success { background: var(--erp-success); color: white; }
+    .btn-success:hover { background: #059669; }
+    .btn-warning { background: var(--erp-warning); color: white; }
+    .btn-secondary { background: #64748b; color: white; }
+    .btn-outline { background: white; border: 1px solid var(--erp-border); color: var(--erp-text-main); }
+    .btn-outline:hover { background: #f1f5f9; }
+
+    /* DATA TABLE ERP GRID */
+    .erp-table-responsive { overflow-x: auto; border-radius: 6px; border: 1px solid var(--erp-border-light); }
+    .erp-table { width: 100%; border-collapse: collapse; font-size: 12px; background: white; text-align: left; }
+    .erp-table th { background: #f8fafc; color: #475569; font-weight: 700; text-transform: uppercase; font-size: 11px; padding: 10px 14px; border-bottom: 2px solid var(--erp-border-light); letter-spacing: 0.5px; white-space: nowrap; }
+    .erp-table td { padding: 10px 14px; border-bottom: 1px solid var(--erp-border-light); color: var(--erp-text-main); vertical-align: middle; }
+    .erp-table tbody tr:hover { background-color: #f8fafc; }
+    .mono { font-family: 'JetBrains Mono', monospace; font-weight: 600; }
+
+    /* BADGES */
+    .badge { display: inline-flex; align-items: center; padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; }
+    .badge-success { background: #d1fae5; color: #047857; }
     .badge-warning { background: #fef3c7; color: #b45309; }
     .badge-danger { background: #fee2e2; color: #b91c1c; }
     .badge-info { background: #e0f2fe; color: #0369a1; }
-    .btn-sm { padding: 5px 9px; font-size: 11px; border-radius: 6px; }
-    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; overflow-y: auto; padding: 20px; }
-    .modal-content { background: white; max-width: 520px; margin: 40px auto; padding: 22px; border-radius: 12px; }
+
+    /* MODAL */
+    .modal { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(2px); z-index: 1000; overflow-y: auto; padding: 20px; }
+    .modal-content { background: white; max-width: 520px; margin: 50px auto; border-radius: 8px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); border: 1px solid var(--erp-border-light); overflow: hidden; }
+    .modal-header { padding: 16px 20px; background: #f8fafc; border-bottom: 1px solid var(--erp-border-light); display: flex; justify-content: space-between; align-items: center; }
+    .modal-body { padding: 20px; }
+
+    /* LOGIN SCREEN MODAL */
+    .login-wrapper { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #0f172a; }
+    .login-card { background: white; padding: 32px; border-radius: 12px; width: 100%; max-width: 400px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
+
+    .form-row { display: flex; gap: 12px; margin-bottom: 12px; }
+    .form-row .form-group { flex: 1; margin-bottom: 0; }
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--erp-text-muted); margin-bottom: 5px; }
   </style>
 </head>
 <body>
 
-<div class="wrapper">
-  <div class="app-header">
-    <h2><i class="fa-solid fa-warehouse" style="color: var(--primary);"></i> Jurnal Rincian Transaksi Stok Multi-Unit</h2>
-    <p>Pencatatan Rinci Transaksi Barang Masuk, Pemakaian Kandang & Mutasi Transfer</p>
-  </div>
-
-  <div id="loginSection" class="card" style="max-width: 380px; margin: 40px auto;">
-    <h3 class="section-title"><i class="fa-solid fa-right-to-bracket"></i> Login App Stok</h3>
-    <div class="form-group"><label>Username</label><input type="text" id="loginUser" required></div>
-    <div class="form-group"><label>Password</label><input type="password" id="loginPass" required></div>
-    <button type="button" onclick="prosesLogin()" style="width:100%; margin-top: 8px;"><i class="fa-solid fa-sign-in-alt"></i> Masuk</button>
-  </div>
-
-  <div id="mainPanel" style="display: none;">
-    <div class="user-info-box" id="infoSesiUser"></div>
-
-    <div class="nav-tabs">
-      <button class="tab-btn active" id="tabStokBtn" onclick="switchTab('stok')"><i class="fa-solid fa-list-check"></i> Jurnal Transaksi Barang</button>
-      <button class="tab-btn" id="tabTransaksiBtn" onclick="switchTab('transaksi')" style="background:#059669; color:white;"><i class="fa-solid fa-right-left"></i> Menu Transaksi Stok</button>
-      <button class="tab-btn" id="tabHistoryBtn" onclick="switchTab('history')"><i class="fa-solid fa-clock-rotate-left"></i> Monitoring Status Mutasi</button>
+<!-- SCREEN LOGIN (JIKA BELUM MASUK SESI) -->
+<div id="loginSection" class="login-wrapper">
+  <div class="login-card">
+    <div style="text-align: center; margin-bottom: 24px;">
+      <i class="fa-solid fa-boxes-stacked" style="font-size: 42px; color: var(--erp-primary);"></i>
+      <h2 style="font-size: 20px; font-weight: 700; color: #0f172a; margin-top: 10px;">ERP Inventory System</h2>
+      <p style="font-size: 12px; color: #64748b;">Masuk dengan akun terdaftar Anda</p>
     </div>
+    <div class="form-group">
+      <label>Username</label>
+      <input type="text" id="loginUser" placeholder="Ketik username..." required>
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="loginPass" placeholder="Ketik password..." required>
+    </div>
+    <button type="button" onclick="prosesLogin()" class="btn btn-primary" style="width: 100%; padding: 10px; margin-top: 10px;">
+      <i class="fa-solid fa-right-to-bracket"></i> Masuk Ke System
+    </button>
+  </div>
+</div>
 
-    <!-- TAB 1: JURNAL RINCIAN TRANSAKSI BARANG -->
-    <div id="tabStokView" class="card">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
-        <h3 class="section-title" style="margin:0; border:none;"><i class="fa-solid fa-boxes-packing"></i> Transaksi Rinci Per Barang (Urut Nama Barang A-Z)</h3>
-        <button onclick="eksporKeExcel()" style="background:#16a34a;"><i class="fa-solid fa-file-excel"></i> Ekspor Jurnal Ke Excel (.xlsx)</button>
+<!-- CONTAINER UTAMA SYSTEM ERP -->
+<div id="mainPanel" class="erp-container" style="display: none;">
+  
+  <!-- SIDEBAR PANELS -->
+  <aside class="erp-sidebar">
+    <div class="erp-brand">
+      <i class="fa-solid fa-boxes-stacked"></i>
+      <span>ENTERPRISE ERP</span>
+    </div>
+    
+    <ul class="erp-menu">
+      <li class="erp-menu-label">Modul Persediaan</li>
+      <li>
+        <a class="erp-menu-item active" id="tabStokBtn" onclick="switchTab('stok')">
+          <i class="fa-solid fa-table-list"></i>
+          <span>Jurnal Stok & Mutasi</span>
+        </a>
+      </li>
+      <li>
+        <a class="erp-menu-item" id="tabTransaksiBtn" onclick="switchTab('transaksi')">
+          <i class="fa-solid fa-right-left"></i>
+          <span>Pusat Transaksi Gudang</span>
+        </a>
+      </li>
+      <li>
+        <a class="erp-menu-item" id="tabHistoryBtn" onclick="switchTab('history')">
+          <i class="fa-solid fa-clock-rotate-left"></i>
+          <span>Status Mutasi Inter-Farm</span>
+        </a>
+      </li>
+    </ul>
+
+    <div class="erp-sidebar-footer">
+      <div style="color: #64748b; font-size: 10px; text-transform: uppercase; font-weight: 700;">Status Koneksi</div>
+      <div style="color: #10b981; font-weight: 600; margin-top: 2px; display: flex; align-items: center; gap: 6px;">
+        <span style="width: 8px; height: 8px; background: #10b981; border-radius: 50%; display: inline-block;"></span> GAS Cloud Connected
       </div>
+    </div>
+  </aside>
 
-      <!-- FILTER CARD: TANPA INPUT KATA KUNCI, DROPDOWN BARANG DISERTAI PENCARIAN -->
-      <div class="filter-card">
-        <div style="flex:1; min-width:140px;"><label>Periode Dari:</label><input type="date" id="filterTglAwal" onchange="muatJurnalTransaksiBarang()"></div>
-        <div style="flex:1; min-width:140px;"><label>Sampai Tanggal:</label><input type="date" id="filterTglAkhir" onchange="muatJurnalTransaksiBarang()"></div>
-        <div style="flex:1; min-width:160px;"><label>Unit / Farm:</label><select id="filterUnit" onchange="terapkanFilterJurnal()"></select></div>
-        <div style="flex:2; min-width:240px;">
-          <label>Pilih / Cari Barang:</label>
-          <input type="text" id="filterBarangPilih" list="listOptionsBarang" placeholder="-- Ketik / Pilih Barang --" oninput="terapkanFilterJurnal()">
-          <datalist id="listOptionsBarang"></datalist>
-        </div>
+  <!-- MAIN VIEW -->
+  <main class="erp-main">
+    
+    <!-- TOP BAR -->
+    <header class="erp-topbar">
+      <div class="erp-breadcrumb">
+        <i class="fa-solid fa-warehouse" style="color: var(--erp-primary);"></i>
+        <span>Manajemen Gudang Multi-Unit Farm</span>
       </div>
       
-      <div class="table-responsive" id="containerTabelJurnal"><p style="text-align:center; padding:20px;">Memuat data jurnal transaksi...</p></div>
-    </div>
+      <div class="erp-topbar-actions">
+        <div class="erp-user-profile" id="userProfileTag"></div>
+        <button onclick="logoutSesi()" class="btn btn-outline" style="padding: 5px 10px; color: var(--erp-danger);">
+          <i class="fa-solid fa-power-off"></i> Keluar
+        </button>
+      </div>
+    </header>
 
-    <!-- TAB 2: MENU TRANSAKSI STOK -->
-    <div id="tabTransaksiView" class="card" style="display: none;">
-      <h3 class="section-title"><i class="fa-solid fa-right-left"></i> Pusat Transaksi Gudang</h3>
-      <div class="row-group" style="margin-bottom: 25px;">
-        <button onclick="bukaModalPenerimaan()" style="background:#10b981; flex:1; padding:18px; font-size:14px;"><i class="fa-solid fa-circle-arrow-down fa-xl"></i> 1. Penerimaan Barang Masuk</button>
-        <button onclick="bukaModalPemakaian()" style="background:#f59e0b; flex:1; padding:18px; font-size:14px;"><i class="fa-solid fa-circle-arrow-up fa-xl"></i> 2. Pemakaian / Keluar Kandang</button>
-        <button onclick="bukaModalTransferDirect()" style="background:#0284c7; flex:1; padding:18px; font-size:14px;"><i class="fa-solid fa-truck-ramp-box fa-xl"></i> 3. Mutasi Antar Unit Farm</button>
+    <!-- CONTENT BODY -->
+    <div class="erp-content">
+      
+      <!-- TAB 1: JURNAL RINCIAN TRANSAKSI STOK -->
+      <div id="tabStokView">
+        
+        <!-- KPI METRICS DASHBOARD -->
+        <div class="erp-stats-grid">
+          <div class="erp-stat-card">
+            <div class="erp-stat-info">
+              <div class="label">Total Item Master</div>
+              <div class="value" id="kpiTotalBarang">0</div>
+            </div>
+            <div class="erp-stat-icon" style="background: #e0f2fe; color: #0284c7;"><i class="fa-solid fa-box"></i></div>
+          </div>
+          <div class="erp-stat-card">
+            <div class="erp-stat-info">
+              <div class="label">Total Transaksi Masuk</div>
+              <div class="value" id="kpiTotalMasuk">0</div>
+            </div>
+            <div class="erp-stat-icon" style="background: #d1fae5; color: #047857;"><i class="fa-solid fa-circle-arrow-down"></i></div>
+          </div>
+          <div class="erp-stat-card">
+            <div class="erp-stat-info">
+              <div class="label">Total Transaksi Keluar</div>
+              <div class="value" id="kpiTotalKeluar">0</div>
+            </div>
+            <div class="erp-stat-icon" style="background: #fee2e2; color: #b91c1c;"><i class="fa-solid fa-circle-arrow-up"></i></div>
+          </div>
+          <div class="erp-stat-card">
+            <div class="erp-stat-info">
+              <div class="label">Pending Mutasi ACC</div>
+              <div class="value" id="kpiPendingCount">0</div>
+            </div>
+            <div class="erp-stat-icon" style="background: #fef3c7; color: #b45309;"><i class="fa-solid fa-clock"></i></div>
+          </div>
+        </div>
+
+        <!-- CARD DATA TABLE JURNAL -->
+        <div class="erp-card">
+          <div class="erp-card-header">
+            <div class="erp-card-title"><i class="fa-solid fa-list-check"></i> Jurnal Transaksi Rinci Per Barang</div>
+            <button onclick="eksporKeExcel()" class="btn btn-success"><i class="fa-solid fa-file-excel"></i> Ekspor Excel (.xlsx)</button>
+          </div>
+          
+          <div class="erp-card-body">
+            <!-- FILTER BAR ERP -->
+            <div class="erp-filter-bar">
+              <div class="erp-filter-group">
+                <label>Periode Dari</label>
+                <input type="date" id="filterTglAwal" onchange="muatJurnalTransaksiBarang()">
+              </div>
+              <div class="erp-filter-group">
+                <label>Sampai Tanggal</label>
+                <input type="date" id="filterTglAkhir" onchange="muatJurnalTransaksiBarang()">
+              </div>
+              <div class="erp-filter-group">
+                <label>Unit / Farm</label>
+                <select id="filterUnit" onchange="terapkanFilterJurnal()"></select>
+              </div>
+              <div class="erp-filter-group" style="flex: 2; min-width: 240px;">
+                <label>Pilih / Cari Nama Barang</label>
+                <input type="text" id="filterBarangPilih" list="listOptionsBarang" placeholder="-- Ketik atau Pilih Barang --" oninput="terapkanFilterJurnal()">
+                <datalist id="listOptionsBarang"></datalist>
+              </div>
+            </div>
+
+            <div class="erp-table-responsive" id="containerTabelJurnal">
+              <p style="text-align:center; padding:30px; color: var(--erp-text-muted);">Memuat data jurnal persediaan...</p>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div style="background:#fffbe6; border:1px solid #ffe58f; padding:16px; border-radius:10px;">
-        <h4 style="margin-top:0; color:#b78103;"><i class="fa-solid fa-clock"></i> Daftar Mutasi Menunggu Verifikasi (ACC Admin & Konfirmasi Diterima)</h4>
-        <div class="table-responsive" id="containerPendingTransfer"></div>
-      </div>
-    </div>
+      <!-- TAB 2: MENU TRANSAKSI STOK -->
+      <div id="tabTransaksiView" style="display: none;">
+        <div class="erp-card">
+          <div class="erp-card-header">
+            <div class="erp-card-title"><i class="fa-solid fa-right-left"></i> Pusat Eksekusi Transaksi Gudang</div>
+          </div>
+          <div class="erp-card-body">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 25px;">
+              <button onclick="bukaModalPenerimaan()" class="btn btn-success" style="padding: 20px; font-size: 14px; flex-direction: column;">
+                <i class="fa-solid fa-box-archive fa-2xl" style="margin-bottom: 8px;"></i> 1. Penerimaan Barang Masuk
+              </button>
+              <button onclick="bukaModalPemakaian()" class="btn btn-warning" style="padding: 20px; font-size: 14px; flex-direction: column;">
+                <i class="fa-solid fa-dolly fa-2xl" style="margin-bottom: 8px;"></i> 2. Pemakaian / Keluar Kandang
+              </button>
+              <button onclick="bukaModalTransferDirect()" class="btn btn-primary" style="padding: 20px; font-size: 14px; flex-direction: column;">
+                <i class="fa-solid fa-truck-ramp-box fa-2xl" style="margin-bottom: 8px;"></i> 3. Mutasi Inter-Farm
+              </button>
+            </div>
 
-    <!-- TAB 3: MONITORING MUTASI STATUS -->
-    <div id="tabHistoryView" class="card" style="display: none;">
-      <h3 class="section-title"><i class="fa-solid fa-clock-rotate-left"></i> Status Verifikasi Mutasi Antar Unit</h3>
-      <div class="table-responsive" id="containerTabelHistory"><p style="text-align:center; padding:20px;">Memuat history mutasi...</p></div>
+            <div style="background: #fffbe6; border: 1px solid #ffe58f; padding: 18px; border-radius: 8px;">
+              <h4 style="margin-bottom: 12px; color: #b78103; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-clock-rotate-left"></i> Antrean Mutasi Menunggu Verifikasi & Konfirmasi
+              </h4>
+              <div class="erp-table-responsive" id="containerPendingTransfer"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: MONITORING MUTASI -->
+      <div id="tabHistoryView" style="display: none;">
+        <div class="erp-card">
+          <div class="erp-card-header">
+            <div class="erp-card-title"><i class="fa-solid fa-clock-rotate-left"></i> Status Audit & Verifikasi Mutasi Antar Unit</div>
+          </div>
+          <div class="erp-card-body">
+            <div class="erp-table-responsive" id="containerTabelHistory"></div>
+          </div>
+        </div>
+      </div>
+
     </div>
-  </div>
+  </main>
 </div>
 
 <!-- MODAL 1: PENERIMAAN BARANG MASUK -->
 <div id="modalPenerimaan" class="modal">
   <div class="modal-content">
-    <h3 class="section-title"><i class="fa-solid fa-circle-arrow-down" style="color:#10b981;"></i> Penerimaan Barang Masuk</h3>
-    <form id="formPenerimaan">
+    <div class="modal-header">
+      <h3 style="font-size:14px; font-weight:700;"><i class="fa-solid fa-circle-arrow-down" style="color:var(--erp-success);"></i> Entry Penerimaan Barang Masuk</h3>
+      <button onclick="tutupModal('modalPenerimaan')" style="background:none; border:none; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form id="formPenerimaan" class="modal-body">
       <div class="form-group"><label>Sumber Penerimaan</label>
         <select id="penSumber" required>
           <option value="PEMBELIAN_SUPPLIER">Penerimaan Langsung (Supplier / Pembelian)</option>
           <option value="PERMINTAAN_ACC">Dari Tiket Permintaan Barang (ACC)</option>
         </select>
       </div>
-      <div class="row-group">
+      <div class="form-row">
         <div class="form-group"><label>Masuk Ke Unit</label><select id="penUnit" onchange="updateSubGudangPilih('penUnit', 'penGudang')" required></select></div>
         <div class="form-group"><label>Masuk Ke Gudang</label><select id="penGudang" required></select></div>
       </div>
-      <div class="form-group"><label>Nama Barang</label><input type="text" id="penNamaBarang" required></div>
-      <div class="row-group">
+      <div class="form-group"><label>Nama Barang</label><input type="text" id="penNamaBarang" placeholder="Ketik nama barang..." required></div>
+      <div class="form-row">
         <div class="form-group"><label>Jumlah Masuk</label><input type="number" id="penJumlah" min="1" required></div>
         <div class="form-group"><label>Satuan</label><input type="text" id="penSatuan" placeholder="pcs/kg/zak" required></div>
       </div>
-      <div class="form-group"><label>Kategori</label>
+      <div class="form-group"><label>Kategori Barang</label>
         <select id="penKategori">
           <option value="PAKAN">PAKAN</option><option value="OBAT">OBAT</option><option value="VAKSIN">VAKSIN</option>
           <option value="VITAMIN">VITAMIN</option><option value="KIMIA">KIMIA</option><option value="PERALATAN">PERALATAN</option><option value="LAINNYA">LAINNYA</option>
         </select>
       </div>
-      <div style="display:flex; justify-content:flex-end; gap:8px;"><button type="button" onclick="tutupModal('modalPenerimaan')" style="background:#64748b;">Batal</button><button type="submit" style="background:#10b981;">Simpan Penerimaan</button></div>
+      <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:15px;">
+        <button type="button" onclick="tutupModal('modalPenerimaan')" class="btn btn-outline">Batal</button>
+        <button type="submit" class="btn btn-success">Simpan Penerimaan</button>
+      </div>
     </form>
   </div>
 </div>
@@ -146,13 +366,19 @@
 <!-- MODAL 2: PEMAKAIAN KANDANG -->
 <div id="modalPemakaian" class="modal">
   <div class="modal-content">
-    <h3 class="section-title"><i class="fa-solid fa-circle-arrow-up" style="color:#f59e0b;"></i> Pemakaian Barang (Kandang)</h3>
-    <form id="formPemakaian">
+    <div class="modal-header">
+      <h3 style="font-size:14px; font-weight:700;"><i class="fa-solid fa-circle-arrow-up" style="color:var(--erp-warning);"></i> Form Pemakaian / Outflow Barang</h3>
+      <button onclick="tutupModal('modalPemakaian')" style="background:none; border:none; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form id="formPemakaian" class="modal-body">
       <div class="form-group"><label>Pilih Barang Dari Gudang</label><select id="pemBarangPilih" required></select></div>
       <div class="form-group"><label>Lokasi Kandang / Peruntukan</label><input type="text" id="pemLokasiKandang" placeholder="Contoh: Kandang 01 / Brood A" required></div>
       <div class="form-group"><label>Jumlah Pemakaian</label><input type="number" id="pemJumlah" min="1" required></div>
       <div class="form-group"><label>Keterangan Tambahan</label><input type="text" id="pemKet"></div>
-      <div style="display:flex; justify-content:flex-end; gap:8px;"><button type="button" onclick="tutupModal('modalPemakaian')" style="background:#64748b;">Batal</button><button type="submit" style="background:#f59e0b;">Simpan Pemakaian</button></div>
+      <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:15px;">
+        <button type="button" onclick="tutupModal('modalPemakaian')" class="btn btn-outline">Batal</button>
+        <button type="submit" class="btn btn-warning">Catat Pemakaian</button>
+      </div>
     </form>
   </div>
 </div>
@@ -160,21 +386,27 @@
 <!-- MODAL 3: MUTASI / TRANSFER ANTAR FARM -->
 <div id="modalTransfer" class="modal">
   <div class="modal-content">
-    <h3 class="section-title"><i class="fa-solid fa-truck-ramp-box" style="color:#0284c7;"></i> Mutasi / Transfer Antar Unit Farm</h3>
-    <form id="formTransferStok">
+    <div class="modal-header">
+      <h3 style="font-size:14px; font-weight:700;"><i class="fa-solid fa-truck-ramp-box" style="color:var(--erp-primary);"></i> Pengajuan Mutasi Inter-Farm</h3>
+      <button onclick="tutupModal('modalTransfer')" style="background:none; border:none; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form id="formTransferStok" class="modal-body">
       <div class="form-group"><label>Pilih Barang Asal</label><select id="trBarangAsal" required></select></div>
-      <div class="row-group">
+      <div class="form-row">
         <div class="form-group"><label>Unit Farm Tujuan</label><select id="trUnitTujuan" onchange="updateSubGudangPilih('trUnitTujuan', 'trGudangTujuan')" required></select></div>
         <div class="form-group"><label>Gudang Tujuan</label><select id="trGudangTujuan" required></select></div>
       </div>
       <div class="form-group"><label>Jumlah Transfer</label><input type="number" id="trJumlah" min="1" required></div>
-      <div style="display:flex; justify-content:flex-end; gap:8px;"><button type="button" onclick="tutupModal('modalTransfer')" style="background:#64748b;">Batal</button><button type="submit" style="background:#0284c7;">Kirim Pengajuan Mutasi</button></div>
+      <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:15px;">
+        <button type="button" onclick="tutupModal('modalTransfer')" class="btn btn-outline">Batal</button>
+        <button type="submit" class="btn btn-primary">Kirim Pengajuan Mutasi</button>
+      </div>
     </form>
   </div>
 </div>
 
 <script>
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbw6msj-_8KlMWw97-efAZZwcf91NJt7yFMuMqIJTXz2Sc2pKmK1eFp4OqKlGozF2OyYMQ/exec";
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbzLzwltzMnAawduEJQZouDlwnh64nPFVAlGCP5Y3S_nOivyh3vUsIdiSgTO9CEZrjjPBg/exec"; // Ganti URL GAS Anda
 
   let sesiUser = {}; let masterUnits = []; let allUnits = []; let masterGudang = []; let rawJurnalData = []; let rawStokList = [];
 
@@ -192,13 +424,22 @@
       const result = await res.json();
       if (result.status === "success") { sesiUser = result.userData; localStorage.setItem('stok_app_user_session', JSON.stringify(sesiUser)); tampilkanDashboard(); }
       else alert("Login Gagal: " + result.message);
-    } catch (e) { alert("Kesalahan koneksi."); }
+    } catch (e) { alert("Kesalahan koneksi server ERP."); }
   }
 
   function tampilkanDashboard() {
     document.getElementById('loginSection').style.display = 'none';
-    document.getElementById('mainPanel').style.display = 'block';
-    document.getElementById('infoSesiUser').innerHTML = `<div><b>Pengguna: ${sesiUser.nama}</b> (${sesiUser.jabatan} | Unit: <b>${sesiUser.unitLokasi}</b>)</div><button onclick="logoutSesi()" style="background:#fee2e2; color:#dc2626; border:1px solid #fca5a5; padding:5px 10px; font-size:12px;">Keluar</button>`;
+    document.getElementById('mainPanel').style.display = 'flex';
+    
+    let initial = (sesiUser.nama || "U").substring(0,2).toUpperCase();
+    document.getElementById('userProfileTag').innerHTML = `
+      <div class="erp-avatar">${initial}</div>
+      <div style="line-height:1.2;">
+        <div style="font-weight:700; font-size:12px; color:var(--erp-text-main);">${sesiUser.nama}</div>
+        <div style="font-size:10px; color:var(--erp-text-muted);">${sesiUser.jabatan} | ${sesiUser.unitLokasi}</div>
+      </div>
+    `;
+
     muatMetaUnitsGudang();
     muatMasterStokBarang();
     muatJurnalTransaksiBarang();
@@ -210,11 +451,12 @@
     document.getElementById('tabStokBtn').classList.toggle('active', tab === 'stok');
     document.getElementById('tabTransaksiBtn').classList.toggle('active', tab === 'transaksi');
     document.getElementById('tabHistoryBtn').classList.toggle('active', tab === 'history');
+
     document.getElementById('tabStokView').style.display = tab === 'stok' ? 'block' : 'none';
     document.getElementById('tabTransaksiView').style.display = tab === 'transaksi' ? 'block' : 'none';
     document.getElementById('tabHistoryView').style.display = tab === 'history' ? 'block' : 'none';
-    if (tab === 'transaksi') muatPendingTransfers();
-    if (tab === 'history') muatPendingTransfers();
+
+    if (tab === 'transaksi' || tab === 'history') muatPendingTransfers();
   }
 
   async function muatMetaUnitsGudang() {
@@ -260,7 +502,8 @@
       const res = await fetch(`${GAS_URL}?action=getStokBarang&unitLokasi=${encodeURIComponent(sesiUser.unitLokasi)}&isAdmin=${sesiUser.isAdmin}`);
       const json = await res.json();
       if (json.status === "success") { 
-        rawStokList = json.data; 
+        rawStokList = json.data;
+        document.getElementById('kpiTotalBarang').innerText = rawStokList.length;
         populateBarangSelects(); 
         populateFilterBarangDatalist();
       }
@@ -275,7 +518,6 @@
     if(trBarangAsal) trBarangAsal.innerHTML = opts;
   }
 
-  // POPULATE DATALIST AGAR BISA DICARI & DIPILIH SEKALIGUS
   function populateFilterBarangDatalist() {
     const dataListElement = document.getElementById('listOptionsBarang');
     if (!dataListElement) return;
@@ -285,7 +527,6 @@
     dataListElement.innerHTML = opts;
   }
 
-  // MEMUAT RINCIAN TRANSAKSI PER BARANG (URUT NAMA BARANG A-Z)
   async function muatJurnalTransaksiBarang() {
     const tAwal = document.getElementById('filterTglAwal').value;
     const tAkhir = document.getElementById('filterTglAkhir').value;
@@ -295,7 +536,6 @@
       if (json.status === "success") {
         rawJurnalData = json.data;
 
-        // Urutkan alfabetis per Nama Barang (A-Z) lalu Tanggal Transaksi (Lama -> Baru)
         rawJurnalData.sort((a, b) => {
           let nameA = (a.namaBarang || "").toLowerCase();
           let nameB = (b.namaBarang || "").toLowerCase();
@@ -309,7 +549,6 @@
     } catch(e) {}
   }
 
-  // FILTER BERDASARKAN UNIT DAN PENCARIAN / PILIHAN BARANG
   function terapkanFilterJurnal() {
     const selectedUnit = document.getElementById('filterUnit').value;
     const searchBarangVal = document.getElementById('filterBarangPilih').value.toLowerCase().trim();
@@ -319,17 +558,27 @@
       if (searchBarangVal && !item.namaBarang.toLowerCase().includes(searchBarangVal) && !item.keterangan.toLowerCase().includes(searchBarangVal)) return false;
       return true;
     });
+
+    let countMasuk = 0; let countKeluar = 0;
+    filtered.forEach(it => {
+      let t = (it.tipeMutasi || "").toUpperCase();
+      if(t === "MASUK") countMasuk += Number(it.jumlah || 0);
+      else if(t === "KELUAR" || t === "TRANSFER") countKeluar += Number(it.jumlah || 0);
+    });
+    document.getElementById('kpiTotalMasuk').innerText = countMasuk;
+    document.getElementById('kpiTotalKeluar').innerText = countKeluar;
+
     renderTabelJurnal(filtered);
   }
 
   function renderTabelJurnal(data) {
     if (data.length === 0) { 
-      document.getElementById('containerTabelJurnal').innerHTML = "<p style='text-align:center; padding:20px;'>Tidak ada rincian transaksi barang yang sesuai.</p>"; 
+      document.getElementById('containerTabelJurnal').innerHTML = "<p style='text-align:center; padding:30px; color:var(--erp-text-muted);'>Tidak ada rincian transaksi barang yang sesuai.</p>"; 
       return; 
     }
 
-    let html = `<table><thead><tr>
-      <th>No</th><th>Waktu Transaksi</th><th>Kode</th><th>Nama Barang</th><th>Jenis Transaksi</th><th>Masuk</th><th>Keluar</th><th>Running Stok</th><th>Satuan</th><th>Unit / Gudang</th><th>Keterangan Detail</th>
+    let html = `<table class="erp-table"><thead><tr>
+      <th>No</th><th>Waktu Transaksi</th><th>Kode</th><th>Nama Barang</th><th>Jenis</th><th>Masuk</th><th>Keluar</th><th>Running Stok</th><th>Satuan</th><th>Unit / Gudang</th><th>Keterangan Detail</th>
     </tr></thead><tbody>`;
 
     let currentBarang = "";
@@ -348,16 +597,16 @@
 
       html += `<tr>
         <td>${idx + 1}</td>
-        <td><small>${item.tglSistem}</small></td>
-        <td><b>${item.kodeBarang}</b></td>
+        <td><small class="mono" style="color:#64748b;">${item.tglSistem}</small></td>
+        <td><span class="mono">${item.kodeBarang}</span></td>
         <td><b>${item.namaBarang}</b></td>
-        <td><b>${item.tipeMutasi}</b></td>
-        <td style="color:#047857; font-weight:600;">${mas > 0 ? mas : '-'}</td>
-        <td style="color:#b91c1c; font-weight:600;">${kel > 0 ? kel : '-'}</td>
-        <td style="font-weight:700; color:#0284c7;">${runningSaldo}</td>
+        <td><span class="badge ${tipe === 'MASUK' ? 'badge-success' : 'badge-danger'}">${item.tipeMutasi}</span></td>
+        <td class="mono" style="color:#047857; font-weight:600;">${mas > 0 ? mas : '-'}</td>
+        <td class="mono" style="color:#b91c1c; font-weight:600;">${kel > 0 ? kel : '-'}</td>
+        <td class="mono" style="font-weight:700; color:var(--erp-primary);">${runningSaldo}</td>
         <td>${item.satuan}</td>
-        <td>${item.kodeUnit} (${item.kodeGudang})</td>
-        <td><small>${item.keterangan}</small></td>
+        <td>${item.kodeUnit} <small style="color:#64748b;">(${item.kodeGudang})</small></td>
+        <td><small style="color:#475569;">${item.keterangan}</small></td>
       </tr>`;
     });
 
@@ -365,7 +614,6 @@
     document.getElementById('containerTabelJurnal').innerHTML = html;
   }
 
-  // EKSPOR JURNAL RINCI TRANSAKSI PER BARANG KE EXCEL (.XLSX) SESUAI FILTER
   function eksporKeExcel() {
     const selectedUnit = document.getElementById('filterUnit').value;
     const searchBarangVal = document.getElementById('filterBarangPilih').value.toLowerCase().trim();
@@ -376,9 +624,7 @@
       return true;
     });
 
-    if (filteredData.length === 0) {
-      return alert("Tidak ada rincian transaksi barang yang sesuai dengan filter/pilihan untuk diekspor!");
-    }
+    if (filteredData.length === 0) return alert("Tidak ada rincian transaksi untuk diekspor!");
 
     let dataExcel = [];
     let currentBarang = "";
@@ -395,12 +641,6 @@
       if (tipe === "MASUK") { mas = Number(item.jumlah || 0); runningSaldo += mas; }
       else if (tipe === "KELUAR" || tipe === "TRANSFER") { kel = Number(item.jumlah || 0); runningSaldo -= kel; }
 
-      let labelStatus = "Selesai";
-      if (item.status === "PENDING_ADMIN") labelStatus = "Menunggu ACC Admin";
-      else if (item.status === "ACC_ADMIN") labelStatus = "ACC Admin (Dalam Pengiriman)";
-      else if (item.status === "DITERIMA" || item.status === "COMPLETED") labelStatus = "Diterima / Selesai";
-      else if (item.status === "DITOLAK_ADMIN") labelStatus = "Ditolak Admin";
-
       dataExcel.push({
         "No": idx + 1,
         "Waktu Transaksi": item.tglSistem || "-",
@@ -414,61 +654,51 @@
         "Satuan": item.satuan || "pcs",
         "Lokasi Unit": item.kodeUnit || "-",
         "Gudang": item.kodeGudang || "-",
-        "Keterangan Detail": item.keterangan || "-",
-        "Status Transaksi": labelStatus
+        "Keterangan Detail": item.keterangan || "-"
       });
     });
 
     const worksheet = XLSX.utils.json_to_sheet(dataExcel);
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Jurnal Transaksi");
+    XLSX.utils.book_append_sheet(workbook, worksheet, "ERP Stock Journal");
 
-    worksheet["!cols"] = [
-      { wch: 5 }, { wch: 20 }, { wch: 12 }, { wch: 25 }, { wch: 15 },
-      { wch: 15 }, { wch: 10 }, { wch: 10 }, { wch: 14 }, { wch: 8 },
-      { wch: 18 }, { wch: 18 }, { wch: 35 }, { wch: 22 }
-    ];
-
-    let tAwal = document.getElementById('filterTglAwal').value;
-    let tAkhir = document.getElementById('filterTglAkhir').value;
-    let tglText = tAwal && tAkhir ? `${tAwal}_s-d_${tAkhir}` : "Semua_Periode";
     let barangText = searchBarangVal ? searchBarangVal.replace(/[^a-zA-Z0-9]/g, "_") : "Semua_Barang";
-
-    let fileName = `Jurnal_Stok_${barangText}_${sesiUser.unitLokasi}_${tglText}.xlsx`;
-    XLSX.writeFile(workbook, fileName);
+    XLSX.writeFile(workbook, `ERP_Stock_Journal_${barangText}_${sesiUser.unitLokasi}.xlsx`);
   }
 
-  // ACC ADMIN & KONFIRMASI DITERIMA
   async function muatPendingTransfers() {
     try {
       const res = await fetch(`${GAS_URL}?action=getPendingTransfers&unitLokasi=${encodeURIComponent(sesiUser.unitLokasi)}&isAdmin=${sesiUser.isAdmin}`);
       const json = await res.json();
       if (json.status === "success") {
+        document.getElementById('kpiPendingCount').innerText = json.data.filter(x => x.status === "PENDING_ADMIN").length;
+
         if(json.data.length === 0) {
-          document.getElementById('containerPendingTransfer').innerHTML = "<p style='font-size:13px; color:#64748b; margin:0;'>Tidak ada mutasi yang memerlukan tindakan saat ini.</p>";
-          document.getElementById('containerTabelHistory').innerHTML = "<p style='font-size:13px; color:#64748b; margin:0;'>Tidak ada mutasi yang memerlukan tindakan saat ini.</p>";
+          document.getElementById('containerPendingTransfer').innerHTML = "<p style='padding:15px; color:#64748b;'>Tidak ada mutasi yang memerlukan tindakan.</p>";
+          document.getElementById('containerTabelHistory').innerHTML = "<p style='padding:15px; color:#64748b;'>Tidak ada mutasi yang memerlukan tindakan.</p>";
           return;
         }
-        let html = `<table><thead><tr><th>Tgl Pengajuan</th><th>Barang</th><th>Dari Unit Asal</th><th>Ke Unit Tujuan</th><th>Jumlah Transfer</th><th>Status saat Ini</th><th>Aksi Verifikasi</th></tr></thead><tbody>`;
+
+        let html = `<table class="erp-table"><thead><tr><th>Pengajuan</th><th>Barang</th><th>Dari Unit</th><th>Ke Unit</th><th>Jumlah</th><th>Status ERP</th><th>Aksi</th></tr></thead><tbody>`;
         json.data.forEach(t => {
           let badgeStatus = ""; let btnAksi = "";
           if (t.status === "PENDING_ADMIN") {
-            badgeStatus = `<span class="badge badge-warning">Menunggu ACC Admin</span>`;
+            badgeStatus = `<span class="badge badge-warning">Waiting Approval</span>`;
             if (sesiUser.isAdmin) {
-              btnAksi = `<button class="btn-sm" style="background:#10b981;" onclick="prosesAccAdmin('${t.idTransfer}', 'ACC')"><i class="fa-solid fa-check"></i> ACC</button> <button class="btn-sm" style="background:#ef4444;" onclick="prosesAccAdmin('${t.idTransfer}', 'TOLAK')"><i class="fa-solid fa-xmark"></i> Tolak</button>`;
-            } else btnAksi = `<small style="color:#94a3b8;">Menunggu Admin</small>`;
+              btnAksi = `<button class="btn btn-success" style="padding:3px 8px; font-size:10px;" onclick="prosesAccAdmin('${t.idTransfer}', 'ACC')">ACC</button> <button class="btn btn-outline" style="padding:3px 8px; font-size:10px; color:red;" onclick="prosesAccAdmin('${t.idTransfer}', 'TOLAK')">Tolak</button>`;
+            } else btnAksi = `<small style="color:#94a3b8;">Pending Admin</small>`;
           } else if (t.status === "ACC_ADMIN") {
-            badgeStatus = `<span class="badge badge-info">ACC Admin (Menunggu Diterima Unit)</span>`;
+            badgeStatus = `<span class="badge badge-info">In Delivery</span>`;
             if (t.unitTujuan.toLowerCase() === sesiUser.unitLokasi.toLowerCase() || sesiUser.isAdmin) {
-              btnAksi = `<button class="btn-sm" style="background:#0284c7;" onclick="konfirmasiTerimaTransfer('${t.idTransfer}')"><i class="fa-solid fa-box-open"></i> Konfirmasi Diterima</button>`;
-            } else btnAksi = `<small style="color:#94a3b8;">Menunggu Penerima</small>`;
+              btnAksi = `<button class="btn btn-primary" style="padding:3px 8px; font-size:10px;" onclick="konfirmasiTerimaTransfer('${t.idTransfer}')">Konfirmasi Terima</button>`;
+            } else btnAksi = `<small style="color:#94a3b8;">Wait Receiver</small>`;
           } else if (t.status === "DITERIMA") {
-            badgeStatus = `<span class="badge badge-ok">Selesai (Diterima)</span>`; btnAksi = `<i class="fa-solid fa-check-double" style="color:#10b981;"></i>`;
+            badgeStatus = `<span class="badge badge-success">Completed</span>`; btnAksi = `<i class="fa-solid fa-check-double" style="color:#10b981;"></i>`;
           } else if (t.status === "DITOLAK_ADMIN") {
-            badgeStatus = `<span class="badge badge-danger">Ditolak Admin</span>`; btnAksi = `-`;
+            badgeStatus = `<span class="badge badge-danger">Rejected</span>`; btnAksi = `-`;
           }
 
-          html += `<tr><td><small>${t.tgl}</small></td><td><b>${t.namaBarang}</b></td><td>${t.unitAsal}</td><td><b>${t.unitTujuan}</b></td><td><b>${t.jumlah} ${t.satuan}</b></td><td>${badgeStatus}</td><td>${btnAksi}</td></tr>`;
+          html += `<tr><td><small class="mono">${t.tgl}</small></td><td><b>${t.namaBarang}</b></td><td>${t.unitAsal}</td><td><b>${t.unitTujuan}</b></td><td class="mono"><b>${t.jumlah} ${t.satuan}</b></td><td>${badgeStatus}</td><td>${btnAksi}</td></tr>`;
         });
         html += `</tbody></table>`;
         document.getElementById('containerPendingTransfer').innerHTML = html;
@@ -478,7 +708,7 @@
   }
 
   async function prosesAccAdmin(idTransfer, keputusan) {
-    if(!confirm(`Apakah Anda yakin ingin ${keputusan} pengajuan mutasi ini?`)) return;
+    if(!confirm(`Apakah Anda yakin ingin ${keputusan} mutasi ini?`)) return;
     const payload = { action: "prosesAccAdminMutasi", idTransfer: idTransfer, keputusan: keputusan };
     const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
     const json = await res.json();
@@ -486,7 +716,7 @@
   }
 
   async function konfirmasiTerimaTransfer(idTransfer) {
-    if(!confirm("Apakah Anda yakin barang mutasi ini sudah fisik diterima secara lengkap?")) return;
+    if(!confirm("Apakah barang mutasi telah fisik diterima secara akurat?")) return;
     const payload = { action: "konfirmasiTerimaTransfer", idTransfer: idTransfer };
     const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
     const json = await res.json();
@@ -499,7 +729,6 @@
     const payload = {
       action: "prosesPenerimaanBarang",
       sumberPenerimaan: document.getElementById('penSumber').value,
-      refInfo: "Pembelian Supplier",
       kodeUnit: document.getElementById('penUnit').value,
       kodeGudang: document.getElementById('penGudang').value,
       namaBarang: document.getElementById('penNamaBarang').value.trim(),
