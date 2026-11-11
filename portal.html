@@ -109,10 +109,10 @@
       <h3 style="font-size: 13px; font-weight: 600; color: var(--erp-text-main); margin-top: 4px;">Material Request Portal</h3>
     </div>
     <form onsubmit="prosesLogin(event)">
-      <div class="form-group"><label>Username SSO</label><input type="text" id="loginUser" required></div>
+      <div class="form-group"><label>Username</label><input type="text" id="loginUser" required></div>
       <div class="form-group"><label>Password</label><input type="password" id="loginPass" required></div>
       <button type="submit" id="btnLogin" class="btn btn-primary" style="width: 100%; padding: 12px; margin-top: 10px;">
-        <i class="fa-solid fa-right-to-bracket"></i> Masuk Sistem ERP
+        <i class="fa-solid fa-right-to-bracket"></i> Masuk Sistem
       </button>
     </form>
   </div>
@@ -164,7 +164,7 @@
     <!-- TABLE RIWAYAT & FILTER EXPORT -->
     <div class="erp-card">
       <div class="erp-card-header">
-        <div class="erp-card-title"><i class="fa-solid fa-clock-rotate-left"></i> Buku Riwayat Pengajuan & Export</div>
+        <div class="erp-card-title"><i class="fa-solid fa-clock-rotate-left"></i> Riwayat Pengajuan </div>
         <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
           <input type="text" id="searchRiwayat" placeholder="🔍 Cari Tiket / Barang..." onkeyup="filterTabelTiket()" style="width: 200px; padding: 6px 12px; font-size: 12px;">
           <button onclick="muatRiwayatPermintaan()" class="btn btn-outline" style="padding: 6px 10px;" title="Refresh"><i class="fa-solid fa-rotate-right"></i></button>
