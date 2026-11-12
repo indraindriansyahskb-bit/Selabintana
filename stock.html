@@ -40,6 +40,7 @@
     .erp-brand { padding: 20px 18px; font-size: 15px; font-weight: 700; color: #ffffff; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #142b1c; letter-spacing: 0.5px; }
     .erp-brand i { color: var(--erp-accent-yellow); font-size: 18px; }
     .erp-menu { list-style: none; padding: 15px 10px; flex: 1; }
+    .erp-menu li[hidden] { display: none; }
     .erp-menu-label { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #73907d; padding: 10px 12px 6px 12px; letter-spacing: 0.8px; }
     .erp-menu-item { display: flex; align-items: center; gap: 12px; padding: 11px 14px; color: var(--erp-sidebar-text); text-decoration: none; border-radius: 6px; font-weight: 500; cursor: pointer; transition: all 0.15s ease; margin-bottom: 4px; width: 100%; text-align: left; background: transparent; border: 0; font-family: inherit; }
     .erp-menu-item:hover { background: #234b32; color: #ffffff; }
@@ -147,6 +148,7 @@
       .erp-sidebar { position: fixed; left: 0; right: 0; bottom: 0; width: 100%; height: 64px; z-index: 100; border-right: 0; border-top: 1px solid #142b1c; }
       .erp-brand, .erp-sidebar-footer, .erp-menu-label { display: none; }
       .erp-menu { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2px; padding: 4px 6px; margin: 0; }
+      .erp-menu.has-admin-menu { grid-template-columns: repeat(5, minmax(0, 1fr)); }
       .erp-menu-item { flex-direction: column; justify-content: center; gap: 3px; padding: 6px 3px; margin: 0; min-height: 54px; border-left: 0; font-size: 9px; text-align: center; line-height: 1.15; }
       .erp-menu-item.active { border-left: 0; border-top: 3px solid var(--erp-accent-yellow); }
       .erp-menu-item i { font-size: 16px; }
@@ -177,6 +179,7 @@
     }
     @media (max-width: 390px) {
       .erp-user-profile { display: none; }
+      .btn-password span { display: none; }
       .erp-topbar { flex-wrap: wrap; }
       .erp-topbar-actions { width: 100%; justify-content: flex-end; }
       .erp-breadcrumb span { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -254,6 +257,11 @@
           <i class="fa-solid fa-boxes-stacked"></i><span>Lihat Stok</span>
         </button>
       </li>
+      <li id="koreksiStokMenuItem" hidden>
+        <button type="button" role="tab" aria-selected="false" aria-controls="tabKoreksiView" class="erp-menu-item" id="tabKoreksiBtn" onclick="switchTab('koreksi')">
+          <i class="fa-solid fa-scale-balanced"></i><span>Koreksi Stok</span>
+        </button>
+      </li>
     </ul></nav>
 
     <div class="erp-sidebar-footer">
@@ -277,6 +285,7 @@
       <div class="erp-topbar-actions">
         <div class="mobile-connection-status" id="connectionStatusMobile" role="status" aria-live="polite"><span aria-hidden="true" style="width:8px;height:8px;background:var(--erp-warning);border-radius:50%;display:inline-block;"></span><span>Menunggu koneksi</span></div>
         <div class="erp-user-profile" id="userProfileTag"></div>
+        <button type="button" onclick="bukaModalGantiPassword()" class="btn btn-outline btn-password" title="Ganti password" aria-label="Ganti password" style="padding:6px 10px;"><i class="fa-solid fa-key"></i><span>Password</span></button>
         <button onclick="logoutSesi()" class="btn btn-outline" style="padding: 6px 12px; color: var(--erp-danger);">
           <i class="fa-solid fa-power-off"></i> Keluar
         </button>
@@ -460,6 +469,48 @@
         </div>
       </div>
 
+      <div id="tabKoreksiView" role="tabpanel" aria-labelledby="tabKoreksiBtn" style="display:none;">
+        <div class="erp-card">
+          <div class="erp-card-header">
+            <div class="erp-card-title"><i class="fa-solid fa-scale-balanced"></i> Koreksi Saldo Stok</div>
+            <span class="badge badge-warning">Khusus Admin</span>
+          </div>
+          <div class="erp-card-body">
+            <div style="background:#fffbe6;border:1px solid #ffe58f;border-radius:8px;padding:12px 14px;margin-bottom:18px;color:#78520a;">
+              Masukkan saldo fisik hasil hitung. Sistem mencatat selisih sebagai mutasi masuk atau keluar dan menyimpan pelaku serta alasan pada audit stok. Untuk saldo awal, pilih barang baru dan masukkan jumlah awalnya.
+            </div>
+            <form id="formKoreksiStok">
+              <div class="form-row">
+                <div class="form-group"><label for="koreksiUnit">Unit / Farm</label><select id="koreksiUnit" onchange="ubahLokasiKoreksi()" required><option value="">-- Pilih Unit --</option></select></div>
+                <div class="form-group"><label for="koreksiGudang">Gudang</label><select id="koreksiGudang" onchange="populateBarangKoreksi()" required><option value="">-- Pilih Gudang --</option></select></div>
+              </div>
+              <div class="form-row">
+                <div class="form-group"><label for="koreksiMode">Jenis koreksi</label>
+                  <select id="koreksiMode" onchange="ubahModeKoreksi()" required>
+                    <option value="EXISTING">Perbarui saldo barang yang sudah ada</option>
+                    <option value="BARU">Masukkan barang baru / saldo awal</option>
+                  </select>
+                </div>
+                <div class="form-group" id="koreksiBarangWrap"><label for="koreksiBarang">Barang pada lokasi ini</label><select id="koreksiBarang" onchange="updatePreviewKoreksi()" required><option value="">-- Pilih barang --</option></select></div>
+              </div>
+              <div id="koreksiBarangBaruFields" style="display:none;">
+                <div class="form-group"><label for="koreksiNamaBarang">Nama barang baru</label><input type="text" id="koreksiNamaBarang" maxlength="200" placeholder="Nama barang" autocomplete="off"></div>
+                <div class="form-row">
+                  <div class="form-group"><label for="koreksiKategori">Kategori</label><select id="koreksiKategori"><option>PAKAN</option><option>OBAT</option><option>VAKSIN</option><option>VITAMIN</option><option>KIMIA</option><option>PERALATAN</option><option>LAINNYA</option></select></div>
+                  <div class="form-group"><label for="koreksiSatuan">Satuan</label><input type="text" id="koreksiSatuan" maxlength="32" placeholder="kg, zak, botol, pcs"></div>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group"><label for="koreksiSaldoFisik">Saldo fisik</label><input type="number" id="koreksiSaldoFisik" min="0" max="1000000000" step="any" inputmode="decimal" required><small style="display:block;margin-top:6px;color:var(--erp-text-muted);">Isi jumlah akhir setelah dihitung, bukan jumlah selisih.</small></div>
+                <div class="form-group"><label>Pratinjau selisih</label><div id="koreksiPreview" role="status" aria-live="polite" style="padding:10px 12px;min-height:38px;background:#f6f9f7;border:1px solid var(--erp-border-light);border-radius:6px;color:var(--erp-text-muted);">Pilih lokasi dan barang untuk melihat selisih.</div></div>
+              </div>
+              <div class="form-group"><label for="koreksiAlasan">Alasan koreksi</label><textarea id="koreksiAlasan" minlength="5" maxlength="500" rows="3" required placeholder="Contoh: saldo awal per 1 Januari atau hasil stock opname tanggal ..." style="width:100%;padding:9px 12px;border:1px solid var(--erp-border);border-radius:6px;font:inherit;resize:vertical;"></textarea></div>
+              <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Simpan Koreksi</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
     </div>
   </main>
 </div>
@@ -500,6 +551,7 @@
           <option value="VITAMIN">VITAMIN</option><option value="KIMIA">KIMIA</option><option value="PERALATAN">PERALATAN</option><option value="LAINNYA">LAINNYA</option>
         </select>
       </div>
+      <div class="form-group" id="penSupplierWrap"><label for="penSupplier">Supplier (opsional)</label><input type="text" id="penSupplier" maxlength="200" placeholder="Nama supplier"></div>
       <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:15px;">
         <button type="button" onclick="tutupModal('modalPenerimaan')" class="btn btn-outline">Batal</button>
         <button type="submit" class="btn btn-success" style="background:#047857; color:#fff;">Simpan Penerimaan</button>
@@ -545,6 +597,24 @@
       <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:15px;">
         <button type="button" onclick="tutupModal('modalTransfer')" class="btn btn-outline">Batal</button>
         <button type="submit" class="btn btn-primary">Kirim Pengajuan Mutasi</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="modalGantiPassword" class="modal">
+  <div class="modal-content" style="max-width:480px;">
+    <div class="modal-header">
+      <h3 style="font-size:14px;font-weight:700;color:var(--erp-primary);"><i class="fa-solid fa-key"></i> Ganti Password</h3>
+      <button type="button" aria-label="Tutup form ganti password" onclick="tutupModalGantiPassword()" style="background:none;border:none;cursor:pointer;font-size:16px;"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form id="formGantiPassword" class="modal-body" onsubmit="gantiPassword(event)">
+      <div class="form-group"><label for="passwordSaatIni">Password saat ini</label><input id="passwordSaatIni" type="password" autocomplete="current-password" required></div>
+      <div class="form-group"><label for="passwordBaru">Password baru</label><input id="passwordBaru" type="password" minlength="8" maxlength="128" autocomplete="new-password" required><small style="display:block;margin-top:5px;color:var(--erp-text-muted);">8–128 karakter, tanpa spasi di awal/akhir. Karakter pertama tidak boleh =, +, @, atau -.</small></div>
+      <div class="form-group"><label for="passwordBaruKonfirmasi">Konfirmasi password baru</label><input id="passwordBaruKonfirmasi" type="password" minlength="8" maxlength="128" autocomplete="new-password" required></div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px;">
+        <button type="button" onclick="tutupModalGantiPassword()" class="btn btn-outline">Batal</button>
+        <button id="btnGantiPassword" type="submit" class="btn btn-primary"><i class="fa-solid fa-key"></i> Simpan Password</button>
       </div>
     </form>
   </div>
@@ -636,6 +706,9 @@
   function tampilkanDashboard() {
     document.getElementById('loginSection').style.display = 'none';
     document.getElementById('mainPanel').style.display = 'flex';
+    const koreksiMenu = document.getElementById('koreksiStokMenuItem');
+    koreksiMenu.hidden = !sesiUser.isAdmin;
+    document.querySelector('.erp-menu').classList.toggle('has-admin-menu', Boolean(sesiUser.isAdmin));
     
     let initial = (sesiUser.nama || "U").substring(0,2).toUpperCase();
     document.getElementById('userProfileTag').innerHTML = `
@@ -658,8 +731,35 @@
     location.reload();
   }
 
+  function bukaModalGantiPassword() {
+    document.getElementById('formGantiPassword').reset();
+    document.getElementById('modalGantiPassword').style.display = 'flex';
+  }
+
+  function tutupModalGantiPassword() { document.getElementById('modalGantiPassword').style.display = 'none'; }
+
+  async function gantiPassword(event) {
+    event.preventDefault();
+    const newPassword = document.getElementById('passwordBaru').value;
+    if (newPassword !== document.getElementById('passwordBaruKonfirmasi').value) return showToast('Konfirmasi password baru tidak cocok.', 'error');
+    const button = document.getElementById('btnGantiPassword');
+    button.disabled = true;
+    try {
+      const res = await postPayload({action: 'changePassword', token: sesiUser.token, passwordSaatIni: document.getElementById('passwordSaatIni').value, passwordBaru: newPassword, konfirmasiPassword: document.getElementById('passwordBaruKonfirmasi').value});
+      const result = await res.json();
+      if (cekSesiBerakhir(result)) return;
+      if (result.status !== 'success') throw new Error(result.message || 'Gagal mengganti password.');
+      tutupModalGantiPassword();
+      document.getElementById('formGantiPassword').reset();
+      showToast(result.message || 'Password berhasil diperbarui.');
+    } catch (error) { showToast(error.message || 'Gagal mengganti password.', 'error'); }
+    finally { button.disabled = false; }
+  }
+
   function switchTab(tab) {
-    const tabs = {stok: ['tabStokBtn','tabStokView','Jurnal Stok & Mutasi'], transaksi: ['tabTransaksiBtn','tabTransaksiView','Pusat Transaksi Gudang'], history: ['tabHistoryBtn','tabHistoryView','Riwayat Mutasi'], lihatStok: ['tabLihatStokBtn','tabLihatStokView','Lihat Saldo Stok']};
+    if (tab === 'koreksi' && !sesiUser.isAdmin) return showToast('Menu koreksi stok hanya tersedia untuk admin.', 'error');
+    const tabs = {stok: ['tabStokBtn','tabStokView','Jurnal Stok & Mutasi'], transaksi: ['tabTransaksiBtn','tabTransaksiView','Pusat Transaksi Gudang'], history: ['tabHistoryBtn','tabHistoryView','Riwayat Mutasi'], lihatStok: ['tabLihatStokBtn','tabLihatStokView','Lihat Saldo Stok'], koreksi: ['tabKoreksiBtn','tabKoreksiView','Koreksi Stok']};
+    if (!tabs[tab]) return;
     Object.keys(tabs).forEach(key => {
       const [buttonId, panelId] = tabs[key];
       const button = document.getElementById(buttonId);
@@ -677,7 +777,7 @@
   }
 
   document.querySelector('[role="tablist"]').addEventListener('keydown', function(event) {
-    const buttons = Array.from(this.querySelectorAll('[role="tab"]'));
+    const buttons = Array.from(this.querySelectorAll('[role="tab"]')).filter(button => !button.closest('li').hidden);
     const current = buttons.indexOf(document.activeElement);
     if (current < 0 || !['ArrowLeft','ArrowRight','Home','End'].includes(event.key)) return;
     event.preventDefault();
@@ -705,6 +805,7 @@
     const filterUnit = document.getElementById('filterUnit');
     const penUnit = document.getElementById('penUnit');
     const trUnitTujuan = document.getElementById('trUnitTujuan');
+    const koreksiUnit = document.getElementById('koreksiUnit');
 
     if (sesiUser.canViewAllLocations || sesiUser.isAdmin) {
       filterUnit.innerHTML = '<option value="">-- Semua Unit --</option>' + masterUnits.map(u => `<option value="${escapeHtml(u.kodeUnit)}">${escapeHtml(u.namaUnit)}</option>`).join('');
@@ -714,8 +815,13 @@
       filterUnit.disabled = true;
       if(penUnit) { penUnit.innerHTML = masterUnits.map(u => `<option value="${escapeHtml(u.kodeUnit)}">${escapeHtml(u.namaUnit)}</option>`).join(''); penUnit.disabled = true; }
     }
+    if (koreksiUnit) {
+      const correctionUnits = sesiUser.isAdmin ? (allUnits.length ? allUnits : masterUnits) : [];
+      koreksiUnit.innerHTML = '<option value="">-- Pilih Unit --</option>' + correctionUnits.map(u => `<option value="${escapeHtml(u.kodeUnit)}">${escapeHtml(u.namaUnit)}</option>`).join('');
+    }
     if (trUnitTujuan) updateTransferTargetUnitOptions();
     updateJournalWarehouseFilter();
+    if (koreksiUnit && koreksiUnit.value) ubahLokasiKoreksi();
   }
 
   function populateStockViewFilters() {
@@ -1004,6 +1110,71 @@
     gudangSelect.innerHTML = listG.length > 0 ? '<option value="">-- Pilih Gudang --</option>' + listG.map(g => `<option value="${escapeHtml(g.kodeGudang)}">${escapeHtml(g.namaGudang)}</option>`).join('') : '<option value="">-- Tidak ada gudang --</option>';
   }
 
+  function ubahLokasiKoreksi() {
+    updateSubGudangPilih('koreksiUnit', 'koreksiGudang');
+    populateBarangKoreksi();
+    updatePreviewKoreksi();
+  }
+
+  function ubahModeKoreksi() {
+    const isNew = document.getElementById('koreksiMode').value === 'BARU';
+    const itemSelect = document.getElementById('koreksiBarang');
+    document.getElementById('koreksiBarangWrap').style.display = isNew ? 'none' : 'block';
+    document.getElementById('koreksiBarangBaruFields').style.display = isNew ? 'block' : 'none';
+    itemSelect.required = !isNew;
+    document.getElementById('koreksiNamaBarang').required = isNew;
+    document.getElementById('koreksiSatuan').required = isNew;
+    document.getElementById('koreksiSaldoFisik').min = isNew ? '0.001' : '0';
+    updatePreviewKoreksi();
+  }
+
+  function populateBarangKoreksi() {
+    const select = document.getElementById('koreksiBarang');
+    if (!select) return;
+    const unit = document.getElementById('koreksiUnit').value;
+    const warehouse = document.getElementById('koreksiGudang').value;
+    const matches = rawStokList.filter(item => String(item.kodeUnit).toLowerCase() === unit.toLowerCase() && String(item.kodeGudang).toLowerCase() === warehouse.toLowerCase());
+    select.innerHTML = matches.length
+      ? '<option value="">-- Pilih barang --</option>' + matches.map(item => {
+        const value = escapeHtml(JSON.stringify({kodeBarang: String(item.kodeBarang)}));
+        return `<option value="${value}">${escapeHtml(item.namaBarang)} · ${escapeHtml(item.kodeBarang)} · Saldo ${formatNumber(item.sisaStok)} ${escapeHtml(item.satuan)}</option>`;
+      }).join('')
+      : '<option value="">Tidak ada barang terdaftar di lokasi ini</option>';
+    updatePreviewKoreksi();
+  }
+
+  function updatePreviewKoreksi() {
+    const preview = document.getElementById('koreksiPreview');
+    if (!preview) return;
+    const unit = document.getElementById('koreksiUnit').value;
+    const warehouse = document.getElementById('koreksiGudang').value;
+    const targetField = document.getElementById('koreksiSaldoFisik');
+    const isNew = document.getElementById('koreksiMode').value === 'BARU';
+    let item = null;
+    if (!isNew) {
+      try {
+        const selected = JSON.parse(document.getElementById('koreksiBarang').value);
+        item = rawStokList.find(row => String(row.kodeBarang) === String(selected.kodeBarang) && String(row.kodeUnit).toLowerCase() === unit.toLowerCase() && String(row.kodeGudang).toLowerCase() === warehouse.toLowerCase());
+      } catch (error) {}
+    }
+    if (!unit || !warehouse || (!isNew && !item)) {
+      preview.textContent = 'Pilih unit, gudang, dan barang untuk melihat selisih.';
+      return;
+    }
+    const targetText = targetField.value;
+    const unitLabel = isNew ? document.getElementById('koreksiSatuan').value.trim() : item.satuan;
+    if (targetText === '') {
+      preview.textContent = isNew ? `Saldo awal baru akan dicatat${unitLabel ? ` dalam ${unitLabel}` : ''}.` : `Saldo sistem saat ini: ${formatNumber(item.sisaStok)} ${item.satuan}.`;
+      return;
+    }
+    const target = Number(targetText);
+    if (!Number.isFinite(target) || target < 0) { preview.textContent = 'Masukkan saldo fisik yang valid.'; return; }
+    const before = isNew ? 0 : Number(item.sisaStok || 0);
+    const delta = target - before;
+    if (delta === 0) preview.textContent = `Tidak ada selisih. Saldo tetap ${formatNumber(target)} ${unitLabel || ''}.`;
+    else preview.textContent = `${delta > 0 ? 'Masuk' : 'Keluar'} ${formatNumber(Math.abs(delta))} ${unitLabel || ''} · saldo ${formatNumber(before)} → ${formatNumber(target)}.`;
+  }
+
   function updateTransferTargetUnitOptions() {
     const unitSelect = document.getElementById('trUnitTujuan');
     if (!unitSelect) return;
@@ -1025,6 +1196,7 @@
         rawStokList = json.data;
         updateStockKPIs();
         populateBarangSelects(); 
+        populateBarangKoreksi();
         populateFilterBarangDatalist();
       }
     } catch(e) { showToast('Gagal memuat stok terkini.', 'error'); }
@@ -1324,6 +1496,8 @@
     const name = document.getElementById('penNamaBarang');
     const unitLabel = document.getElementById('penSatuan');
     const category = document.getElementById('penKategori');
+    const supplier = document.getElementById('penSupplier');
+    document.getElementById('penSupplierWrap').style.display = linked ? 'none' : 'block';
     const unit = document.getElementById('penUnit');
     name.readOnly = linked;
     unitLabel.readOnly = linked;
@@ -1340,6 +1514,7 @@
       name.value = '';
       unitLabel.value = '';
       category.value = 'LAINNYA';
+      supplier.value = '';
     } else if (ticketSelect.value) pilihTiketPenerimaan();
   }
 
@@ -1384,7 +1559,8 @@
       namaBarang: document.getElementById('penNamaBarang').value.trim(),
       jumlah: document.getElementById('penJumlah').value,
       satuan: document.getElementById('penSatuan').value.trim(),
-      kategori: document.getElementById('penKategori').value
+      kategori: document.getElementById('penKategori').value,
+      supplier: document.getElementById('penSupplier').value.trim()
     };
     if (payload.sumberPenerimaan === 'PERMINTAAN_ACC') {
       let selected;
@@ -1437,6 +1613,43 @@
       jumlahTransfer: document.getElementById('trJumlah').value
     };
     await kirimAksiStok(payload, async function() { tutupModal('modalTransfer'); await Promise.all([muatPendingTransfers(), muatJurnalTransaksiBarang()]); }, 'formTransferStok');
+  });
+
+  document.getElementById('koreksiSaldoFisik').addEventListener('input', updatePreviewKoreksi);
+  document.getElementById('koreksiNamaBarang').addEventListener('input', updatePreviewKoreksi);
+  document.getElementById('koreksiSatuan').addEventListener('input', updatePreviewKoreksi);
+  document.getElementById('formKoreksiStok').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    if (!sesiUser.isAdmin) return showToast('Koreksi stok hanya dapat dilakukan admin.', 'error');
+    const mode = document.getElementById('koreksiMode').value;
+    const payload = {
+      action: 'koreksiStok',
+      jenisBarang: mode,
+      kodeUnit: document.getElementById('koreksiUnit').value,
+      kodeGudang: document.getElementById('koreksiGudang').value,
+      saldoFisik: document.getElementById('koreksiSaldoFisik').value,
+      alasan: document.getElementById('koreksiAlasan').value.trim()
+    };
+    if (mode === 'EXISTING') {
+      try { payload.kodeBarang = JSON.parse(document.getElementById('koreksiBarang').value).kodeBarang; }
+      catch (error) { return showToast('Pilih barang yang akan dikoreksi.', 'error'); }
+    } else {
+      payload.namaBarang = document.getElementById('koreksiNamaBarang').value.trim();
+      payload.kategori = document.getElementById('koreksiKategori').value;
+      payload.satuan = document.getElementById('koreksiSatuan').value.trim();
+    }
+    const unitBeforeReset = payload.kodeUnit;
+    const warehouseBeforeReset = payload.kodeGudang;
+    await kirimAksiStok(payload, async function() {
+      document.getElementById('formKoreksiStok').reset();
+      document.getElementById('koreksiUnit').value = unitBeforeReset;
+      ubahLokasiKoreksi();
+      document.getElementById('koreksiGudang').value = warehouseBeforeReset;
+      document.getElementById('koreksiMode').value = mode;
+      ubahModeKoreksi();
+      populateBarangKoreksi();
+      await Promise.all([muatMasterStokBarang(), muatJurnalTransaksiBarang(), muatStockSnapshot(), muatStockAudit()]);
+    }, 'formKoreksiStok');
   });
 
   function tutupModal(id) { document.getElementById(id).style.display = 'none'; }
