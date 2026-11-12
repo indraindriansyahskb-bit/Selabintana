@@ -3,28 +3,64 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Portal ERP - CV. SELABINTANA</title>
+  <title>ERP Inventory & Stock Management - CV. SELABINTANA</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
   <style>
     :root {
-      --erp-bg-body: #f0f4f2; --erp-topbar-bg: #1b3a26; --erp-card-bg: #ffffff;
-      --erp-border: #c2d1c7; --erp-border-light: #e3ebe6; --erp-text-main: #19261f;
-      --erp-text-muted: #5e6e64; --erp-primary: #2d6a43; --erp-primary-hover: #1f4f30;
-      --erp-success: #10b981; --erp-warning: #f59e0b; --erp-danger: #ef4444; --erp-accent-yellow: #fde047;
+      --erp-sidebar-width: 250px;
+      --erp-bg-body: #f0f4f2;
+      --erp-sidebar-bg: #1b3a26;
+      --erp-sidebar-text: #c2d1c7;
+      --erp-sidebar-active: #2d6a43;
+      --erp-card-bg: #ffffff;
+      --erp-border: #c2d1c7;
+      --erp-border-light: #e3ebe6;
+      --erp-text-main: #19261f;
+      --erp-text-muted: #5e6e64;
+      --erp-primary: #2d6a43;
+      --erp-primary-hover: #1f4f30;
+      --erp-success: #10b981;
+      --erp-warning: #f59e0b;
+      --erp-danger: #ef4444;
+      --erp-accent-yellow: #fde047;
     }
+
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Inter', sans-serif; background-color: var(--erp-bg-body); color: var(--erp-text-main); font-size: 13px; line-height: 1.5; }
 
-    .erp-header { background-color: var(--erp-topbar-bg); color: #ffffff; padding: 0 24px; height: 65px; display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid var(--erp-accent-yellow); position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-    .erp-brand { font-size: 18px; font-weight: 700; color: #ffffff; display: flex; align-items: center; gap: 12px; letter-spacing: 0.5px; }
-    .erp-brand img { height: 38px; object-fit: contain; background: #fff; padding: 2px; border-radius: 4px; }
+    /* LAYOUT ERP CONTAINER */
+    .erp-container { display: flex; min-height: 100vh; }
+
+    /* SIDEBAR */
+    .erp-sidebar { width: var(--erp-sidebar-width); background-color: var(--erp-sidebar-bg); color: var(--erp-sidebar-text); display: flex; flex-direction: column; flex-shrink: 0; border-right: 1px solid #142b1c; }
+    .erp-brand { padding: 20px 18px; font-size: 15px; font-weight: 700; color: #ffffff; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #142b1c; letter-spacing: 0.5px; }
+    .erp-brand i { color: var(--erp-accent-yellow); font-size: 18px; }
+    .erp-menu { list-style: none; padding: 15px 10px; flex: 1; }
+    .erp-menu-label { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #73907d; padding: 10px 12px 6px 12px; letter-spacing: 0.8px; }
+    .erp-menu-item { display: flex; align-items: center; gap: 12px; padding: 11px 14px; color: var(--erp-sidebar-text); text-decoration: none; border-radius: 6px; font-weight: 500; cursor: pointer; transition: all 0.15s ease; margin-bottom: 4px; }
+    .erp-menu-item:hover { background: #234b32; color: #ffffff; }
+    .erp-menu-item.active { background: var(--erp-sidebar-active); color: #ffffff; font-weight: 600; border-left: 4px solid var(--erp-accent-yellow); }
+    .erp-menu-item i { width: 18px; text-align: center; font-size: 14px; }
+    .erp-sidebar-footer { padding: 16px; border-top: 1px solid #142b1c; background: #12271a; font-size: 12px; }
+
+    /* MAIN CONTENT AREA */
+    .erp-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
     
-    .erp-container { max-width: 1200px; margin: 24px auto; padding: 0 20px; }
-    .erp-user-badge { display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); padding: 6px 16px; border-radius: 20px; }
+    /* TOP HEADER BAR */
+    .erp-topbar { height: 65px; background: #ffffff; border-bottom: 2px solid var(--erp-accent-yellow); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; position: sticky; top: 0; z-index: 10; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+    .erp-breadcrumb { font-size: 14px; font-weight: 700; color: var(--erp-primary); display: flex; align-items: center; gap: 8px; }
+    .erp-topbar-actions { display: flex; align-items: center; gap: 15px; }
+    .erp-user-profile { display: flex; align-items: center; gap: 10px; background: #f6f9f7; border: 1px solid var(--erp-border-light); padding: 6px 14px; border-radius: 20px; }
     .erp-avatar { width: 30px; height: 30px; background: var(--erp-accent-yellow); color: var(--erp-topbar-bg); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px; }
 
+    /* CONTENT BODY */
+    .erp-content { padding: 24px; flex: 1; overflow-y: auto; }
+
+    /* STATS CARDS (KPI DASHBOARD) */
     .erp-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 22px; }
     .erp-stat-card { background: #ffffff; padding: 18px; border-radius: 8px; border: 1px solid var(--erp-border-light); box-shadow: 0 1px 3px rgba(0,0,0,0.02); display: flex; align-items: center; justify-content: space-between; transition: transform 0.2s; border-bottom: 3px solid transparent; }
     .erp-stat-card:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(45, 106, 67, 0.08); border-bottom-color: var(--erp-primary); }
@@ -32,62 +68,65 @@
     .erp-stat-info .value { font-size: 22px; font-weight: 700; color: var(--erp-text-main); }
     .erp-stat-icon { width: 44px; height: 44px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
 
+    /* PANEL & CARDS */
     .erp-card { background: var(--erp-card-bg); border-radius: 8px; border: 1px solid var(--erp-border-light); box-shadow: 0 1px 3px rgba(0,0,0,0.03); margin-bottom: 22px; overflow: hidden; }
     .erp-card-header { padding: 16px 20px; border-bottom: 1px solid var(--erp-border-light); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; background: #ffffff; }
     .erp-card-title { font-size: 14px; font-weight: 700; color: var(--erp-primary); display: flex; align-items: center; gap: 8px; }
     .erp-card-body { padding: 20px; }
 
-    .row-group { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
-    .row-group .form-group { flex: 1; min-width: 170px; margin-bottom: 0; }
-    .form-group { margin-bottom: 14px; }
-    .form-group label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--erp-text-muted); margin-bottom: 6px; letter-spacing: 0.3px; }
-    
-    input[type="text"], input[type="password"], select, input[type="number"], input[type="date"], textarea { width: 100%; padding: 9px 12px; border: 1px solid var(--erp-border); border-radius: 6px; font-size: 12px; font-family: inherit; background-color: #ffffff; color: var(--erp-text-main); transition: border-color 0.15s; }
-    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--erp-primary); box-shadow: 0 0 0 3px rgba(45, 106, 67, 0.15); }
-    input:disabled, input[readonly] { background-color: #eaf0ec; color: var(--erp-text-muted); cursor: not-allowed; border-color: var(--erp-border-light); font-weight: 600; }
+    /* FILTER BAR ERP STYLE */
+    .erp-filter-bar { background: #f6f9f7; border: 1px solid var(--erp-border-light); padding: 14px 18px; border-radius: 6px; margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; }
+    .erp-filter-group { flex: 1; min-width: 160px; }
+    .erp-filter-group label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--erp-text-muted); margin-bottom: 6px; letter-spacing: 0.3px; }
 
-    .item-box { background: #fdfdfd; border: 1px solid var(--erp-border-light); padding: 16px; border-radius: 6px; margin-bottom: 12px; border-left: 4px solid var(--erp-primary); }
-    
+    /* FORMS & INPUTS */
+    input[type="text"], input[type="password"], select, input[type="number"], input[type="date"] {
+      width: 100%; padding: 9px 12px; border: 1px solid var(--erp-border); border-radius: 6px; font-size: 12px; font-family: inherit; background-color: #ffffff; color: var(--erp-text-main); transition: border-color 0.15s;
+    }
+    input:focus, select:focus { outline: none; border-color: var(--erp-primary); box-shadow: 0 0 0 3px rgba(45,106,67,0.15); }
+
+    /* BUTTONS */
     .btn { padding: 9px 16px; border-radius: 6px; font-size: 12px; font-weight: 600; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.15s ease; text-decoration: none; }
     .btn-primary { background: var(--erp-primary); color: white; }
     .btn-primary:hover { background: var(--erp-primary-hover); }
     .btn-success { background: var(--erp-success); color: white; }
-    .btn-danger { background: var(--erp-danger); color: white; }
+    .btn-success:hover { background: #059669; }
     .btn-warning { background: var(--erp-warning); color: #000; }
+    .btn-secondary { background: #64748b; color: white; }
     .btn-outline { background: white; border: 1px solid var(--erp-border); color: var(--erp-text-main); }
     .btn-outline:hover { background: #f0f4f2; border-color: var(--erp-primary); color: var(--erp-primary); }
-    .btn-sm { padding: 5px 10px; font-size: 11px; }
 
+    /* DATA TABLE ERP GRID */
     .erp-table-responsive { overflow-x: auto; border-radius: 6px; border: 1px solid var(--erp-border-light); }
     .erp-table { width: 100%; border-collapse: collapse; font-size: 12px; background: white; text-align: left; }
-    .erp-table th { background: #f6f9f7; color: var(--erp-primary); font-weight: 700; text-transform: uppercase; font-size: 11px; padding: 12px 14px; border-bottom: 2px solid var(--erp-border-light); }
+    .erp-table th { background: #f6f9f7; color: var(--erp-primary); font-weight: 700; text-transform: uppercase; font-size: 11px; padding: 12px 14px; border-bottom: 2px solid var(--erp-border-light); letter-spacing: 0.5px; white-space: nowrap; }
     .erp-table td { padding: 11px 14px; border-bottom: 1px solid var(--erp-border-light); color: var(--erp-text-main); vertical-align: middle; }
     .erp-table tbody tr:hover { background-color: #f6f9f7; }
     .mono { font-family: 'JetBrains Mono', monospace; font-weight: 600; }
 
+    /* BADGES */
     .badge { display: inline-flex; align-items: center; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; }
-    .badge-pending { background: #fef3c7; color: #b45309; }
-    .badge-acc { background: #d1fae5; color: #047857; }
-    .badge-reject { background: #fee2e2; color: #b91c1c; }
-    .badge-revisi { background: #e0f2fe; color: #0369a1; }
-    .badge-upload-yes { background: #d1fae5; color: #047857; }
-    .badge-upload-no { background: #fef3c7; color: #b45309; }
+    .badge-success { background: #d1fae5; color: #047857; }
+    .badge-warning { background: #fef3c7; color: #b45309; }
+    .badge-danger { background: #fee2e2; color: #b91c1c; }
+    .badge-info { background: #e0f2fe; color: #0369a1; }
 
+    /* MODAL */
+    .modal { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(3px); z-index: 1000; overflow-y: auto; padding: 20px; align-items: center; justify-content: center; }
+    .modal-content { background: white; width: 100%; max-width: 525px; border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); overflow: hidden; }
+    .modal-header { padding: 18px 24px; background: #f6f9f7; border-bottom: 1px solid var(--erp-border-light); display: flex; justify-content: space-between; align-items: center; }
+    .modal-body { padding: 24px; }
+
+    /* LOGIN SCREEN MODAL */
     .login-wrapper { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #1b3a26 0%, #2d6a43 100%); padding: 20px; }
     .login-card { background: white; padding: 35px 32px; border-radius: 12px; width: 100%; max-width: 380px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4); border-top: 5px solid var(--erp-accent-yellow); }
 
-    /* MODAL STYLES */
-    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(3px); }
-    .modal-content { background: white; width: 90%; max-width: 720px; border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); overflow: hidden; display: flex; flex-direction: column; max-height: 90vh; }
-    .modal-header { padding: 18px 24px; background: #f6f9f7; border-bottom: 1px solid var(--erp-border-light); display: flex; justify-content: space-between; align-items: center; }
-    .modal-body { padding: 24px; overflow-y: auto; flex: 1; }
-    .modal-footer { padding: 16px 24px; border-top: 1px solid var(--erp-border-light); background: #fcfdfc; display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
+    .form-row { display: flex; gap: 12px; margin-bottom: 12px; }
+    .form-row .form-group { flex: 1; margin-bottom: 0; }
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--erp-text-muted); margin-bottom: 6px; letter-spacing: 0.3px; }
 
-    .pagination-container { display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; background: #fff; border-top: 1px solid var(--erp-border-light); font-size: 12px; }
-    .page-btn { padding: 6px 12px; border: 1px solid var(--erp-border); background: white; border-radius: 4px; cursor: pointer; color: var(--erp-text-main); font-weight: 600; }
-    .page-btn:hover:not(:disabled) { background: #f0f4f2; border-color: var(--erp-primary); }
-    .page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
+    /* TOAST NOTIFICATION STYLING */
     #toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
     .toast { min-width: 250px; background: #ffffff; border-left: 4px solid var(--erp-primary); box-shadow: 0 4px 15px rgba(0,0,0,0.15); padding: 14px 18px; border-radius: 4px; display: flex; align-items: center; gap: 12px; font-size: 13px; font-weight: 600; opacity: 0; transform: translateX(100%); transition: all 0.3s; pointer-events: auto; }
     .toast.show { opacity: 1; transform: translateX(0); }
@@ -98,139 +137,289 @@
 <body>
 
 <div id="toast-container"></div>
-<datalist id="masterBarangList"></datalist>
 
-<!-- SCREEN 1: LOGIN -->
+<!-- SCREEN LOGIN -->
 <div id="loginSection" class="login-wrapper">
   <div class="login-card">
     <div style="text-align: center; margin-bottom: 25px;">
-      <img src="logo.png" alt="Logo" style="height: 90px; margin-bottom: 12px; object-fit: contain;">
+      <i class="fa-solid fa-boxes-stacked" style="font-size: 48px; color: var(--erp-primary); margin-bottom: 10px;"></i>
       <h2 style="font-size: 18px; font-weight: 800; color: var(--erp-primary); margin: 0;">CV. SELABINTANA</h2>
-      <h3 style="font-size: 13px; font-weight: 600; color: var(--erp-text-main); margin-top: 4px;">Material Request Portal</h3>
+      <h3 style="font-size: 13px; font-weight: 600; color: var(--erp-text-main); margin-top: 4px;">ERP Inventory & Stock Portal</h3>
     </div>
-    <form onsubmit="prosesLogin(event)">
-      <div class="form-group"><label>Username</label><input type="text" id="loginUser" required></div>
-      <div class="form-group"><label>Password</label><input type="password" id="loginPass" required></div>
-      <button type="submit" id="btnLogin" class="btn btn-primary" style="width: 100%; padding: 12px; margin-top: 10px;">
-        <i class="fa-solid fa-right-to-bracket"></i> Masuk Sistem
-      </button>
+    <div class="form-group">
+      <label>Username SSO</label>
+      <input type="text" id="loginUser" placeholder="Ketik username..." required>
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="loginPass" placeholder="Ketik password..." required>
+    </div>
+    <button type="button" onclick="prosesLogin()" class="btn btn-primary" style="width: 100%; padding: 12px; margin-top: 10px;">
+      <i class="fa-solid fa-right-to-bracket"></i> Masuk Sistem ERP
+    </button>
+  </div>
+</div>
+
+<!-- CONTAINER UTAMA SYSTEM ERP -->
+<div id="mainPanel" class="erp-container" style="display: none;">
+  
+  <!-- SIDEBAR PANELS -->
+  <aside class="erp-sidebar">
+    <div class="erp-brand">
+      <i class="fa-solid fa-boxes-stacked"></i>
+      <span>CV. SELABINTANA</span>
+    </div>
+    
+    <ul class="erp-menu">
+      <li class="erp-menu-label">Modul Persediaan</li>
+      <li>
+        <a class="erp-menu-item active" id="tabStokBtn" onclick="switchTab('stok')">
+          <i class="fa-solid fa-table-list"></i>
+          <span>Jurnal Stok & Mutasi</span>
+        </a>
+      </li>
+      <li>
+        <a class="erp-menu-item" id="tabTransaksiBtn" onclick="switchTab('transaksi')">
+          <i class="fa-solid fa-right-left"></i>
+          <span>Pusat Transaksi Gudang</span>
+        </a>
+      </li>
+      <li>
+        <a class="erp-menu-item" id="tabHistoryBtn" onclick="switchTab('history')">
+          <i class="fa-solid fa-clock-rotate-left"></i>
+          <span>Status Mutasi Inter-Farm</span>
+        </a>
+      </li>
+    </ul>
+
+    <div class="erp-sidebar-footer">
+      <div style="color: #73907d; font-size: 10px; text-transform: uppercase; font-weight: 700;">Status Koneksi</div>
+      <div style="color: var(--erp-success); font-weight: 600; margin-top: 2px; display: flex; align-items: center; gap: 6px;">
+        <span style="width: 8px; height: 8px; background: var(--erp-success); border-radius: 50%; display: inline-block;"></span> GAS Cloud Connected
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN VIEW -->
+  <main class="erp-main">
+    
+    <!-- TOP BAR -->
+    <header class="erp-topbar">
+      <div class="erp-breadcrumb">
+        <i class="fa-solid fa-warehouse"></i>
+        <span>Manajemen Gudang Multi-Unit Farm</span>
+      </div>
+      
+      <div class="erp-topbar-actions">
+        <div class="erp-user-profile" id="userProfileTag"></div>
+        <button onclick="logoutSesi()" class="btn btn-outline" style="padding: 6px 12px; color: var(--erp-danger);">
+          <i class="fa-solid fa-power-off"></i> Keluar
+        </button>
+      </div>
+    </header>
+
+    <!-- CONTENT BODY -->
+    <div class="erp-content">
+      
+      <!-- TAB 1: JURNAL RINCIAN TRANSAKSI STOK -->
+      <div id="tabStokView">
+        
+        <!-- KPI METRICS DASHBOARD -->
+        <div class="erp-stats-grid">
+          <div class="erp-stat-card">
+            <div class="erp-stat-info">
+              <div class="label">Total Item Master</div>
+              <div class="value" id="kpiTotalBarang">0</div>
+            </div>
+            <div class="erp-stat-icon" style="background: #e0f2fe; color: #0284c7;"><i class="fa-solid fa-box"></i></div>
+          </div>
+          <div class="erp-stat-card">
+            <div class="erp-stat-info">
+              <div class="label">Total Transaksi Masuk</div>
+              <div class="value" id="kpiTotalMasuk">0</div>
+            </div>
+            <div class="erp-stat-icon" style="background: #d1fae5; color: #047857;"><i class="fa-solid fa-circle-arrow-down"></i></div>
+          </div>
+          <div class="erp-stat-card">
+            <div class="erp-stat-info">
+              <div class="label">Total Transaksi Keluar</div>
+              <div class="value" id="kpiTotalKeluar">0</div>
+            </div>
+            <div class="erp-stat-icon" style="background: #fee2e2; color: #b91c1c;"><i class="fa-solid fa-circle-arrow-up"></i></div>
+          </div>
+          <div class="erp-stat-card">
+            <div class="erp-stat-info">
+              <div class="label">Pending Mutasi ACC</div>
+              <div class="value" id="kpiPendingCount">0</div>
+            </div>
+            <div class="erp-stat-icon" style="background: #fef3c7; color: #b45309;"><i class="fa-solid fa-clock"></i></div>
+          </div>
+        </div>
+
+        <!-- CARD DATA TABLE JURNAL -->
+        <div class="erp-card">
+          <div class="erp-card-header">
+            <div class="erp-card-title"><i class="fa-solid fa-list-check"></i> Jurnal Transaksi Rinci Per Barang</div>
+            <button onclick="eksporKeExcel()" class="btn btn-success" style="background:#047857; color:#fff;"><i class="fa-solid fa-file-excel"></i> Ekspor Excel (.xlsx)</button>
+          </div>
+          
+          <div class="erp-card-body">
+            <!-- FILTER BAR ERP -->
+            <div class="erp-filter-bar">
+              <div class="erp-filter-group">
+                <label>Periode Dari</label>
+                <input type="date" id="filterTglAwal" onchange="muatJurnalTransaksiBarang()">
+              </div>
+              <div class="erp-filter-group">
+                <label>Sampai Tanggal</label>
+                <input type="date" id="filterTglAkhir" onchange="muatJurnalTransaksiBarang()">
+              </div>
+              <div class="erp-filter-group">
+                <label>Unit / Farm</label>
+                <select id="filterUnit" onchange="terapkanFilterJurnal()"></select>
+              </div>
+              <div class="erp-filter-group" style="flex: 2; min-width: 240px;">
+                <label>Pilih / Cari Nama Barang</label>
+                <input type="text" id="filterBarangPilih" list="listOptionsBarang" placeholder="-- Ketik atau Pilih Barang --" oninput="terapkanFilterJurnal()">
+                <datalist id="listOptionsBarang"></datalist>
+              </div>
+            </div>
+
+            <div class="erp-table-responsive" id="containerTabelJurnal">
+              <p style="text-align:center; padding:30px; color: var(--erp-text-muted);"><i class="fa-solid fa-spinner fa-spin"></i> Memuat data jurnal persediaan...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: MENU TRANSAKSI STOK -->
+      <div id="tabTransaksiView" style="display: none;">
+        <div class="erp-card">
+          <div class="erp-card-header">
+            <div class="erp-card-title"><i class="fa-solid fa-right-left"></i> Pusat Eksekusi Transaksi Gudang</div>
+          </div>
+          <div class="erp-card-body">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 25px;">
+              <button onclick="bukaModalPenerimaan()" class="btn btn-success" style="padding: 20px; font-size: 13px; flex-direction: column; background:#047857; color:#fff;">
+                <i class="fa-solid fa-box-archive fa-2xl" style="margin-bottom: 8px;"></i> 1. Penerimaan Barang Masuk
+              </button>
+              <button onclick="bukaModalPemakaian()" class="btn btn-warning" style="padding: 20px; font-size: 13px; flex-direction: column;">
+                <i class="fa-solid fa-dolly fa-2xl" style="margin-bottom: 8px;"></i> 2. Pemakaian / Keluar Kandang
+              </button>
+              <button onclick="bukaModalTransferDirect()" class="btn btn-primary" style="padding: 20px; font-size: 13px; flex-direction: column;">
+                <i class="fa-solid fa-truck-ramp-box fa-2xl" style="margin-bottom: 8px;"></i> 3. Mutasi Inter-Farm
+              </button>
+            </div>
+
+            <div style="background: #fffbe6; border: 1px solid #ffe58f; padding: 18px; border-radius: 8px;">
+              <h4 style="margin-bottom: 12px; color: #b45309; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-clock-rotate-left"></i> Antrean Mutasi Menunggu Verifikasi & Konfirmasi
+              </h4>
+              <div class="erp-table-responsive" id="containerPendingTransfer"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: MONITORING MUTASI -->
+      <div id="tabHistoryView" style="display: none;">
+        <div class="erp-card">
+          <div class="erp-card-header">
+            <div class="erp-card-title"><i class="fa-solid fa-clock-rotate-left"></i> Status Audit & Verifikasi Mutasi Antar Unit</div>
+          </div>
+          <div class="erp-card-body">
+            <div class="erp-table-responsive" id="containerTabelHistory"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- MODAL 1: PENERIMAAN BARANG MASUK -->
+<div id="modalPenerimaan" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 style="font-size:14px; font-weight:700; color:var(--erp-primary);"><i class="fa-solid fa-circle-arrow-down" style="color:var(--erp-success);"></i> Entry Penerimaan Barang Masuk</h3>
+      <button onclick="tutupModal('modalPenerimaan')" style="background:none; border:none; cursor:pointer; font-size:16px;"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form id="formPenerimaan" class="modal-body">
+      <div class="form-group"><label>Sumber Penerimaan</label>
+        <select id="penSumber" required>
+          <option value="PEMBELIAN_SUPPLIER">Penerimaan Langsung (Supplier / Pembelian)</option>
+          <option value="PERMINTAAN_ACC">Dari Tiket Permintaan Barang (ACC)</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Masuk Ke Unit</label><select id="penUnit" onchange="updateSubGudangPilih('penUnit', 'penGudang')" required></select></div>
+        <div class="form-group"><label>Masuk Ke Gudang</label><select id="penGudang" required></select></div>
+      </div>
+      <div class="form-group"><label>Nama Barang</label><input type="text" id="penNamaBarang" placeholder="Ketik nama barang..." required></div>
+      <div class="form-row">
+        <div class="form-group"><label>Jumlah Masuk</label><input type="number" id="penJumlah" min="1" required></div>
+        <div class="form-group"><label>Satuan</label><input type="text" id="penSatuan" placeholder="pcs/kg/zak" required></div>
+      </div>
+      <div class="form-group"><label>Kategori Barang</label>
+        <select id="penKategori">
+          <option value="PAKAN">PAKAN</option><option value="OBAT">OBAT</option><option value="VAKSIN">VAKSIN</option>
+          <option value="VITAMIN">VITAMIN</option><option value="KIMIA">KIMIA</option><option value="PERALATAN">PERALATAN</option><option value="LAINNYA">LAINNYA</option>
+        </select>
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:15px;">
+        <button type="button" onclick="tutupModal('modalPenerimaan')" class="btn btn-outline">Batal</button>
+        <button type="submit" class="btn btn-success" style="background:#047857; color:#fff;">Simpan Penerimaan</button>
+      </div>
     </form>
   </div>
 </div>
 
-<!-- SCREEN 2: DASHBOARD -->
-<div id="mainPanel" style="display: none;">
-  <header class="erp-header">
-    <div class="erp-brand"><img src="logo.png" alt="Icon"><span>CV. SELABINTANA</span></div>
-    <div id="userInfoHeader" class="erp-user-badge"></div>
-  </header>
-
-  <div class="erp-container">
-    <!-- KPI -->
-    <div class="erp-stats-grid">
-      <div class="erp-stat-card"><div class="erp-stat-info"><div class="label">Total Tiket</div><div class="value" id="kpiTotal">0</div></div><div class="erp-stat-icon" style="background:#e6f0eb; color:var(--erp-primary);"><i class="fa-solid fa-layer-group"></i></div></div>
-      <div class="erp-stat-card"><div class="erp-stat-info"><div class="label">Pending</div><div class="value" id="kpiPending">0</div></div><div class="erp-stat-icon" style="background:#fff8e6; color:#b45309;"><i class="fa-solid fa-hourglass-half"></i></div></div>
-      <div class="erp-stat-card"><div class="erp-stat-info"><div class="label">Disetujui (ACC)</div><div class="value" id="kpiAcc">0</div></div><div class="erp-stat-icon" style="background:#e6f8f0; color:#047857;"><i class="fa-solid fa-circle-check"></i></div></div>
-      <div class="erp-stat-card"><div class="erp-stat-info"><div class="label">Ditolak / Revisi</div><div class="value" id="kpiReject">0</div></div><div class="erp-stat-icon" style="background:#fcebeb; color:#b91c1c;"><i class="fa-solid fa-circle-xmark"></i></div></div>
+<!-- MODAL 2: PEMAKAIAN KANDANG -->
+<div id="modalPemakaian" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 style="font-size:14px; font-weight:700; color:var(--erp-primary);"><i class="fa-solid fa-circle-arrow-up" style="color:var(--erp-warning);"></i> Form Pemakaian / Outflow Barang</h3>
+      <button onclick="tutupModal('modalPemakaian')" style="background:none; border:none; cursor:pointer; font-size:16px;"><i class="fa-solid fa-xmark"></i></button>
     </div>
-
-    <!-- FORM INPUT -->
-    <div class="erp-card">
-      <div class="erp-card-header">
-        <div class="erp-card-title" id="formTitle"><i class="fa-solid fa-file-signature"></i> Buat Tiket Permintaan Baru</div>
+    <form id="formPemakaian" class="modal-body">
+      <div class="form-group"><label>Pilih Barang Dari Gudang</label><select id="pemBarangPilih" required></select></div>
+      <div class="form-group"><label>Lokasi Kandang / Peruntukan</label><input type="text" id="pemLokasiKandang" placeholder="Contoh: Kandang 01 / Brood A" required></div>
+      <div class="form-group"><label>Jumlah Pemakaian</label><input type="number" id="pemJumlah" min="1" required></div>
+      <div class="form-group"><label>Keterangan Tambahan</label><input type="text" id="pemKet"></div>
+      <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:15px;">
+        <button type="button" onclick="tutupModal('modalPemakaian')" class="btn btn-outline">Batal</button>
+        <button type="submit" class="btn btn-warning">Catat Pemakaian</button>
       </div>
-      <form id="formPermintaan" class="erp-card-body">
-        <div class="row-group">
-          <div class="form-group"><label>Tanggal Sistem</label><input type="text" id="tglPermintaan" readonly></div>
-          <div class="form-group"><label>Target Tgl Dibutuhkan</label><input type="date" id="tglDibutuhkan" required></div>
-          <div class="form-group"><label>Urgensi</label>
-            <select id="urgensi"><option value="REGULER">REGULER</option><option value="URGENT">URGENT (Prioritas)</option><option value="TOP URGENT">TOP URGENT (Kritis)</option></select>
-          </div>
-        </div>
-        <div style="font-size:13px; font-weight:700; color:var(--erp-primary); margin: 24px 0 12px 0; padding-bottom:8px; border-bottom:1px solid var(--erp-border-light);"><i class="fa-solid fa-boxes-stacked"></i> Rincian Item Barang</div>
-        
-        <div id="containerItems"></div>
-        <button type="button" onclick="tambahItemForm()" class="btn btn-outline" style="margin-bottom:20px; border-style:dashed; border-width:2px; width:100%; padding:12px; color:var(--erp-primary);"><i class="fa-solid fa-plus"></i> Tambah Baris Item Baru</button>
-
-        <div class="form-group"><label>Justifikasi / Keterangan</label><textarea id="keterangan" rows="3" placeholder="Detail peruntukan..."></textarea></div>
-        
-        <div style="display:flex; gap:10px; margin-top:10px;">
-          <button type="button" id="btnBatalEdit" onclick="batalkanEdit()" class="btn btn-outline" style="display:none; flex:0.3; padding:14px;"><i class="fa-solid fa-xmark"></i> Batal Edit</button>
-          <button type="submit" id="btnSubmit" class="btn btn-primary" style="flex:1; padding:14px; font-size:14px;"><i class="fa-solid fa-paper-plane"></i> Submit Tiket Ke Sistem</button>
-        </div>
-      </form>
-    </div>
-
-    <!-- TABLE RIWAYAT & FILTER EXPORT -->
-    <div class="erp-card">
-      <div class="erp-card-header">
-        <div class="erp-card-title"><i class="fa-solid fa-clock-rotate-left"></i> Riwayat Pengajuan </div>
-        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-          <input type="text" id="searchRiwayat" placeholder="🔍 Cari Tiket / Barang..." onkeyup="filterTabelTiket()" style="width: 200px; padding: 6px 12px; font-size: 12px;">
-          <button onclick="muatRiwayatPermintaan()" class="btn btn-outline" style="padding: 6px 10px;" title="Refresh"><i class="fa-solid fa-rotate-right"></i></button>
-        </div>
-      </div>
-
-      <!-- PANEL FILTER EXPORT EXCEL -->
-      <div style="background:#f6f9f7; padding:15px 20px; border-bottom:1px solid var(--erp-border-light); display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap;">
-        <div class="form-group" style="margin-bottom:0; flex:1; min-width:130px;">
-          <label>Dari Tanggal</label>
-          <input type="date" id="filterTglMulai" style="padding:6px 10px; font-size:11px;">
-        </div>
-        <div class="form-group" style="margin-bottom:0; flex:1; min-width:130px;">
-          <label>Sampai Tanggal</label>
-          <input type="date" id="filterTglSelesai" style="padding:6px 10px; font-size:11px;">
-        </div>
-        <div class="form-group" style="margin-bottom:0; flex:1.5; min-width:160px;">
-          <label>Filter Nama Barang (Opsional)</label>
-          <input type="text" id="filterNamaBarang" placeholder="Semua Barang" list="masterBarangList" style="padding:6px 10px; font-size:11px;">
-        </div>
-        <div>
-          <button onclick="exportToExcel()" class="btn btn-success" style="padding:7px 14px; background:#047857; color:#fff; font-size:11px; font-weight:700;"><i class="fa-solid fa-file-excel"></i> Export Excel (.xls)</button>
-        </div>
-      </div>
-
-      <div class="erp-card-body" style="padding:0;">
-        <div class="erp-table-responsive" style="border:none; border-radius:0;">
-          <table class="erp-table">
-            <thead><tr><th>No. Tiket</th><th>Pemohon</th><th>Tgl Butuh</th><th>Total Item</th><th>Urgensi</th><th>Dokumen</th><th>Status ERP</th><th>Aksi</th></tr></thead>
-            <tbody id="bodyTabelRiwayat"><tr><td colspan="8" style="text-align:center; padding:30px;"><i class="fa-solid fa-spinner fa-spin"></i> Sinkronisasi...</td></tr></tbody>
-          </table>
-        </div>
-        <div class="pagination-container">
-          <div id="pageInfo">Menampilkan 0 data</div>
-          <div style="display:flex; gap:8px;">
-            <button class="page-btn" id="btnPrevPage" onclick="gantiHalaman(-1)"><i class="fa-solid fa-chevron-left"></i> Prev</button>
-            <button class="page-btn" id="btnNextPage" onclick="gantiHalaman(1)">Next <i class="fa-solid fa-chevron-right"></i></button>
-          </div>
-        </div>
-      </div>
-    </div>
+    </form>
   </div>
 </div>
 
-<!-- MODAL DETAIL TIKET -->
-<div class="modal-overlay" id="modalDetailTiket">
+<!-- MODAL 3: MUTASI / TRANSFER ANTAR FARM -->
+<div id="modalTransfer" class="modal">
   <div class="modal-content">
     <div class="modal-header">
-      <h3 style="font-size:15px; font-weight:800; color:var(--erp-primary);" id="mdlTitle">Detail Tiket</h3>
-      <button onclick="tutupModal()" style="background:none; border:none; font-size:18px; cursor:pointer; color:var(--erp-text-muted);"><i class="fa-solid fa-xmark"></i></button>
+      <h3 style="font-size:14px; font-weight:700; color:var(--erp-primary);"><i class="fa-solid fa-truck-ramp-box"></i> Pengajuan Mutasi Inter-Farm</h3>
+      <button onclick="tutupModal('modalTransfer')" style="background:none; border:none; cursor:pointer; font-size:16px;"><i class="fa-solid fa-xmark"></i></button>
     </div>
-    <div class="modal-body" id="mdlBody"></div>
-    <div class="modal-footer" id="mdlFooter"></div>
+    <form id="formTransferStok" class="modal-body">
+      <div class="form-group"><label>Pilih Barang Asal</label><select id="trBarangAsal" required></select></div>
+      <div class="form-row">
+        <div class="form-group"><label>Unit Farm Tujuan</label><select id="trUnitTujuan" onchange="updateSubGudangPilih('trUnitTujuan', 'trGudangTujuan')" required></select></div>
+        <div class="form-group"><label>Gudang Tujuan</label><select id="trGudangTujuan" required></select></div>
+      </div>
+      <div class="form-group"><label>Jumlah Transfer</label><input type="number" id="trJumlah" min="1" required></div>
+      <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:15px;">
+        <button type="button" onclick="tutupModal('modalTransfer')" class="btn btn-outline">Batal</button>
+        <button type="submit" class="btn btn-primary">Kirim Pengajuan Mutasi</button>
+      </div>
+    </form>
   </div>
 </div>
 
 <script>
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbzizK2JrExKxthQTqtNOf7tsBYmLgAn3FX5CTL0SoMsBHUaSoK6mC-5hqIxGFCVTwAr_w/exec"; // <-- GANTI URL ANDA
-  
-  let sesiUser = {};
-  let itemCounter = 0;
-  let groupedTickets = []; 
-  let filteredTickets = []; 
-  let currentPage = 1;
-  const itemsPerPage = 10;
-  let idTiketEdit = null;
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbzizK2JrExKxthQTqtNOf7tsBYmLgAn3FX5CTL0SoMsBHUaSoK6mC-5hqIxGFCVTwAr_w/exec"; // Ganti URL GAS Anda
+
+  let sesiUser = {}; let masterUnits = []; let allUnits = []; let masterGudang = []; let rawJurnalData = []; let rawStokList = [];
 
   function showToast(message, type = 'success') {
     const container = document.getElementById('toast-container');
@@ -245,7 +434,7 @@
 
   function cekSesiBerakhir(json) {
     if (json && json.status === "error" && String(json.message || "").indexOf("Sesi tidak valid") >= 0) {
-      localStorage.removeItem('portal_user_session');
+      localStorage.removeItem('stok_app_user_session');
       location.reload();
       return true;
     }
@@ -253,524 +442,396 @@
   }
 
   window.onload = function() {
-    const saved = localStorage.getItem('portal_user_session');
-    if (saved) {
+    const savedUser = localStorage.getItem('stok_app_user_session');
+    if (savedUser) {
       try {
-        sesiUser = JSON.parse(saved);
+        sesiUser = JSON.parse(savedUser);
         if (sesiUser.token && Date.now() < Number(sesiUser.expiresAt || 0)) tampilkanDashboard();
-        else { localStorage.removeItem('portal_user_session'); sesiUser = {}; }
-      } catch (e) { localStorage.removeItem('portal_user_session'); sesiUser = {}; }
+        else { localStorage.removeItem('stok_app_user_session'); sesiUser = {}; }
+      } catch (e) { localStorage.removeItem('stok_app_user_session'); sesiUser = {}; }
     }
   };
 
-  async function prosesLogin(e) {
-    e.preventDefault();
-    const btn = document.getElementById('btnLogin');
-    btn.disabled = true; btn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Otentikasi...";
+  async function prosesLogin() {
+    const u = document.getElementById('loginUser').value.trim();
+    const p = document.getElementById('loginPass').value.trim();
+    if (!u || !p) return showToast("Masukkan Username & Password!", "error");
     try {
-      const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "login", username: document.getElementById('loginUser').value.trim(), password: document.getElementById('loginPass').value.trim() }) });
+      const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "login", username: u, password: p }) });
       const result = await res.json();
-      if (result.status === "success") {
-        sesiUser = result.userData; localStorage.setItem('portal_user_session', JSON.stringify(sesiUser));
-        showToast(`Selamat datang, ${sesiUser.nama}!`); setTimeout(tampilkanDashboard, 400);
-      } else showToast(result.message, 'error');
-    } catch (err) { showToast("Gagal terhubung ke server.", 'error'); } 
-    finally { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Masuk Sistem ERP'; }
+      if (result.status === "success") { 
+        sesiUser = result.userData; 
+        localStorage.setItem('stok_app_user_session', JSON.stringify(sesiUser)); 
+        showToast(`Selamat datang, ${sesiUser.nama}!`);
+        tampilkanDashboard(); 
+      }
+      else showToast("Login Gagal: " + result.message, "error");
+    } catch (e) { showToast("Kesalahan koneksi server ERP.", "error"); }
   }
 
   function tampilkanDashboard() {
-    document.getElementById('loginSection').style.display = 'none'; document.getElementById('mainPanel').style.display = 'block';
-    document.getElementById('userInfoHeader').innerHTML = `
-      <div class="erp-avatar">${(sesiUser.nama||"U").substring(0,2).toUpperCase()}</div>
-      <div style="line-height:1.2; color:#f8fafc;"><div style="font-weight:700; font-size:12px; color:var(--erp-accent-yellow);">${sesiUser.nama}</div><div style="font-size:10px; color:#c2d1c7;">${sesiUser.divisi} | <b>${sesiUser.unitLokasi}</b> ${sesiUser.isAdmin?'<span style="color:#fde047;">(ADMIN)</span>':''}</div></div>
-      <button onclick="logoutSesi()" class="btn btn-outline" style="padding:5px 10px; color:#fff; border-color:#386641; background:transparent; margin-left:15px;"><i class="fa-solid fa-power-off"></i></button>`;
+    document.getElementById('loginSection').style.display = 'none';
+    document.getElementById('mainPanel').style.display = 'flex';
     
-    let today = new Date().toISOString().split('T')[0];
-    document.getElementById('tglPermintaan').value = today; document.getElementById('tglDibutuhkan').min = today; 
-    document.getElementById('containerItems').innerHTML = ""; itemCounter = 0;
-    muatMasterBarang(); tambahItemForm(); muatRiwayatPermintaan();
+    let initial = (sesiUser.nama || "U").substring(0,2).toUpperCase();
+    document.getElementById('userProfileTag').innerHTML = `
+      <div class="erp-avatar">${initial}</div>
+      <div style="line-height:1.2;">
+        <div style="font-weight:700; font-size:12px; color:var(--erp-text-main);">${sesiUser.nama}</div>
+        <div style="font-size:10px; color:var(--erp-text-muted);">${sesiUser.jabatan} | <b>${sesiUser.unitLokasi}</b> ${sesiUser.isAdmin?'<span style="color:var(--erp-primary);">(ADMIN)</span>':''}</div>
+      </div>
+    `;
+
+    muatMetaUnitsGudang();
+    muatMasterStokBarang();
+    muatJurnalTransaksiBarang();
   }
 
   async function logoutSesi() {
     const token = sesiUser.token;
-    localStorage.removeItem('portal_user_session');
+    localStorage.removeItem('stok_app_user_session');
     try { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "logout", token: token }) }); } catch (e) {}
     location.reload();
   }
 
-  async function muatMasterBarang() {
+  function switchTab(tab) {
+    document.getElementById('tabStokBtn').classList.toggle('active', tab === 'stok');
+    document.getElementById('tabTransaksiBtn').classList.toggle('active', tab === 'transaksi');
+    document.getElementById('tabHistoryBtn').classList.toggle('active', tab === 'history');
+
+    document.getElementById('tabStokView').style.display = tab === 'stok' ? 'block' : 'none';
+    document.getElementById('tabTransaksiView').style.display = tab === 'transaksi' ? 'block' : 'none';
+    document.getElementById('tabHistoryView').style.display = tab === 'history' ? 'block' : 'none';
+
+    if (tab === 'transaksi' || tab === 'history') muatPendingTransfers();
+  }
+
+  async function muatMetaUnitsGudang() {
     try {
-      const res = await fetch(`${GAS_URL}?action=getMasterBarang&token=${encodeURIComponent(sesiUser.token)}`);
+      const res = await fetch(`${GAS_URL}?action=getUnitsAndGudang&token=${encodeURIComponent(sesiUser.token)}`);
       const json = await res.json();
       if (cekSesiBerakhir(json)) return;
-      if (json.status === "success") {
-        const uniqueNames = [...new Set(json.data.map(i => i.namaBarang))].sort();
-        document.getElementById('masterBarangList').innerHTML = uniqueNames.map(n => `<option value="${n}"></option>`).join('');
+      if (json.status === "success") { 
+        masterUnits = json.units; allUnits = json.allUnits || json.units; masterGudang = json.gudang; 
+        populateUnitDropdowns(); 
       }
     } catch(e) {}
   }
 
-  function tambahItemForm(data = null) {
-    itemCounter++; const div = document.createElement('div'); div.className = 'item-box'; div.id = `itemRow_${itemCounter}`;
-    div.innerHTML = `
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-        <span style="font-weight:800; font-size:12px; color:var(--erp-primary);"><i class="fa-solid fa-box"></i> Item #${itemCounter}</span>
-        <button type="button" onclick="hapusItemForm('itemRow_${itemCounter}')" class="btn btn-outline btn-sm" style="color:var(--erp-danger);"><i class="fa-solid fa-trash"></i> Hapus</button>
-      </div>
-      <div class="row-group">
-        <div class="form-group"><label>Nama Material</label><input type="text" class="it-nama" list="masterBarangList" required value="${data?data.namaBarang:''}"></div>
-        <div class="form-group"><label>Kategori</label><select class="it-kategori">
-          <option value="PAKAN" ${data&&data.kategori=='PAKAN'?'selected':''}>PAKAN</option><option value="OBAT" ${data&&data.kategori=='OBAT'?'selected':''}>OBAT</option>
-          <option value="VAKSIN" ${data&&data.kategori=='VAKSIN'?'selected':''}>VAKSIN</option><option value="KIMIA" ${data&&data.kategori=='KIMIA'?'selected':''}>KIMIA</option>
-          <option value="PERALATAN" ${data&&data.kategori=='PERALATAN'?'selected':''}>PERALATAN</option><option value="LAINNYA" ${data&&data.kategori=='LAINNYA'?'selected':!data?'selected':''}>LAINNYA</option>
-        </select></div>
-      </div>
-      <div class="row-group">
-        <div class="form-group"><label>Jumlah</label><input type="number" class="it-jumlah" min="1" required value="${data?data.jumlah:''}"></div>
-        <div class="form-group"><label>Satuan</label><input type="text" class="it-satuan" required value="${data?data.satuan:''}"></div>
-        <div class="form-group"><label>Kode Ref</label><input type="text" class="it-kode" value="${data?data.kodeSupplier:''}"></div>
-      </div>`;
-    document.getElementById('containerItems').appendChild(div);
+  function populateUnitDropdowns() {
+    const filterUnit = document.getElementById('filterUnit');
+    const penUnit = document.getElementById('penUnit');
+    const trUnitTujuan = document.getElementById('trUnitTujuan');
+
+    if (sesiUser.isAdmin) {
+      filterUnit.innerHTML = '<option value="">-- Semua Unit --</option>' + masterUnits.map(u => `<option value="${u.kodeUnit}">${u.namaUnit}</option>`).join('');
+      if(penUnit) penUnit.innerHTML = '<option value="">-- Pilih Unit --</option>' + masterUnits.map(u => `<option value="${u.kodeUnit}">${u.namaUnit}</option>`).join('');
+    } else {
+      filterUnit.innerHTML = masterUnits.map(u => `<option value="${u.kodeUnit}">${u.namaUnit}</option>`).join('');
+      filterUnit.disabled = true;
+      if(penUnit) { penUnit.innerHTML = masterUnits.map(u => `<option value="${u.kodeUnit}">${u.namaUnit}</option>`).join(''); penUnit.disabled = true; }
+    }
+
+    if(trUnitTujuan) {
+      let targetList = allUnits.filter(u => u.kodeUnit.toLowerCase() !== sesiUser.unitLokasi.toLowerCase());
+      trUnitTujuan.innerHTML = '<option value="">-- Pilih Unit Farm Tujuan --</option>' + targetList.map(u => `<option value="${u.kodeUnit}">${u.namaUnit}</option>`).join('');
+    }
   }
-  function hapusItemForm(id) { document.getElementById(id).remove(); }
 
-  document.getElementById('formPermintaan').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const btn = document.getElementById('btnSubmit');
-    btn.disabled = true; btn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Memproses...";
+  function updateSubGudangPilih(unitSelectId, gudangSelectId) {
+    const unitKode = document.getElementById(unitSelectId).value;
+    const gudangSelect = document.getElementById(gudangSelectId);
+    let listG = masterGudang.filter(g => g.kodeUnit.toLowerCase() === unitKode.toLowerCase());
+    gudangSelect.innerHTML = listG.length > 0 ? listG.map(g => `<option value="${g.kodeGudang}">${g.namaGudang}</option>`).join('') : '<option value="">-- Tidak ada gudang --</option>';
+  }
 
-    let itemsArr = [];
-    document.querySelectorAll('.item-box').forEach(box => {
-      itemsArr.push({ kodeSupplier: box.querySelector('.it-kode').value.trim(), kategori: box.querySelector('.it-kategori').value, namaBarang: box.querySelector('.it-nama').value.trim().toUpperCase(), jumlah: box.querySelector('.it-jumlah').value, satuan: box.querySelector('.it-satuan').value.trim().toLowerCase(), supplier: "-" });
-    });
-    if(itemsArr.length === 0) { alert("Minimal 1 item barang!"); btn.disabled = false; return; }
-
-    const payload = {
-      action: idTiketEdit ? "editPermintaan" : "submitPermintaan",
-      token: sesiUser.token,
-      kodeTiketEdit: idTiketEdit,
-      pemohon: sesiUser.nama, divisi: sesiUser.divisi, unitLokasi: sesiUser.unitLokasi,
-      tglPermintaan: document.getElementById('tglPermintaan').value, tglDibutuhkan: document.getElementById('tglDibutuhkan').value,
-      urgensi: document.getElementById('urgensi').value, keterangan: document.getElementById('keterangan').value.trim(),
-      items: itemsArr
-    };
-
+  async function muatMasterStokBarang() {
     try {
-      const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+      const res = await fetch(`${GAS_URL}?action=getStokBarang&token=${encodeURIComponent(sesiUser.token)}`);
+      const json = await res.json();
+      if (cekSesiBerakhir(json)) return;
+      if (json.status === "success") { 
+        rawStokList = json.data;
+        document.getElementById('kpiTotalBarang').innerText = rawStokList.length;
+        populateBarangSelects(); 
+        populateFilterBarangDatalist();
+      }
+    } catch(e) {}
+  }
+
+  function populateBarangSelects() {
+    const pemBarangPilih = document.getElementById('pemBarangPilih');
+    const trBarangAsal = document.getElementById('trBarangAsal');
+    let opts = '<option value="">-- Pilih Barang Stok --</option>' + rawStokList.map(i => `<option value="${i.kodeBarang}">${i.namaBarang} (Sisa: ${i.sisaStok} ${i.satuan})</option>`).join('');
+    if(pemBarangPilih) pemBarangPilih.innerHTML = opts;
+    if(trBarangAsal) trBarangAsal.innerHTML = opts;
+  }
+
+  function populateFilterBarangDatalist() {
+    const dataListElement = document.getElementById('listOptionsBarang');
+    if (!dataListElement) return;
+
+    let uniqueNames = [...new Set(rawStokList.map(i => i.namaBarang))].sort();
+    let opts = uniqueNames.map(name => `<option value="${name}"></option>`).join('');
+    dataListElement.innerHTML = opts;
+  }
+
+  async function muatJurnalTransaksiBarang() {
+    const tAwal = document.getElementById('filterTglAwal').value;
+    const tAkhir = document.getElementById('filterTglAkhir').value;
+    try {
+      const res = await fetch(`${GAS_URL}?action=getHistoryMutasi&token=${encodeURIComponent(sesiUser.token)}&tglAwal=${encodeURIComponent(tAwal)}&tglAkhir=${encodeURIComponent(tAkhir)}`);
       const json = await res.json();
       if (cekSesiBerakhir(json)) return;
       if (json.status === "success") {
-        showToast(json.message, 'success');
-        batalkanEdit();
-        muatRiwayatPermintaan();
-      } else showToast(json.message, 'error');
-    } catch(err) { showToast("Koneksi terputus.", 'error'); } 
-    finally { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Submit Tiket Ke Sistem'; }
-  });
+        rawJurnalData = json.data;
 
-  async function muatRiwayatPermintaan() {
-    document.getElementById('bodyTabelRiwayat').innerHTML = `<tr><td colspan="8" style="text-align:center; padding:30px;"><i class="fa-solid fa-spinner fa-spin"></i> Mengambil data ERP...</td></tr>`;
-    try {
-      const res = await fetch(`${GAS_URL}?action=getPermintaan&token=${encodeURIComponent(sesiUser.token)}`);
-      const json = await res.json();
-      if (cekSesiBerakhir(json)) return;
-      if (json.status === "success") {
-        let mapTiket = {};
-        json.data.forEach(it => {
-          if(!mapTiket[it.kodeTiket]) {
-            mapTiket[it.kodeTiket] = {
-              kodeTiket: it.kodeTiket, tglPermintaan: it.tglPermintaan, tglDibutuhkan: it.tglDibutuhkan,
-              pemohon: it.pemohon, unitLokasi: it.unitLokasi, urgensi: it.urgensi, 
-              keterangan: it.keterangan, statusPermintaan: it.statusPermintaan, catatanAdmin: it.catatanAdmin, 
-              dokumenPdf: it.dokumenPdf || "", items: []
-            };
-          }
-          mapTiket[it.kodeTiket].items.push(it);
+        rawJurnalData.sort((a, b) => {
+          let nameA = (a.namaBarang || "").toLowerCase();
+          let nameB = (b.namaBarang || "").toLowerCase();
+          if (nameA < nameB) return -1;
+          if (nameA > nameB) return 1;
+          return new Date(a.tglSistem) - new Date(b.tglSistem);
         });
 
-        groupedTickets = Object.values(mapTiket); 
-        filteredTickets = [...groupedTickets];
-        currentPage = 1;
-        
-        updateKPI(groupedTickets);
-        renderPaging();
+        terapkanFilterJurnal();
       }
-    } catch(e) { document.getElementById('bodyTabelRiwayat').innerHTML = `<tr><td colspan="8" style="color:red; text-align:center;">Gagal memuat data.</td></tr>`; }
+    } catch(e) {}
   }
 
-  function updateKPI(data) {
-    let acc = 0, reject = 0, pending = 0;
-    data.forEach(t => {
-      let st = (t.statusPermintaan || "").toUpperCase();
-      if(st === "ACC" || st === "APPROVED") acc++; 
-      else if(st === "DITOLAK" || st === "REJECTED") reject++; 
-      else pending++;
+  function terapkanFilterJurnal() {
+    const selectedUnit = document.getElementById('filterUnit').value;
+    const searchBarangVal = document.getElementById('filterBarangPilih').value.toLowerCase().trim();
+
+    let filtered = rawJurnalData.filter(item => {
+      if (selectedUnit && item.kodeUnit !== selectedUnit) return false;
+      if (searchBarangVal && !item.namaBarang.toLowerCase().includes(searchBarangVal) && !item.keterangan.toLowerCase().includes(searchBarangVal)) return false;
+      return true;
     });
-    document.getElementById('kpiTotal').innerText = data.length; 
-    document.getElementById('kpiPending').innerText = pending;
-    document.getElementById('kpiAcc').innerText = acc; 
-    document.getElementById('kpiReject').innerText = reject;
-  }
 
-  function filterTabelTiket() {
-    const kw = document.getElementById('searchRiwayat').value.toLowerCase().trim();
-    filteredTickets = groupedTickets.filter(t => {
-      let matchTiket = t.kodeTiket.toLowerCase().includes(kw);
-      let matchBarang = t.items.some(item => item.namaBarang.toLowerCase().includes(kw));
-      let matchPemohon = t.pemohon.toLowerCase().includes(kw);
-      return matchTiket || matchBarang || matchPemohon;
+    let countMasuk = 0; let countKeluar = 0;
+    filtered.forEach(it => {
+      let t = (it.tipeMutasi || "").toUpperCase();
+      if(t === "MASUK") countMasuk += Number(it.jumlah || 0);
+      else if(t === "KELUAR" || t === "TRANSFER") countKeluar += Number(it.jumlah || 0);
     });
-    currentPage = 1; renderPaging();
+    document.getElementById('kpiTotalMasuk').innerText = countMasuk;
+    document.getElementById('kpiTotalKeluar').innerText = countKeluar;
+
+    renderTabelJurnal(filtered);
   }
 
-  function gantiHalaman(step) {
-    const maxPage = Math.ceil(filteredTickets.length / itemsPerPage);
-    currentPage += step;
-    if (currentPage < 1) currentPage = 1;
-    if (currentPage > maxPage) currentPage = maxPage;
-    renderPaging();
-  }
-
-  function renderPaging() {
-    const tbody = document.getElementById('bodyTabelRiwayat');
-    if(filteredTickets.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:30px; color:#5e6e64;">Data tiket kosong.</td></tr>`;
-      document.getElementById('pageInfo').innerText = "Menampilkan 0 data";
-      document.getElementById('btnPrevPage').disabled = true; document.getElementById('btnNextPage').disabled = true;
-      return;
+  function renderTabelJurnal(data) {
+    if (data.length === 0) { 
+      document.getElementById('containerTabelJurnal').innerHTML = "<p style='text-align:center; padding:30px; color:var(--erp-text-muted);'>Tidak ada rincian transaksi barang yang sesuai.</p>"; 
+      return; 
     }
 
-    const maxPage = Math.ceil(filteredTickets.length / itemsPerPage);
-    const startIdx = (currentPage - 1) * itemsPerPage;
-    const endIdx = startIdx + itemsPerPage;
-    const pageData = filteredTickets.slice(startIdx, endIdx);
+    let html = `<table class="erp-table"><thead><tr>
+      <th>No</th><th>Waktu Transaksi</th><th>Kode</th><th>Nama Barang</th><th>Jenis</th><th>Masuk</th><th>Keluar</th><th>Running Stok</th><th>Satuan</th><th>Unit / Gudang</th><th>Keterangan Detail</th>
+    </tr></thead><tbody>`;
 
-    let html = "";
-    pageData.forEach(t => {
-      let st = (t.statusPermintaan || "").toUpperCase();
-      let badge = `<span class="badge badge-pending">PENDING</span>`;
-      if(st==="ACC" || st==="APPROVED") badge = `<span class="badge badge-acc">ACC ADMIN</span>`;
-      else if(st==="DITOLAK" || st==="REJECTED") badge = `<span class="badge badge-reject">DITOLAK</span>`;
-      else if(st==="REVISI") badge = `<span class="badge badge-revisi">REVISI</span>`;
-      
-      let badgeDoc = t.dokumenPdf ? `<span class="badge badge-upload-yes"><i class="fa-solid fa-check"></i> Uploaded</span>` : `<span class="badge badge-upload-no"><i class="fa-solid fa-clock"></i> Belum</span>`;
+    let currentBarang = "";
+    let runningSaldo = 0;
+
+    data.forEach((item, idx) => {
+      if (item.namaBarang !== currentBarang) {
+        currentBarang = item.namaBarang;
+        runningSaldo = 0;
+      }
+
+      let mas = 0; let kel = 0;
+      let tipe = (item.tipeMutasi || "").toUpperCase();
+      if (tipe === "MASUK") { mas = Number(item.jumlah || 0); runningSaldo += mas; }
+      else if (tipe === "KELUAR" || tipe === "TRANSFER") { kel = Number(item.jumlah || 0); runningSaldo -= kel; }
 
       html += `<tr>
-        <td><span class="mono" style="color:var(--erp-primary); font-weight:700;">${t.kodeTiket}</span></td>
-        <td><b>${t.pemohon}</b><br><small style="color:var(--erp-text-muted);">${t.unitLokasi}</small></td>
-        <td><small class="mono">${t.tglDibutuhkan}</small></td>
-        <td><b>${t.items.length} Barang</b></td>
-        <td><small style="color:${t.urgensi.includes('URGENT')?'red':''}; font-weight:600;">${t.urgensi}</small></td>
-        <td>${badgeDoc}</td>
-        <td>${badge}</td>
-        <td>
-          <button class="btn btn-outline btn-sm" onclick="bukaDetailTiket('${t.kodeTiket}')"><i class="fa-solid fa-eye"></i> Detail</button>
-        </td>
+        <td>${idx + 1}</td>
+        <td><small class="mono" style="color:var(--erp-text-muted);">${item.tglSistem}</small></td>
+        <td><span class="mono">${item.kodeBarang}</span></td>
+        <td><b>${item.namaBarang}</b></td>
+        <td><span class="badge ${tipe === 'MASUK' ? 'badge-success' : 'badge-danger'}">${item.tipeMutasi}</span></td>
+        <td class="mono" style="color:#047857; font-weight:600;">${mas > 0 ? mas : '-'}</td>
+        <td class="mono" style="color:#b91c1c; font-weight:600;">${kel > 0 ? kel : '-'}</td>
+        <td class="mono" style="font-weight:700; color:var(--erp-primary);">${runningSaldo}</td>
+        <td>${item.satuan}</td>
+        <td>${item.kodeUnit} <small style="color:var(--erp-text-muted);">(${item.kodeGudang})</small></td>
+        <td><small style="color:var(--erp-text-main);">${item.keterangan}</small></td>
       </tr>`;
     });
-    tbody.innerHTML = html;
 
-    document.getElementById('pageInfo').innerText = `Halaman ${currentPage} dari ${maxPage} (Total ${filteredTickets.length} Tiket)`;
-    document.getElementById('btnPrevPage').disabled = currentPage === 1;
-    document.getElementById('btnNextPage').disabled = currentPage === maxPage;
+    html += `</tbody></table>`;
+    document.getElementById('containerTabelJurnal').innerHTML = html;
   }
 
-  // ==========================================
-  // FUNGSI EXPORT EXCEL (FORMAT RAPI / TAB DELIMITED)
-  // ==========================================
-  function exportToExcel() {
-    const tglMulai = document.getElementById('filterTglMulai').value;
-    const tglSelesai = document.getElementById('filterTglSelesai').value;
-    const namaBarangFilter = document.getElementById('filterNamaBarang').value.toLowerCase().trim();
+  function eksporKeExcel() {
+    const selectedUnit = document.getElementById('filterUnit').value;
+    const searchBarangVal = document.getElementById('filterBarangPilih').value.toLowerCase().trim();
 
-    let dataToExport = groupedTickets.filter(t => {
-      let tglReqOnly = t.tglPermintaan.split(' ')[0];
-      let passDate = true;
-      if (tglMulai && tglReqOnly < tglMulai) passDate = false;
-      if (tglSelesai && tglReqOnly > tglSelesai) passDate = false;
-      return passDate;
+    let filteredData = rawJurnalData.filter(item => {
+      if (selectedUnit && item.kodeUnit !== selectedUnit) return false;
+      if (searchBarangVal && !item.namaBarang.toLowerCase().includes(searchBarangVal) && !item.keterangan.toLowerCase().includes(searchBarangVal)) return false;
+      return true;
     });
 
-    if (dataToExport.length === 0) {
-      alert("Tidak ada data pada rentang tanggal tersebut.");
-      return;
-    }
+    if (filteredData.length === 0) return showToast("Tidak ada rincian transaksi untuk diekspor!", "error");
 
-    // Membuat struktur tabel HTML untuk Excel (.xls)
-    let html = `
-      <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
-      <head>
-        <meta charset="UTF-8">
-        <!--[if gte mso 9]>
-        <xml>
-          <x:ExcelWorkbook>
-            <x:ExcelWorksheets>
-              <x:ExcelWorksheet>
-                <x:Name>Laporan Permintaan</x:Name>
-                <x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions>
-              </x:ExcelWorksheet>
-            </x:ExcelWorksheets>
-          </x:ExcelWorkbook>
-        </xml>
-        <![endif]-->
-        <style>
-          table { border-collapse: collapse; width: 100%; }
-          th { background-color: #2d6a43; color: #ffffff; font-weight: bold; border: 1px solid #000000; padding: 8px; text-align: center; }
-          td { border: 1px solid #cbd5e1; padding: 6px 8px; vertical-align: middle; }
-          .text { mso-number-format:"\@"; }
-        </style>
-      </head>
-      <body>
-        <table>
-          <thead>
-            <tr>
-              <th>No. Tiket</th>
-              <th>Tanggal Permintaan</th>
-              <th>Tgl Dibutuhkan</th>
-              <th>Pemohon</th>
-              <th>Unit / Farm</th>
-              <th>Urgensi</th>
-              <th>Nama Barang</th>
-              <th>Kategori</th>
-              <th>Jumlah</th>
-              <th>Satuan</th>
-              <th>Status ERP</th>
-              <th>Catatan Admin</th>
-            </tr>
-          </thead>
-          <tbody>
-    `;
+    let dataExcel = [];
+    let currentBarang = "";
+    let runningSaldo = 0;
 
-    let rowCount = 0;
-    dataToExport.forEach(t => {
-      t.items.forEach(it => {
-        if (namaBarangFilter && !it.namaBarang.toLowerCase().includes(namaBarangFilter)) return;
-        rowCount++;
+    filteredData.forEach((item, idx) => {
+      if (item.namaBarang !== currentBarang) {
+        currentBarang = item.namaBarang;
+        runningSaldo = 0;
+      }
 
-        html += `
-          <tr>
-            <td class="text">${t.kodeTiket}</td>
-            <td class="text">${t.tglPermintaan}</td>
-            <td class="text">${t.tglDibutuhkan}</td>
-            <td>${t.pemohon}</td>
-            <td>${t.unitLokasi}</td>
-            <td>${t.urgensi}</td>
-            <td><b>${it.namaBarang}</b></td>
-            <td>${it.kategori}</td>
-            <td>${it.jumlah}</td>
-            <td>${it.satuan}</td>
-            <td>${t.statusPermintaan}</td>
-            <td>${t.catatanAdmin}</td>
-          </tr>
-        `;
+      let mas = 0; let kel = 0;
+      let tipe = (item.tipeMutasi || "").toUpperCase();
+      if (tipe === "MASUK") { mas = Number(item.jumlah || 0); runningSaldo += mas; }
+      else if (tipe === "KELUAR" || tipe === "TRANSFER") { kel = Number(item.jumlah || 0); runningSaldo -= kel; }
+
+      dataExcel.push({
+        "No": idx + 1,
+        "Waktu Transaksi": item.tglSistem || "-",
+        "Kode Barang": item.kodeBarang || "-",
+        "Nama Barang": item.namaBarang || "-",
+        "Kategori": item.kategori || "-",
+        "Jenis Transaksi": item.tipeMutasi || "-",
+        "Masuk": mas,
+        "Keluar": kel,
+        "Running Stok": runningSaldo,
+        "Satuan": item.satuan || "pcs",
+        "Lokasi Unit": item.kodeUnit || "-",
+        "Gudang": item.kodeGudang || "-",
+        "Keterangan Detail": item.keterangan || "-"
       });
     });
 
-    if (rowCount === 0) {
-      alert("Tidak ada item barang yang cocok dengan filter tersebut.");
-      return;
-    }
+    const worksheet = XLSX.utils.json_to_sheet(dataExcel);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "ERP Stock Journal");
 
-    html += `</tbody></table></body></html>`;
-
-    let blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
-    let url = URL.createObjectURL(blob);
-    
-    let link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", `Laporan_Permintaan_Material_${new Date().toISOString().split('T')[0]}.xls`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    showToast("File Excel berhasil di-export dengan format rapi!", "success");
+    let barangText = searchBarangVal ? searchBarangVal.replace(/[^a-zA-Z0-9]/g, "_") : "Semua_Barang";
+    XLSX.writeFile(workbook, `ERP_Stock_Journal_${barangText}_${sesiUser.unitLokasi}.xlsx`);
+    showToast("File Excel berhasil diexport!");
   }
 
-  function bukaDetailTiket(kode) {
-    const t = groupedTickets.find(x => x.kodeTiket === kode);
-    if(!t) return;
-    
-    document.getElementById('mdlTitle').innerText = `Detail Tiket : ${t.kodeTiket}`;
-    let st = (t.statusPermintaan || "").toUpperCase();
-    let canEdit = (st === "PENDING" || st === "REVISI");
-    
-    let html = `
-      <div style="display:flex; justify-content:space-between; margin-bottom:15px; background:#f6f9f7; padding:15px; border-radius:8px; border:1px solid var(--erp-border-light);">
-        <div><div style="font-size:11px; color:#5e6e64;">Pemohon</div><div style="font-weight:700;">${t.pemohon} (${t.unitLokasi})</div></div>
-        <div><div style="font-size:11px; color:#5e6e64;">Tgl Dibutuhkan</div><div style="font-weight:700; color:var(--erp-primary);">${t.tglDibutuhkan}</div></div>
-        <div><div style="font-size:11px; color:#5e6e64;">Urgensi</div><div style="font-weight:700;">${t.urgensi}</div></div>
-      </div>
-      <table class="erp-table" style="margin-bottom:15px;">
-        <thead><tr><th>Nama Barang</th><th>Jumlah</th><th>Kategori</th></tr></thead><tbody>`;
-        t.items.forEach(it => { html += `<tr><td><b>${it.namaBarang}</b></td><td>${it.jumlah} ${it.satuan}</td><td>${it.kategori}</td></tr>`; });
-    html += `</tbody></table>
-      <div style="background:#fff8e6; padding:10px; border-left:3px solid #f59e0b; font-size:12px; margin-bottom:10px;"><b>Ket. Pemohon:</b> ${t.keterangan||'-'}</div>
-      <div style="background:#e6f0eb; padding:10px; border-left:3px solid #10b981; font-size:12px; margin-bottom:15px;"><b>Catatan Admin / Status:</b> ${t.catatanAdmin||'-'}</div>`;
-
-    if (sesiUser.isAdmin) {
-      html += `
-        <div style="background:#f1f5f9; border:1px solid #cbd5e1; padding:15px; border-radius:8px; margin-bottom:15px;">
-          <div style="font-weight:700; color:#0f172a; margin-bottom:10px;"><i class="fa-solid fa-user-shield"></i> Panel Konfirmasi Admin</div>
-          <div class="row-group">
-            <div class="form-group">
-              <label>Pilih Status Keputusan</label>
-              <select id="adminStatusDecision">
-                <option value="ACC" ${st==='ACC'?'selected':''}>ACC (Disetujui)</option>
-                <option value="DITOLAK" ${st==='DITOLAK'?'selected':''}>DITOLAK</option>
-                <option value="REVISI" ${st==='REVISI'?'selected':''}>REVISI (Minta Pemohon Edit)</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-group" style="margin-bottom:10px;">
-            <label>Catatan / Alasan Detail untuk Pemohon</label>
-            <textarea id="adminCatatanInput" rows="2" placeholder="Tuliskan alasan penolakan, instruksi revisi, dll...">${t.catatanAdmin !== '-' ? t.catatanAdmin : ''}</textarea>
-          </div>
-          <button class="btn btn-primary btn-sm" onclick="simpanKonfirmasiAdmin('${t.kodeTiket}')"><i class="fa-solid fa-check-double"></i> Simpan Konfirmasi Admin</button>
-        </div>`;
-    }
-
-    html += `
-      <div style="background:#f8fafc; border:1px dashed var(--erp-border); padding:15px; border-radius:8px;">
-        <div style="font-weight:700; color:var(--erp-primary); margin-bottom:8px;"><i class="fa-solid fa-file-pdf"></i> Dokumen Tanda Tangan (PDF)</div>
-        ${t.dokumenPdf ? `
-          <div style="display:flex; align-items:center; justify-content:space-between; background:#d1fae5; padding:8px 12px; border-radius:6px; color:#065f46;">
-            <span><i class="fa-solid fa-circle-check"></i> Dokumen PDF sudah diunggah.</span>
-            <a href="${t.dokumenPdf}" target="_blank" class="btn btn-sm btn-success" style="background:#047857; color:#fff; text-decoration:none;"><i class="fa-solid fa-eye"></i> Lihat PDF</a>
-          </div>
-        ` : `
-          <div style="display:flex; gap:10px; align-items:center;">
-            <input type="file" id="filePdfInput" accept="application/pdf" style="font-size:11px; flex:1;">
-            <button class="btn btn-primary btn-sm" onclick="uploadDokumenPdf('${t.kodeTiket}')"><i class="fa-solid fa-upload"></i> Upload PDF</button>
-          </div>
-          <small style="color:#64748b; margin-top:4px; display:block;">Unggah file PDF lembar pengajuan yang telah ditandatangani.</small>
-        `}
-      </div>`;
-    
-    document.getElementById('mdlBody').innerHTML = html;
-    
-    let footerHtml = `<button class="btn btn-outline" onclick="cetakStruk('${t.kodeTiket}')"><i class="fa-solid fa-print"></i> Cetak Bukti PDF</button>`;
-    if(canEdit) {
-      footerHtml += `<button class="btn btn-warning" onclick="persiapkanEdit('${t.kodeTiket}')"><i class="fa-solid fa-pen"></i> Revisi/Edit</button>
-                     <button class="btn btn-danger" onclick="hapusTiket('${t.kodeTiket}')"><i class="fa-solid fa-trash"></i> Batalkan</button>`;
-    } else {
-      footerHtml += `<span style="font-size:11px; color:#b91c1c; font-weight:600; align-self:center; margin-left:10px;">Tiket sudah ${st} (Terkunci)</span>`;
-    }
-
-    document.getElementById('mdlFooter').innerHTML = footerHtml;
-    document.getElementById('modalDetailTiket').style.display = 'flex';
-  }
-
-  function tutupModal() { document.getElementById('modalDetailTiket').style.display = 'none'; }
-
-  async function simpanKonfirmasiAdmin(kodeTiket) {
-    const statusVal = document.getElementById('adminStatusDecision').value;
-    const catatanVal = document.getElementById('adminCatatanInput').value.trim() || "-";
-
-    showToast("Menyimpan keputusan admin...", "success");
+  async function muatPendingTransfers() {
     try {
-      const payload = { action: "adminKonfirmasi", token: sesiUser.token, kodeTiket: kodeTiket, statusPermintaan: statusVal, catatanAdmin: catatanVal };
+      const res = await fetch(`${GAS_URL}?action=getPendingTransfers&token=${encodeURIComponent(sesiUser.token)}`);
+      const json = await res.json();
+      if (cekSesiBerakhir(json)) return;
+      if (json.status === "success") {
+        document.getElementById('kpiPendingCount').innerText = json.data.filter(x => x.status === "PENDING_ADMIN").length;
+
+        if(json.data.length === 0) {
+          document.getElementById('containerPendingTransfer').innerHTML = "<p style='padding:15px; color:var(--erp-text-muted);'>Tidak ada mutasi yang memerlukan tindakan.</p>";
+          document.getElementById('containerTabelHistory').innerHTML = "<p style='padding:15px; color:var(--erp-text-muted);'>Tidak ada mutasi yang memerlukan tindakan.</p>";
+          return;
+        }
+
+        let html = `<table class="erp-table"><thead><tr><th>Pengajuan</th><th>Barang</th><th>Dari Unit</th><th>Ke Unit</th><th>Jumlah</th><th>Status ERP</th><th>Aksi</th></tr></thead><tbody>`;
+        json.data.forEach(t => {
+          let badgeStatus = ""; let btnAksi = "";
+          if (t.status === "PENDING_ADMIN") {
+            badgeStatus = `<span class="badge badge-warning">Waiting Approval</span>`;
+            if (sesiUser.isAdmin) {
+              btnAksi = `<button class="btn btn-success" style="padding:4px 10px; font-size:11px; background:#047857;" onclick="prosesAccAdmin('${t.idTransfer}', 'ACC')">ACC</button> <button class="btn btn-outline" style="padding:4px 10px; font-size:11px; color:red;" onclick="prosesAccAdmin('${t.idTransfer}', 'TOLAK')">Tolak</button>`;
+            } else btnAksi = `<small style="color:var(--erp-text-muted);">Pending Admin</small>`;
+          } else if (t.status === "ACC_ADMIN") {
+            badgeStatus = `<span class="badge badge-info">In Delivery</span>`;
+            if (t.unitTujuan.toLowerCase() === sesiUser.unitLokasi.toLowerCase() || sesiUser.isAdmin) {
+              btnAksi = `<button class="btn btn-primary" style="padding:4px 10px; font-size:11px;" onclick="konfirmasiTerimaTransfer('${t.idTransfer}')">Konfirmasi Terima</button>`;
+            } else btnAksi = `<small style="color:var(--erp-text-muted);">Wait Receiver</small>`;
+          } else if (t.status === "DITERIMA") {
+            badgeStatus = `<span class="badge badge-success">Completed</span>`; btnAksi = `<i class="fa-solid fa-check-double" style="color:var(--erp-success);"></i>`;
+          } else if (t.status === "DITOLAK_ADMIN") {
+            badgeStatus = `<span class="badge badge-danger">Rejected</span>`; btnAksi = `-`;
+          }
+
+          html += `<tr><td><small class="mono">${t.tgl}</small></td><td><b>${t.namaBarang}</b></td><td>${t.unitAsal}</td><td><b>${t.unitTujuan}</b></td><td class="mono"><b>${t.jumlah} ${t.satuan}</b></td><td>${badgeStatus}</td><td>${btnAksi}</td></tr>`;
+        });
+        html += `</tbody></table>`;
+        document.getElementById('containerPendingTransfer').innerHTML = html;
+        document.getElementById('containerTabelHistory').innerHTML = html;
+      }
+    } catch(e){}
+  }
+
+  async function prosesAccAdmin(idTransfer, keputusan) {
+    if(!confirm(`Apakah Anda yakin ingin ${keputusan} mutasi ini?`)) return;
+    const payload = { action: "prosesAccAdminMutasi", idTransfer: idTransfer, keputusan: keputusan };
+    await kirimAksiStok(payload, function() { muatPendingTransfers(); muatJurnalTransaksiBarang(); muatMasterStokBarang(); });
+  }
+
+  async function konfirmasiTerimaTransfer(idTransfer) {
+    if(!confirm("Apakah barang mutasi telah fisik diterima secara akurat?")) return;
+    const payload = { action: "konfirmasiTerimaTransfer", idTransfer: idTransfer };
+    await kirimAksiStok(payload, function() { muatPendingTransfers(); muatJurnalTransaksiBarang(); muatMasterStokBarang(); });
+  }
+
+  async function kirimAksiStok(payload, onSuccess) {
+    try {
+      payload.token = sesiUser.token;
       const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
       const json = await res.json();
       if (cekSesiBerakhir(json)) return;
-      if(json.status === "success") { showToast(json.message, "success"); tutupModal(); muatRiwayatPermintaan(); } 
-      else { showToast(json.message, "error"); }
-    } catch(err) { showToast("Gagal terhubung ke server.", "error"); }
+      if (json.status !== "success") return showToast(json.message || "Transaksi gagal diproses.", "error");
+      showToast(json.message || "Transaksi berhasil disimpan.");
+      if (onSuccess) onSuccess(json);
+    } catch (e) {
+      showToast("Gagal terhubung ke server ERP.", "error");
+    }
   }
 
-  async function uploadDokumenPdf(kodeTiket) {
-    const fileInput = document.getElementById('filePdfInput');
-    if(fileInput.files.length === 0) return alert("Pilih file PDF terlebih dahulu!");
-    const file = fileInput.files[0];
-    if(file.type !== "application/pdf") return alert("Hanya file berformat PDF!");
-
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = async function() {
-      const base64Data = reader.result.split(',')[1];
-      showToast("Mengunggah dokumen PDF...", "success");
-      try {
-        const payload = { action: "uploadPdfTiket", token: sesiUser.token, kodeTiket: kodeTiket, fileName: file.name, fileData: base64Data };
-        const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
-        const json = await res.json();
-        if (cekSesiBerakhir(json)) return;
-        if(json.status === "success") { showToast("PDF berhasil diunggah!", "success"); muatRiwayatPermintaan(); tutupModal(); } 
-        else { showToast("Gagal upload: " + json.message, "error"); }
-      } catch(err) { showToast("Kesalahan koneksi.", "error"); }
+  function bukaModalPenerimaan() { updateSubGudangPilih('penUnit', 'penGudang'); document.getElementById('modalPenerimaan').style.display = 'flex'; }
+  document.getElementById('formPenerimaan').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const payload = {
+      action: "prosesPenerimaanBarang",
+      sumberPenerimaan: document.getElementById('penSumber').value,
+      kodeUnit: document.getElementById('penUnit').value,
+      kodeGudang: document.getElementById('penGudang').value,
+      namaBarang: document.getElementById('penNamaBarang').value.trim(),
+      jumlah: document.getElementById('penJumlah').value,
+      satuan: document.getElementById('penSatuan').value.trim(),
+      kategori: document.getElementById('penKategori').value
     };
+    await kirimAksiStok(payload, function() { tutupModal('modalPenerimaan'); muatJurnalTransaksiBarang(); muatMasterStokBarang(); });
+  });
+
+  function bukaModalPemakaian() { document.getElementById('modalPemakaian').style.display = 'flex'; }
+  document.getElementById('formPemakaian').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const payload = {
+      action: "prosesPemakaianBarang",
+      kodeBarang: document.getElementById('pemBarangPilih').value,
+      lokasiKandang: document.getElementById('pemLokasiKandang').value.trim(),
+      jumlah: document.getElementById('pemJumlah').value,
+      keterangan: document.getElementById('pemKet').value.trim()
+    };
+    await kirimAksiStok(payload, function() { tutupModal('modalPemakaian'); muatJurnalTransaksiBarang(); muatMasterStokBarang(); });
+  });
+
+  function bukaModalTransferDirect() { 
+    updateSubGudangPilih('trUnitTujuan', 'trGudangTujuan'); 
+    document.getElementById('modalTransfer').style.display = 'flex'; 
   }
 
-  function cetakStruk(kode) {
-    const t = groupedTickets.find(x => x.kodeTiket === kode);
-    if(!t) return;
-    let printWin = window.open('', '_blank');
-    let htmlItems = t.items.map((it) => `
-      <tr>
-        <td style="padding: 8px 10px; border-bottom: 1px solid #cbd5e1; font-family: monospace; font-size: 11px;">${it.kodeSupplier || '-'}</td>
-        <td style="padding: 8px 10px; border-bottom: 1px solid #cbd5e1; font-weight: 700; font-size: 11px;">${it.namaBarang}</td>
-        <td style="padding: 8px 10px; border-bottom: 1px solid #cbd5e1; font-size: 11px;">${it.jumlah} ${it.satuan}</td>
-        <td style="padding: 8px 10px; border-bottom: 1px solid #cbd5e1; font-size: 11px;">${it.supplier || '-'}</td>
-        <td style="padding: 8px 10px; border-bottom: 1px solid #cbd5e1; font-size: 11px;">${t.keterangan || '-'}</td>
-      </tr>
-    `).join('');
-    
-    let printHTML = `<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Cetak Form - ${t.kodeTiket}</title>
-      <style>body { font-family: Arial, sans-serif; color: #0f172a; font-size: 12px; margin: 0; padding: 20px; line-height: 1.4; }
-      .header-container { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #0f172a; padding-bottom: 8px; margin-bottom: 15px; }
-      .company-title { font-size: 20px; font-weight: 800; color: #0f172a; } .form-subtitle { font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase; margin-top: 3px; }
-      .ticket-code { font-size: 14px; font-weight: 700; color: #047857; text-align: right; font-family: monospace; } .ticket-date { font-size: 10px; color: #64748b; text-align: right; margin-top: 2px; }
-      .info-box { border: 1px solid #cbd5e1; border-radius: 6px; padding: 12px 16px; margin-bottom: 20px; background: #ffffff; display: flex; justify-content: space-between; }
-      .info-col { width: 48%; } .info-row { display: flex; margin-bottom: 6px; } .info-label { width: 110px; font-weight: 600; color: #475569; } .info-val { flex: 1; font-weight: 600; color: #0f172a; }
-      table { width: 100%; border-collapse: collapse; margin-bottom: 30px; } th { background: #f8fafc; color: #1e293b; font-weight: 700; text-transform: uppercase; font-size: 10px; padding: 8px 10px; border-top: 1px solid #cbd5e1; border-bottom: 2px solid #0f172a; text-align: left; }
-      .sig-table { width: 100%; border-collapse: collapse; margin-top: 40px; page-break-inside: avoid; } .sig-cell { width: 25%; text-align: center; vertical-align: top; padding: 0 8px; }
-      .sig-title { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #334155; margin-bottom: 45px; } .sig-line { border-bottom: 1px dashed #475569; margin-bottom: 5px; width: 85%; margin-left: auto; margin-right: auto; } .sig-name { font-size: 11px; font-weight: 700; color: #0f172a; }
-      </style></head><body onload="window.print(); window.close();">
-        <div class="header-container"><div><div class="company-title">CV. SELABINTANA</div><div class="form-subtitle">FORM PERMINTAAN MATERIAL & BARANG</div></div><div><div class="ticket-code">${t.kodeTiket}</div><div class="ticket-date">${t.tglPermintaan}</div></div></div>
-        <div class="info-box"><div class="info-col"><div class="info-row"><div class="info-label">Pemohon</div><div class="info-val">: ${t.pemohon}</div></div><div class="info-row"><div class="info-label">Unit / Farm</div><div class="info-val">: ${t.unitLokasi}</div></div><div class="info-row"><div class="info-label">Urgensi</div><div class="info-val">: ${t.urgensi}</div></div></div><div class="info-col"><div class="info-row"><div class="info-label">Tgl Diminta</div><div class="info-val">: ${t.tglPermintaan.split(' ')[0]}</div></div><div class="info-row"><div class="info-label">Dibutuhkan</div><div class="info-val">: ${t.tglDibutuhkan}</div></div></div></div>
-        <table><thead><tr><th>KODE BARANG</th><th>NAMA BARANG</th><th>JUMLAH</th><th>SUPPLIER</th><th>KETERANGAN</th></tr></thead><tbody>${htmlItems}</tbody></table>
-        <table class="sig-table"><tr>
-          <td class="sig-cell"><div class="sig-title">PEMOHON</div><div class="sig-line"></div><div class="sig-name">(${t.pemohon})</div></td>
-          <td class="sig-cell"><div class="sig-title">HEAD FARM</div><div class="sig-line"></div><div class="sig-name">( ....................... )</div></td>
-          <td class="sig-cell"><div class="sig-title">FARM MANAGER</div><div class="sig-line"></div><div class="sig-name">( ....................... )</div></td>
-          <td class="sig-cell"><div class="sig-title">GENERAL MANAGER</div><div class="sig-line"></div><div class="sig-name" style="margin-top: 18px;">drh. Titin Idayati</div></td>
-        </tr></table>
-      </body></html>`;
-    printWin.document.write(printHTML); printWin.document.close();
-  }
+  document.getElementById('formTransferStok').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const payload = {
+      action: "ajukanTransferAntarUnit",
+      kodeBarangAsal: document.getElementById('trBarangAsal').value,
+      unitTujuan: document.getElementById('trUnitTujuan').value,
+      gudangTujuan: document.getElementById('trGudangTujuan').value,
+      jumlahTransfer: document.getElementById('trJumlah').value
+    };
+    await kirimAksiStok(payload, function() { tutupModal('modalTransfer'); muatPendingTransfers(); muatJurnalTransaksiBarang(); });
+  });
 
-  async function hapusTiket(kode) {
-    if(!confirm(`Yakin ingin MEMBATALKAN tiket ${kode}?`)) return;
-    tutupModal();
-    try {
-      const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "hapusPermintaan", token: sesiUser.token, kodeTiket: kode }) });
-      const json = await res.json();
-      if (cekSesiBerakhir(json)) return;
-      if(json.status === "success") { showToast(json.message); muatRiwayatPermintaan(); } else showToast(json.message, 'error');
-    } catch(e) { showToast("Gagal menghapus tiket.", "error"); }
-  }
-
-  function persiapkanEdit(kode) {
-    const t = groupedTickets.find(x => x.kodeTiket === kode);
-    tutupModal(); idTiketEdit = kode;
-    document.getElementById('formTitle').innerHTML = `<i class="fa-solid fa-pen-to-square"></i> Mode Revisi Tiket: <span style="color:#000;">${kode}</span>`;
-    document.getElementById('tglDibutuhkan').value = t.tglDibutuhkan.split(' ')[0];
-    document.getElementById('urgensi').value = t.urgensi;
-    document.getElementById('keterangan').value = t.keterangan;
-    document.getElementById('containerItems').innerHTML = ""; itemCounter = 0;
-    t.items.forEach(it => tambahItemForm(it));
-    document.getElementById('btnSubmit').innerHTML = `<i class="fa-solid fa-save"></i> Simpan Revisi Tiket`;
-    document.getElementById('btnBatalEdit').style.display = 'block';
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    showToast("Silakan edit rincian barang pada form di atas.", "success");
-  }
-
-  function batalkanEdit() {
-    idTiketEdit = null;
-    document.getElementById('formTitle').innerHTML = `<i class="fa-solid fa-file-signature"></i> Buat Tiket Permintaan Baru`;
-    document.getElementById('formPermintaan').reset();
-    document.getElementById('containerItems').innerHTML = ""; itemCounter = 0; tambahItemForm();
-    document.getElementById('btnSubmit').innerHTML = `<i class="fa-solid fa-paper-plane"></i> Submit Tiket Ke Sistem`;
-    document.getElementById('btnBatalEdit').style.display = 'none';
-  }
+  function tutupModal(id) { document.getElementById(id).style.display = 'none'; }
 </script>
 
 </body>
