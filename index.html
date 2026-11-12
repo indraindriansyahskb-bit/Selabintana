@@ -23,6 +23,9 @@
     .brand small { display:block; margin-top:4px; color:var(--muted); font-size:10px; font-weight:700; letter-spacing:.14em; }
     .internal { color:#617268; font-size:11px; font-weight:700; }
     .internal span { display:inline-block; width:7px; height:7px; margin:0 7px 1px 0; border-radius:50%; background:#57946c; }
+    .header-actions { display:flex; align-items:center; gap:12px; }
+    .session-user { color:var(--green); font-size:11px; font-weight:700; }
+    .logout-button { border:1px solid #cbd8cd; border-radius:8px; padding:8px 11px; background:#fff; color:var(--green); font:700 11px "DM Sans",Arial,sans-serif; cursor:pointer; }
     main { padding:34px 0 60px; }
     .hero { display:grid; grid-template-columns:.92fr 1.08fr; min-height:385px; overflow:hidden; border-radius:22px; background:var(--green-dark); }
     .hero-copy { display:flex; flex-direction:column; align-items:flex-start; justify-content:center; padding:48px; color:#fff; }
@@ -38,8 +41,21 @@
     .photo-label { position:absolute; z-index:1; right:17px; bottom:14px; color:rgba(255,255,255,.9); font-size:9px; text-shadow:0 1px 5px #14251b; }
     .photo-label a { color:inherit; text-decoration:none; }
     .photo-label a:hover { text-decoration:underline; }
+    .auth-panel { display:grid; grid-template-columns:1fr minmax(270px,350px); align-items:center; gap:28px; margin-top:22px; padding:24px 28px; border:1px solid var(--line); border-radius:16px; background:#fff; }
+    .auth-panel h2 { margin:0 0 7px; font:700 20px/1.3 "Manrope",sans-serif; letter-spacing:-.035em; }
+    .auth-panel p { margin:0; max-width:540px; color:var(--muted); font-size:12px; line-height:1.6; }
+    .auth-form { display:grid; gap:9px; }
+    .auth-form label { font-size:10px; font-weight:700; color:#52645a; }
+    .auth-form input { width:100%; min-height:40px; border:1px solid #d6dfd7; border-radius:8px; padding:9px 11px; font:13px "DM Sans",Arial,sans-serif; color:var(--ink); background:#fff; }
+    .auth-form button { min-height:41px; border:0; border-radius:8px; background:var(--green); color:#fff; font:700 12px "DM Sans",Arial,sans-serif; cursor:pointer; }
+    .auth-form button:disabled { opacity:.65; cursor:progress; }
+    #loginStatus { margin-top:2px; color:#a43d32; font-size:11px; }
     .modules { padding-top:39px; }
+    #authPanel[hidden], #moduleSection[hidden], #loginStatus[hidden], #logoutButton[hidden], #userBadge[hidden], #internalBadge[hidden] { display:none!important; }
+    .module-heading { display:flex; align-items:center; justify-content:space-between; gap:14px; margin-bottom:17px; }
     .modules h2 { margin:0 0 17px; font:700 21px/1.3 "Manrope",sans-serif; letter-spacing:-.035em; }
+    .module-heading h2 { margin:0; }
+    .module-note { margin:6px 0 0; color:var(--muted); font-size:11px; }
     .module-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:15px; }
     .module { min-height:130px; display:flex; align-items:center; gap:16px; padding:21px; border:1px solid var(--line); border-radius:15px; background:#fff; text-decoration:none; transition:border-color .2s,box-shadow .2s,transform .2s; }
     .module:hover { transform:translateY(-2px); border-color:#bed0c1; box-shadow:0 10px 25px rgba(28,56,40,.07); }
@@ -58,6 +74,7 @@
       .brand img { width:44px; height:44px; }
       .brand strong { font-size:12px; }
       .internal { font-size:9px; }
+      .auth-panel { grid-template-columns:1fr; gap:18px; padding:21px; }
       main { padding:24px 0 42px; }
       .hero { grid-template-columns:1fr; }
       .hero-copy { padding:34px 28px; }
@@ -81,15 +98,22 @@
         <img src="logo.png" alt="Logo CV. Selabintana">
         <span><strong>Sistem Operasional Farm</strong><small>CV. SELABINTANA</small></span>
       </a>
-      <div class="internal"><span aria-hidden="true"></span>SISTEM INTERNAL</div>
+      <div class="header-actions">
+        <div class="internal" id="internalBadge"><span aria-hidden="true"></span>SISTEM INTERNAL</div>
+        <div class="session-user" id="userBadge" hidden></div>
+        <button class="logout-button" id="logoutButton" type="button" onclick="logoutCentral()" hidden>Keluar</button>
+      </div>
     </header>
 
     <main>
       <section class="hero" aria-labelledby="welcome-title">
         <div class="hero-copy">
           <div class="eyebrow">Operasional farm</div>
-          <h1 id="welcome-title">Sistem Manajemen Inventaris</h1>
-          <p class="intro">Pantau permintaan barang dan persediaan secara efisien dan real-time.</p>
+          <h1 id="welcome-title">Semua kebutuhan farm, satu tempat.</h1>
+          <p class="intro">Ajukan kebutuhan barang dan kelola persediaan farm melalui portal internal.</p>
+          <a class="start-link" id="startLink" href="#authPanel"><span id="startLinkText">Masuk untuk melanjutkan</span>
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
         </div>
         <div class="hero-photo">
           <img src="https://images.pexels.com/photos/27083552/pexels-photo-27083552.jpeg?auto=compress&amp;cs=tinysrgb&amp;w=1600" alt="Ayam di dalam fasilitas peternakan modern" fetchpriority="high">
@@ -97,8 +121,24 @@
         </div>
       </section>
 
-      <section class="modules" id="modul" aria-labelledby="modules-title">
-        <h2 id="modules-title">Pilih modul</h2>
+      <section class="auth-panel" id="authPanel" aria-labelledby="login-title">
+        <div>
+          <div class="eyebrow" style="color:#578469; margin-bottom:8px;">Satu kali masuk</div>
+          <h2 id="login-title">Masuk ke sistem operasional</h2>
+          <p>Gunakan akun perusahaan. Staff dan Admin akan memilih modul setelah masuk; akun PIC Gudang langsung diarahkan ke modul Stock.</p>
+        </div>
+        <form class="auth-form" id="loginForm" autocomplete="on">
+          <div><label for="loginUser">Username</label><input id="loginUser" name="username" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required></div>
+          <div><label for="loginPass">Password</label><input id="loginPass" name="password" type="password" autocomplete="current-password" required></div>
+          <button id="loginButton" type="submit">Masuk Sistem</button>
+          <p id="loginStatus" role="status" aria-live="polite" hidden></p>
+        </form>
+      </section>
+
+      <section class="modules" id="moduleSection" aria-labelledby="modules-title" hidden>
+        <div class="module-heading">
+          <div><h2 id="modules-title">Pilih modul</h2><p class="module-note" id="moduleWelcome">Sesi aktif.</p></div>
+        </div>
         <div class="module-list">
           <a class="module" href="portal.html">
             <span class="module-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M6 3.8h8l4 4V20H6V3.8Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M14 4v4h4M9 12h6m-6 3.5h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>
@@ -116,5 +156,120 @@
 
     <footer><span>&copy; 2026 CV. Selabintana</span><span>Sistem Operasional Internal</span></footer>
   </div>
+  <script>
+    const AUTH_API_URL = "https://script.google.com/macros/s/AKfycbx_tuIlCd-_n3PMtmv-_hPP4QrbGfPVYzk4tN33WinGtA8fyhe19uwXg6oS7v9jnm9yZw/exec";
+    const AUTH_SESSION_KEY = 'selabintana_app_session';
+    const LEGACY_SESSION_KEYS = ['portal_user_session', 'stok_app_user_session'];
+
+    function readCentralSession() {
+      const keys = [AUTH_SESSION_KEY, ...LEGACY_SESSION_KEYS];
+      for (const key of keys) {
+        const raw = sessionStorage.getItem(key);
+        if (!raw) continue;
+        try {
+          const session = JSON.parse(raw);
+          if (session && session.token) {
+            sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(session));
+            LEGACY_SESSION_KEYS.forEach(oldKey => sessionStorage.removeItem(oldKey));
+            return session;
+          }
+        } catch (error) { sessionStorage.removeItem(key); }
+      }
+      return null;
+    }
+
+    function returnTarget() {
+      const target = new URLSearchParams(location.search).get('return');
+      return target === 'portal.html' || target === 'stock.html' ? target : '';
+    }
+
+    async function postAuth(payload) {
+      const response = await fetch(AUTH_API_URL, {
+        method: 'POST',
+        headers: {'Content-Type': 'text/plain;charset=utf-8'},
+        body: JSON.stringify(payload)
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error('Server tidak dapat memproses permintaan.');
+      return result;
+    }
+
+    function displayModulePicker(user) {
+      if (user.isPicGudang || user.roleAccess === 'PIC_GUDANG') {
+        location.replace('stock.html');
+        return;
+      }
+      const target = returnTarget();
+      if (target) { location.replace(target); return; }
+      document.getElementById('authPanel').hidden = true;
+      document.getElementById('moduleSection').hidden = false;
+      document.getElementById('internalBadge').hidden = true;
+      document.getElementById('userBadge').hidden = false;
+      document.getElementById('userBadge').textContent = `${user.nama || user.username} • ${user.roleAccess || user.jabatan || 'Pengguna'}`;
+      document.getElementById('logoutButton').hidden = false;
+      document.getElementById('moduleWelcome').textContent = `Sesi aktif untuk ${user.nama || user.username}. Pilih Portal Permintaan atau Manajemen Stok.`;
+      document.getElementById('startLink').href = '#moduleSection';
+      document.getElementById('startLinkText').textContent = 'Pilih modul';
+    }
+
+    async function restoreCentralSession() {
+      const session = readCentralSession();
+      if (!session || !session.token || Date.now() >= Number(session.expiresAt || 0)) {
+        if (session) sessionStorage.removeItem(AUTH_SESSION_KEY);
+        return;
+      }
+      try {
+        const result = await postAuth({action: 'validateSession', token: session.token});
+        if (result.status !== 'success' || !result.userData) {
+          sessionStorage.removeItem(AUTH_SESSION_KEY);
+          return;
+        }
+        const refreshed = Object.assign({}, session, result.userData, {token: session.token, expiresAt: session.expiresAt});
+        sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(refreshed));
+        displayModulePicker(refreshed);
+      } catch (error) {
+        const status = document.getElementById('loginStatus');
+        status.textContent = 'Sesi tersimpan belum dapat diperiksa. Periksa koneksi lalu coba muat ulang.';
+        status.hidden = false;
+      }
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', async function(event) {
+      event.preventDefault();
+      const button = document.getElementById('loginButton');
+      const status = document.getElementById('loginStatus');
+      const username = document.getElementById('loginUser').value.trim();
+      const password = document.getElementById('loginPass').value;
+      button.disabled = true;
+      button.textContent = 'Memeriksa akun…';
+      status.hidden = true;
+      try {
+        const result = await postAuth({action: 'login', username, password});
+        if (result.status !== 'success' || !result.userData || !result.userData.token) throw new Error(result.message || 'Login gagal.');
+        sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(result.userData));
+        LEGACY_SESSION_KEYS.forEach(key => sessionStorage.removeItem(key));
+        document.getElementById('loginPass').value = '';
+        displayModulePicker(result.userData);
+      } catch (error) {
+        status.textContent = error.message || 'Tidak dapat terhubung ke server. Coba lagi.';
+        status.hidden = false;
+      } finally {
+        button.disabled = false;
+        button.textContent = 'Masuk Sistem';
+      }
+    });
+
+    async function logoutCentral() {
+      const session = readCentralSession();
+      sessionStorage.removeItem(AUTH_SESSION_KEY);
+      LEGACY_SESSION_KEYS.forEach(key => sessionStorage.removeItem(key));
+      if (session && session.token) {
+        try { await postAuth({action: 'logout', token: session.token}); } catch (error) {}
+      }
+      location.replace('index.html');
+    }
+
+    window.addEventListener('DOMContentLoaded', restoreCentralSession);
+  </script>
 </body>
 </html>
