@@ -243,9 +243,24 @@
     setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, 3500);
   }
 
+  function cekSesiBerakhir(json) {
+    if (json && json.status === "error" && String(json.message || "").indexOf("Sesi tidak valid") >= 0) {
+      localStorage.removeItem('portal_user_session');
+      location.reload();
+      return true;
+    }
+    return false;
+  }
+
   window.onload = function() {
     const saved = localStorage.getItem('portal_user_session');
-    if (saved) { sesiUser = JSON.parse(saved); tampilkanDashboard(); }
+    if (saved) {
+      try {
+        sesiUser = JSON.parse(saved);
+        if (sesiUser.token && Date.now() < Number(sesiUser.expiresAt || 0)) tampilkanDashboard();
+        else { localStorage.removeItem('portal_user_session'); sesiUser = {}; }
+      } catch (e) { localStorage.removeItem('portal_user_session'); sesiUser = {}; }
+    }
   };
 
   async function prosesLogin(e) {
@@ -253,7 +268,7 @@
     const btn = document.getElementById('btnLogin');
     btn.disabled = true; btn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Otentikasi...";
     try {
-      const res = await fetch(`${GAS_URL}?action=login&username=${encodeURIComponent(document.getElementById('loginUser').value.trim())}&password=${encodeURIComponent(document.getElementById('loginPass').value.trim())}`);
+      const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "login", username: document.getElementById('loginUser').value.trim(), password: document.getElementById('loginPass').value.trim() }) });
       const result = await res.json();
       if (result.status === "success") {
         sesiUser = result.userData; localStorage.setItem('portal_user_session', JSON.stringify(sesiUser));
@@ -276,12 +291,18 @@
     muatMasterBarang(); tambahItemForm(); muatRiwayatPermintaan();
   }
 
-  function logoutSesi() { localStorage.removeItem('portal_user_session'); location.reload(); }
+  async function logoutSesi() {
+    const token = sesiUser.token;
+    localStorage.removeItem('portal_user_session');
+    try { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "logout", token: token }) }); } catch (e) {}
+    location.reload();
+  }
 
   async function muatMasterBarang() {
     try {
-      const res = await fetch(`${GAS_URL}?action=getStokBarang&unitLokasi=${encodeURIComponent(sesiUser.unitLokasi)}&isAdmin=${sesiUser.isAdmin}`);
+      const res = await fetch(`${GAS_URL}?action=getMasterBarang&token=${encodeURIComponent(sesiUser.token)}`);
       const json = await res.json();
+      if (cekSesiBerakhir(json)) return;
       if (json.status === "success") {
         const uniqueNames = [...new Set(json.data.map(i => i.namaBarang))].sort();
         document.getElementById('masterBarangList').innerHTML = uniqueNames.map(n => `<option value="${n}"></option>`).join('');
@@ -326,6 +347,7 @@
 
     const payload = {
       action: idTiketEdit ? "editPermintaan" : "submitPermintaan",
+      token: sesiUser.token,
       kodeTiketEdit: idTiketEdit,
       pemohon: sesiUser.nama, divisi: sesiUser.divisi, unitLokasi: sesiUser.unitLokasi,
       tglPermintaan: document.getElementById('tglPermintaan').value, tglDibutuhkan: document.getElementById('tglDibutuhkan').value,
@@ -336,6 +358,7 @@
     try {
       const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
       const json = await res.json();
+      if (cekSesiBerakhir(json)) return;
       if (json.status === "success") {
         showToast(json.message, 'success');
         batalkanEdit();
@@ -348,8 +371,9 @@
   async function muatRiwayatPermintaan() {
     document.getElementById('bodyTabelRiwayat').innerHTML = `<tr><td colspan="8" style="text-align:center; padding:30px;"><i class="fa-solid fa-spinner fa-spin"></i> Mengambil data ERP...</td></tr>`;
     try {
-      const res = await fetch(`${GAS_URL}?action=getPermintaan&username=${encodeURIComponent(sesiUser.nama)}&unitLokasi=${encodeURIComponent(sesiUser.unitLokasi)}&isAdmin=${sesiUser.isAdmin}`);
+      const res = await fetch(`${GAS_URL}?action=getPermintaan&token=${encodeURIComponent(sesiUser.token)}`);
       const json = await res.json();
+      if (cekSesiBerakhir(json)) return;
       if (json.status === "success") {
         let mapTiket = {};
         json.data.forEach(it => {
@@ -644,9 +668,10 @@
 
     showToast("Menyimpan keputusan admin...", "success");
     try {
-      const payload = { action: "adminKonfirmasi", kodeTiket: kodeTiket, statusPermintaan: statusVal, catatanAdmin: catatanVal };
+      const payload = { action: "adminKonfirmasi", token: sesiUser.token, kodeTiket: kodeTiket, statusPermintaan: statusVal, catatanAdmin: catatanVal };
       const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
       const json = await res.json();
+      if (cekSesiBerakhir(json)) return;
       if(json.status === "success") { showToast(json.message, "success"); tutupModal(); muatRiwayatPermintaan(); } 
       else { showToast(json.message, "error"); }
     } catch(err) { showToast("Gagal terhubung ke server.", "error"); }
@@ -664,9 +689,10 @@
       const base64Data = reader.result.split(',')[1];
       showToast("Mengunggah dokumen PDF...", "success");
       try {
-        const payload = { action: "uploadPdfTiket", kodeTiket: kodeTiket, fileName: file.name, fileData: base64Data };
+        const payload = { action: "uploadPdfTiket", token: sesiUser.token, kodeTiket: kodeTiket, fileName: file.name, fileData: base64Data };
         const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
         const json = await res.json();
+        if (cekSesiBerakhir(json)) return;
         if(json.status === "success") { showToast("PDF berhasil diunggah!", "success"); muatRiwayatPermintaan(); tutupModal(); } 
         else { showToast("Gagal upload: " + json.message, "error"); }
       } catch(err) { showToast("Kesalahan koneksi.", "error"); }
@@ -715,8 +741,9 @@
     if(!confirm(`Yakin ingin MEMBATALKAN tiket ${kode}?`)) return;
     tutupModal();
     try {
-      const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "hapusPermintaan", kodeTiket: kode }) });
+      const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "hapusPermintaan", token: sesiUser.token, kodeTiket: kode }) });
       const json = await res.json();
+      if (cekSesiBerakhir(json)) return;
       if(json.status === "success") { showToast(json.message); muatRiwayatPermintaan(); } else showToast(json.message, 'error');
     } catch(e) { showToast("Gagal menghapus tiket.", "error"); }
   }
