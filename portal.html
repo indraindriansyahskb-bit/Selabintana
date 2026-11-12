@@ -109,21 +109,13 @@
 <datalist id="masterBarangList"></datalist>
 
 <!-- SCREEN 1: LOGIN -->
-<div id="loginSection" class="login-wrapper">
-  <div class="login-card">
-    <div style="text-align: center; margin-bottom: 25px;">
-      <img src="logo.png" alt="Logo" style="height: 90px; margin-bottom: 12px; object-fit: contain;">
-      <h2 style="font-size: 18px; font-weight: 800; color: var(--erp-primary); margin: 0;">CV. SELABINTANA</h2>
-      <h3 style="font-size: 13px; font-weight: 600; color: var(--erp-text-main); margin-top: 4px;">Material Request Portal</h3>
-    </div>
-    <form onsubmit="prosesLogin(event)">
-      <div class="form-group"><label>Username</label><input type="text" id="loginUser" required></div>
-      <div class="form-group"><label>Password</label><input type="password" id="loginPass" required></div>
-      <button type="submit" id="btnLogin" class="btn btn-primary" style="width: 100%; padding: 12px; margin-top: 10px;">
-        <i class="fa-solid fa-right-to-bracket"></i> Masuk Sistem
-      </button>
-    </form>
-    <div id="loginNotice" role="status" style="display:none;margin-top:16px;padding:12px;border-radius:8px;background:#fff7e6;color:#76520b;font-size:13px;line-height:1.5;"></div>
+<div id="sessionGate" class="login-wrapper">
+  <div class="login-card" role="status" aria-live="polite">
+    <img src="logo.png" alt="Logo CV. Selabintana" style="height:72px;margin-bottom:10px;object-fit:contain;">
+    <h2 style="font-size:17px;font-weight:800;color:var(--erp-primary);margin:0 0 8px;">Memeriksa sesi</h2>
+    <p id="sessionGateMessage" style="font-size:13px;line-height:1.5;color:var(--erp-text-muted);">Portal menggunakan sesi bersama dari halaman utama.</p>
+    <button type="button" id="sessionRetryButton" onclick="periksaSesiAktif()" class="btn btn-primary" style="display:none;width:100%;padding:11px;margin-top:12px;">Coba Lagi</button>
+    <a href="index.html?return=portal.html" style="display:inline-block;margin-top:12px;color:var(--erp-primary);font-size:12px;font-weight:700;">Ke halaman masuk</a>
   </div>
 </div>
 
@@ -352,77 +344,86 @@
     setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, 3500);
   }
 
+  const AUTH_SESSION_KEY = 'selabintana_app_session';
+  const LEGACY_SESSION_KEYS = ['portal_user_session', 'stok_app_user_session'];
+
+  function readSharedSession() {
+    for (const key of [AUTH_SESSION_KEY, ...LEGACY_SESSION_KEYS]) {
+      const raw = sessionStorage.getItem(key);
+      if (!raw) continue;
+      try {
+        const saved = JSON.parse(raw);
+        if (saved && saved.token) {
+          sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(saved));
+          LEGACY_SESSION_KEYS.forEach(oldKey => sessionStorage.removeItem(oldKey));
+          return saved;
+        }
+      } catch (error) { sessionStorage.removeItem(key); }
+    }
+    return null;
+  }
+
+  function clearSharedSession() {
+    sessionStorage.removeItem(AUTH_SESSION_KEY);
+    LEGACY_SESSION_KEYS.forEach(key => sessionStorage.removeItem(key));
+  }
+
+  function redirectToCentralLogin() {
+    clearSharedSession();
+    location.replace('index.html?return=portal.html');
+  }
+
   function cekSesiBerakhir(json) {
     if (json && json.status === "error" && String(json.message || "").indexOf("Akun PIC Gudang hanya dapat menggunakan stock.html") >= 0) {
-      sessionStorage.removeItem('portal_user_session');
-      sesiUser = {};
-      document.getElementById('mainPanel').style.display = 'none';
-      document.getElementById('loginSection').style.display = 'flex';
-      tampilkanNoticeAksesPic();
+      location.replace('stock.html');
       return true;
     }
     if (json && json.status === "error" && String(json.message || "").indexOf("Sesi tidak valid") >= 0) {
-      sessionStorage.removeItem('portal_user_session');
-      location.reload();
+      redirectToCentralLogin();
       return true;
     }
     return false;
   }
 
-  window.onload = function() {
-    const saved = sessionStorage.getItem('portal_user_session');
-    if (saved) {
-      try {
-        sesiUser = JSON.parse(saved);
-        if (sesiUser.isPicGudang) {
-          sessionStorage.removeItem('portal_user_session'); sesiUser = {};
-          tampilkanNoticeAksesPic();
-        }
-        else if (sesiUser.token && Date.now() < Number(sesiUser.expiresAt || 0)) tampilkanDashboard();
-        else { sessionStorage.removeItem('portal_user_session'); sesiUser = {}; }
-      } catch (e) { sessionStorage.removeItem('portal_user_session'); sesiUser = {}; }
+  async function periksaSesiAktif() {
+    const message = document.getElementById('sessionGateMessage');
+    const retry = document.getElementById('sessionRetryButton');
+    retry.style.display = 'none';
+    message.textContent = 'Memvalidasi sesi akun dengan server…';
+    const saved = readSharedSession();
+    if (!saved || !saved.token || Date.now() >= Number(saved.expiresAt || 0)) {
+      redirectToCentralLogin();
+      return;
     }
-  };
-
-  function tampilkanNoticeAksesPic() {
-    const notice = document.getElementById('loginNotice');
-    if (!notice) return;
-    notice.textContent = 'Akun PIC Gudang menggunakan halaman stok. ';
-    const link = document.createElement('a');
-    link.href = 'stock.html';
-    link.textContent = 'Buka stock.html';
-    link.style.cssText = 'font-weight:700;color:#315f3b;';
-    notice.appendChild(link);
-    notice.style.display = 'block';
-  }
-
-  async function prosesLogin(e) {
-    e.preventDefault();
-    const btn = document.getElementById('btnLogin');
-    btn.disabled = true; btn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Otentikasi...";
     try {
-      const res = await postPayload({ action: "login", username: document.getElementById('loginUser').value.trim(), password: document.getElementById('loginPass').value });
-      const result = await res.json();
-      if (result.status === "success") {
-        if (result.userData && result.userData.isPicGudang) {
-          sessionStorage.removeItem('portal_user_session');
-          sesiUser = {};
-          tampilkanNoticeAksesPic();
-          try { await postPayload({action: 'logout', token: result.userData.token}); } catch (logoutError) {}
-          return;
-        }
-        sesiUser = result.userData; sessionStorage.setItem('portal_user_session', JSON.stringify(sesiUser));
-        showToast(`Selamat datang, ${sesiUser.nama}!`); setTimeout(tampilkanDashboard, 400);
-      } else showToast(result.message, 'error');
-    } catch (err) { showToast("Gagal terhubung ke server.", 'error'); } 
-    finally { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Masuk Sistem ERP'; }
+      const response = await postPayload({action: 'validateSession', token: saved.token});
+      const result = await response.json();
+      if (result.status !== 'success' || !result.userData) {
+        redirectToCentralLogin();
+        return;
+      }
+      sesiUser = Object.assign({}, saved, result.userData, {token: saved.token, expiresAt: saved.expiresAt});
+      sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(sesiUser));
+      if (sesiUser.isPicGudang || sesiUser.roleAccess === 'PIC_GUDANG') {
+        location.replace('stock.html');
+        return;
+      }
+      document.getElementById('sessionGate').style.display = 'none';
+      tampilkanDashboard();
+    } catch (error) {
+      message.textContent = 'Sesi belum dapat diperiksa karena koneksi bermasalah. Coba lagi atau kembali ke halaman masuk.';
+      retry.style.display = 'block';
+    }
   }
+
+  window.addEventListener('load', periksaSesiAktif);
 
   function tampilkanDashboard() {
-    document.getElementById('loginSection').style.display = 'none'; document.getElementById('mainPanel').style.display = 'block';
+    document.getElementById('mainPanel').style.display = 'block';
     document.getElementById('userInfoHeader').innerHTML = `
       <div class="erp-avatar">${escapeHtml((sesiUser.nama||"U").substring(0,2).toUpperCase())}</div>
       <div style="line-height:1.2; color:#f8fafc;"><div style="font-weight:700; font-size:12px; color:var(--erp-accent-yellow);">${escapeHtml(sesiUser.nama)}</div><div style="font-size:10px; color:#c2d1c7;">${escapeHtml(sesiUser.roleAccess || sesiUser.jabatan)} | <b>${escapeHtml(sesiUser.scopeGudang === 'ALL' ? 'Semua Gudang' : sesiUser.isPicGudang ? sesiUser.scopeGudang : sesiUser.unitLokasi)}</b></div></div>
+      <a href="index.html" class="btn btn-outline" aria-label="Kembali ke menu modul" style="padding:6px 9px;color:#fff;border-color:#386641;background:transparent;text-decoration:none;">Menu</a>
       ${sesiUser.isAdmin ? `<button onclick="bukaModalTambahUser()" class="btn btn-outline" title="Tambah akun" aria-label="Tambah akun" style="padding:6px 9px;color:#fff;border-color:#386641;background:transparent;"><i class="fa-solid fa-user-plus"></i></button>` : ''}
       <button onclick="bukaModalGantiPassword()" class="btn btn-outline" title="Ganti password" aria-label="Ganti password" style="padding:6px 9px;color:#fff;border-color:#386641;background:transparent;"><i class="fa-solid fa-key"></i></button>
       <button onclick="logoutSesi()" class="btn btn-outline" style="padding:5px 10px; color:#fff; border-color:#386641; background:transparent; margin-left:15px;"><i class="fa-solid fa-power-off"></i></button>`;
@@ -533,9 +534,9 @@
 
   async function logoutSesi() {
     const token = sesiUser.token;
-    sessionStorage.removeItem('portal_user_session');
+    clearSharedSession();
     try { await postPayload({ action: "logout", token: token }); } catch (e) {}
-    location.reload();
+    location.replace('index.html');
   }
 
   async function muatMasterBarang() {
