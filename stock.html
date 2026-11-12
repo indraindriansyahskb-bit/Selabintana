@@ -706,6 +706,10 @@
       filterUnit.disabled = true;
       if(penUnit) { penUnit.innerHTML = masterUnits.map(u => `<option value="${escapeHtml(u.kodeUnit)}">${escapeHtml(u.namaUnit)}</option>`).join(''); penUnit.disabled = true; }
     }
+    if (trUnitTujuan) {
+      let targetList = allUnits.filter(u => u.kodeUnit.toLowerCase() !== sesiUser.unitLokasi.toLowerCase());
+      trUnitTujuan.innerHTML = '<option value="">-- Pilih Unit Farm Tujuan --</option>' + targetList.map(u => `<option value="${escapeHtml(u.kodeUnit)}">${escapeHtml(u.namaUnit)}</option>`).join('');
+    }
     updateJournalWarehouseFilter();
   }
 
@@ -814,12 +818,6 @@
       await muatStockSnapshot();
     } catch (error) { showToast(error.message || 'Gagal menyimpan batas minimum.', 'error'); }
     finally { button.disabled = false; }
-  }
-
-    if(trUnitTujuan) {
-      let targetList = allUnits.filter(u => u.kodeUnit.toLowerCase() !== sesiUser.unitLokasi.toLowerCase());
-      trUnitTujuan.innerHTML = '<option value="">-- Pilih Unit Farm Tujuan --</option>' + targetList.map(u => `<option value="${escapeHtml(u.kodeUnit)}">${escapeHtml(u.namaUnit)}</option>`).join('');
-    }
   }
 
   function updateSubGudangPilih(unitSelectId, gudangSelectId) {
