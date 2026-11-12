@@ -131,7 +131,7 @@
       <div class="erp-stat-card"><div class="erp-stat-info"><div class="label">Total Tiket</div><div class="value" id="kpiTotal">0</div></div><div class="erp-stat-icon" style="background:#e6f0eb; color:var(--erp-primary);"><i class="fa-solid fa-layer-group"></i></div></div>
       <div class="erp-stat-card"><div class="erp-stat-info"><div class="label">Pending</div><div class="value" id="kpiPending">0</div></div><div class="erp-stat-icon" style="background:#fff8e6; color:#b45309;"><i class="fa-solid fa-hourglass-half"></i></div></div>
       <div class="erp-stat-card"><div class="erp-stat-info"><div class="label">Disetujui (ACC)</div><div class="value" id="kpiAcc">0</div></div><div class="erp-stat-icon" style="background:#e6f8f0; color:#047857;"><i class="fa-solid fa-circle-check"></i></div></div>
-      <div class="erp-stat-card"><div class="erp-stat-info"><div class="label">Ditolak / Revisi</div><div class="value" id="kpiReject">0</div></div><div class="erp-stat-icon" style="background:#fcebeb; color:#b91c1c;"><i class="fa-solid fa-circle-xmark"></i></div></div>
+      <div class="erp-stat-card"><div class="erp-stat-info"><div class="label">Ditolak / Revisi / Batal</div><div class="value" id="kpiReject">0</div></div><div class="erp-stat-icon" style="background:#fcebeb; color:#b91c1c;"><i class="fa-solid fa-circle-xmark"></i></div></div>
     </div>
 
     <!-- FORM INPUT -->
@@ -166,24 +166,38 @@
       <div class="erp-card-header">
         <div class="erp-card-title"><i class="fa-solid fa-clock-rotate-left"></i> Riwayat Pengajuan </div>
         <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-          <input type="text" id="searchRiwayat" placeholder="🔍 Cari Tiket / Barang..." onkeyup="filterTabelTiket()" style="width: 200px; padding: 6px 12px; font-size: 12px;">
+          <input type="text" id="searchRiwayat" placeholder="🔍 Cari Tiket / Barang..." oninput="applyFilters()" style="width: 200px; padding: 6px 12px; font-size: 12px;">
           <button onclick="muatRiwayatPermintaan()" class="btn btn-outline" style="padding: 6px 10px;" title="Refresh"><i class="fa-solid fa-rotate-right"></i></button>
         </div>
       </div>
 
-      <!-- PANEL FILTER EXPORT EXCEL -->
+      <!-- FILTER DASHBOARD DAN LAPORAN -->
       <div style="background:#f6f9f7; padding:15px 20px; border-bottom:1px solid var(--erp-border-light); display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap;">
         <div class="form-group" style="margin-bottom:0; flex:1; min-width:130px;">
           <label>Dari Tanggal</label>
-          <input type="date" id="filterTglMulai" style="padding:6px 10px; font-size:11px;">
+          <input type="date" id="filterTglMulai" onchange="applyFilters()" style="padding:6px 10px; font-size:11px;">
         </div>
         <div class="form-group" style="margin-bottom:0; flex:1; min-width:130px;">
           <label>Sampai Tanggal</label>
-          <input type="date" id="filterTglSelesai" style="padding:6px 10px; font-size:11px;">
+          <input type="date" id="filterTglSelesai" onchange="applyFilters()" style="padding:6px 10px; font-size:11px;">
         </div>
         <div class="form-group" style="margin-bottom:0; flex:1.5; min-width:160px;">
-          <label>Filter Nama Barang (Opsional)</label>
-          <input type="text" id="filterNamaBarang" placeholder="Semua Barang" list="masterBarangList" style="padding:6px 10px; font-size:11px;">
+          <label>Nama Barang</label>
+          <input type="text" id="filterNamaBarang" placeholder="Semua Barang" list="masterBarangList" oninput="applyFilters()" style="padding:6px 10px; font-size:11px;">
+        </div>
+        <div class="form-group" style="margin-bottom:0; flex:1; min-width:140px;">
+          <label>Status</label>
+          <select id="filterStatus" onchange="applyFilters()" style="padding:6px 10px; font-size:11px;">
+            <option value="">Semua Status</option><option value="PENDING">Pending</option><option value="REVISI">Revisi</option>
+            <option value="APPROVED">Disetujui / Diproses</option><option value="ACC_SEBAGIAN">Disetujui Sebagian</option><option value="SEBAGIAN">Sebagian Terpenuhi</option>
+            <option value="SELESAI">Selesai</option><option value="DITOLAK">Ditolak</option><option value="DIBATALKAN">Dibatalkan</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:0; flex:1; min-width:130px;">
+          <label>Urgensi</label>
+          <select id="filterUrgensi" onchange="applyFilters()" style="padding:6px 10px; font-size:11px;">
+            <option value="">Semua Urgensi</option><option value="REGULER">Reguler</option><option value="URGENT">Urgent</option><option value="TOP URGENT">Top Urgent</option>
+          </select>
         </div>
         <div>
           <button onclick="exportToExcel()" class="btn btn-success" style="padding:7px 14px; background:#047857; color:#fff; font-size:11px; font-weight:700;"><i class="fa-solid fa-file-excel"></i> Export Excel (.xls)</button>
@@ -231,13 +245,45 @@
   let currentPage = 1;
   const itemsPerPage = 10;
   let idTiketEdit = null;
+  let submissionKey = null;
+  let activeTicketDetail = null;
+
+  function escapeHtml(value) {
+    return String(value == null ? '' : value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  }
+
+  function safePdfUrl(value) {
+    try {
+      const url = new URL(String(value || ''), location.href);
+      return (url.protocol === 'https:' && (url.hostname === 'drive.google.com' || url.hostname === 'docs.google.com')) ? url.href : '';
+    } catch (e) { return ''; }
+  }
+
+  function inlineArg(value) {
+    const jsValue = JSON.stringify(String(value == null ? '' : value)).replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026');
+    return escapeHtml(jsValue);
+  }
+
+  function exportText(value) {
+    const text = String(value == null ? '' : value);
+    return escapeHtml(/^[=+@\-\t\r\n ]/.test(text) ? "'" + text : text);
+  }
+
+  function todayJakarta() {
+    return new Date(Date.now() + 7 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  }
+
+  function postPayload(payload) {
+    return fetch(GAS_URL, { method: 'POST', headers: {'Content-Type': 'text/plain;charset=utf-8'}, body: JSON.stringify(payload) });
+  }
 
   function showToast(message, type = 'success') {
     const container = document.getElementById('toast-container');
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
     const icon = type === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation';
-    toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${message}</span>`;
+    toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span></span>`;
+    toast.querySelector('span').textContent = String(message == null ? '' : message);
     container.appendChild(toast);
     setTimeout(() => toast.classList.add('show'), 10);
     setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, 3500);
@@ -245,7 +291,7 @@
 
   function cekSesiBerakhir(json) {
     if (json && json.status === "error" && String(json.message || "").indexOf("Sesi tidak valid") >= 0) {
-      localStorage.removeItem('portal_user_session');
+      sessionStorage.removeItem('portal_user_session');
       location.reload();
       return true;
     }
@@ -253,13 +299,13 @@
   }
 
   window.onload = function() {
-    const saved = localStorage.getItem('portal_user_session');
+    const saved = sessionStorage.getItem('portal_user_session');
     if (saved) {
       try {
         sesiUser = JSON.parse(saved);
         if (sesiUser.token && Date.now() < Number(sesiUser.expiresAt || 0)) tampilkanDashboard();
-        else { localStorage.removeItem('portal_user_session'); sesiUser = {}; }
-      } catch (e) { localStorage.removeItem('portal_user_session'); sesiUser = {}; }
+        else { sessionStorage.removeItem('portal_user_session'); sesiUser = {}; }
+      } catch (e) { sessionStorage.removeItem('portal_user_session'); sesiUser = {}; }
     }
   };
 
@@ -268,10 +314,10 @@
     const btn = document.getElementById('btnLogin');
     btn.disabled = true; btn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Otentikasi...";
     try {
-      const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "login", username: document.getElementById('loginUser').value.trim(), password: document.getElementById('loginPass').value.trim() }) });
+      const res = await postPayload({ action: "login", username: document.getElementById('loginUser').value.trim(), password: document.getElementById('loginPass').value });
       const result = await res.json();
       if (result.status === "success") {
-        sesiUser = result.userData; localStorage.setItem('portal_user_session', JSON.stringify(sesiUser));
+        sesiUser = result.userData; sessionStorage.setItem('portal_user_session', JSON.stringify(sesiUser));
         showToast(`Selamat datang, ${sesiUser.nama}!`); setTimeout(tampilkanDashboard, 400);
       } else showToast(result.message, 'error');
     } catch (err) { showToast("Gagal terhubung ke server.", 'error'); } 
@@ -281,11 +327,11 @@
   function tampilkanDashboard() {
     document.getElementById('loginSection').style.display = 'none'; document.getElementById('mainPanel').style.display = 'block';
     document.getElementById('userInfoHeader').innerHTML = `
-      <div class="erp-avatar">${(sesiUser.nama||"U").substring(0,2).toUpperCase()}</div>
-      <div style="line-height:1.2; color:#f8fafc;"><div style="font-weight:700; font-size:12px; color:var(--erp-accent-yellow);">${sesiUser.nama}</div><div style="font-size:10px; color:#c2d1c7;">${sesiUser.divisi} | <b>${sesiUser.unitLokasi}</b> ${sesiUser.isAdmin?'<span style="color:#fde047;">(ADMIN)</span>':''}</div></div>
+      <div class="erp-avatar">${escapeHtml((sesiUser.nama||"U").substring(0,2).toUpperCase())}</div>
+      <div style="line-height:1.2; color:#f8fafc;"><div style="font-weight:700; font-size:12px; color:var(--erp-accent-yellow);">${escapeHtml(sesiUser.nama)}</div><div style="font-size:10px; color:#c2d1c7;">${escapeHtml(sesiUser.divisi)} | <b>${escapeHtml(sesiUser.unitLokasi)}</b> ${sesiUser.isAdmin?'<span style="color:#fde047;">(ADMIN)</span>':''}</div></div>
       <button onclick="logoutSesi()" class="btn btn-outline" style="padding:5px 10px; color:#fff; border-color:#386641; background:transparent; margin-left:15px;"><i class="fa-solid fa-power-off"></i></button>`;
     
-    let today = new Date().toISOString().split('T')[0];
+    let today = todayJakarta();
     document.getElementById('tglPermintaan').value = today; document.getElementById('tglDibutuhkan').min = today; 
     document.getElementById('containerItems').innerHTML = ""; itemCounter = 0;
     muatMasterBarang(); tambahItemForm(); muatRiwayatPermintaan();
@@ -293,19 +339,19 @@
 
   async function logoutSesi() {
     const token = sesiUser.token;
-    localStorage.removeItem('portal_user_session');
-    try { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "logout", token: token }) }); } catch (e) {}
+    sessionStorage.removeItem('portal_user_session');
+    try { await postPayload({ action: "logout", token: token }); } catch (e) {}
     location.reload();
   }
 
   async function muatMasterBarang() {
     try {
-      const res = await fetch(`${GAS_URL}?action=getMasterBarang&token=${encodeURIComponent(sesiUser.token)}`);
+      const res = await postPayload({action: "getMasterBarang", token: sesiUser.token});
       const json = await res.json();
       if (cekSesiBerakhir(json)) return;
       if (json.status === "success") {
         const uniqueNames = [...new Set(json.data.map(i => i.namaBarang))].sort();
-        document.getElementById('masterBarangList').innerHTML = uniqueNames.map(n => `<option value="${n}"></option>`).join('');
+        document.getElementById('masterBarangList').innerHTML = uniqueNames.map(n => `<option value="${escapeHtml(n)}"></option>`).join('');
       }
     } catch(e) {}
   }
@@ -318,7 +364,7 @@
         <button type="button" onclick="hapusItemForm('itemRow_${itemCounter}')" class="btn btn-outline btn-sm" style="color:var(--erp-danger);"><i class="fa-solid fa-trash"></i> Hapus</button>
       </div>
       <div class="row-group">
-        <div class="form-group"><label>Nama Material</label><input type="text" class="it-nama" list="masterBarangList" required value="${data?data.namaBarang:''}"></div>
+        <div class="form-group"><label>Nama Material</label><input type="text" class="it-nama" list="masterBarangList" required value="${escapeHtml(data?data.namaBarang:'')}"></div>
         <div class="form-group"><label>Kategori</label><select class="it-kategori">
           <option value="PAKAN" ${data&&data.kategori=='PAKAN'?'selected':''}>PAKAN</option><option value="OBAT" ${data&&data.kategori=='OBAT'?'selected':''}>OBAT</option>
           <option value="VAKSIN" ${data&&data.kategori=='VAKSIN'?'selected':''}>VAKSIN</option><option value="KIMIA" ${data&&data.kategori=='KIMIA'?'selected':''}>KIMIA</option>
@@ -326,9 +372,9 @@
         </select></div>
       </div>
       <div class="row-group">
-        <div class="form-group"><label>Jumlah</label><input type="number" class="it-jumlah" min="1" required value="${data?data.jumlah:''}"></div>
-        <div class="form-group"><label>Satuan</label><input type="text" class="it-satuan" required value="${data?data.satuan:''}"></div>
-        <div class="form-group"><label>Kode Ref</label><input type="text" class="it-kode" value="${data?data.kodeSupplier:''}"></div>
+        <div class="form-group"><label>Jumlah</label><input type="number" class="it-jumlah" min="0.001" max="1000000000" step="any" required value="${escapeHtml(data?data.jumlah:'')}"></div>
+        <div class="form-group"><label>Satuan</label><input type="text" class="it-satuan" maxlength="32" required value="${escapeHtml(data?data.satuan:'')}"></div>
+        <div class="form-group"><label>Kode Ref</label><input type="text" class="it-kode" maxlength="100" value="${escapeHtml(data?data.kodeSupplier:'')}"></div>
       </div>`;
     document.getElementById('containerItems').appendChild(div);
   }
@@ -354,13 +400,18 @@
       urgensi: document.getElementById('urgensi').value, keterangan: document.getElementById('keterangan').value.trim(),
       items: itemsArr
     };
+    if (!idTiketEdit) {
+      if (!submissionKey) submissionKey = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : (Date.now().toString(36) + Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2));
+      payload.idempotencyKey = submissionKey;
+    }
 
     try {
-      const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+      const res = await postPayload(payload);
       const json = await res.json();
       if (cekSesiBerakhir(json)) return;
       if (json.status === "success") {
         showToast(json.message, 'success');
+        submissionKey = null;
         batalkanEdit();
         muatRiwayatPermintaan();
       } else showToast(json.message, 'error');
@@ -371,29 +422,27 @@
   async function muatRiwayatPermintaan() {
     document.getElementById('bodyTabelRiwayat').innerHTML = `<tr><td colspan="8" style="text-align:center; padding:30px;"><i class="fa-solid fa-spinner fa-spin"></i> Mengambil data ERP...</td></tr>`;
     try {
-      const res = await fetch(`${GAS_URL}?action=getPermintaan&token=${encodeURIComponent(sesiUser.token)}`);
+      const res = await postPayload({action: "getPermintaan", token: sesiUser.token});
       const json = await res.json();
       if (cekSesiBerakhir(json)) return;
       if (json.status === "success") {
-        let mapTiket = {};
+        let mapTiket = Object.create(null);
         json.data.forEach(it => {
           if(!mapTiket[it.kodeTiket]) {
             mapTiket[it.kodeTiket] = {
               kodeTiket: it.kodeTiket, tglPermintaan: it.tglPermintaan, tglDibutuhkan: it.tglDibutuhkan,
               pemohon: it.pemohon, unitLokasi: it.unitLokasi, urgensi: it.urgensi, 
               keterangan: it.keterangan, statusPermintaan: it.statusPermintaan, catatanAdmin: it.catatanAdmin, 
-              dokumenPdf: it.dokumenPdf || "", items: []
+              dokumenPdf: it.dokumenPdf || "", canEdit: Boolean(it.canEdit), items: []
             };
           }
           mapTiket[it.kodeTiket].items.push(it);
         });
 
-        groupedTickets = Object.values(mapTiket); 
-        filteredTickets = [...groupedTickets];
+        groupedTickets = Object.values(mapTiket);
+        groupedTickets.forEach(ticket => ticket.items.sort((a, b) => Number(a.noItem) - Number(b.noItem)));
         currentPage = 1;
-        
-        updateKPI(groupedTickets);
-        renderPaging();
+        applyFilters();
       }
     } catch(e) { document.getElementById('bodyTabelRiwayat').innerHTML = `<tr><td colspan="8" style="color:red; text-align:center;">Gagal memuat data.</td></tr>`; }
   }
@@ -402,9 +451,9 @@
     let acc = 0, reject = 0, pending = 0;
     data.forEach(t => {
       let st = (t.statusPermintaan || "").toUpperCase();
-      if(st === "ACC" || st === "APPROVED") acc++; 
-      else if(st === "DITOLAK" || st === "REJECTED") reject++; 
-      else pending++;
+      if(["ACC", "APPROVED", "ACC_SEBAGIAN", "DIPROSES", "SEBAGIAN_TERPENUHI", "SELESAI"].includes(st)) acc++;
+      else if(["DITOLAK", "REJECTED", "REVISI", "DIBATALKAN"].includes(st)) reject++;
+      else if(st === "PENDING") pending++;
     });
     document.getElementById('kpiTotal').innerText = data.length; 
     document.getElementById('kpiPending').innerText = pending;
@@ -412,16 +461,32 @@
     document.getElementById('kpiReject').innerText = reject;
   }
 
-  function filterTabelTiket() {
+  function applyFilters() {
     const kw = document.getElementById('searchRiwayat').value.toLowerCase().trim();
+    const fromDate = document.getElementById('filterTglMulai').value;
+    const toDate = document.getElementById('filterTglSelesai').value;
+    const product = document.getElementById('filterNamaBarang').value.toLowerCase().trim();
+    const statusFilter = document.getElementById('filterStatus').value;
+    const urgencyFilter = document.getElementById('filterUrgensi').value;
     filteredTickets = groupedTickets.filter(t => {
-      let matchTiket = t.kodeTiket.toLowerCase().includes(kw);
-      let matchBarang = t.items.some(item => item.namaBarang.toLowerCase().includes(kw));
-      let matchPemohon = t.pemohon.toLowerCase().includes(kw);
-      return matchTiket || matchBarang || matchPemohon;
+      const requestedDate = String(t.tglPermintaan || '').split(' ')[0];
+      const status = String(t.statusPermintaan || '').toUpperCase();
+      const queryMatch = !kw || String(t.kodeTiket || '').toLowerCase().includes(kw) || String(t.pemohon || '').toLowerCase().includes(kw) || String(t.unitLokasi || '').toLowerCase().includes(kw) || t.items.some(item => String(item.namaBarang || '').toLowerCase().includes(kw));
+      const productMatch = !product || t.items.some(item => String(item.namaBarang || '').toLowerCase().includes(product));
+      const dateMatch = (!fromDate || requestedDate >= fromDate) && (!toDate || requestedDate <= toDate);
+      const urgencyMatch = !urgencyFilter || String(t.urgensi || '').toUpperCase().includes(urgencyFilter);
+      let statusMatch = !statusFilter;
+      if (statusFilter === 'APPROVED') statusMatch = ['ACC','APPROVED','ACC_SEBAGIAN','DIPROSES'].includes(status);
+      else if (statusFilter === 'SEBAGIAN') statusMatch = status === 'SEBAGIAN_TERPENUHI';
+      else if (statusFilter) statusMatch = status === statusFilter;
+      return queryMatch && productMatch && dateMatch && urgencyMatch && statusMatch;
     });
-    currentPage = 1; renderPaging();
+    currentPage = 1;
+    updateKPI(filteredTickets);
+    renderPaging();
   }
+
+  function filterTabelTiket() { applyFilters(); }
 
   function gantiHalaman(step) {
     const maxPage = Math.ceil(filteredTickets.length / itemsPerPage);
@@ -449,22 +514,26 @@
     pageData.forEach(t => {
       let st = (t.statusPermintaan || "").toUpperCase();
       let badge = `<span class="badge badge-pending">PENDING</span>`;
-      if(st==="ACC" || st==="APPROVED") badge = `<span class="badge badge-acc">ACC ADMIN</span>`;
+      if(["ACC", "APPROVED", "DIPROSES"].includes(st)) badge = `<span class="badge badge-acc">DIPROSES</span>`;
+      else if(st==="ACC_SEBAGIAN") badge = `<span class="badge badge-revisi">ACC SEBAGIAN</span>`;
+      else if(st==="SEBAGIAN_TERPENUHI") badge = `<span class="badge badge-revisi">SEBAGIAN TERPENUHI</span>`;
+      else if(st==="SELESAI") badge = `<span class="badge badge-acc">SELESAI</span>`;
       else if(st==="DITOLAK" || st==="REJECTED") badge = `<span class="badge badge-reject">DITOLAK</span>`;
       else if(st==="REVISI") badge = `<span class="badge badge-revisi">REVISI</span>`;
+      else if(st==="DIBATALKAN") badge = `<span class="badge badge-reject">DIBATALKAN</span>`;
       
       let badgeDoc = t.dokumenPdf ? `<span class="badge badge-upload-yes"><i class="fa-solid fa-check"></i> Uploaded</span>` : `<span class="badge badge-upload-no"><i class="fa-solid fa-clock"></i> Belum</span>`;
 
       html += `<tr>
-        <td><span class="mono" style="color:var(--erp-primary); font-weight:700;">${t.kodeTiket}</span></td>
-        <td><b>${t.pemohon}</b><br><small style="color:var(--erp-text-muted);">${t.unitLokasi}</small></td>
-        <td><small class="mono">${t.tglDibutuhkan}</small></td>
+        <td><span class="mono" style="color:var(--erp-primary); font-weight:700;">${escapeHtml(t.kodeTiket)}</span></td>
+        <td><b>${escapeHtml(t.pemohon)}</b><br><small style="color:var(--erp-text-muted);">${escapeHtml(t.unitLokasi)}</small></td>
+        <td><small class="mono">${escapeHtml(t.tglDibutuhkan)}</small></td>
         <td><b>${t.items.length} Barang</b></td>
-        <td><small style="color:${t.urgensi.includes('URGENT')?'red':''}; font-weight:600;">${t.urgensi}</small></td>
+        <td><small style="color:${String(t.urgensi).includes('URGENT')?'red':''}; font-weight:600;">${escapeHtml(t.urgensi)}</small></td>
         <td>${badgeDoc}</td>
         <td>${badge}</td>
         <td>
-          <button class="btn btn-outline btn-sm" onclick="bukaDetailTiket('${t.kodeTiket}')"><i class="fa-solid fa-eye"></i> Detail</button>
+          <button class="btn btn-outline btn-sm" onclick="bukaDetailTiket(${inlineArg(t.kodeTiket)})"><i class="fa-solid fa-eye"></i> Detail</button>
         </td>
       </tr>`;
     });
@@ -479,17 +548,8 @@
   // FUNGSI EXPORT EXCEL (FORMAT RAPI / TAB DELIMITED)
   // ==========================================
   function exportToExcel() {
-    const tglMulai = document.getElementById('filterTglMulai').value;
-    const tglSelesai = document.getElementById('filterTglSelesai').value;
     const namaBarangFilter = document.getElementById('filterNamaBarang').value.toLowerCase().trim();
-
-    let dataToExport = groupedTickets.filter(t => {
-      let tglReqOnly = t.tglPermintaan.split(' ')[0];
-      let passDate = true;
-      if (tglMulai && tglReqOnly < tglMulai) passDate = false;
-      if (tglSelesai && tglReqOnly > tglSelesai) passDate = false;
-      return passDate;
-    });
+    let dataToExport = filteredTickets;
 
     if (dataToExport.length === 0) {
       alert("Tidak ada data pada rentang tanggal tersebut.");
@@ -544,23 +604,23 @@
     let rowCount = 0;
     dataToExport.forEach(t => {
       t.items.forEach(it => {
-        if (namaBarangFilter && !it.namaBarang.toLowerCase().includes(namaBarangFilter)) return;
+        if (namaBarangFilter && !String(it.namaBarang || '').toLowerCase().includes(namaBarangFilter)) return;
         rowCount++;
 
         html += `
           <tr>
-            <td class="text">${t.kodeTiket}</td>
-            <td class="text">${t.tglPermintaan}</td>
-            <td class="text">${t.tglDibutuhkan}</td>
-            <td>${t.pemohon}</td>
-            <td>${t.unitLokasi}</td>
-            <td>${t.urgensi}</td>
-            <td><b>${it.namaBarang}</b></td>
-            <td>${it.kategori}</td>
-            <td>${it.jumlah}</td>
-            <td>${it.satuan}</td>
-            <td>${t.statusPermintaan}</td>
-            <td>${t.catatanAdmin}</td>
+            <td class="text">${exportText(t.kodeTiket)}</td>
+            <td class="text">${exportText(t.tglPermintaan)}</td>
+            <td class="text">${exportText(t.tglDibutuhkan)}</td>
+            <td>${exportText(t.pemohon)}</td>
+            <td>${exportText(t.unitLokasi)}</td>
+            <td>${exportText(t.urgensi)}</td>
+            <td><b>${exportText(it.namaBarang)}</b></td>
+            <td>${exportText(it.kategori)}</td>
+            <td>${exportText(it.jumlah)}</td>
+            <td>${exportText(it.satuan)}</td>
+            <td>${exportText(t.statusPermintaan)}</td>
+            <td>${exportText(t.catatanAdmin)}</td>
           </tr>
         `;
       });
@@ -578,7 +638,7 @@
     
     let link = document.createElement("a");
     link.setAttribute("href", url);
-    link.setAttribute("download", `Laporan_Permintaan_Material_${new Date().toISOString().split('T')[0]}.xls`);
+    link.setAttribute("download", `Laporan_Permintaan_Material_${todayJakarta()}.xls`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -586,81 +646,123 @@
     showToast("File Excel berhasil di-export dengan format rapi!", "success");
   }
 
-  function bukaDetailTiket(kode) {
+  async function bukaDetailTiket(kode) {
     const t = groupedTickets.find(x => x.kodeTiket === kode);
     if(!t) return;
+    activeTicketDetail = kode;
     
     document.getElementById('mdlTitle').innerText = `Detail Tiket : ${t.kodeTiket}`;
     let st = (t.statusPermintaan || "").toUpperCase();
-    let canEdit = (st === "PENDING" || st === "REVISI");
+    let canEdit = t.canEdit && (st === "PENDING" || st === "REVISI");
+    let canFulfill = sesiUser.isAdmin && ["ACC", "ACC_SEBAGIAN", "DIPROSES", "SEBAGIAN_TERPENUHI"].includes(st);
+    let canUpload = t.canEdit;
     
     let html = `
       <div style="display:flex; justify-content:space-between; margin-bottom:15px; background:#f6f9f7; padding:15px; border-radius:8px; border:1px solid var(--erp-border-light);">
-        <div><div style="font-size:11px; color:#5e6e64;">Pemohon</div><div style="font-weight:700;">${t.pemohon} (${t.unitLokasi})</div></div>
-        <div><div style="font-size:11px; color:#5e6e64;">Tgl Dibutuhkan</div><div style="font-weight:700; color:var(--erp-primary);">${t.tglDibutuhkan}</div></div>
-        <div><div style="font-size:11px; color:#5e6e64;">Urgensi</div><div style="font-weight:700;">${t.urgensi}</div></div>
+        <div><div style="font-size:11px; color:#5e6e64;">Pemohon</div><div style="font-weight:700;">${escapeHtml(t.pemohon)} (${escapeHtml(t.unitLokasi)})</div></div>
+        <div><div style="font-size:11px; color:#5e6e64;">Tgl Dibutuhkan</div><div style="font-weight:700; color:var(--erp-primary);">${escapeHtml(t.tglDibutuhkan)}</div></div>
+        <div><div style="font-size:11px; color:#5e6e64;">Urgensi</div><div style="font-weight:700;">${escapeHtml(t.urgensi)}</div></div>
       </div>
       <table class="erp-table" style="margin-bottom:15px;">
-        <thead><tr><th>Nama Barang</th><th>Jumlah</th><th>Kategori</th></tr></thead><tbody>`;
-        t.items.forEach(it => { html += `<tr><td><b>${it.namaBarang}</b></td><td>${it.jumlah} ${it.satuan}</td><td>${it.kategori}</td></tr>`; });
+        <thead><tr><th>Nama Barang</th><th>Diminta</th><th>Disetujui</th><th>Terpenuhi</th><th>Status Item</th><th>Kategori</th></tr></thead><tbody>`;
+        t.items.forEach(it => { html += `<tr><td><b>${escapeHtml(it.namaBarang)}</b></td><td>${escapeHtml(it.jumlah)} ${escapeHtml(it.satuan)}</td><td>${Number(it.jumlahDisetujui || 0)} ${escapeHtml(it.satuan)}</td><td>${Number(it.jumlahTerpenuhi || 0)} ${escapeHtml(it.satuan)}</td><td>${escapeHtml(it.statusItem || st)}</td><td>${escapeHtml(it.kategori)}</td></tr>`; });
     html += `</tbody></table>
-      <div style="background:#fff8e6; padding:10px; border-left:3px solid #f59e0b; font-size:12px; margin-bottom:10px;"><b>Ket. Pemohon:</b> ${t.keterangan||'-'}</div>
-      <div style="background:#e6f0eb; padding:10px; border-left:3px solid #10b981; font-size:12px; margin-bottom:15px;"><b>Catatan Admin / Status:</b> ${t.catatanAdmin||'-'}</div>`;
+      <div style="background:#fff8e6; padding:10px; border-left:3px solid #f59e0b; font-size:12px; margin-bottom:10px;"><b>Ket. Pemohon:</b> ${escapeHtml(t.keterangan||'-')}</div>
+      <div style="background:#e6f0eb; padding:10px; border-left:3px solid #10b981; font-size:12px; margin-bottom:15px;"><b>Catatan Admin / Status:</b> ${escapeHtml(t.catatanAdmin||'-')}</div>`;
 
-    if (sesiUser.isAdmin) {
+    if (sesiUser.isAdmin && canEdit) {
       html += `
         <div style="background:#f1f5f9; border:1px solid #cbd5e1; padding:15px; border-radius:8px; margin-bottom:15px;">
           <div style="font-weight:700; color:#0f172a; margin-bottom:10px;"><i class="fa-solid fa-user-shield"></i> Panel Konfirmasi Admin</div>
           <div class="row-group">
             <div class="form-group">
               <label>Pilih Status Keputusan</label>
-              <select id="adminStatusDecision">
-                <option value="ACC" ${st==='ACC'?'selected':''}>ACC (Disetujui)</option>
+              <select id="adminStatusDecision" onchange="toggleApprovalInputs()">
+                <option value="ACC">ACC (Disetujui)</option>
                 <option value="DITOLAK" ${st==='DITOLAK'?'selected':''}>DITOLAK</option>
                 <option value="REVISI" ${st==='REVISI'?'selected':''}>REVISI (Minta Pemohon Edit)</option>
               </select>
             </div>
           </div>
+          <div id="approvalInputsWrap" style="margin-bottom:12px;">
+            <label>Jumlah yang disetujui per item</label>
+            <table class="erp-table"><thead><tr><th>Barang</th><th>Diminta</th><th>Disetujui</th></tr></thead><tbody>
+              ${t.items.map(it => `<tr><td>${escapeHtml(it.namaBarang)}</td><td>${escapeHtml(it.jumlah)} ${escapeHtml(it.satuan)}</td><td><input type="number" id="approveQty_${Number(it.noItem)}" min="0" max="${Number(it.jumlah)}" step="any" value="${Number(it.jumlah)}" style="max-width:140px;"></td></tr>`).join('')}
+            </tbody></table>
+          </div>
           <div class="form-group" style="margin-bottom:10px;">
             <label>Catatan / Alasan Detail untuk Pemohon</label>
-            <textarea id="adminCatatanInput" rows="2" placeholder="Tuliskan alasan penolakan, instruksi revisi, dll...">${t.catatanAdmin !== '-' ? t.catatanAdmin : ''}</textarea>
+            <textarea id="adminCatatanInput" maxlength="500" rows="2" placeholder="Tuliskan alasan penolakan, instruksi revisi, dll...">${escapeHtml(t.catatanAdmin !== '-' ? t.catatanAdmin : '')}</textarea>
           </div>
-          <button class="btn btn-primary btn-sm" onclick="simpanKonfirmasiAdmin('${t.kodeTiket}')"><i class="fa-solid fa-check-double"></i> Simpan Konfirmasi Admin</button>
+          <button class="btn btn-primary btn-sm" onclick="simpanKonfirmasiAdmin(${inlineArg(t.kodeTiket)})"><i class="fa-solid fa-check-double"></i> Simpan Konfirmasi Admin</button>
         </div>`;
+    }
+
+    if (canFulfill) {
+      html += `<div style="background:#f0fdf4; border:1px solid #bbf7d0; padding:15px; border-radius:8px; margin-bottom:15px;">
+        <div style="font-weight:700; color:#166534; margin-bottom:10px;"><i class="fa-solid fa-box-open"></i> Catat Pemenuhan</div>
+        <table class="erp-table"><thead><tr><th>Barang</th><th>Sisa Disetujui</th><th>Tambah Terpenuhi</th><th>Catatan</th><th></th></tr></thead><tbody>
+          ${t.items.map(it => {
+            const remaining = Math.max(0, Number(it.jumlahDisetujui || 0) - Number(it.jumlahTerpenuhi || 0));
+            return `<tr><td>${escapeHtml(it.namaBarang)}</td><td>${remaining} ${escapeHtml(it.satuan)}</td><td><input type="number" id="fulfillQty_${Number(it.noItem)}" min="0.001" max="${remaining}" step="any" style="max-width:120px;" ${remaining <= 0 ? 'disabled' : ''}></td><td><input type="text" id="fulfillNote_${Number(it.noItem)}" maxlength="500" placeholder="Opsional" style="max-width:150px;" ${remaining <= 0 ? 'disabled' : ''}></td><td><button class="btn btn-success btn-sm" onclick="catatPemenuhanItem(${inlineArg(t.kodeTiket)},${Number(it.noItem)})" ${remaining <= 0 ? 'disabled' : ''}>Simpan</button></td></tr>`;
+          }).join('')}
+        </tbody></table>
+      </div>`;
     }
 
     html += `
       <div style="background:#f8fafc; border:1px dashed var(--erp-border); padding:15px; border-radius:8px;">
         <div style="font-weight:700; color:var(--erp-primary); margin-bottom:8px;"><i class="fa-solid fa-file-pdf"></i> Dokumen Tanda Tangan (PDF)</div>
-        ${t.dokumenPdf ? `
+        ${safePdfUrl(t.dokumenPdf) ? `
           <div style="display:flex; align-items:center; justify-content:space-between; background:#d1fae5; padding:8px 12px; border-radius:6px; color:#065f46;">
             <span><i class="fa-solid fa-circle-check"></i> Dokumen PDF sudah diunggah.</span>
-            <a href="${t.dokumenPdf}" target="_blank" class="btn btn-sm btn-success" style="background:#047857; color:#fff; text-decoration:none;"><i class="fa-solid fa-eye"></i> Lihat PDF</a>
+            <a href="${escapeHtml(safePdfUrl(t.dokumenPdf))}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-success" style="background:#047857; color:#fff; text-decoration:none;"><i class="fa-solid fa-eye"></i> Lihat PDF</a>
           </div>
-        ` : `
+        ` : canUpload ? `
           <div style="display:flex; gap:10px; align-items:center;">
             <input type="file" id="filePdfInput" accept="application/pdf" style="font-size:11px; flex:1;">
-            <button class="btn btn-primary btn-sm" onclick="uploadDokumenPdf('${t.kodeTiket}')"><i class="fa-solid fa-upload"></i> Upload PDF</button>
+            <button class="btn btn-primary btn-sm" onclick="uploadDokumenPdf(${inlineArg(t.kodeTiket)})"><i class="fa-solid fa-upload"></i> Upload PDF</button>
           </div>
           <small style="color:#64748b; margin-top:4px; display:block;">Unggah file PDF lembar pengajuan yang telah ditandatangani.</small>
-        `}
+        ` : '<span class="badge badge-upload-no">Belum diunggah</span>'}
       </div>`;
+    html += `<div id="ticketAudit" style="margin-top:15px; background:#f8fafc; padding:15px; border-radius:8px;"><b>Riwayat Keputusan</b><div style="margin-top:8px; color:#64748b;">Memuat audit...</div></div>`;
     
     document.getElementById('mdlBody').innerHTML = html;
     
-    let footerHtml = `<button class="btn btn-outline" onclick="cetakStruk('${t.kodeTiket}')"><i class="fa-solid fa-print"></i> Cetak Bukti PDF</button>`;
+    let footerHtml = `<button class="btn btn-outline" onclick="cetakStruk(${inlineArg(t.kodeTiket)})"><i class="fa-solid fa-print"></i> Cetak Bukti PDF</button>`;
     if(canEdit) {
-      footerHtml += `<button class="btn btn-warning" onclick="persiapkanEdit('${t.kodeTiket}')"><i class="fa-solid fa-pen"></i> Revisi/Edit</button>
-                     <button class="btn btn-danger" onclick="hapusTiket('${t.kodeTiket}')"><i class="fa-solid fa-trash"></i> Batalkan</button>`;
+      footerHtml += `<button class="btn btn-warning" onclick="persiapkanEdit(${inlineArg(t.kodeTiket)})"><i class="fa-solid fa-pen"></i> Revisi/Edit</button>
+                     <button class="btn btn-danger" onclick="hapusTiket(${inlineArg(t.kodeTiket)})"><i class="fa-solid fa-trash"></i> Batalkan</button>`;
     } else {
-      footerHtml += `<span style="font-size:11px; color:#b91c1c; font-weight:600; align-self:center; margin-left:10px;">Tiket sudah ${st} (Terkunci)</span>`;
+      footerHtml += `<span style="font-size:11px; color:#b91c1c; font-weight:600; align-self:center; margin-left:10px;">Status: ${escapeHtml(st)}</span>`;
     }
 
     document.getElementById('mdlFooter').innerHTML = footerHtml;
     document.getElementById('modalDetailTiket').style.display = 'flex';
+    if (sesiUser.isAdmin && canEdit) toggleApprovalInputs();
+    try {
+      const auditRes = await postPayload({action: 'getAuditTiket', token: sesiUser.token, kodeTiket: kode});
+      const auditJson = await auditRes.json();
+      if (cekSesiBerakhir(auditJson)) return;
+      if (activeTicketDetail !== kode) return;
+      const auditBox = document.getElementById('ticketAudit');
+      if (!auditBox) return;
+      const entries = auditJson.status === 'success' ? auditJson.data : [];
+      auditBox.innerHTML = `<b>Riwayat Keputusan</b>${entries.length ? `<ol style="margin:8px 0 0 20px;">${entries.map(entry => `<li style="margin-bottom:7px;"><b>${escapeHtml(entry.aksi)}${Number(entry.noItem) > 0 ? ' — Item #' + Number(entry.noItem) : ''}</b> — ${escapeHtml(entry.waktu)}; ${escapeHtml(entry.dari || '—')} → ${escapeHtml(entry.ke || '—')} oleh ${escapeHtml(entry.pelaku)}<br><small>${escapeHtml(entry.catatan)}</small></li>`).join('')}</ol>` : '<div style="margin-top:8px;color:#64748b;">Belum ada catatan audit untuk tiket ini.</div>'}`;
+    } catch (auditError) {
+      const auditBox = document.getElementById('ticketAudit');
+      if (auditBox && activeTicketDetail === kode) auditBox.innerHTML = '<b>Riwayat Keputusan</b><div style="margin-top:8px;color:#b91c1c;">Audit tidak dapat dimuat.</div>';
+    }
   }
 
-  function tutupModal() { document.getElementById('modalDetailTiket').style.display = 'none'; }
+  function toggleApprovalInputs() {
+    const select = document.getElementById('adminStatusDecision');
+    const wrap = document.getElementById('approvalInputsWrap');
+    if (select && wrap) wrap.style.display = select.value === 'ACC' ? 'block' : 'none';
+  }
+
+  function tutupModal() { activeTicketDetail = null; document.getElementById('modalDetailTiket').style.display = 'none'; }
 
   async function simpanKonfirmasiAdmin(kodeTiket) {
     const statusVal = document.getElementById('adminStatusDecision').value;
@@ -668,8 +770,10 @@
 
     showToast("Menyimpan keputusan admin...", "success");
     try {
+      const ticket = groupedTickets.find(item => item.kodeTiket === kodeTiket);
       const payload = { action: "adminKonfirmasi", token: sesiUser.token, kodeTiket: kodeTiket, statusPermintaan: statusVal, catatanAdmin: catatanVal };
-      const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+      if (statusVal === 'ACC') payload.approvedQuantities = [...ticket.items].sort((a,b) => Number(a.noItem)-Number(b.noItem)).map(item => document.getElementById(`approveQty_${Number(item.noItem)}`).value);
+      const res = await postPayload(payload);
       const json = await res.json();
       if (cekSesiBerakhir(json)) return;
       if(json.status === "success") { showToast(json.message, "success"); tutupModal(); muatRiwayatPermintaan(); } 
@@ -677,11 +781,29 @@
     } catch(err) { showToast("Gagal terhubung ke server.", "error"); }
   }
 
+  async function catatPemenuhanItem(kodeTiket, noItem) {
+    const quantityInput = document.getElementById(`fulfillQty_${noItem}`);
+    const noteInput = document.getElementById(`fulfillNote_${noItem}`);
+    const quantity = Number(quantityInput && quantityInput.value);
+    if (!Number.isFinite(quantity) || quantity <= 0) return showToast('Masukkan jumlah pemenuhan lebih dari 0.', 'error');
+    try {
+      const res = await postPayload({action: 'catatPemenuhanItem', token: sesiUser.token, kodeTiket: kodeTiket, noItem: noItem, jumlah: quantity, catatan: noteInput ? noteInput.value.trim() : ''});
+      const json = await res.json();
+      if (cekSesiBerakhir(json)) return;
+      if (json.status === 'success') {
+        showToast(json.message, 'success');
+        await muatRiwayatPermintaan();
+        await bukaDetailTiket(kodeTiket);
+      } else showToast(json.message, 'error');
+    } catch (e) { showToast('Gagal mencatat pemenuhan.', 'error'); }
+  }
+
   async function uploadDokumenPdf(kodeTiket) {
     const fileInput = document.getElementById('filePdfInput');
     if(fileInput.files.length === 0) return alert("Pilih file PDF terlebih dahulu!");
     const file = fileInput.files[0];
     if(file.type !== "application/pdf") return alert("Hanya file berformat PDF!");
+    if(file.size > 10 * 1024 * 1024) return alert("Ukuran file maksimal 10 MB.");
 
     const reader = new FileReader();
     reader.readAsDataURL(file);
@@ -690,7 +812,7 @@
       showToast("Mengunggah dokumen PDF...", "success");
       try {
         const payload = { action: "uploadPdfTiket", token: sesiUser.token, kodeTiket: kodeTiket, fileName: file.name, fileData: base64Data };
-        const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+        const res = await postPayload(payload);
         const json = await res.json();
         if (cekSesiBerakhir(json)) return;
         if(json.status === "success") { showToast("PDF berhasil diunggah!", "success"); muatRiwayatPermintaan(); tutupModal(); } 
@@ -705,15 +827,15 @@
     let printWin = window.open('', '_blank');
     let htmlItems = t.items.map((it) => `
       <tr>
-        <td style="padding: 8px 10px; border-bottom: 1px solid #cbd5e1; font-family: monospace; font-size: 11px;">${it.kodeSupplier || '-'}</td>
-        <td style="padding: 8px 10px; border-bottom: 1px solid #cbd5e1; font-weight: 700; font-size: 11px;">${it.namaBarang}</td>
-        <td style="padding: 8px 10px; border-bottom: 1px solid #cbd5e1; font-size: 11px;">${it.jumlah} ${it.satuan}</td>
-        <td style="padding: 8px 10px; border-bottom: 1px solid #cbd5e1; font-size: 11px;">${it.supplier || '-'}</td>
-        <td style="padding: 8px 10px; border-bottom: 1px solid #cbd5e1; font-size: 11px;">${t.keterangan || '-'}</td>
+        <td style="padding: 8px 10px; border-bottom: 1px solid #cbd5e1; font-family: monospace; font-size: 11px;">${escapeHtml(it.kodeSupplier || '-')}</td>
+        <td style="padding: 8px 10px; border-bottom: 1px solid #cbd5e1; font-weight: 700; font-size: 11px;">${escapeHtml(it.namaBarang)}</td>
+        <td style="padding: 8px 10px; border-bottom: 1px solid #cbd5e1; font-size: 11px;">${escapeHtml(it.jumlah)} ${escapeHtml(it.satuan)}</td>
+        <td style="padding: 8px 10px; border-bottom: 1px solid #cbd5e1; font-size: 11px;">${escapeHtml(it.supplier || '-')}</td>
+        <td style="padding: 8px 10px; border-bottom: 1px solid #cbd5e1; font-size: 11px;">${escapeHtml(t.keterangan || '-')}</td>
       </tr>
     `).join('');
     
-    let printHTML = `<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Cetak Form - ${t.kodeTiket}</title>
+    let printHTML = `<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Cetak Form - ${escapeHtml(t.kodeTiket)}</title>
       <style>body { font-family: Arial, sans-serif; color: #0f172a; font-size: 12px; margin: 0; padding: 20px; line-height: 1.4; }
       .header-container { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #0f172a; padding-bottom: 8px; margin-bottom: 15px; }
       .company-title { font-size: 20px; font-weight: 800; color: #0f172a; } .form-subtitle { font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase; margin-top: 3px; }
@@ -724,14 +846,14 @@
       .sig-table { width: 100%; border-collapse: collapse; margin-top: 40px; page-break-inside: avoid; } .sig-cell { width: 25%; text-align: center; vertical-align: top; padding: 0 8px; }
       .sig-title { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #334155; margin-bottom: 45px; } .sig-line { border-bottom: 1px dashed #475569; margin-bottom: 5px; width: 85%; margin-left: auto; margin-right: auto; } .sig-name { font-size: 11px; font-weight: 700; color: #0f172a; }
       </style></head><body onload="window.print(); window.close();">
-        <div class="header-container"><div><div class="company-title">CV. SELABINTANA</div><div class="form-subtitle">FORM PERMINTAAN MATERIAL & BARANG</div></div><div><div class="ticket-code">${t.kodeTiket}</div><div class="ticket-date">${t.tglPermintaan}</div></div></div>
-        <div class="info-box"><div class="info-col"><div class="info-row"><div class="info-label">Pemohon</div><div class="info-val">: ${t.pemohon}</div></div><div class="info-row"><div class="info-label">Unit / Farm</div><div class="info-val">: ${t.unitLokasi}</div></div><div class="info-row"><div class="info-label">Urgensi</div><div class="info-val">: ${t.urgensi}</div></div></div><div class="info-col"><div class="info-row"><div class="info-label">Tgl Diminta</div><div class="info-val">: ${t.tglPermintaan.split(' ')[0]}</div></div><div class="info-row"><div class="info-label">Dibutuhkan</div><div class="info-val">: ${t.tglDibutuhkan}</div></div></div></div>
+        <div class="header-container"><div><div class="company-title">CV. SELABINTANA</div><div class="form-subtitle">FORM PERMINTAAN MATERIAL & BARANG</div></div><div><div class="ticket-code">${escapeHtml(t.kodeTiket)}</div><div class="ticket-date">${escapeHtml(t.tglPermintaan)}</div></div></div>
+        <div class="info-box"><div class="info-col"><div class="info-row"><div class="info-label">Pemohon</div><div class="info-val">: ${escapeHtml(t.pemohon)}</div></div><div class="info-row"><div class="info-label">Unit / Farm</div><div class="info-val">: ${escapeHtml(t.unitLokasi)}</div></div><div class="info-row"><div class="info-label">Urgensi</div><div class="info-val">: ${escapeHtml(t.urgensi)}</div></div></div><div class="info-col"><div class="info-row"><div class="info-label">Tgl Diminta</div><div class="info-val">: ${escapeHtml(t.tglPermintaan.split(' ')[0])}</div></div><div class="info-row"><div class="info-label">Dibutuhkan</div><div class="info-val">: ${escapeHtml(t.tglDibutuhkan)}</div></div></div></div>
         <table><thead><tr><th>KODE BARANG</th><th>NAMA BARANG</th><th>JUMLAH</th><th>SUPPLIER</th><th>KETERANGAN</th></tr></thead><tbody>${htmlItems}</tbody></table>
         <table class="sig-table"><tr>
-          <td class="sig-cell"><div class="sig-title">PEMOHON</div><div class="sig-line"></div><div class="sig-name">(${t.pemohon})</div></td>
+          <td class="sig-cell"><div class="sig-title">PEMOHON</div><div class="sig-line"></div><div class="sig-name">(${escapeHtml(t.pemohon)})</div></td>
           <td class="sig-cell"><div class="sig-title">HEAD FARM</div><div class="sig-line"></div><div class="sig-name">( ....................... )</div></td>
           <td class="sig-cell"><div class="sig-title">FARM MANAGER</div><div class="sig-line"></div><div class="sig-name">( ....................... )</div></td>
-          <td class="sig-cell"><div class="sig-title">GENERAL MANAGER</div><div class="sig-line"></div><div class="sig-name">(drh. Titin Idayati)</div></td>
+          <td class="sig-cell"><div class="sig-title">GENERAL MANAGER</div><div class="sig-line"></div><div class="sig-name">Drh. Titin Idayati</div></td>
         </tr></table>
       </body></html>`;
     printWin.document.write(printHTML); printWin.document.close();
@@ -741,7 +863,7 @@
     if(!confirm(`Yakin ingin MEMBATALKAN tiket ${kode}?`)) return;
     tutupModal();
     try {
-      const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "hapusPermintaan", token: sesiUser.token, kodeTiket: kode }) });
+      const res = await postPayload({ action: "hapusPermintaan", token: sesiUser.token, kodeTiket: kode });
       const json = await res.json();
       if (cekSesiBerakhir(json)) return;
       if(json.status === "success") { showToast(json.message); muatRiwayatPermintaan(); } else showToast(json.message, 'error');
@@ -751,7 +873,7 @@
   function persiapkanEdit(kode) {
     const t = groupedTickets.find(x => x.kodeTiket === kode);
     tutupModal(); idTiketEdit = kode;
-    document.getElementById('formTitle').innerHTML = `<i class="fa-solid fa-pen-to-square"></i> Mode Revisi Tiket: <span style="color:#000;">${kode}</span>`;
+    document.getElementById('formTitle').innerHTML = `<i class="fa-solid fa-pen-to-square"></i> Mode Revisi Tiket: <span style="color:#000;">${escapeHtml(kode)}</span>`;
     document.getElementById('tglDibutuhkan').value = t.tglDibutuhkan.split(' ')[0];
     document.getElementById('urgensi').value = t.urgensi;
     document.getElementById('keterangan').value = t.keterangan;
