@@ -201,24 +201,13 @@
 <div id="toast-container"></div>
 
 <!-- SCREEN LOGIN -->
-<div id="loginSection" class="login-wrapper">
-  <div class="login-card">
-    <div style="text-align: center; margin-bottom: 25px;">
-      <i class="fa-solid fa-boxes-stacked" style="font-size: 48px; color: var(--erp-primary); margin-bottom: 10px;"></i>
-      <h2 style="font-size: 18px; font-weight: 800; color: var(--erp-primary); margin: 0;">CV. SELABINTANA</h2>
-      <h3 style="font-size: 13px; font-weight: 600; color: var(--erp-text-main); margin-top: 4px;">ERP Inventory & Stock Portal</h3>
-    </div>
-    <div class="form-group">
-      <label for="loginUser">Username SSO</label>
-      <input type="text" id="loginUser" placeholder="Ketik username..." required>
-    </div>
-    <div class="form-group">
-      <label for="loginPass">Password</label>
-      <input type="password" id="loginPass" placeholder="Ketik password..." required>
-    </div>
-    <button type="button" onclick="prosesLogin()" class="btn btn-primary" style="width: 100%; padding: 12px; margin-top: 10px;">
-      <i class="fa-solid fa-right-to-bracket"></i> Masuk Sistem ERP
-    </button>
+<div id="sessionGate" class="login-wrapper">
+  <div class="login-card" role="status" aria-live="polite">
+    <i class="fa-solid fa-boxes-stacked" aria-hidden="true" style="font-size:44px;color:var(--erp-primary);margin-bottom:10px;"></i>
+    <h2 style="font-size:17px;font-weight:800;color:var(--erp-primary);margin:0 0 8px;">Memeriksa sesi</h2>
+    <p id="sessionGateMessage" style="font-size:13px;line-height:1.5;color:var(--erp-text-muted);">Stock menggunakan sesi bersama dari halaman utama.</p>
+    <button type="button" id="sessionRetryButton" onclick="periksaSesiAktif()" class="btn btn-primary" style="display:none;width:100%;padding:11px;margin-top:12px;">Coba Lagi</button>
+    <a href="index.html?return=stock.html" style="display:inline-block;margin-top:12px;color:var(--erp-primary);font-size:12px;font-weight:700;">Ke halaman masuk</a>
   </div>
 </div>
 
@@ -290,6 +279,7 @@
       <div class="erp-topbar-actions">
         <div class="mobile-connection-status" id="connectionStatusMobile" role="status" aria-live="polite"><span aria-hidden="true" style="width:8px;height:8px;background:var(--erp-warning);border-radius:50%;display:inline-block;"></span><span>Menunggu koneksi</span></div>
         <div class="erp-user-profile" id="userProfileTag"></div>
+        <a href="index.html" class="btn btn-outline" aria-label="Kembali ke menu modul" style="padding:6px 10px;text-decoration:none;">Menu</a>
         <button type="button" onclick="bukaModalGantiPassword()" class="btn btn-outline btn-password" title="Ganti password" aria-label="Ganti password" style="padding:6px 10px;"><i class="fa-solid fa-key"></i><span>Password</span></button>
         <button onclick="logoutSesi()" class="btn btn-outline" style="padding: 6px 12px; color: var(--erp-danger);">
           <i class="fa-solid fa-power-off"></i> Keluar
@@ -675,6 +665,8 @@
 
 <script>
   const GAS_URL = "https://script.google.com/macros/s/AKfycbx_tuIlCd-_n3PMtmv-_hPP4QrbGfPVYzk4tN33WinGtA8fyhe19uwXg6oS7v9jnm9yZw/exec";
+  const AUTH_SESSION_KEY = 'selabintana_app_session';
+  const LEGACY_SESSION_KEYS = ['portal_user_session', 'stok_app_user_session'];
 
   let sesiUser = {}; let masterUnits = []; let allUnits = []; let masterGudang = []; let rawJurnalData = []; let rawStokList = [];
   let rawStockSnapshot = []; let appliedStockSnapshotFilters = null; let transferRows = []; let ticketReceiptOptions = []; let stockTransactionIds = Object.create(null); let allowedGudang = [];
@@ -696,6 +688,29 @@
   }
   function postPayload(payload) {
     return fetch(GAS_URL, {method: 'POST', headers: {'Content-Type': 'text/plain;charset=utf-8'}, body: JSON.stringify(payload)});
+  }
+  function readSharedSession() {
+    for (const key of [AUTH_SESSION_KEY, ...LEGACY_SESSION_KEYS]) {
+      const raw = sessionStorage.getItem(key);
+      if (!raw) continue;
+      try {
+        const saved = JSON.parse(raw);
+        if (saved && saved.token) {
+          sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(saved));
+          LEGACY_SESSION_KEYS.forEach(oldKey => sessionStorage.removeItem(oldKey));
+          return saved;
+        }
+      } catch (error) { sessionStorage.removeItem(key); }
+    }
+    return null;
+  }
+  function clearSharedSession() {
+    sessionStorage.removeItem(AUTH_SESSION_KEY);
+    LEGACY_SESSION_KEYS.forEach(key => sessionStorage.removeItem(key));
+  }
+  function redirectToCentralLogin() {
+    clearSharedSession();
+    location.replace('index.html?return=stock.html');
   }
   function todayJakarta() { return new Date(Date.now() + 7 * 60 * 60 * 1000).toISOString().slice(0, 10); }
   function setConnectionStatus(state, message) {
@@ -721,43 +736,41 @@
 
   function cekSesiBerakhir(json) {
     if (json && json.status === "error" && String(json.message || "").indexOf("Sesi tidak valid") >= 0) {
-      sessionStorage.removeItem('stok_app_user_session');
-      location.reload();
+      redirectToCentralLogin();
       return true;
     }
     return false;
   }
 
-  window.onload = function() {
-    const savedUser = sessionStorage.getItem('stok_app_user_session');
-    if (savedUser) {
-      try {
-        sesiUser = JSON.parse(savedUser);
-        if (sesiUser.token && Date.now() < Number(sesiUser.expiresAt || 0)) tampilkanDashboard();
-        else { sessionStorage.removeItem('stok_app_user_session'); sesiUser = {}; }
-      } catch (e) { sessionStorage.removeItem('stok_app_user_session'); sesiUser = {}; }
+  async function periksaSesiAktif() {
+    const message = document.getElementById('sessionGateMessage');
+    const retry = document.getElementById('sessionRetryButton');
+    retry.style.display = 'none';
+    message.textContent = 'Memvalidasi sesi akun dengan server…';
+    const saved = readSharedSession();
+    if (!saved || !saved.token || Date.now() >= Number(saved.expiresAt || 0)) {
+      redirectToCentralLogin();
+      return;
     }
-  };
-
-  async function prosesLogin() {
-    const u = document.getElementById('loginUser').value.trim();
-    const p = document.getElementById('loginPass').value;
-    if (!u || !p) return showToast("Masukkan Username & Password!", "error");
     try {
-      const res = await postPayload({ action: "login", username: u, password: p });
-      const result = await res.json();
-      if (result.status === "success") { 
-        sesiUser = result.userData; 
-        sessionStorage.setItem('stok_app_user_session', JSON.stringify(sesiUser)); 
-        showToast(`Selamat datang, ${sesiUser.nama}!`);
-        tampilkanDashboard(); 
+      const response = await postPayload({action: 'validateSession', token: saved.token});
+      const result = await response.json();
+      if (result.status !== 'success' || !result.userData) {
+        redirectToCentralLogin();
+        return;
       }
-      else showToast("Login Gagal: " + result.message, "error");
-    } catch (e) { showToast("Kesalahan koneksi server ERP.", "error"); }
+      sesiUser = Object.assign({}, saved, result.userData, {token: saved.token, expiresAt: saved.expiresAt});
+      sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(sesiUser));
+      document.getElementById('sessionGate').style.display = 'none';
+      tampilkanDashboard();
+    } catch (error) {
+      message.textContent = 'Sesi belum dapat diperiksa karena koneksi bermasalah. Coba lagi atau kembali ke halaman masuk.';
+      retry.style.display = 'block';
+    }
   }
+  window.addEventListener('load', periksaSesiAktif);
 
   function tampilkanDashboard() {
-    document.getElementById('loginSection').style.display = 'none';
     document.getElementById('mainPanel').style.display = 'flex';
     const koreksiMenu = document.getElementById('koreksiStokMenuItem');
     koreksiMenu.hidden = !sesiUser.isAdmin;
@@ -779,9 +792,9 @@
 
   async function logoutSesi() {
     const token = sesiUser.token;
-    sessionStorage.removeItem('stok_app_user_session');
+    clearSharedSession();
     try { await postPayload({ action: "logout", token: token }); } catch (e) {}
-    location.reload();
+    location.replace('index.html');
   }
 
   function bukaModalGantiPassword() {
@@ -1463,45 +1476,158 @@
     const searchBarangVal = document.getElementById('filterBarangPilih').value.toLowerCase().trim();
     const selectedWarehouse = document.getElementById('filterGudangJournal').value;
     const selectedType = document.getElementById('filterJenisJurnal').value;
-    let filteredData = rawJurnalData.filter(item => (!selectedUnit || String(item.kodeUnit) === selectedUnit) && (!selectedWarehouse || String(item.kodeGudang) === selectedWarehouse) && (!selectedType || String(item.tipeMutasi).toUpperCase() === selectedType) && (!searchBarangVal || [item.namaBarang,item.keterangan,item.kodeBarang].some(value => String(value || '').toLowerCase().includes(searchBarangVal))));
+    const selectedStart = document.getElementById('filterTglAwal').value;
+    const selectedEnd = document.getElementById('filterTglAkhir').value;
+    const filteredData = rawJurnalData.filter(item =>
+      (!selectedUnit || String(item.kodeUnit) === selectedUnit) &&
+      (!selectedWarehouse || String(item.kodeGudang) === selectedWarehouse) &&
+      (!selectedType || String(item.tipeMutasi).toUpperCase() === selectedType) &&
+      (!searchBarangVal || [item.namaBarang, item.keterangan, item.kodeBarang].some(value => String(value || '').toLowerCase().includes(searchBarangVal)))
+    );
 
-    if (filteredData.length === 0) return showToast("Tidak ada rincian transaksi untuk diekspor!", "error");
+    if (!filteredData.length) return showToast("Tidak ada rincian transaksi untuk diekspor!", "error");
+    if (typeof XLSX === 'undefined') return showToast('Pustaka Excel belum termuat. Periksa koneksi lalu muat ulang halaman.', 'error');
 
-    let dataExcel = [];
-    filteredData.forEach((item, idx) => {
-      let mas = 0; let kel = 0;
-      let tipe = (item.tipeMutasi || "").toUpperCase();
-      if (tipe === "MASUK") mas = Number(item.jumlah || 0);
-      else if (tipe === "KELUAR" || tipe === "TRANSFER") kel = Number(item.jumlah || 0);
+    const columns = ['No', 'Waktu Transaksi', 'Kode Barang', 'Nama Barang', 'Kategori', 'Jenis Transaksi', 'Masuk', 'Keluar', 'Running Stok', 'Satuan', 'Lokasi Unit', 'Gudang', 'Batch', 'Tanggal Kedaluwarsa', 'Kandang / Peruntukan', 'Keterangan Detail'];
+    const worksheetRows = [];
+    const exportedAt = new Date().toLocaleString('id-ID', {timeZone: 'Asia/Jakarta', dateStyle: 'medium', timeStyle: 'short'});
+    const periodLabel = selectedStart && selectedEnd
+      ? `${selectedStart} sampai ${selectedEnd}`
+      : selectedStart
+        ? `${selectedStart} sampai transaksi terakhir`
+        : selectedEnd
+          ? `Awal riwayat sampai ${selectedEnd}`
+          : 'Semua riwayat sampai transaksi terakhir';
+    const unitLabel = getStockSnapshotFilterLabel('filterUnit', selectedUnit, 'Semua unit / farm');
+    const warehouseLabel = getStockSnapshotFilterLabel('filterGudangJournal', selectedWarehouse, selectedUnit ? 'Semua gudang pada unit terpilih' : 'Semua gudang');
+    const typeLabel = selectedType ? getStockSnapshotFilterLabel('filterJenisJurnal', selectedType, selectedType) : 'Semua jenis transaksi';
+    const itemLabel = document.getElementById('filterBarangPilih').value.trim() || 'Semua barang';
+    const incomingCount = filteredData.filter(item => String(item.tipeMutasi || '').toUpperCase() === 'MASUK').length;
+    const outgoingCount = filteredData.filter(item => ['KELUAR', 'TRANSFER'].includes(String(item.tipeMutasi || '').toUpperCase())).length;
 
-      dataExcel.push({
-        "No": idx + 1,
-        "Waktu Transaksi": safeExportText(item.tglSistem),
-        "Kode Barang": safeExportText(item.kodeBarang),
-        "Nama Barang": safeExportText(item.namaBarang),
-        "Kategori": safeExportText(item.kategori),
-        "Jenis Transaksi": safeExportText(item.tipeMutasi),
-        "Masuk": mas,
-        "Keluar": kel,
-        "Running Stok": Number(item.saldoSetelah || 0),
-        "Satuan": safeExportText(item.satuan || "pcs"),
-        "Lokasi Unit": safeExportText(item.kodeUnit),
-        "Gudang": safeExportText(item.kodeGudang),
-        "Batch": safeExportText(item.batch || "-"),
-        "Tanggal Kedaluwarsa": safeExportText(item.tanggalKadaluarsa || "-"),
-        "Kandang / Peruntukan": safeExportText(item.lokasiKandang || "-"),
-        "Keterangan Detail": safeExportText(item.keterangan)
-      });
+    worksheetRows.push(['CV. SELABINTANA', ...Array(columns.length - 1).fill('')]);
+    worksheetRows.push(['LAPORAN JURNAL TRANSAKSI PER BARANG', ...Array(columns.length - 1).fill('')]);
+    worksheetRows.push(['Periode', safeExportText(periodLabel), '', 'Unit / Farm', safeExportText(unitLabel), '', 'Gudang', safeExportText(warehouseLabel), ...Array(columns.length - 8).fill('')]);
+    worksheetRows.push(['Barang / pencarian', safeExportText(itemLabel), '', 'Jenis transaksi', safeExportText(typeLabel), '', 'Diekspor pada (WIB)', safeExportText(exportedAt), ...Array(columns.length - 8).fill('')]);
+    worksheetRows.push(['Diekspor oleh', safeExportText(sesiUser.nama || sesiUser.username || 'Pengguna'), '', 'Baris riwayat', filteredData.length, '', 'Barang / lokasi', new Set(filteredData.map(item => JSON.stringify([item.kodeBarang, item.kodeUnit, item.kodeGudang]))).size, ...Array(columns.length - 8).fill('')]);
+    worksheetRows.push(['Gerakan masuk', incomingCount, '', 'Gerakan keluar', outgoingCount, '', 'Catatan saldo', safeExportText('Saldo berjalan mengikuti histori; saldo terkini diringkas di bagian akhir.'), ...Array(columns.length - 8).fill('')]);
+    worksheetRows.push(Array(columns.length).fill(''));
+    worksheetRows.push(columns);
+
+    const groupRows = new Map();
+    filteredData.forEach((item, index) => {
+      const movementType = String(item.tipeMutasi || '').toUpperCase();
+      const masuk = movementType === 'MASUK' ? Number(item.jumlah || 0) : 0;
+      const keluar = ['KELUAR', 'TRANSFER'].includes(movementType) ? Number(item.jumlah || 0) : 0;
+      worksheetRows.push([
+        index + 1, safeExportText(item.tglSistem), safeExportText(item.kodeBarang), safeExportText(item.namaBarang),
+        safeExportText(item.kategori), safeExportText(item.tipeMutasi), masuk, keluar,
+        Number.isFinite(Number(item.saldoSetelah)) ? Number(item.saldoSetelah) : 0,
+        safeExportText(item.satuan || 'pcs'), safeExportText(item.kodeUnit), safeExportText(item.kodeGudang),
+        safeExportText(item.batch || '-'), safeExportText(item.tanggalKadaluarsa || '-'),
+        safeExportText(item.lokasiKandang || '-'), safeExportText(item.keterangan || '-')
+      ]);
+      const groupKey = JSON.stringify([item.kodeBarang, item.kodeUnit, item.kodeGudang]);
+      if (!groupRows.has(groupKey)) groupRows.set(groupKey, []);
+      groupRows.get(groupKey).push(item);
     });
 
-    const worksheet = XLSX.utils.json_to_sheet(dataExcel);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "ERP Stock Journal");
+    const tableHeaderRow = 7;
+    const firstDataRow = tableHeaderRow + 1;
+    const lastDataRow = firstDataRow + filteredData.length - 1;
+    const summaryTitleRow = worksheetRows.length + 1;
+    worksheetRows.push(Array(columns.length).fill(''));
+    worksheetRows.push(['RINGKASAN SALDO TERAKHIR PER BARANG / LOKASI', ...Array(columns.length - 1).fill('')]);
+    const summaryHeaders = ['Kode Barang', 'Nama Barang', 'Unit / Farm', 'Gudang', 'Saldo akhir riwayat pada periode', 'Saldo terkini saat ekspor', 'Satuan', 'Transaksi terakhir dalam periode'];
+    worksheetRows.push(summaryHeaders);
 
-    let barangText = searchBarangVal ? searchBarangVal.replace(/[^a-zA-Z0-9]/g, "_") : "Semua_Barang";
-    let unitText = String(sesiUser.unitLokasi || 'Unit').replace(/[^a-zA-Z0-9_-]/g, "_");
-    XLSX.writeFile(workbook, `ERP_Stock_Journal_${barangText}_${unitText}.xlsx`);
-    showToast("File Excel berhasil diexport!");
+    const summaryEntries = Array.from(groupRows.entries()).map(([key, rows]) => {
+      const identity = JSON.parse(key);
+      const historyRows = rawJurnalData.filter(row => String(row.kodeBarang) === String(identity[0]) && String(row.kodeUnit) === String(identity[1]) && String(row.kodeGudang) === String(identity[2]));
+      historyRows.sort((a, b) => String(a.tglSistem).localeCompare(String(b.tglSistem)));
+      const lastHistory = historyRows[historyRows.length - 1] || rows[rows.length - 1];
+      const currentRows = rawStokList.filter(row => String(row.kodeBarang) === String(identity[0]) && String(row.kodeUnit) === String(identity[1]) && String(row.kodeGudang) === String(identity[2]));
+      const currentBalance = currentRows.length ? currentRows.reduce((sum, row) => sum + Number(row.sisaStok || 0), 0) : 'Tidak ada saldo pada master stok';
+      return {identity, lastHistory, currentRows, currentBalance};
+    }).sort((a, b) => JSON.stringify(a.identity).localeCompare(JSON.stringify(b.identity)));
+
+    summaryEntries.forEach(entry => {
+      const latest = entry.lastHistory;
+      worksheetRows.push([
+        safeExportText(latest.kodeBarang), safeExportText(latest.namaBarang), safeExportText(latest.kodeUnit), safeExportText(latest.kodeGudang),
+        Number.isFinite(Number(latest.saldoSetelah)) ? Number(latest.saldoSetelah) : 0,
+        entry.currentBalance, safeExportText(latest.satuan || 'pcs'), safeExportText(latest.tglSistem || '-')
+      ]);
+    });
+
+    const worksheet = XLSX.utils.aoa_to_sheet(worksheetRows);
+    const workbook = XLSX.utils.book_new();
+    const summaryHeaderRow = summaryTitleRow + 1;
+    const summaryFirstDataRow = summaryHeaderRow + 1;
+    worksheet['!merges'] = [
+      {s:{r:0,c:0},e:{r:0,c:15}}, {s:{r:1,c:0},e:{r:1,c:15}},
+      {s:{r:2,c:1},e:{r:2,c:2}}, {s:{r:2,c:4},e:{r:2,c:5}}, {s:{r:2,c:7},e:{r:2,c:15}},
+      {s:{r:3,c:1},e:{r:3,c:2}}, {s:{r:3,c:4},e:{r:3,c:5}}, {s:{r:3,c:7},e:{r:3,c:15}},
+      {s:{r:4,c:1},e:{r:4,c:2}}, {s:{r:4,c:4},e:{r:4,c:5}}, {s:{r:4,c:7},e:{r:4,c:15}},
+      {s:{r:5,c:1},e:{r:5,c:2}}, {s:{r:5,c:4},e:{r:5,c:5}}, {s:{r:5,c:7},e:{r:5,c:15}},
+      {s:{r:summaryTitleRow,c:0},e:{r:summaryTitleRow,c:15}}
+    ];
+
+    const thinGray = {style: 'thin', color: {rgb: 'D8E2DC'}};
+    const bordered = {top: thinGray, bottom: thinGray, left: thinGray, right: thinGray};
+    setXlsxRangeStyle(worksheet, 0, 0, 0, 15, {font: {name: 'Aptos Display', sz: 18, bold: true, color: {rgb: 'FFFFFF'}}, fill: {fgColor: {rgb: '14532D'}}, alignment: {horizontal: 'left', vertical: 'center'}});
+    setXlsxRangeStyle(worksheet, 1, 0, 1, 15, {font: {name: 'Aptos', sz: 11, bold: true, color: {rgb: '355E45'}}, fill: {fgColor: {rgb: 'EAF4EC'}}, alignment: {horizontal: 'left', vertical: 'center'}});
+    [2, 3, 4, 5].forEach(row => {
+      [[row, 0, row, 0], [row, 3, row, 3], [row, 6, row, 6]].forEach(range => setXlsxRangeStyle(worksheet, range[0], range[1], range[2], range[3], {font: {name: 'Aptos', sz: 9, bold: true, color: {rgb: '355E45'}}, fill: {fgColor: {rgb: 'F0F5F1'}}, alignment: {vertical: 'center', wrapText: true}, border: bordered}));
+      [[row, 1, row, 2], [row, 4, row, 5], [row, 7, row, 15]].forEach(range => setXlsxRangeStyle(worksheet, range[0], range[1], range[2], range[3], {font: {name: 'Aptos', sz: 9, color: {rgb: '26352B'}}, fill: {fgColor: {rgb: 'FFFFFF'}}, alignment: {vertical: 'center', wrapText: true}, border: bordered}));
+    });
+    setXlsxRangeStyle(worksheet, tableHeaderRow, 0, tableHeaderRow, 15, {font: {name: 'Aptos', sz: 9, bold: true, color: {rgb: 'FFFFFF'}}, fill: {fgColor: {rgb: '14532D'}}, alignment: {horizontal: 'center', vertical: 'center', wrapText: true}, border: bordered});
+    setXlsxRangeStyle(worksheet, summaryTitleRow, 0, summaryTitleRow, 15, {font: {name: 'Aptos', sz: 10, bold: true, color: {rgb: 'FFFFFF'}}, fill: {fgColor: {rgb: '276749'}}, alignment: {horizontal: 'left', vertical: 'center'}});
+    setXlsxRangeStyle(worksheet, summaryHeaderRow, 0, summaryHeaderRow, summaryHeaders.length - 1, {font: {name: 'Aptos', sz: 9, bold: true, color: {rgb: 'FFFFFF'}}, fill: {fgColor: {rgb: '3B7650'}}, alignment: {horizontal: 'center', vertical: 'center', wrapText: true}, border: bordered});
+
+    for (let row = firstDataRow; row <= lastDataRow; row++) {
+      const fill = (row - firstDataRow) % 2 === 0 ? 'FFFFFF' : 'F7FAF7';
+      setXlsxRangeStyle(worksheet, row, 0, row, 15, {font: {name: 'Aptos', sz: 9, color: {rgb: '26352B'}}, fill: {fgColor: {rgb: fill}}, alignment: {vertical: 'center', wrapText: true}, border: bordered});
+      [6, 7, 8].forEach(col => { worksheet[XLSX.utils.encode_cell({r: row, c: col})].z = '#,##0.###;[Red]-#,##0.###;0'; });
+      const runningCell = worksheet[XLSX.utils.encode_cell({r: row, c: 8})];
+      if (Number(runningCell.v) < 0) runningCell.s = Object.assign({}, runningCell.s, {font: {name: 'Aptos', sz: 9, bold: true, color: {rgb: 'B91C1C'}}, fill: {fgColor: {rgb: 'FEE2E2'}}});
+    }
+
+    const lastSummaryRow = summaryFirstDataRow + summaryEntries.length - 1;
+    for (let row = summaryFirstDataRow; row <= lastSummaryRow; row++) {
+      const fill = (row - summaryFirstDataRow) % 2 === 0 ? 'FFFFFF' : 'F7FAF7';
+      setXlsxRangeStyle(worksheet, row, 0, row, summaryHeaders.length - 1, {font: {name: 'Aptos', sz: 9, color: {rgb: '26352B'}}, fill: {fgColor: {rgb: fill}}, alignment: {vertical: 'center', wrapText: true}, border: bordered});
+      [4, 5].forEach(col => {
+        const cell = worksheet[XLSX.utils.encode_cell({r: row, c: col})];
+        if (cell && typeof cell.v === 'number') cell.z = '#,##0.###;[Red]-#,##0.###;0';
+      });
+      const balanceCell = worksheet[XLSX.utils.encode_cell({r: row, c: 5})];
+      if (balanceCell && Number(balanceCell.v) < 0) balanceCell.s = Object.assign({}, balanceCell.s, {font: {name: 'Aptos', sz: 9, bold: true, color: {rgb: 'B91C1C'}}, fill: {fgColor: {rgb: 'FEE2E2'}}});
+    }
+
+    worksheet['!cols'] = [
+      {wch: 7}, {wch: 19}, {wch: 15}, {wch: 28}, {wch: 17}, {wch: 17}, {wch: 12}, {wch: 14},
+      {wch: 15}, {wch: 12}, {wch: 17}, {wch: 17}, {wch: 16}, {wch: 19}, {wch: 22}, {wch: 48}
+    ];
+    worksheet['!rows'] = [];
+    worksheet['!rows'][0] = {hpt: 32};
+    worksheet['!rows'][1] = {hpt: 23};
+    for (let row = 2; row <= 5; row++) worksheet['!rows'][row] = {hpt: 25};
+    worksheet['!rows'][tableHeaderRow] = {hpt: 34};
+    for (let row = firstDataRow; row <= lastDataRow; row++) worksheet['!rows'][row] = {hpt: 28};
+    worksheet['!rows'][summaryTitleRow] = {hpt: 23};
+    worksheet['!rows'][summaryHeaderRow] = {hpt: 34};
+    for (let row = summaryFirstDataRow; row <= lastSummaryRow; row++) worksheet['!rows'][row] = {hpt: 28};
+    worksheet['!autofilter'] = {ref: XLSX.utils.encode_range({s: {r: tableHeaderRow, c: 0}, e: {r: lastDataRow, c: columns.length - 1}})};
+
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Jurnal Transaksi');
+    workbook.Props = {Title: 'Jurnal Transaksi Stok per Barang', Subject: 'Riwayat transaksi dengan saldo berjalan dan saldo terkini', Author: safeExportText(sesiUser.nama || sesiUser.username || 'Stock ERP'), CreatedDate: new Date()};
+
+    const safeFilePart = value => String(value || '').replace(/[^a-zA-Z0-9_-]/g, '_').replace(/_+/g, '_').slice(0, 30) || 'Semua';
+    const periodPart = `${selectedStart || 'Awal'}_${selectedEnd || todayJakarta()}`;
+    const filename = `Jurnal_Stok_${periodPart}_${safeFilePart(selectedUnit || 'Semua_Unit')}_${safeFilePart(selectedWarehouse || 'Semua_Gudang')}.xlsx`;
+    XLSX.writeFile(workbook, filename);
+    showToast(`File ${filename} berhasil diekspor dengan header dan ringkasan saldo terakhir.`);
   }
 
   async function muatPendingTransfers() {
