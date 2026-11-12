@@ -41,7 +41,7 @@
     .erp-brand i { color: var(--erp-accent-yellow); font-size: 18px; }
     .erp-menu { list-style: none; padding: 15px 10px; flex: 1; }
     .erp-menu-label { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #73907d; padding: 10px 12px 6px 12px; letter-spacing: 0.8px; }
-    .erp-menu-item { display: flex; align-items: center; gap: 12px; padding: 11px 14px; color: var(--erp-sidebar-text); text-decoration: none; border-radius: 6px; font-weight: 500; cursor: pointer; transition: all 0.15s ease; margin-bottom: 4px; }
+    .erp-menu-item { display: flex; align-items: center; gap: 12px; padding: 11px 14px; color: var(--erp-sidebar-text); text-decoration: none; border-radius: 6px; font-weight: 500; cursor: pointer; transition: all 0.15s ease; margin-bottom: 4px; width: 100%; text-align: left; background: transparent; border: 0; font-family: inherit; }
     .erp-menu-item:hover { background: #234b32; color: #ffffff; }
     .erp-menu-item.active { background: var(--erp-sidebar-active); color: #ffffff; font-weight: 600; border-left: 4px solid var(--erp-accent-yellow); }
     .erp-menu-item i { width: 18px; text-align: center; font-size: 14px; }
@@ -125,6 +125,65 @@
     .form-row .form-group { flex: 1; margin-bottom: 0; }
     .form-group { margin-bottom: 14px; }
     .form-group label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--erp-text-muted); margin-bottom: 6px; letter-spacing: 0.3px; }
+    button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid #facc15; outline-offset: 2px; }
+    .stock-alerts { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin: -6px 0 20px; }
+    .stock-alert { padding: 12px 14px; border-radius: 8px; background: #fff; border: 1px solid var(--erp-border-light); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .stock-alert.low { border-left: 4px solid var(--erp-warning); }
+    .stock-alert.empty { border-left: 4px solid var(--erp-danger); }
+    .stock-alert .count { font-size: 18px; font-weight: 800; }
+    .stock-status { display: inline-flex; padding: 4px 8px; border-radius: 999px; font-weight: 700; font-size: 10px; white-space: nowrap; }
+    .stock-status.safe { color: #047857; background: #d1fae5; }
+    .stock-status.low { color: #92400e; background: #fef3c7; }
+    .stock-status.empty { color: #b91c1c; background: #fee2e2; }
+    .inline-minimum { min-width: 90px; max-width: 120px; }
+    .screen-reader-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+    .mobile-connection-status { display: none; align-items: center; gap: 6px; font-size: 10px; font-weight: 700; color: var(--erp-text-muted); white-space: nowrap; }
+    .erp-table-responsive { max-height: min(68vh, 720px); overflow: auto; overscroll-behavior: contain; }
+    .erp-table th { position: sticky; top: 0; z-index: 1; background: #f6f9f7; }
+    button[aria-busy="true"] { opacity: .7; cursor: progress; }
+
+    @media (max-width: 760px) {
+      .erp-container { display: block; min-height: 100vh; padding-bottom: 70px; }
+      .erp-sidebar { position: fixed; left: 0; right: 0; bottom: 0; width: 100%; height: 64px; z-index: 100; border-right: 0; border-top: 1px solid #142b1c; }
+      .erp-brand, .erp-sidebar-footer, .erp-menu-label { display: none; }
+      .erp-menu { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2px; padding: 4px 6px; margin: 0; }
+      .erp-menu-item { flex-direction: column; justify-content: center; gap: 3px; padding: 6px 3px; margin: 0; min-height: 54px; border-left: 0; font-size: 9px; text-align: center; line-height: 1.15; }
+      .erp-menu-item.active { border-left: 0; border-top: 3px solid var(--erp-accent-yellow); }
+      .erp-menu-item i { font-size: 16px; }
+      .erp-main { min-height: 100vh; }
+      .erp-topbar { min-height: 58px; height: auto; padding: 8px 12px; gap: 8px; }
+      .erp-breadcrumb { font-size: 12px; }
+      .erp-topbar-actions { gap: 6px; }
+      .mobile-connection-status { display: inline-flex; }
+      .erp-user-profile { padding: 4px 8px; gap: 6px; max-width: 190px; }
+      .erp-content { padding: 12px; overflow: visible; }
+      .erp-stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+      .erp-stat-card { padding: 12px; gap: 8px; }
+      .erp-stat-info .label { font-size: 9px; }
+      .erp-stat-info .value { font-size: 19px; }
+      .erp-stat-icon { width: 34px; height: 34px; font-size: 15px; flex: 0 0 auto; }
+      .erp-card-body { padding: 12px; }
+      .erp-card-header { padding: 12px; }
+      .erp-filter-bar { padding: 10px; gap: 8px; }
+      .erp-filter-group { min-width: min(100%, 145px); }
+      .erp-table { min-width: 850px; }
+      .form-row { flex-direction: column; gap: 0; }
+      .form-row .form-group { margin-bottom: 12px; }
+      .modal { padding: 8px; align-items: flex-end; }
+      .modal-content { max-width: none; max-height: 94vh; overflow-y: auto; border-radius: 14px 14px 8px 8px; }
+      .modal-body { padding: 16px; }
+      .modal-header { padding: 14px 16px; position: sticky; top: 0; z-index: 2; }
+      .btn { min-height: 40px; }
+    }
+    @media (max-width: 390px) {
+      .erp-user-profile { display: none; }
+      .erp-topbar { flex-wrap: wrap; }
+      .erp-topbar-actions { width: 100%; justify-content: flex-end; }
+      .erp-breadcrumb span { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .erp-stats-grid { grid-template-columns: 1fr 1fr; }
+      .erp-stat-card { padding: 9px; }
+      .erp-stat-icon { display: none; }
+    }
 
     /* TOAST NOTIFICATION STYLING */
     #toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
@@ -147,11 +206,11 @@
       <h3 style="font-size: 13px; font-weight: 600; color: var(--erp-text-main); margin-top: 4px;">ERP Inventory & Stock Portal</h3>
     </div>
     <div class="form-group">
-      <label>Username SSO</label>
+      <label for="loginUser">Username SSO</label>
       <input type="text" id="loginUser" placeholder="Ketik username..." required>
     </div>
     <div class="form-group">
-      <label>Password</label>
+      <label for="loginPass">Password</label>
       <input type="password" id="loginPass" placeholder="Ketik password..." required>
     </div>
     <button type="button" onclick="prosesLogin()" class="btn btn-primary" style="width: 100%; padding: 12px; margin-top: 10px;">
@@ -170,32 +229,37 @@
       <span>CV. SELABINTANA</span>
     </div>
     
-    <ul class="erp-menu">
+    <nav aria-label="Navigasi modul persediaan"><ul class="erp-menu" role="tablist" aria-label="Modul Persediaan">
       <li class="erp-menu-label">Modul Persediaan</li>
       <li>
-        <a class="erp-menu-item active" id="tabStokBtn" onclick="switchTab('stok')">
+        <button type="button" role="tab" aria-selected="true" aria-controls="tabStokView" class="erp-menu-item active" id="tabStokBtn" onclick="switchTab('stok')">
           <i class="fa-solid fa-table-list"></i>
           <span>Jurnal Stok & Mutasi</span>
-        </a>
+        </button>
       </li>
       <li>
-        <a class="erp-menu-item" id="tabTransaksiBtn" onclick="switchTab('transaksi')">
+        <button type="button" role="tab" aria-selected="false" aria-controls="tabTransaksiView" class="erp-menu-item" id="tabTransaksiBtn" onclick="switchTab('transaksi')">
           <i class="fa-solid fa-right-left"></i>
           <span>Pusat Transaksi Gudang</span>
-        </a>
+        </button>
       </li>
       <li>
-        <a class="erp-menu-item" id="tabHistoryBtn" onclick="switchTab('history')">
+        <button type="button" role="tab" aria-selected="false" aria-controls="tabHistoryView" class="erp-menu-item" id="tabHistoryBtn" onclick="switchTab('history')">
           <i class="fa-solid fa-clock-rotate-left"></i>
           <span>Status Mutasi Inter-Farm</span>
-        </a>
+        </button>
       </li>
-    </ul>
+      <li>
+        <button type="button" role="tab" aria-selected="false" aria-controls="tabLihatStokView" class="erp-menu-item" id="tabLihatStokBtn" onclick="switchTab('lihatStok')">
+          <i class="fa-solid fa-boxes-stacked"></i><span>Lihat Stok</span>
+        </button>
+      </li>
+    </ul></nav>
 
     <div class="erp-sidebar-footer">
       <div style="color: #73907d; font-size: 10px; text-transform: uppercase; font-weight: 700;">Status Koneksi</div>
-      <div style="color: var(--erp-success); font-weight: 600; margin-top: 2px; display: flex; align-items: center; gap: 6px;">
-        <span style="width: 8px; height: 8px; background: var(--erp-success); border-radius: 50%; display: inline-block;"></span> GAS Cloud Connected
+      <div id="connectionStatus" role="status" aria-live="polite" style="color: var(--erp-text-muted); font-weight: 600; margin-top: 2px; display: flex; align-items: center; gap: 6px;">
+        <span style="width: 8px; height: 8px; background: var(--erp-warning); border-radius: 50%; display: inline-block;"></span> Menunggu koneksi
       </div>
     </div>
   </aside>
@@ -207,10 +271,11 @@
     <header class="erp-topbar">
       <div class="erp-breadcrumb">
         <i class="fa-solid fa-warehouse"></i>
-        <span>Manajemen Gudang Multi-Unit Farm</span>
+        <span id="currentPageTitle">Jurnal Stok & Mutasi</span>
       </div>
       
       <div class="erp-topbar-actions">
+        <div class="mobile-connection-status" id="connectionStatusMobile" role="status" aria-live="polite"><span aria-hidden="true" style="width:8px;height:8px;background:var(--erp-warning);border-radius:50%;display:inline-block;"></span><span>Menunggu koneksi</span></div>
         <div class="erp-user-profile" id="userProfileTag"></div>
         <button onclick="logoutSesi()" class="btn btn-outline" style="padding: 6px 12px; color: var(--erp-danger);">
           <i class="fa-solid fa-power-off"></i> Keluar
@@ -222,38 +287,50 @@
     <div class="erp-content">
       
       <!-- TAB 1: JURNAL RINCIAN TRANSAKSI STOK -->
-      <div id="tabStokView">
+      <div id="tabStokView" role="tabpanel" aria-labelledby="tabStokBtn">
         
         <!-- KPI METRICS DASHBOARD -->
         <div class="erp-stats-grid">
           <div class="erp-stat-card">
             <div class="erp-stat-info">
-              <div class="label">Total Item Master</div>
+              <div class="label">SKU Terdaftar</div>
               <div class="value" id="kpiTotalBarang">0</div>
             </div>
             <div class="erp-stat-icon" style="background: #e0f2fe; color: #0284c7;"><i class="fa-solid fa-box"></i></div>
           </div>
           <div class="erp-stat-card">
             <div class="erp-stat-info">
-              <div class="label">Total Transaksi Masuk</div>
+              <div class="label">Jumlah Barang Masuk</div>
               <div class="value" id="kpiTotalMasuk">0</div>
             </div>
             <div class="erp-stat-icon" style="background: #d1fae5; color: #047857;"><i class="fa-solid fa-circle-arrow-down"></i></div>
           </div>
           <div class="erp-stat-card">
             <div class="erp-stat-info">
-              <div class="label">Total Transaksi Keluar</div>
+              <div class="label">Jumlah Barang Keluar</div>
               <div class="value" id="kpiTotalKeluar">0</div>
             </div>
             <div class="erp-stat-icon" style="background: #fee2e2; color: #b91c1c;"><i class="fa-solid fa-circle-arrow-up"></i></div>
           </div>
           <div class="erp-stat-card">
             <div class="erp-stat-info">
-              <div class="label">Pending Mutasi ACC</div>
+              <div class="label">Mutasi Perlu Tindakan</div>
               <div class="value" id="kpiPendingCount">0</div>
             </div>
             <div class="erp-stat-icon" style="background: #fef3c7; color: #b45309;"><i class="fa-solid fa-clock"></i></div>
           </div>
+          <div class="erp-stat-card">
+            <div class="erp-stat-info"><div class="label">Stok Rendah</div><div class="value" id="kpiStokRendah">0</div></div>
+            <div class="erp-stat-icon" style="background:#fff8e6; color:#b45309;"><i class="fa-solid fa-triangle-exclamation"></i></div>
+          </div>
+          <div class="erp-stat-card">
+            <div class="erp-stat-info"><div class="label">Habis / Negatif</div><div class="value" id="kpiStokHabis">0</div></div>
+            <div class="erp-stat-icon" style="background:#fcebeb; color:#b91c1c;"><i class="fa-solid fa-circle-exclamation"></i></div>
+          </div>
+        </div>
+        <div class="stock-alerts" aria-live="polite">
+          <div class="stock-alert low"><div><b>Perlu pemesanan</b><div style="font-size:11px;color:var(--erp-text-muted);">Saldo mencapai batas minimum</div></div><span class="count" id="alertStokRendah">0</span><button type="button" class="btn btn-outline btn-sm" onclick="showStockAlerts('RENDAH')">Lihat</button></div>
+          <div class="stock-alert empty"><div><b>Stok habis atau negatif</b><div style="font-size:11px;color:var(--erp-text-muted);">Periksa transaksi dan saldo fisik</div></div><span class="count" id="alertStokHabis">0</span><button type="button" class="btn btn-outline btn-sm" onclick="showStockAlerts('HABIS')">Lihat</button></div>
         </div>
 
         <!-- CARD DATA TABLE JURNAL -->
@@ -267,19 +344,27 @@
             <!-- FILTER BAR ERP -->
             <div class="erp-filter-bar">
               <div class="erp-filter-group">
-                <label>Periode Dari</label>
+                <label for="filterTglAwal">Periode Dari</label>
                 <input type="date" id="filterTglAwal" onchange="muatJurnalTransaksiBarang()">
               </div>
               <div class="erp-filter-group">
-                <label>Sampai Tanggal</label>
+                <label for="filterTglAkhir">Sampai Tanggal</label>
                 <input type="date" id="filterTglAkhir" onchange="muatJurnalTransaksiBarang()">
               </div>
               <div class="erp-filter-group">
-                <label>Unit / Farm</label>
-                <select id="filterUnit" onchange="terapkanFilterJurnal()"></select>
+                <label for="filterUnit">Unit / Farm</label>
+                <select id="filterUnit" onchange="updateJournalWarehouseFilter()"></select>
+              </div>
+              <div class="erp-filter-group">
+                <label for="filterGudangJournal">Gudang</label>
+                <select id="filterGudangJournal" onchange="terapkanFilterJurnal()"><option value="">Semua Gudang</option></select>
+              </div>
+              <div class="erp-filter-group">
+                <label for="filterJenisJurnal">Jenis Transaksi</label>
+                <select id="filterJenisJurnal" onchange="terapkanFilterJurnal()"><option value="">Semua Jenis</option><option value="MASUK">Masuk</option><option value="KELUAR">Keluar</option></select>
               </div>
               <div class="erp-filter-group" style="flex: 2; min-width: 240px;">
-                <label>Pilih / Cari Nama Barang</label>
+                <label for="filterBarangPilih">Pilih / Cari Nama Barang</label>
                 <input type="text" id="filterBarangPilih" list="listOptionsBarang" placeholder="-- Ketik atau Pilih Barang --" oninput="terapkanFilterJurnal()">
                 <datalist id="listOptionsBarang"></datalist>
               </div>
@@ -293,7 +378,7 @@
       </div>
 
       <!-- TAB 2: MENU TRANSAKSI STOK -->
-      <div id="tabTransaksiView" style="display: none;">
+      <div id="tabTransaksiView" role="tabpanel" aria-labelledby="tabTransaksiBtn" style="display: none;">
         <div class="erp-card">
           <div class="erp-card-header">
             <div class="erp-card-title"><i class="fa-solid fa-right-left"></i> Pusat Eksekusi Transaksi Gudang</div>
@@ -322,13 +407,47 @@
       </div>
 
       <!-- TAB 3: MONITORING MUTASI -->
-      <div id="tabHistoryView" style="display: none;">
+      <div id="tabHistoryView" role="tabpanel" aria-labelledby="tabHistoryBtn" style="display: none;">
         <div class="erp-card">
           <div class="erp-card-header">
-            <div class="erp-card-title"><i class="fa-solid fa-clock-rotate-left"></i> Status Audit & Verifikasi Mutasi Antar Unit</div>
+            <div class="erp-card-title"><i class="fa-solid fa-clock-rotate-left"></i> Riwayat Transfer Antar Unit</div>
           </div>
           <div class="erp-card-body">
+            <div class="erp-filter-bar" style="margin-bottom:12px;">
+              <div class="erp-filter-group"><label for="filterTransferStatus">Status Mutasi</label><select id="filterTransferStatus" onchange="renderTransferViews()"><option value="">Semua Status</option><option value="PENDING_ADMIN">Menunggu Persetujuan</option><option value="ACC_ADMIN">Dalam Perjalanan</option><option value="DITERIMA">Diterima</option><option value="DITOLAK_ADMIN">Ditolak</option></select></div>
+              <div class="erp-filter-group"><label for="filterTransferSearch">Cari Tiket / Barang / Unit</label><input type="text" id="filterTransferSearch" oninput="renderTransferViews()" placeholder="Ketik kata kunci"></div>
+            </div>
             <div class="erp-table-responsive" id="containerTabelHistory"></div>
+          </div>
+        </div>
+        <div class="erp-card" style="margin-top:16px;">
+          <div class="erp-card-header"><div class="erp-card-title"><i class="fa-solid fa-clipboard-check"></i> Jejak Audit Stok</div></div>
+          <div class="erp-card-body">
+            <div class="erp-filter-bar" style="margin-bottom:12px;">
+              <div class="erp-filter-group"><label for="auditFilterStart">Dari tanggal</label><input type="date" id="auditFilterStart"></div>
+              <div class="erp-filter-group"><label for="auditFilterEnd">Sampai tanggal</label><input type="date" id="auditFilterEnd"></div>
+              <div class="erp-filter-group" style="flex:2;min-width:220px;"><label for="auditFilterSearch">Cari ID / barang / pelaku / keterangan</label><input type="search" id="auditFilterSearch" placeholder="Kata kunci audit"></div>
+              <button type="button" class="btn btn-primary" onclick="muatStockAudit()"><i class="fa-solid fa-magnifying-glass"></i> Tampilkan Audit</button>
+            </div>
+            <div class="erp-table-responsive" id="containerStockAudit" aria-live="polite"><p style="padding:16px;color:var(--erp-text-muted);">Pilih tab ini untuk memuat catatan audit.</p></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="tabLihatStokView" role="tabpanel" aria-labelledby="tabLihatStokBtn" style="display:none;">
+        <div class="erp-card">
+          <div class="erp-card-header"><div class="erp-card-title"><i class="fa-solid fa-boxes-stacked"></i> Saldo Stok per Barang dan Lokasi</div><span id="stockAsOfLabel" class="badge badge-info">Saldo saat ini</span></div>
+          <div class="erp-card-body">
+            <div class="erp-filter-bar">
+              <div class="erp-filter-group"><label for="stockViewDate">Saldo per tanggal</label><input type="date" id="stockViewDate"></div>
+              <div class="erp-filter-group"><label for="stockViewUnit">Unit / Farm</label><select id="stockViewUnit" onchange="updateStockWarehouseFilter()"></select></div>
+              <div class="erp-filter-group"><label for="stockViewWarehouse">Gudang</label><select id="stockViewWarehouse"><option value="">Semua Gudang</option></select></div>
+              <div class="erp-filter-group"><label for="stockViewStatus">Status Stok</label><select id="stockViewStatus"><option value="">Semua Status</option><option value="RENDAH">Rendah</option><option value="HABIS">Habis / Negatif</option><option value="AMAN">Aman</option></select></div>
+              <div class="erp-filter-group"><label for="stockViewSearch">Barang / kode / kategori</label><input type="search" id="stockViewSearch" placeholder="Cari barang"></div>
+              <button type="button" onclick="muatStockSnapshot()" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i> Tampilkan</button>
+            </div>
+            <p class="form-hint" style="margin:0 0 12px;color:var(--erp-text-muted);font-size:11px;">Tanggal kosong menampilkan saldo terkini. Pilih tanggal untuk melihat saldo akhir hari itu.</p>
+            <div id="containerStockSnapshot" class="erp-table-responsive" aria-live="polite"><p style="padding:20px;text-align:center;color:var(--erp-text-muted);">Pilih filter lalu tampilkan saldo.</p></div>
           </div>
         </div>
       </div>
@@ -342,25 +461,32 @@
   <div class="modal-content">
     <div class="modal-header">
       <h3 style="font-size:14px; font-weight:700; color:var(--erp-primary);"><i class="fa-solid fa-circle-arrow-down" style="color:var(--erp-success);"></i> Entry Penerimaan Barang Masuk</h3>
-      <button onclick="tutupModal('modalPenerimaan')" style="background:none; border:none; cursor:pointer; font-size:16px;"><i class="fa-solid fa-xmark"></i></button>
+      <button type="button" aria-label="Tutup form penerimaan" onclick="tutupModal('modalPenerimaan')" style="background:none; border:none; cursor:pointer; font-size:16px;"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
     </div>
     <form id="formPenerimaan" class="modal-body">
-      <div class="form-group"><label>Sumber Penerimaan</label>
-        <select id="penSumber" required>
+      <div class="form-group"><label for="penSumber">Sumber Penerimaan</label>
+        <select id="penSumber" onchange="ubahSumberPenerimaan()" required>
           <option value="PEMBELIAN_SUPPLIER">Penerimaan Langsung (Supplier / Pembelian)</option>
-          <option value="PERMINTAAN_ACC">Dari Tiket Permintaan Barang (ACC)</option>
+          <option value="PERMINTAAN_ACC">Penerimaan untuk Tiket Portal</option>
         </select>
       </div>
-      <div class="form-row">
-        <div class="form-group"><label>Masuk Ke Unit</label><select id="penUnit" onchange="updateSubGudangPilih('penUnit', 'penGudang')" required></select></div>
-        <div class="form-group"><label>Masuk Ke Gudang</label><select id="penGudang" required></select></div>
+      <div id="penTicketWrap" class="form-group" style="display:none;">
+        <label for="penTicketItem">Pilih tiket dan item yang disetujui</label>
+        <select id="penTicketItem" onchange="pilihTiketPenerimaan()"><option value="">Memuat tiket yang masih terbuka…</option></select>
+        <small id="penTicketRemaining" aria-live="polite" style="display:block;margin-top:6px;color:var(--erp-text-muted);"></small>
       </div>
-      <div class="form-group"><label>Nama Barang</label><input type="text" id="penNamaBarang" placeholder="Ketik nama barang..." required></div>
       <div class="form-row">
-        <div class="form-group"><label>Jumlah Masuk</label><input type="number" id="penJumlah" min="1" required></div>
-        <div class="form-group"><label>Satuan</label><input type="text" id="penSatuan" placeholder="pcs/kg/zak" required></div>
+        <div class="form-group"><label for="penUnit">Masuk Ke Unit</label><select id="penUnit" onchange="updateSubGudangPilih('penUnit', 'penGudang')" required></select></div>
+        <div class="form-group"><label for="penGudang">Masuk Ke Gudang</label><select id="penGudang" required></select></div>
       </div>
-      <div class="form-group"><label>Kategori Barang</label>
+      <div id="penItemFields">
+        <div class="form-group"><label for="penNamaBarang">Nama Barang</label><input type="text" id="penNamaBarang" maxlength="200" placeholder="Ketik nama barang..." required><small id="penItemHint" style="display:block;margin-top:6px;color:var(--erp-text-muted);">Untuk penerimaan tiket, nama dan satuan akan mengikuti item yang disetujui.</small></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label for="penJumlah">Jumlah Masuk</label><input type="number" id="penJumlah" min="0.001" max="1000000000" step="any" aria-describedby="penTicketRemaining" required></div>
+        <div class="form-group"><label for="penSatuan">Satuan</label><input type="text" id="penSatuan" maxlength="32" placeholder="pcs/kg/zak" required></div>
+      </div>
+      <div class="form-group"><label for="penKategori">Kategori Barang</label>
         <select id="penKategori">
           <option value="PAKAN">PAKAN</option><option value="OBAT">OBAT</option><option value="VAKSIN">VAKSIN</option>
           <option value="VITAMIN">VITAMIN</option><option value="KIMIA">KIMIA</option><option value="PERALATAN">PERALATAN</option><option value="LAINNYA">LAINNYA</option>
@@ -379,13 +505,13 @@
   <div class="modal-content">
     <div class="modal-header">
       <h3 style="font-size:14px; font-weight:700; color:var(--erp-primary);"><i class="fa-solid fa-circle-arrow-up" style="color:var(--erp-warning);"></i> Form Pemakaian / Outflow Barang</h3>
-      <button onclick="tutupModal('modalPemakaian')" style="background:none; border:none; cursor:pointer; font-size:16px;"><i class="fa-solid fa-xmark"></i></button>
+      <button type="button" aria-label="Tutup form pemakaian" onclick="tutupModal('modalPemakaian')" style="background:none; border:none; cursor:pointer; font-size:16px;"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
     </div>
     <form id="formPemakaian" class="modal-body">
-      <div class="form-group"><label>Pilih Barang Dari Gudang</label><select id="pemBarangPilih" required></select></div>
-      <div class="form-group"><label>Lokasi Kandang / Peruntukan</label><input type="text" id="pemLokasiKandang" placeholder="Contoh: Kandang 01 / Brood A" required></div>
-      <div class="form-group"><label>Jumlah Pemakaian</label><input type="number" id="pemJumlah" min="1" required></div>
-      <div class="form-group"><label>Keterangan Tambahan</label><input type="text" id="pemKet"></div>
+      <div class="form-group"><label for="pemBarangPilih">Pilih Barang Dari Gudang</label><select id="pemBarangPilih" onchange="updateSelectedStockHint('pemBarangPilih', 'pemSaldoTersedia')" required></select><small id="pemSaldoTersedia" aria-live="polite" style="display:block;margin-top:6px;color:var(--erp-text-muted);"></small></div>
+      <div class="form-group"><label for="pemLokasiKandang">Lokasi Kandang / Peruntukan</label><input type="text" id="pemLokasiKandang" maxlength="120" placeholder="Contoh: Kandang 01 / Brood A" required></div>
+      <div class="form-group"><label for="pemJumlah">Jumlah Pemakaian</label><input type="number" id="pemJumlah" min="0.001" max="1000000000" step="any" aria-describedby="pemSaldoTersedia" required></div>
+      <div class="form-group"><label for="pemKet">Keterangan Tambahan</label><input type="text" id="pemKet" maxlength="500"></div>
       <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:15px;">
         <button type="button" onclick="tutupModal('modalPemakaian')" class="btn btn-outline">Batal</button>
         <button type="submit" class="btn btn-warning">Catat Pemakaian</button>
@@ -399,15 +525,15 @@
   <div class="modal-content">
     <div class="modal-header">
       <h3 style="font-size:14px; font-weight:700; color:var(--erp-primary);"><i class="fa-solid fa-truck-ramp-box"></i> Pengajuan Mutasi Inter-Farm</h3>
-      <button onclick="tutupModal('modalTransfer')" style="background:none; border:none; cursor:pointer; font-size:16px;"><i class="fa-solid fa-xmark"></i></button>
+      <button type="button" aria-label="Tutup form mutasi" onclick="tutupModal('modalTransfer')" style="background:none; border:none; cursor:pointer; font-size:16px;"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
     </div>
     <form id="formTransferStok" class="modal-body">
-      <div class="form-group"><label>Pilih Barang Asal</label><select id="trBarangAsal" required></select></div>
+      <div class="form-group"><label for="trBarangAsal">Pilih Barang Asal</label><select id="trBarangAsal" onchange="updateSelectedStockHint('trBarangAsal', 'trSaldoTersedia')" required></select><small id="trSaldoTersedia" aria-live="polite" style="display:block;margin-top:6px;color:var(--erp-text-muted);"></small></div>
       <div class="form-row">
-        <div class="form-group"><label>Unit Farm Tujuan</label><select id="trUnitTujuan" onchange="updateSubGudangPilih('trUnitTujuan', 'trGudangTujuan')" required></select></div>
-        <div class="form-group"><label>Gudang Tujuan</label><select id="trGudangTujuan" required></select></div>
+        <div class="form-group"><label for="trUnitTujuan">Unit Farm Tujuan</label><select id="trUnitTujuan" onchange="updateSubGudangPilih('trUnitTujuan', 'trGudangTujuan')" required></select></div>
+        <div class="form-group"><label for="trGudangTujuan">Gudang Tujuan</label><select id="trGudangTujuan" required></select></div>
       </div>
-      <div class="form-group"><label>Jumlah Transfer</label><input type="number" id="trJumlah" min="1" required></div>
+      <div class="form-group"><label for="trJumlah">Jumlah Transfer</label><input type="number" id="trJumlah" min="0.001" max="1000000000" step="any" aria-describedby="trSaldoTersedia" required></div>
       <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:15px;">
         <button type="button" onclick="tutupModal('modalTransfer')" class="btn btn-outline">Batal</button>
         <button type="submit" class="btn btn-primary">Kirim Pengajuan Mutasi</button>
@@ -420,13 +546,43 @@
   const GAS_URL = "https://script.google.com/macros/s/AKfycbx_tuIlCd-_n3PMtmv-_hPP4QrbGfPVYzk4tN33WinGtA8fyhe19uwXg6oS7v9jnm9yZw/exec";
 
   let sesiUser = {}; let masterUnits = []; let allUnits = []; let masterGudang = []; let rawJurnalData = []; let rawStokList = [];
+  let rawStockSnapshot = []; let transferRows = []; let ticketReceiptOptions = []; let stockTransactionIds = Object.create(null);
+
+  function escapeHtml(value) {
+    return String(value == null ? '' : value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  }
+  function formatNumber(value) {
+    const number = Number(value);
+    return Number.isFinite(number) ? number.toLocaleString('id-ID', {maximumFractionDigits: 9}) : escapeHtml(value == null ? '-' : value);
+  }
+  function safeExportText(value) {
+    let text = String(value == null ? '-' : value).replace(/[\r\n\t]/g, ' ');
+    if (/^[=+@\-]/.test(text.trim())) text = "'" + text;
+    return text;
+  }
+  function inlineArg(value) {
+    return escapeHtml(JSON.stringify(String(value == null ? '' : value)).replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026'));
+  }
+  function postPayload(payload) {
+    return fetch(GAS_URL, {method: 'POST', headers: {'Content-Type': 'text/plain;charset=utf-8'}, body: JSON.stringify(payload)});
+  }
+  function todayJakarta() { return new Date(Date.now() + 7 * 60 * 60 * 1000).toISOString().slice(0, 10); }
+  function setConnectionStatus(state, message) {
+    const elements = [document.getElementById('connectionStatus'), document.getElementById('connectionStatusMobile')].filter(Boolean);
+    const color = state === 'ok' ? 'var(--erp-success)' : state === 'error' ? 'var(--erp-danger)' : 'var(--erp-warning)';
+    elements.forEach(el => {
+      el.innerHTML = `<span aria-hidden="true" style="width:8px;height:8px;background:${color};border-radius:50%;display:inline-block;"></span> <span></span>`;
+      el.querySelector('span:last-child').textContent = message;
+    });
+  }
 
   function showToast(message, type = 'success') {
     const container = document.getElementById('toast-container');
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
     const icon = type === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation';
-    toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${message}</span>`;
+    toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span></span>`;
+    toast.querySelector('span').textContent = String(message == null ? '' : message);
     container.appendChild(toast);
     setTimeout(() => toast.classList.add('show'), 10);
     setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, 3500);
@@ -434,7 +590,7 @@
 
   function cekSesiBerakhir(json) {
     if (json && json.status === "error" && String(json.message || "").indexOf("Sesi tidak valid") >= 0) {
-      localStorage.removeItem('stok_app_user_session');
+      sessionStorage.removeItem('stok_app_user_session');
       location.reload();
       return true;
     }
@@ -442,26 +598,26 @@
   }
 
   window.onload = function() {
-    const savedUser = localStorage.getItem('stok_app_user_session');
+    const savedUser = sessionStorage.getItem('stok_app_user_session');
     if (savedUser) {
       try {
         sesiUser = JSON.parse(savedUser);
         if (sesiUser.token && Date.now() < Number(sesiUser.expiresAt || 0)) tampilkanDashboard();
-        else { localStorage.removeItem('stok_app_user_session'); sesiUser = {}; }
-      } catch (e) { localStorage.removeItem('stok_app_user_session'); sesiUser = {}; }
+        else { sessionStorage.removeItem('stok_app_user_session'); sesiUser = {}; }
+      } catch (e) { sessionStorage.removeItem('stok_app_user_session'); sesiUser = {}; }
     }
   };
 
   async function prosesLogin() {
     const u = document.getElementById('loginUser').value.trim();
-    const p = document.getElementById('loginPass').value.trim();
+    const p = document.getElementById('loginPass').value;
     if (!u || !p) return showToast("Masukkan Username & Password!", "error");
     try {
-      const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "login", username: u, password: p }) });
+      const res = await postPayload({ action: "login", username: u, password: p });
       const result = await res.json();
       if (result.status === "success") { 
         sesiUser = result.userData; 
-        localStorage.setItem('stok_app_user_session', JSON.stringify(sesiUser)); 
+        sessionStorage.setItem('stok_app_user_session', JSON.stringify(sesiUser)); 
         showToast(`Selamat datang, ${sesiUser.nama}!`);
         tampilkanDashboard(); 
       }
@@ -475,10 +631,10 @@
     
     let initial = (sesiUser.nama || "U").substring(0,2).toUpperCase();
     document.getElementById('userProfileTag').innerHTML = `
-      <div class="erp-avatar">${initial}</div>
+      <div class="erp-avatar">${escapeHtml(initial)}</div>
       <div style="line-height:1.2;">
-        <div style="font-weight:700; font-size:12px; color:var(--erp-text-main);">${sesiUser.nama}</div>
-        <div style="font-size:10px; color:var(--erp-text-muted);">${sesiUser.jabatan} | <b>${sesiUser.unitLokasi}</b> ${sesiUser.isAdmin?'<span style="color:var(--erp-primary);">(ADMIN)</span>':''}</div>
+        <div style="font-weight:700; font-size:12px; color:var(--erp-text-main);">${escapeHtml(sesiUser.nama)}</div>
+        <div style="font-size:10px; color:var(--erp-text-muted);">${escapeHtml(sesiUser.jabatan)} | <b>${escapeHtml(sesiUser.unitLokasi)}</b> ${sesiUser.isAdmin?'<span style="color:var(--erp-primary);">(ADMIN)</span>':''}</div>
       </div>
     `;
 
@@ -489,33 +645,52 @@
 
   async function logoutSesi() {
     const token = sesiUser.token;
-    localStorage.removeItem('stok_app_user_session');
-    try { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "logout", token: token }) }); } catch (e) {}
+    sessionStorage.removeItem('stok_app_user_session');
+    try { await postPayload({ action: "logout", token: token }); } catch (e) {}
     location.reload();
   }
 
   function switchTab(tab) {
-    document.getElementById('tabStokBtn').classList.toggle('active', tab === 'stok');
-    document.getElementById('tabTransaksiBtn').classList.toggle('active', tab === 'transaksi');
-    document.getElementById('tabHistoryBtn').classList.toggle('active', tab === 'history');
-
-    document.getElementById('tabStokView').style.display = tab === 'stok' ? 'block' : 'none';
-    document.getElementById('tabTransaksiView').style.display = tab === 'transaksi' ? 'block' : 'none';
-    document.getElementById('tabHistoryView').style.display = tab === 'history' ? 'block' : 'none';
-
+    const tabs = {stok: ['tabStokBtn','tabStokView','Jurnal Stok & Mutasi'], transaksi: ['tabTransaksiBtn','tabTransaksiView','Pusat Transaksi Gudang'], history: ['tabHistoryBtn','tabHistoryView','Riwayat Mutasi'], lihatStok: ['tabLihatStokBtn','tabLihatStokView','Lihat Saldo Stok']};
+    Object.keys(tabs).forEach(key => {
+      const [buttonId, panelId] = tabs[key];
+      const button = document.getElementById(buttonId);
+      const panel = document.getElementById(panelId);
+      button.classList.toggle('active', tab === key);
+      button.setAttribute('aria-selected', tab === key ? 'true' : 'false');
+      button.tabIndex = tab === key ? 0 : -1;
+      panel.style.display = tab === key ? 'block' : 'none';
+    });
+    document.getElementById('currentPageTitle').textContent = tabs[tab][2];
+    if (tab === 'lihatStok') muatStockSnapshot();
     if (tab === 'transaksi' || tab === 'history') muatPendingTransfers();
+    if (tab === 'transaksi') muatTiketPenerimaan();
+    if (tab === 'history') muatStockAudit();
   }
 
+  document.querySelector('[role="tablist"]').addEventListener('keydown', function(event) {
+    const buttons = Array.from(this.querySelectorAll('[role="tab"]'));
+    const current = buttons.indexOf(document.activeElement);
+    if (current < 0 || !['ArrowLeft','ArrowRight','Home','End'].includes(event.key)) return;
+    event.preventDefault();
+    const next = event.key === 'Home' ? 0 : event.key === 'End' ? buttons.length - 1 : (current + (event.key === 'ArrowRight' ? 1 : buttons.length - 1)) % buttons.length;
+    buttons[next].focus();
+    buttons[next].click();
+  });
+
   async function muatMetaUnitsGudang() {
+    setConnectionStatus('loading', 'Menghubungkan…');
     try {
-      const res = await fetch(`${GAS_URL}?action=getUnitsAndGudang&token=${encodeURIComponent(sesiUser.token)}`);
+      const res = await postPayload({action: 'getUnitsAndGudang', token: sesiUser.token});
       const json = await res.json();
       if (cekSesiBerakhir(json)) return;
       if (json.status === "success") { 
         masterUnits = json.units; allUnits = json.allUnits || json.units; masterGudang = json.gudang; 
         populateUnitDropdowns(); 
-      }
-    } catch(e) {}
+        populateStockViewFilters();
+        setConnectionStatus('ok', 'GAS tersambung');
+      } else setConnectionStatus('error', 'Gagal memuat data');
+    } catch(e) { setConnectionStatus('error', 'Koneksi gagal'); }
   }
 
   function populateUnitDropdowns() {
@@ -524,17 +699,126 @@
     const trUnitTujuan = document.getElementById('trUnitTujuan');
 
     if (sesiUser.isAdmin) {
-      filterUnit.innerHTML = '<option value="">-- Semua Unit --</option>' + masterUnits.map(u => `<option value="${u.kodeUnit}">${u.namaUnit}</option>`).join('');
-      if(penUnit) penUnit.innerHTML = '<option value="">-- Pilih Unit --</option>' + masterUnits.map(u => `<option value="${u.kodeUnit}">${u.namaUnit}</option>`).join('');
+      filterUnit.innerHTML = '<option value="">-- Semua Unit --</option>' + masterUnits.map(u => `<option value="${escapeHtml(u.kodeUnit)}">${escapeHtml(u.namaUnit)}</option>`).join('');
+      if(penUnit) penUnit.innerHTML = '<option value="">-- Pilih Unit --</option>' + masterUnits.map(u => `<option value="${escapeHtml(u.kodeUnit)}">${escapeHtml(u.namaUnit)}</option>`).join('');
     } else {
-      filterUnit.innerHTML = masterUnits.map(u => `<option value="${u.kodeUnit}">${u.namaUnit}</option>`).join('');
+      filterUnit.innerHTML = masterUnits.map(u => `<option value="${escapeHtml(u.kodeUnit)}">${escapeHtml(u.namaUnit)}</option>`).join('');
       filterUnit.disabled = true;
-      if(penUnit) { penUnit.innerHTML = masterUnits.map(u => `<option value="${u.kodeUnit}">${u.namaUnit}</option>`).join(''); penUnit.disabled = true; }
+      if(penUnit) { penUnit.innerHTML = masterUnits.map(u => `<option value="${escapeHtml(u.kodeUnit)}">${escapeHtml(u.namaUnit)}</option>`).join(''); penUnit.disabled = true; }
     }
+    updateJournalWarehouseFilter();
+  }
+
+  function populateStockViewFilters() {
+    const unitSelect = document.getElementById('stockViewUnit');
+    const units = sesiUser.isAdmin ? allUnits : masterUnits;
+    unitSelect.innerHTML = (sesiUser.isAdmin ? '<option value="">Semua Unit / Farm</option>' : '') + units.map(u => `<option value="${escapeHtml(u.kodeUnit)}">${escapeHtml(u.namaUnit)}</option>`).join('');
+    if (!sesiUser.isAdmin && units.length) unitSelect.value = units[0].kodeUnit;
+    updateStockWarehouseFilter();
+  }
+
+  function updateStockWarehouseFilter() {
+    const unitValue = document.getElementById('stockViewUnit').value;
+    const warehouseSelect = document.getElementById('stockViewWarehouse');
+    const warehouseList = masterGudang.filter(g => !unitValue || String(g.kodeUnit).toLowerCase() === unitValue.toLowerCase());
+    warehouseSelect.innerHTML = '<option value="">Semua Gudang</option>' + warehouseList.map(g => `<option value="${escapeHtml(g.kodeGudang)}">${escapeHtml(g.namaGudang)} (${escapeHtml(g.kodeUnit)})</option>`).join('');
+  }
+
+  function updateJournalWarehouseFilter() {
+    const unitValue = document.getElementById('filterUnit').value;
+    const warehouseSelect = document.getElementById('filterGudangJournal');
+    if (!warehouseSelect) return;
+    const warehouseList = masterGudang.filter(g => !unitValue || String(g.kodeUnit).toLowerCase() === unitValue.toLowerCase());
+    warehouseSelect.innerHTML = '<option value="">Semua Gudang</option>' + warehouseList.map(g => `<option value="${escapeHtml(g.kodeGudang)}">${escapeHtml(g.namaGudang)}</option>`).join('');
+    terapkanFilterJurnal();
+  }
+
+  function updateStockKPIs() {
+    const low = rawStokList.filter(i => i.statusStok === 'RENDAH').length;
+    const empty = rawStokList.filter(i => i.statusStok === 'HABIS' || Number(i.sisaStok) < 0).length;
+    const count = new Set(rawStokList.map(i => String(i.kodeBarang))).size;
+    document.getElementById('kpiTotalBarang').textContent = count;
+    document.getElementById('kpiStokRendah').textContent = low;
+    document.getElementById('kpiStokHabis').textContent = empty;
+    document.getElementById('alertStokRendah').textContent = low;
+    document.getElementById('alertStokHabis').textContent = empty;
+  }
+
+  function updateSelectedStockHint(selectId, targetId) {
+    let selection = null;
+    try { selection = JSON.parse(document.getElementById(selectId).value); } catch (error) {}
+    const item = selection && rawStokList.find(i => String(i.kodeBarang) === String(selection.kodeBarang) && String(i.kodeUnit) === String(selection.kodeUnit) && String(i.kodeGudang) === String(selection.kodeGudang));
+    const hint = document.getElementById(targetId);
+    if (hint) hint.textContent = item ? `Stok tersedia ${formatNumber(item.sisaStok)} ${item.satuan} di ${item.kodeUnit}/${item.kodeGudang}` : '';
+    const quantityInputId = selectId === 'pemBarangPilih' ? 'pemJumlah' : selectId === 'trBarangAsal' ? 'trJumlah' : '';
+    const quantityInput = quantityInputId ? document.getElementById(quantityInputId) : null;
+    if (quantityInput) quantityInput.max = item ? String(Math.max(0, Number(item.sisaStok) || 0)) : '1000000000';
+  }
+
+  async function muatStockSnapshot() {
+    if (!sesiUser.token) return;
+    const container = document.getElementById('containerStockSnapshot');
+    container.innerHTML = '<p style="padding:20px;text-align:center;color:var(--erp-text-muted);"><i class="fa-solid fa-spinner fa-spin"></i> Menghitung saldo...</p>';
+    const payload = {
+      action: 'getStockSnapshot', token: sesiUser.token,
+      tglAsOf: document.getElementById('stockViewDate').value,
+      kodeUnit: document.getElementById('stockViewUnit').value,
+      kodeGudang: document.getElementById('stockViewWarehouse').value,
+      status: document.getElementById('stockViewStatus').value,
+      q: document.getElementById('stockViewSearch').value.trim()
+    };
+    try {
+      const res = await postPayload(payload);
+      const json = await res.json();
+      if (cekSesiBerakhir(json)) return;
+      if (json.status !== 'success') throw new Error(json.message || 'Gagal memuat snapshot.');
+      rawStockSnapshot = json.data || [];
+      document.getElementById('stockAsOfLabel').textContent = payload.tglAsOf ? `Saldo per ${json.tglAsOf}` : 'Saldo saat ini';
+      renderStockSnapshot(rawStockSnapshot);
+      setConnectionStatus('ok', 'Data stok diperbarui');
+    } catch (error) {
+      container.innerHTML = `<p style="padding:20px;text-align:center;color:var(--erp-danger);">${escapeHtml(error.message || 'Gagal memuat saldo stok.')}</p>`;
+      setConnectionStatus('error', 'Gagal memuat stok');
+    }
+  }
+
+  function showStockAlerts(status) {
+    document.getElementById('stockViewDate').value = '';
+    document.getElementById('stockViewStatus').value = status;
+    switchTab('lihatStok');
+  }
+
+  function renderStockSnapshot(data) {
+    const container = document.getElementById('containerStockSnapshot');
+    if (!data.length) { container.innerHTML = '<p style="padding:20px;text-align:center;color:var(--erp-text-muted);">Tidak ada barang pada filter ini.</p>'; return; }
+    let html = '<table class="erp-table"><thead><tr><th>Barang</th><th>Kategori</th><th>Unit / Farm</th><th>Gudang</th><th>Saldo Awal</th><th>Masuk</th><th>Keluar</th><th>Saldo</th><th>Minimum</th><th>Status</th></tr></thead><tbody>';
+    html += data.map(item => {
+      const statusClass = item.statusStok === 'HABIS' ? 'empty' : item.statusStok === 'RENDAH' ? 'low' : 'safe';
+      const minControl = sesiUser.isAdmin ? `<div style="display:flex;gap:5px;align-items:center;"><input class="inline-minimum" type="number" min="0" max="1000000000" step="any" value="${Number(item.stokMinimum || 0)}" aria-label="Batas minimum ${escapeHtml(item.namaBarang)}"><button type="button" class="btn btn-outline btn-sm" aria-label="Simpan batas minimum ${escapeHtml(item.namaBarang)}" onclick="simpanStokMinimum(${inlineArg(item.kodeBarang)},${inlineArg(item.kodeUnit)},${inlineArg(item.kodeGudang)},this)"><i class="fa-solid fa-floppy-disk"></i></button></div>` : formatNumber(item.stokMinimum || 0);
+      return `<tr><td><b>${escapeHtml(item.namaBarang)}</b><br><small class="mono">${escapeHtml(item.kodeBarang)}</small></td><td>${escapeHtml(item.kategori)}</td><td>${escapeHtml(item.kodeUnit)}</td><td>${escapeHtml(item.kodeGudang)}</td><td>${formatNumber(item.stokAwal)} ${escapeHtml(item.satuan)}</td><td>${formatNumber(item.jumlahMasuk)} ${escapeHtml(item.satuan)}</td><td>${formatNumber(item.jumlahKeluar)} ${escapeHtml(item.satuan)}</td><td class="mono"><b>${formatNumber(item.sisaStok)} ${escapeHtml(item.satuan)}</b></td><td>${minControl}</td><td><span class="stock-status ${statusClass}">${escapeHtml(item.statusStok)}</span></td></tr>`;
+    }).join('');
+    container.innerHTML = html + '</tbody></table>';
+  }
+
+  async function simpanStokMinimum(kodeBarang, kodeUnit, kodeGudang, button) {
+    const input = button.closest('div').querySelector('input');
+    const idTransaksi = `MIN-${window.crypto && crypto.randomUUID ? crypto.randomUUID() : Date.now() + '-' + Math.random().toString(36).slice(2)}`;
+    button.disabled = true;
+    try {
+      const res = await postPayload({action: 'setStockMinimum', token: sesiUser.token, kodeBarang, kodeUnit, kodeGudang, stokMinimum: input.value, idTransaksi});
+      const json = await res.json();
+      if (cekSesiBerakhir(json)) return;
+      if (json.status !== 'success') throw new Error(json.message || 'Gagal menyimpan batas minimum.');
+      showToast(json.message);
+      await muatMasterStokBarang();
+      await muatStockSnapshot();
+    } catch (error) { showToast(error.message || 'Gagal menyimpan batas minimum.', 'error'); }
+    finally { button.disabled = false; }
+  }
 
     if(trUnitTujuan) {
       let targetList = allUnits.filter(u => u.kodeUnit.toLowerCase() !== sesiUser.unitLokasi.toLowerCase());
-      trUnitTujuan.innerHTML = '<option value="">-- Pilih Unit Farm Tujuan --</option>' + targetList.map(u => `<option value="${u.kodeUnit}">${u.namaUnit}</option>`).join('');
+      trUnitTujuan.innerHTML = '<option value="">-- Pilih Unit Farm Tujuan --</option>' + targetList.map(u => `<option value="${escapeHtml(u.kodeUnit)}">${escapeHtml(u.namaUnit)}</option>`).join('');
     }
   }
 
@@ -542,29 +826,34 @@
     const unitKode = document.getElementById(unitSelectId).value;
     const gudangSelect = document.getElementById(gudangSelectId);
     let listG = masterGudang.filter(g => g.kodeUnit.toLowerCase() === unitKode.toLowerCase());
-    gudangSelect.innerHTML = listG.length > 0 ? listG.map(g => `<option value="${g.kodeGudang}">${g.namaGudang}</option>`).join('') : '<option value="">-- Tidak ada gudang --</option>';
+    gudangSelect.innerHTML = listG.length > 0 ? '<option value="">-- Pilih Gudang --</option>' + listG.map(g => `<option value="${escapeHtml(g.kodeGudang)}">${escapeHtml(g.namaGudang)}</option>`).join('') : '<option value="">-- Tidak ada gudang --</option>';
   }
 
   async function muatMasterStokBarang() {
     try {
-      const res = await fetch(`${GAS_URL}?action=getStokBarang&token=${encodeURIComponent(sesiUser.token)}`);
+      const res = await postPayload({action: 'getStokBarang', token: sesiUser.token});
       const json = await res.json();
       if (cekSesiBerakhir(json)) return;
       if (json.status === "success") { 
         rawStokList = json.data;
-        document.getElementById('kpiTotalBarang').innerText = rawStokList.length;
+        updateStockKPIs();
         populateBarangSelects(); 
         populateFilterBarangDatalist();
       }
-    } catch(e) {}
+    } catch(e) { showToast('Gagal memuat stok terkini.', 'error'); }
   }
 
   function populateBarangSelects() {
     const pemBarangPilih = document.getElementById('pemBarangPilih');
     const trBarangAsal = document.getElementById('trBarangAsal');
-    let opts = '<option value="">-- Pilih Barang Stok --</option>' + rawStokList.map(i => `<option value="${i.kodeBarang}">${i.namaBarang} (Sisa: ${i.sisaStok} ${i.satuan})</option>`).join('');
+    let opts = '<option value="">-- Pilih Barang Stok --</option>' + rawStokList.map(i => {
+      const locationValue = escapeHtml(JSON.stringify({kodeBarang: String(i.kodeBarang), kodeUnit: String(i.kodeUnit), kodeGudang: String(i.kodeGudang)}));
+      return `<option value="${locationValue}">${escapeHtml(i.namaBarang)} · ${escapeHtml(i.kodeUnit)}/${escapeHtml(i.kodeGudang)} · Tersedia ${formatNumber(i.sisaStok)} ${escapeHtml(i.satuan)}</option>`;
+    }).join('');
     if(pemBarangPilih) pemBarangPilih.innerHTML = opts;
     if(trBarangAsal) trBarangAsal.innerHTML = opts;
+    updateSelectedStockHint('pemBarangPilih', 'pemSaldoTersedia');
+    updateSelectedStockHint('trBarangAsal', 'trSaldoTersedia');
   }
 
   function populateFilterBarangDatalist() {
@@ -572,40 +861,43 @@
     if (!dataListElement) return;
 
     let uniqueNames = [...new Set(rawStokList.map(i => i.namaBarang))].sort();
-    let opts = uniqueNames.map(name => `<option value="${name}"></option>`).join('');
+    let opts = uniqueNames.map(name => `<option value="${escapeHtml(name)}"></option>`).join('');
     dataListElement.innerHTML = opts;
   }
 
   async function muatJurnalTransaksiBarang() {
     const tAwal = document.getElementById('filterTglAwal').value;
     const tAkhir = document.getElementById('filterTglAkhir').value;
+    document.getElementById('containerTabelJurnal').innerHTML = '<p style="padding:24px;text-align:center;color:var(--erp-text-muted);"><i class="fa-solid fa-spinner fa-spin"></i> Memuat jurnal…</p>';
     try {
-      const res = await fetch(`${GAS_URL}?action=getHistoryMutasi&token=${encodeURIComponent(sesiUser.token)}&tglAwal=${encodeURIComponent(tAwal)}&tglAkhir=${encodeURIComponent(tAkhir)}`);
+      const res = await postPayload({action: 'getHistoryMutasi', token: sesiUser.token, tglAwal: tAwal, tglAkhir: tAkhir});
       const json = await res.json();
       if (cekSesiBerakhir(json)) return;
+      if (json.status !== 'success') throw new Error(json.message || 'Gagal memuat jurnal.');
       if (json.status === "success") {
         rawJurnalData = json.data;
-
         rawJurnalData.sort((a, b) => {
-          let nameA = (a.namaBarang || "").toLowerCase();
-          let nameB = (b.namaBarang || "").toLowerCase();
-          if (nameA < nameB) return -1;
-          if (nameA > nameB) return 1;
-          return new Date(a.tglSistem) - new Date(b.tglSistem);
+          const keyA = `${a.kodeBarang}|${a.kodeUnit}|${a.kodeGudang}`.toLowerCase();
+          const keyB = `${b.kodeBarang}|${b.kodeUnit}|${b.kodeGudang}`.toLowerCase();
+          return keyA.localeCompare(keyB) || String(a.tglSistem).localeCompare(String(b.tglSistem));
         });
-
         terapkanFilterJurnal();
+        setConnectionStatus('ok', 'Jurnal diperbarui');
       }
-    } catch(e) {}
+    } catch(e) { document.getElementById('containerTabelJurnal').innerHTML = `<p style="padding:24px;text-align:center;color:var(--erp-danger);">${escapeHtml(e.message || 'Gagal memuat jurnal.')}</p>`; setConnectionStatus('error', 'Gagal memuat jurnal'); }
   }
 
   function terapkanFilterJurnal() {
     const selectedUnit = document.getElementById('filterUnit').value;
     const searchBarangVal = document.getElementById('filterBarangPilih').value.toLowerCase().trim();
+    const selectedWarehouse = document.getElementById('filterGudangJournal').value;
+    const selectedType = document.getElementById('filterJenisJurnal').value;
 
     let filtered = rawJurnalData.filter(item => {
-      if (selectedUnit && item.kodeUnit !== selectedUnit) return false;
-      if (searchBarangVal && !item.namaBarang.toLowerCase().includes(searchBarangVal) && !item.keterangan.toLowerCase().includes(searchBarangVal)) return false;
+      if (selectedUnit && String(item.kodeUnit) !== selectedUnit) return false;
+      if (selectedWarehouse && String(item.kodeGudang) !== selectedWarehouse) return false;
+      if (selectedType && String(item.tipeMutasi).toUpperCase() !== selectedType) return false;
+      if (searchBarangVal && !String(item.namaBarang || '').toLowerCase().includes(searchBarangVal) && !String(item.keterangan || '').toLowerCase().includes(searchBarangVal) && !String(item.kodeBarang || '').toLowerCase().includes(searchBarangVal)) return false;
       return true;
     });
 
@@ -615,8 +907,8 @@
       if(t === "MASUK") countMasuk += Number(it.jumlah || 0);
       else if(t === "KELUAR" || t === "TRANSFER") countKeluar += Number(it.jumlah || 0);
     });
-    document.getElementById('kpiTotalMasuk').innerText = countMasuk;
-    document.getElementById('kpiTotalKeluar').innerText = countKeluar;
+      document.getElementById('kpiTotalMasuk').innerText = formatNumber(countMasuk);
+      document.getElementById('kpiTotalKeluar').innerText = formatNumber(countKeluar);
 
     renderTabelJurnal(filtered);
   }
@@ -631,32 +923,24 @@
       <th>No</th><th>Waktu Transaksi</th><th>Kode</th><th>Nama Barang</th><th>Jenis</th><th>Masuk</th><th>Keluar</th><th>Running Stok</th><th>Satuan</th><th>Unit / Gudang</th><th>Keterangan Detail</th>
     </tr></thead><tbody>`;
 
-    let currentBarang = "";
-    let runningSaldo = 0;
-
     data.forEach((item, idx) => {
-      if (item.namaBarang !== currentBarang) {
-        currentBarang = item.namaBarang;
-        runningSaldo = 0;
-      }
-
       let mas = 0; let kel = 0;
       let tipe = (item.tipeMutasi || "").toUpperCase();
-      if (tipe === "MASUK") { mas = Number(item.jumlah || 0); runningSaldo += mas; }
-      else if (tipe === "KELUAR" || tipe === "TRANSFER") { kel = Number(item.jumlah || 0); runningSaldo -= kel; }
+      if (tipe === "MASUK") mas = Number(item.jumlah || 0);
+      else if (tipe === "KELUAR" || tipe === "TRANSFER") kel = Number(item.jumlah || 0);
 
       html += `<tr>
         <td>${idx + 1}</td>
-        <td><small class="mono" style="color:var(--erp-text-muted);">${item.tglSistem}</small></td>
-        <td><span class="mono">${item.kodeBarang}</span></td>
-        <td><b>${item.namaBarang}</b></td>
-        <td><span class="badge ${tipe === 'MASUK' ? 'badge-success' : 'badge-danger'}">${item.tipeMutasi}</span></td>
-        <td class="mono" style="color:#047857; font-weight:600;">${mas > 0 ? mas : '-'}</td>
-        <td class="mono" style="color:#b91c1c; font-weight:600;">${kel > 0 ? kel : '-'}</td>
-        <td class="mono" style="font-weight:700; color:var(--erp-primary);">${runningSaldo}</td>
-        <td>${item.satuan}</td>
-        <td>${item.kodeUnit} <small style="color:var(--erp-text-muted);">(${item.kodeGudang})</small></td>
-        <td><small style="color:var(--erp-text-main);">${item.keterangan}</small></td>
+        <td><small class="mono" style="color:var(--erp-text-muted);">${escapeHtml(item.tglSistem)}</small></td>
+        <td><span class="mono">${escapeHtml(item.kodeBarang)}</span></td>
+        <td><b>${escapeHtml(item.namaBarang)}</b><br><small>${escapeHtml(item.kategori)}</small></td>
+        <td><span class="badge ${tipe === 'MASUK' ? 'badge-success' : 'badge-danger'}">${escapeHtml(item.tipeMutasi)}</span></td>
+        <td class="mono" style="color:#047857; font-weight:600;">${mas > 0 ? formatNumber(mas) : '-'}</td>
+        <td class="mono" style="color:#b91c1c; font-weight:600;">${kel > 0 ? formatNumber(kel) : '-'}</td>
+        <td class="mono" style="font-weight:700; color:var(--erp-primary);">${formatNumber(item.saldoSetelah)}</td>
+        <td>${escapeHtml(item.satuan)}</td>
+        <td>${escapeHtml(item.kodeUnit)} <small style="color:var(--erp-text-muted);">(${escapeHtml(item.kodeGudang)})</small></td>
+        <td><small style="color:var(--erp-text-main);">${escapeHtml(item.keterangan)}</small></td>
       </tr>`;
     });
 
@@ -667,44 +951,33 @@
   function eksporKeExcel() {
     const selectedUnit = document.getElementById('filterUnit').value;
     const searchBarangVal = document.getElementById('filterBarangPilih').value.toLowerCase().trim();
-
-    let filteredData = rawJurnalData.filter(item => {
-      if (selectedUnit && item.kodeUnit !== selectedUnit) return false;
-      if (searchBarangVal && !item.namaBarang.toLowerCase().includes(searchBarangVal) && !item.keterangan.toLowerCase().includes(searchBarangVal)) return false;
-      return true;
-    });
+    const selectedWarehouse = document.getElementById('filterGudangJournal').value;
+    const selectedType = document.getElementById('filterJenisJurnal').value;
+    let filteredData = rawJurnalData.filter(item => (!selectedUnit || String(item.kodeUnit) === selectedUnit) && (!selectedWarehouse || String(item.kodeGudang) === selectedWarehouse) && (!selectedType || String(item.tipeMutasi).toUpperCase() === selectedType) && (!searchBarangVal || [item.namaBarang,item.keterangan,item.kodeBarang].some(value => String(value || '').toLowerCase().includes(searchBarangVal))));
 
     if (filteredData.length === 0) return showToast("Tidak ada rincian transaksi untuk diekspor!", "error");
 
     let dataExcel = [];
-    let currentBarang = "";
-    let runningSaldo = 0;
-
     filteredData.forEach((item, idx) => {
-      if (item.namaBarang !== currentBarang) {
-        currentBarang = item.namaBarang;
-        runningSaldo = 0;
-      }
-
       let mas = 0; let kel = 0;
       let tipe = (item.tipeMutasi || "").toUpperCase();
-      if (tipe === "MASUK") { mas = Number(item.jumlah || 0); runningSaldo += mas; }
-      else if (tipe === "KELUAR" || tipe === "TRANSFER") { kel = Number(item.jumlah || 0); runningSaldo -= kel; }
+      if (tipe === "MASUK") mas = Number(item.jumlah || 0);
+      else if (tipe === "KELUAR" || tipe === "TRANSFER") kel = Number(item.jumlah || 0);
 
       dataExcel.push({
         "No": idx + 1,
-        "Waktu Transaksi": item.tglSistem || "-",
-        "Kode Barang": item.kodeBarang || "-",
-        "Nama Barang": item.namaBarang || "-",
-        "Kategori": item.kategori || "-",
-        "Jenis Transaksi": item.tipeMutasi || "-",
+        "Waktu Transaksi": safeExportText(item.tglSistem),
+        "Kode Barang": safeExportText(item.kodeBarang),
+        "Nama Barang": safeExportText(item.namaBarang),
+        "Kategori": safeExportText(item.kategori),
+        "Jenis Transaksi": safeExportText(item.tipeMutasi),
         "Masuk": mas,
         "Keluar": kel,
-        "Running Stok": runningSaldo,
-        "Satuan": item.satuan || "pcs",
-        "Lokasi Unit": item.kodeUnit || "-",
-        "Gudang": item.kodeGudang || "-",
-        "Keterangan Detail": item.keterangan || "-"
+        "Running Stok": Number(item.saldoSetelah || 0),
+        "Satuan": safeExportText(item.satuan || "pcs"),
+        "Lokasi Unit": safeExportText(item.kodeUnit),
+        "Gudang": safeExportText(item.kodeGudang),
+        "Keterangan Detail": safeExportText(item.keterangan)
       });
     });
 
@@ -713,79 +986,206 @@
     XLSX.utils.book_append_sheet(workbook, worksheet, "ERP Stock Journal");
 
     let barangText = searchBarangVal ? searchBarangVal.replace(/[^a-zA-Z0-9]/g, "_") : "Semua_Barang";
-    XLSX.writeFile(workbook, `ERP_Stock_Journal_${barangText}_${sesiUser.unitLokasi}.xlsx`);
+    let unitText = String(sesiUser.unitLokasi || 'Unit').replace(/[^a-zA-Z0-9_-]/g, "_");
+    XLSX.writeFile(workbook, `ERP_Stock_Journal_${barangText}_${unitText}.xlsx`);
     showToast("File Excel berhasil diexport!");
   }
 
   async function muatPendingTransfers() {
     try {
-      const res = await fetch(`${GAS_URL}?action=getPendingTransfers&token=${encodeURIComponent(sesiUser.token)}`);
+      const res = await postPayload({action: 'getPendingTransfers', token: sesiUser.token});
       const json = await res.json();
       if (cekSesiBerakhir(json)) return;
-      if (json.status === "success") {
-        document.getElementById('kpiPendingCount').innerText = json.data.filter(x => x.status === "PENDING_ADMIN").length;
+      if (json.status !== 'success') throw new Error(json.message || 'Gagal memuat mutasi.');
+      transferRows = json.data || [];
+      document.getElementById('kpiPendingCount').textContent = getActionableTransferRows().length;
+      renderTransferViews();
+    } catch(e) { document.getElementById('containerPendingTransfer').innerHTML = `<p style="padding:15px;color:var(--erp-danger);">${escapeHtml(e.message || 'Gagal memuat antrean mutasi.')}</p>`; }
+  }
 
-        if(json.data.length === 0) {
-          document.getElementById('containerPendingTransfer').innerHTML = "<p style='padding:15px; color:var(--erp-text-muted);'>Tidak ada mutasi yang memerlukan tindakan.</p>";
-          document.getElementById('containerTabelHistory').innerHTML = "<p style='padding:15px; color:var(--erp-text-muted);'>Tidak ada mutasi yang memerlukan tindakan.</p>";
-          return;
-        }
+  async function muatStockAudit() {
+    const container = document.getElementById('containerStockAudit');
+    container.innerHTML = '<p style="padding:16px;text-align:center;color:var(--erp-text-muted);">Memuat jejak audit stok…</p>';
+    try {
+      const res = await postPayload({
+        action: 'getStockAudit', token: sesiUser.token,
+        tglAwal: document.getElementById('auditFilterStart').value,
+        tglAkhir: document.getElementById('auditFilterEnd').value,
+        q: document.getElementById('auditFilterSearch').value.trim()
+      });
+      const json = await res.json();
+      if (cekSesiBerakhir(json)) return;
+      if (json.status !== 'success') throw new Error(json.message || 'Gagal memuat audit stok.');
+      const rows = json.data || [];
+      if (!rows.length) { container.innerHTML = '<p style="padding:16px;text-align:center;color:var(--erp-text-muted);">Tidak ada catatan audit untuk filter ini.</p>'; return; }
+      let html = '<table class="erp-table"><thead><tr><th>Waktu / ID</th><th>Perubahan</th><th>Pelaku</th><th>Barang</th><th>Lokasi</th><th>Jumlah</th><th>Saldo Sebelum → Sesudah</th><th>Referensi / Keterangan</th></tr></thead><tbody>';
+      html += rows.map(row => {
+        const minimumChange = row.minimumSebelum == null ? '' : `<br><small>Minimum: ${formatNumber(row.minimumSebelum)} → ${formatNumber(row.minimumSesudah)}</small>`;
+        return `<tr><td><small class="mono">${escapeHtml(row.waktu)}</small><br><small>${escapeHtml(row.idTransaksi)}</small></td><td><span class="badge badge-info">${escapeHtml(row.aksi)}</span>${minimumChange}</td><td>${escapeHtml(row.pelaku)}<br><small>${escapeHtml(row.username)}</small></td><td><b>${escapeHtml(row.namaBarang)}</b><br><small class="mono">${escapeHtml(row.kodeBarang)}</small></td><td>${escapeHtml(row.kodeUnit)}<br><small>${escapeHtml(row.kodeGudang)}</small></td><td class="mono">${formatNumber(row.jumlah)}</td><td class="mono">${formatNumber(row.saldoSebelum)} → ${formatNumber(row.saldoSesudah)}</td><td>${escapeHtml(row.referensi)}<br><small>${escapeHtml(row.keterangan)}</small></td></tr>`;
+      }).join('');
+      container.innerHTML = html + '</tbody></table>';
+    } catch (error) {
+      container.innerHTML = `<p style="padding:16px;text-align:center;color:var(--erp-danger);">${escapeHtml(error.message || 'Gagal memuat audit stok.')}</p>`;
+    }
+  }
 
-        let html = `<table class="erp-table"><thead><tr><th>Pengajuan</th><th>Barang</th><th>Dari Unit</th><th>Ke Unit</th><th>Jumlah</th><th>Status ERP</th><th>Aksi</th></tr></thead><tbody>`;
-        json.data.forEach(t => {
-          let badgeStatus = ""; let btnAksi = "";
-          if (t.status === "PENDING_ADMIN") {
-            badgeStatus = `<span class="badge badge-warning">Waiting Approval</span>`;
-            if (sesiUser.isAdmin) {
-              btnAksi = `<button class="btn btn-success" style="padding:4px 10px; font-size:11px; background:#047857;" onclick="prosesAccAdmin('${t.idTransfer}', 'ACC')">ACC</button> <button class="btn btn-outline" style="padding:4px 10px; font-size:11px; color:red;" onclick="prosesAccAdmin('${t.idTransfer}', 'TOLAK')">Tolak</button>`;
-            } else btnAksi = `<small style="color:var(--erp-text-muted);">Pending Admin</small>`;
-          } else if (t.status === "ACC_ADMIN") {
-            badgeStatus = `<span class="badge badge-info">In Delivery</span>`;
-            if (t.unitTujuan.toLowerCase() === sesiUser.unitLokasi.toLowerCase() || sesiUser.isAdmin) {
-              btnAksi = `<button class="btn btn-primary" style="padding:4px 10px; font-size:11px;" onclick="konfirmasiTerimaTransfer('${t.idTransfer}')">Konfirmasi Terima</button>`;
-            } else btnAksi = `<small style="color:var(--erp-text-muted);">Wait Receiver</small>`;
-          } else if (t.status === "DITERIMA") {
-            badgeStatus = `<span class="badge badge-success">Completed</span>`; btnAksi = `<i class="fa-solid fa-check-double" style="color:var(--erp-success);"></i>`;
-          } else if (t.status === "DITOLAK_ADMIN") {
-            badgeStatus = `<span class="badge badge-danger">Rejected</span>`; btnAksi = `-`;
-          }
+  function renderTransferTable(rows, includeActions) {
+    if (!rows.length) return '<p style="padding:15px;color:var(--erp-text-muted);">Tidak ada mutasi untuk ditampilkan.</p>';
+    let html = '<table class="erp-table"><thead><tr><th>Diajukan</th><th>Barang</th><th>Dari</th><th>Tujuan</th><th>Jumlah</th><th>Status</th><th>Aksi</th></tr></thead><tbody>';
+    rows.forEach(t => {
+      let badge = '<span class="badge badge-warning">Menunggu Admin</span>';
+      if (t.status === 'ACC_ADMIN') badge = '<span class="badge badge-info">Dalam Perjalanan</span>';
+      if (t.status === 'DITERIMA') badge = '<span class="badge badge-success">Diterima</span>';
+      if (t.status === 'DITOLAK_ADMIN') badge = '<span class="badge badge-danger">Ditolak</span>';
+      let actions = '—';
+      if (includeActions && t.status === 'PENDING_ADMIN' && sesiUser.isAdmin) actions = `<button class="btn btn-success btn-sm" onclick="prosesAccAdmin(${inlineArg(t.idTransfer)},'ACC')">Setujui</button> <button class="btn btn-outline btn-sm" onclick="prosesAccAdmin(${inlineArg(t.idTransfer)},'TOLAK')">Tolak</button>`;
+      else if (includeActions && t.status === 'ACC_ADMIN' && (sesiUser.isAdmin || String(t.unitTujuan).toLowerCase() === String(sesiUser.unitLokasi).toLowerCase())) actions = `<button class="btn btn-primary btn-sm" onclick="konfirmasiTerimaTransfer(${inlineArg(t.idTransfer)})">Konfirmasi Terima</button>`;
+      html += `<tr><td><small class="mono">${escapeHtml(t.tgl)}</small><br><small>${escapeHtml(t.idTransfer)}</small></td><td><b>${escapeHtml(t.namaBarang)}</b><br><small>${escapeHtml(t.kodeBarang)}</small></td><td>${escapeHtml(t.unitAsal)}<br><small>${escapeHtml(t.gudangAsal)}</small></td><td><b>${escapeHtml(t.unitTujuan)}</b><br><small>${escapeHtml(t.gudangTujuan)}</small></td><td class="mono"><b>${escapeHtml(t.jumlah)} ${escapeHtml(t.satuan)}</b></td><td>${badge}</td><td>${actions}</td></tr>`;
+    });
+    return html + '</tbody></table>';
+  }
 
-          html += `<tr><td><small class="mono">${t.tgl}</small></td><td><b>${t.namaBarang}</b></td><td>${t.unitAsal}</td><td><b>${t.unitTujuan}</b></td><td class="mono"><b>${t.jumlah} ${t.satuan}</b></td><td>${badgeStatus}</td><td>${btnAksi}</td></tr>`;
-        });
-        html += `</tbody></table>`;
-        document.getElementById('containerPendingTransfer').innerHTML = html;
-        document.getElementById('containerTabelHistory').innerHTML = html;
-      }
-    } catch(e){}
+  function renderTransferViews() {
+    const queue = getActionableTransferRows();
+    document.getElementById('containerPendingTransfer').innerHTML = renderTransferTable(queue, true);
+    const statusFilter = document.getElementById('filterTransferStatus').value;
+    const query = document.getElementById('filterTransferSearch').value.trim().toLowerCase();
+    const history = transferRows.filter(t => (!statusFilter || t.status === statusFilter) && (!query || [t.idTransfer,t.namaBarang,t.kodeBarang,t.unitAsal,t.unitTujuan,t.gudangAsal,t.gudangTujuan].some(v => String(v || '').toLowerCase().includes(query))));
+    document.getElementById('containerTabelHistory').innerHTML = renderTransferTable(history, false);
+  }
+
+  function getActionableTransferRows() {
+    return transferRows.filter(t => (t.status === 'PENDING_ADMIN' && sesiUser.isAdmin) || (t.status === 'ACC_ADMIN' && (sesiUser.isAdmin || String(t.unitTujuan).toLowerCase() === String(sesiUser.unitLokasi).toLowerCase())));
   }
 
   async function prosesAccAdmin(idTransfer, keputusan) {
     if(!confirm(`Apakah Anda yakin ingin ${keputusan} mutasi ini?`)) return;
-    const payload = { action: "prosesAccAdminMutasi", idTransfer: idTransfer, keputusan: keputusan };
+    let catatanKeputusan = '';
+    if (keputusan === 'TOLAK') {
+      catatanKeputusan = prompt('Alasan penolakan (wajib, minimal 5 karakter):', '');
+      if (catatanKeputusan === null) return;
+      catatanKeputusan = catatanKeputusan.trim();
+      if (catatanKeputusan.length < 5 || catatanKeputusan.length > 500) return showToast('Alasan penolakan wajib 5–500 karakter.', 'error');
+    }
+    const payload = { action: "prosesAccAdminMutasi", idTransfer: idTransfer, keputusan: keputusan, catatanKeputusan, idTransaksi: `MUT-${idTransfer}-${keputusan}` };
     await kirimAksiStok(payload, function() { muatPendingTransfers(); muatJurnalTransaksiBarang(); muatMasterStokBarang(); });
   }
 
   async function konfirmasiTerimaTransfer(idTransfer) {
     if(!confirm("Apakah barang mutasi telah fisik diterima secara akurat?")) return;
-    const payload = { action: "konfirmasiTerimaTransfer", idTransfer: idTransfer };
+    const payload = { action: "konfirmasiTerimaTransfer", idTransfer: idTransfer, idTransaksi: `MUT-${idTransfer}-TERIMA` };
     await kirimAksiStok(payload, function() { muatPendingTransfers(); muatJurnalTransaksiBarang(); muatMasterStokBarang(); });
   }
 
-  async function kirimAksiStok(payload, onSuccess) {
+  async function kirimAksiStok(payload, onSuccess, formId) {
+    const fingerprint = JSON.stringify(payload);
+    const transactionKey = formId ? `${formId}:${payload.action}` : '';
+    if (!payload.idTransaksi) {
+      if (!stockTransactionIds[transactionKey] || stockTransactionIds[transactionKey].fingerprint !== fingerprint) {
+        const randomPart = window.crypto && crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        stockTransactionIds[transactionKey] = {fingerprint, id: `STK-${randomPart}`};
+      }
+      payload.idTransaksi = stockTransactionIds[transactionKey].id;
+    }
+    const form = formId ? document.getElementById(formId) : null;
+    const submitButton = form ? form.querySelector('button[type="submit"]') : null;
+    if (submitButton) { submitButton.disabled = true; submitButton.setAttribute('aria-busy','true'); }
+    setConnectionStatus('loading', 'Menyimpan transaksi…');
     try {
       payload.token = sesiUser.token;
-      const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+      const res = await postPayload(payload);
       const json = await res.json();
       if (cekSesiBerakhir(json)) return;
-      if (json.status !== "success") return showToast(json.message || "Transaksi gagal diproses.", "error");
+      if (json.status !== "success") { setConnectionStatus('error', 'Transaksi gagal'); return showToast(json.message || "Transaksi gagal diproses.", "error"); }
       showToast(json.message || "Transaksi berhasil disimpan.");
-      if (onSuccess) onSuccess(json);
+      setConnectionStatus('ok', 'Transaksi tersimpan');
+      if (transactionKey) delete stockTransactionIds[transactionKey];
+      if (onSuccess) await onSuccess(json);
     } catch (e) {
-      showToast("Gagal terhubung ke server ERP.", "error");
+      setConnectionStatus('error', 'Koneksi gagal');
+      showToast("Koneksi bermasalah. Coba ulangi; sistem akan mencegah ID transaksi yang sama tercatat dua kali.", "error");
+    } finally { if (submitButton) { submitButton.disabled = false; submitButton.removeAttribute('aria-busy'); } }
+  }
+
+  async function muatTiketPenerimaan() {
+    const select = document.getElementById('penTicketItem');
+    if (!select || !sesiUser.token) return;
+    select.innerHTML = '<option value="">Memuat tiket…</option>';
+    try {
+      const res = await postPayload({action: 'getApprovedTicketReceipts', token: sesiUser.token});
+      const json = await res.json();
+      if (cekSesiBerakhir(json)) return;
+      if (json.status !== 'success') throw new Error(json.message || 'Gagal memuat tiket portal.');
+      ticketReceiptOptions = json.data || [];
+      select.innerHTML = ticketReceiptOptions.length ? '<option value="">-- Pilih item tiket yang disetujui --</option>' + ticketReceiptOptions.map(item => {
+        const value = escapeHtml(JSON.stringify({ticket: String(item.kodeTiket), noItem: Number(item.noItem)}));
+        return `<option value="${value}">${escapeHtml(item.kodeTiket)} · Item ${escapeHtml(item.noItem)} · ${escapeHtml(item.namaBarang)} · Sisa ${formatNumber(item.sisaDisetujui)} ${escapeHtml(item.satuan)}</option>`;
+      }).join('') : '<option value="">Tidak ada item tiket disetujui dengan sisa penerimaan</option>';
+      document.getElementById('penTicketRemaining').textContent = ticketReceiptOptions.length ? '' : 'Semua item tiket sudah terpenuhi atau belum disetujui.';
+      toggleReceiptSource();
+    } catch (error) {
+      select.innerHTML = '<option value="">Tiket tidak dapat dimuat</option>';
+      document.getElementById('penTicketRemaining').textContent = error.message || 'Gagal memuat tiket.';
     }
   }
 
-  function bukaModalPenerimaan() { updateSubGudangPilih('penUnit', 'penGudang'); document.getElementById('modalPenerimaan').style.display = 'flex'; }
+  function toggleReceiptSource() {
+    const linked = document.getElementById('penSumber').value === 'PERMINTAAN_ACC';
+    document.getElementById('penTicketWrap').style.display = linked ? 'block' : 'none';
+    const ticketSelect = document.getElementById('penTicketItem');
+    ticketSelect.required = linked;
+    const name = document.getElementById('penNamaBarang');
+    const unitLabel = document.getElementById('penSatuan');
+    const category = document.getElementById('penKategori');
+    const unit = document.getElementById('penUnit');
+    name.readOnly = linked;
+    unitLabel.readOnly = linked;
+    category.disabled = linked;
+    unit.disabled = linked || !sesiUser.isAdmin;
+    document.getElementById('penItemHint').textContent = linked
+      ? 'Nama barang, satuan, dan kategori mengikuti persetujuan tiket portal.'
+      : 'Gunakan nama dan satuan barang sesuai dokumen penerimaan.';
+    if (!linked) {
+      ticketSelect.value = '';
+      document.getElementById('penTicketRemaining').textContent = '';
+      document.getElementById('penJumlah').max = '1000000000';
+      document.getElementById('penJumlah').value = '';
+      name.value = '';
+      unitLabel.value = '';
+      category.value = 'LAINNYA';
+    } else if (ticketSelect.value) pilihTiketPenerimaan();
+  }
+
+  async function ubahSumberPenerimaan() {
+    toggleReceiptSource();
+    if (document.getElementById('penSumber').value === 'PERMINTAAN_ACC') await muatTiketPenerimaan();
+  }
+
+  function pilihTiketPenerimaan() {
+    const selectValue = document.getElementById('penTicketItem').value;
+    const hint = document.getElementById('penTicketRemaining');
+    const unit = document.getElementById('penUnit');
+    if (!selectValue) { hint.textContent = ''; return; }
+    let selected;
+    try { selected = JSON.parse(selectValue); } catch (error) { hint.textContent = 'Pilihan tiket tidak valid.'; return; }
+    const item = ticketReceiptOptions.find(row => String(row.kodeTiket) === String(selected.ticket) && Number(row.noItem) === Number(selected.noItem));
+    if (!item) { hint.textContent = 'Item tiket sudah tidak tersedia. Muat ulang daftar tiket.'; return; }
+    document.getElementById('penNamaBarang').value = item.namaBarang || '';
+    document.getElementById('penSatuan').value = item.satuan || 'pcs';
+    document.getElementById('penKategori').value = item.kategori || 'LAINNYA';
+    unit.value = item.kodeUnit;
+    updateSubGudangPilih('penUnit', 'penGudang');
+    document.getElementById('penJumlah').max = String(item.sisaDisetujui);
+    document.getElementById('penJumlah').value = '';
+    hint.textContent = `Tiket ${item.kodeTiket} · disetujui ${formatNumber(item.jumlahDisetujui)} ${item.satuan}, sudah diterima ${formatNumber(item.jumlahTerpenuhi)} ${item.satuan}, sisa ${formatNumber(item.sisaDisetujui)} ${item.satuan}.`;
+  }
+
+  async function bukaModalPenerimaan() {
+    updateSubGudangPilih('penUnit', 'penGudang');
+    document.getElementById('modalPenerimaan').style.display = 'flex';
+    toggleReceiptSource();
+    if (document.getElementById('penSumber').value === 'PERMINTAAN_ACC') await muatTiketPenerimaan();
+  }
   document.getElementById('formPenerimaan').addEventListener('submit', async function(e) {
     e.preventDefault();
     const payload = {
@@ -798,20 +1198,36 @@
       satuan: document.getElementById('penSatuan').value.trim(),
       kategori: document.getElementById('penKategori').value
     };
-    await kirimAksiStok(payload, function() { tutupModal('modalPenerimaan'); muatJurnalTransaksiBarang(); muatMasterStokBarang(); });
+    if (payload.sumberPenerimaan === 'PERMINTAAN_ACC') {
+      let selected;
+      try { selected = JSON.parse(document.getElementById('penTicketItem').value); } catch (error) { return showToast('Pilih item tiket yang akan diterima.', 'error'); }
+      payload.kodeTiket = selected.ticket;
+      payload.noItem = selected.noItem;
+    }
+    await kirimAksiStok(payload, async function() {
+      document.getElementById('formPenerimaan').reset();
+      toggleReceiptSource();
+      updateSubGudangPilih('penUnit', 'penGudang');
+      tutupModal('modalPenerimaan');
+      await Promise.all([muatJurnalTransaksiBarang(), muatMasterStokBarang(), muatTiketPenerimaan()]);
+    }, 'formPenerimaan');
   });
 
   function bukaModalPemakaian() { document.getElementById('modalPemakaian').style.display = 'flex'; }
   document.getElementById('formPemakaian').addEventListener('submit', async function(e) {
     e.preventDefault();
+    let selection;
+    try { selection = JSON.parse(document.getElementById('pemBarangPilih').value); } catch (error) { return showToast('Pilih barang dan gudang yang akan digunakan.', 'error'); }
     const payload = {
       action: "prosesPemakaianBarang",
-      kodeBarang: document.getElementById('pemBarangPilih').value,
+      kodeBarang: selection.kodeBarang,
+      kodeUnit: selection.kodeUnit,
+      kodeGudang: selection.kodeGudang,
       lokasiKandang: document.getElementById('pemLokasiKandang').value.trim(),
       jumlah: document.getElementById('pemJumlah').value,
       keterangan: document.getElementById('pemKet').value.trim()
     };
-    await kirimAksiStok(payload, function() { tutupModal('modalPemakaian'); muatJurnalTransaksiBarang(); muatMasterStokBarang(); });
+    await kirimAksiStok(payload, async function() { tutupModal('modalPemakaian'); await Promise.all([muatJurnalTransaksiBarang(), muatMasterStokBarang()]); }, 'formPemakaian');
   });
 
   function bukaModalTransferDirect() { 
@@ -821,14 +1237,18 @@
 
   document.getElementById('formTransferStok').addEventListener('submit', async function(e) {
     e.preventDefault();
+    let selection;
+    try { selection = JSON.parse(document.getElementById('trBarangAsal').value); } catch (error) { return showToast('Pilih barang dan gudang asal.', 'error'); }
     const payload = {
       action: "ajukanTransferAntarUnit",
-      kodeBarangAsal: document.getElementById('trBarangAsal').value,
+      kodeBarangAsal: selection.kodeBarang,
+      kodeUnitAsal: selection.kodeUnit,
+      kodeGudangAsal: selection.kodeGudang,
       unitTujuan: document.getElementById('trUnitTujuan').value,
       gudangTujuan: document.getElementById('trGudangTujuan').value,
       jumlahTransfer: document.getElementById('trJumlah').value
     };
-    await kirimAksiStok(payload, function() { tutupModal('modalTransfer'); muatPendingTransfers(); muatJurnalTransaksiBarang(); });
+    await kirimAksiStok(payload, async function() { tutupModal('modalTransfer'); await Promise.all([muatPendingTransfers(), muatJurnalTransaksiBarang()]); }, 'formTransferStok');
   });
 
   function tutupModal(id) { document.getElementById(id).style.display = 'none'; }
