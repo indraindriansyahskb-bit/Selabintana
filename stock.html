@@ -7,7 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.min.js"></script>
 
   <style>
     :root {
@@ -436,7 +436,15 @@
 
       <div id="tabLihatStokView" role="tabpanel" aria-labelledby="tabLihatStokBtn" style="display:none;">
         <div class="erp-card">
-          <div class="erp-card-header"><div class="erp-card-title"><i class="fa-solid fa-boxes-stacked"></i> Saldo Stok per Barang dan Lokasi</div><span id="stockAsOfLabel" class="badge badge-info">Saldo saat ini</span></div>
+          <div class="erp-card-header">
+            <div class="erp-card-title"><i class="fa-solid fa-boxes-stacked"></i> Saldo Stok per Barang dan Lokasi</div>
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+              <span id="stockAsOfLabel" class="badge badge-info">Saldo saat ini</span>
+              <button type="button" id="exportStockSnapshotBtn" class="btn btn-success" onclick="eksporLihatStokKeExcel()" aria-label="Ekspor hasil lihat stok ke file Excel">
+                <i class="fa-solid fa-file-excel" aria-hidden="true"></i> Ekspor XLSX
+              </button>
+            </div>
+          </div>
           <div class="erp-card-body">
             <div class="erp-filter-bar">
               <div class="erp-filter-group"><label for="stockViewDate">Saldo per tanggal</label><input type="date" id="stockViewDate"></div>
@@ -546,7 +554,7 @@
   const GAS_URL = "https://script.google.com/macros/s/AKfycbx_tuIlCd-_n3PMtmv-_hPP4QrbGfPVYzk4tN33WinGtA8fyhe19uwXg6oS7v9jnm9yZw/exec";
 
   let sesiUser = {}; let masterUnits = []; let allUnits = []; let masterGudang = []; let rawJurnalData = []; let rawStokList = [];
-  let rawStockSnapshot = []; let transferRows = []; let ticketReceiptOptions = []; let stockTransactionIds = Object.create(null);
+  let rawStockSnapshot = []; let appliedStockSnapshotFilters = null; let transferRows = []; let ticketReceiptOptions = []; let stockTransactionIds = Object.create(null);
 
   function escapeHtml(value) {
     return String(value == null ? '' : value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
@@ -759,30 +767,193 @@
     if (quantityInput) quantityInput.max = item ? String(Math.max(0, Number(item.sisaStok) || 0)) : '1000000000';
   }
 
-  async function muatStockSnapshot() {
-    if (!sesiUser.token) return;
-    const container = document.getElementById('containerStockSnapshot');
-    container.innerHTML = '<p style="padding:20px;text-align:center;color:var(--erp-text-muted);"><i class="fa-solid fa-spinner fa-spin"></i> Menghitung saldo...</p>';
-    const payload = {
-      action: 'getStockSnapshot', token: sesiUser.token,
+  function getStockSnapshotFilters() {
+    return {
       tglAsOf: document.getElementById('stockViewDate').value,
       kodeUnit: document.getElementById('stockViewUnit').value,
       kodeGudang: document.getElementById('stockViewWarehouse').value,
       status: document.getElementById('stockViewStatus').value,
       q: document.getElementById('stockViewSearch').value.trim()
     };
+  }
+
+  async function muatStockSnapshot() {
+    if (!sesiUser.token) return false;
+    const container = document.getElementById('containerStockSnapshot');
+    container.innerHTML = '<p style="padding:20px;text-align:center;color:var(--erp-text-muted);"><i class="fa-solid fa-spinner fa-spin"></i> Menghitung saldo...</p>';
+    const filters = getStockSnapshotFilters();
+    const payload = Object.assign({action: 'getStockSnapshot', token: sesiUser.token}, filters);
     try {
       const res = await postPayload(payload);
       const json = await res.json();
-      if (cekSesiBerakhir(json)) return;
+      if (cekSesiBerakhir(json)) return false;
       if (json.status !== 'success') throw new Error(json.message || 'Gagal memuat snapshot.');
       rawStockSnapshot = json.data || [];
+      appliedStockSnapshotFilters = filters;
       document.getElementById('stockAsOfLabel').textContent = payload.tglAsOf ? `Saldo per ${json.tglAsOf}` : 'Saldo saat ini';
       renderStockSnapshot(rawStockSnapshot);
       setConnectionStatus('ok', 'Data stok diperbarui');
+      return true;
     } catch (error) {
       container.innerHTML = `<p style="padding:20px;text-align:center;color:var(--erp-danger);">${escapeHtml(error.message || 'Gagal memuat saldo stok.')}</p>`;
       setConnectionStatus('error', 'Gagal memuat stok');
+      return false;
+    }
+  }
+
+  function getStockSnapshotFilterLabel(selectId, value, emptyLabel) {
+    if (!value) return emptyLabel;
+    const select = document.getElementById(selectId);
+    const option = select && Array.from(select.options).find(item => String(item.value) === String(value));
+    const label = option ? option.textContent.trim() : '';
+    return label ? `${label} (${value})` : String(value);
+  }
+
+  function setXlsxRangeStyle(worksheet, startRow, startCol, endRow, endCol, style) {
+    for (let row = startRow; row <= endRow; row++) {
+      for (let col = startCol; col <= endCol; col++) {
+        const address = XLSX.utils.encode_cell({r: row, c: col});
+        if (!worksheet[address]) worksheet[address] = {t: 's', v: ''};
+        worksheet[address].s = style;
+      }
+    }
+  }
+
+  async function eksporLihatStokKeExcel() {
+    const button = document.getElementById('exportStockSnapshotBtn');
+    if (!sesiUser.token) return showToast('Silakan login kembali untuk mengekspor stok.', 'error');
+    if (typeof XLSX === 'undefined') return showToast('Pustaka Excel belum termuat. Periksa koneksi lalu muat ulang halaman.', 'error');
+
+    if (button) { button.disabled = true; button.setAttribute('aria-busy', 'true'); }
+    try {
+      const requestedFilters = getStockSnapshotFilters();
+      if (!appliedStockSnapshotFilters || JSON.stringify(requestedFilters) !== JSON.stringify(appliedStockSnapshotFilters)) {
+        const loaded = await muatStockSnapshot();
+        if (!loaded) return showToast('Data stok gagal diperbarui, ekspor dibatalkan.', 'error');
+      }
+
+      const filters = appliedStockSnapshotFilters || requestedFilters;
+      const rows = Array.isArray(rawStockSnapshot) ? rawStockSnapshot : [];
+      const exportedAt = new Date().toLocaleString('id-ID', {timeZone: 'Asia/Jakarta', dateStyle: 'medium', timeStyle: 'short'});
+      const unitLabel = getStockSnapshotFilterLabel('stockViewUnit', filters.kodeUnit, sesiUser.isAdmin ? 'Semua unit / farm' : (sesiUser.unitLokasi || 'Unit akun'));
+      const warehouseLabel = getStockSnapshotFilterLabel('stockViewWarehouse', filters.kodeGudang, filters.kodeUnit ? 'Semua gudang pada unit terpilih' : 'Semua gudang');
+      const statusNames = {AMAN: 'Aman', RENDAH: 'Rendah', HABIS: 'Habis / Negatif'};
+      const statusLabel = filters.status ? `${statusNames[filters.status] || filters.status} (${filters.status})` : 'Semua status';
+      const dateLabel = filters.tglAsOf ? `${filters.tglAsOf} (saldo akhir hari, WIB)` : 'Saldo terkini';
+      const queryLabel = filters.q || 'Semua barang';
+      const uniqueSkuCount = new Set(rows.map(item => String(item.kodeBarang || '')).filter(Boolean)).size;
+      const lowCount = rows.filter(item => String(item.statusStok || '').toUpperCase() === 'RENDAH').length;
+      const emptyCount = rows.filter(item => String(item.statusStok || '').toUpperCase() === 'HABIS' || Number(item.sisaStok) <= 0).length;
+
+      const columnCount = 13;
+      const blankRow = () => Array(columnCount).fill('');
+      const data = [];
+      data.push(['LAPORAN POSISI PERSEDIAAN', ...Array(columnCount - 1).fill('')]);
+      data.push(['CV. SELABINTANA  |  STOCK ERP', ...Array(columnCount - 1).fill('')]);
+      data.push(blankRow());
+      data.push(['FILTER YANG DITERAPKAN', ...Array(columnCount - 1).fill('')]);
+      data.push(['Tanggal saldo', safeExportText(dateLabel), '', '', '', '', '', 'Unit / Farm', safeExportText(unitLabel), '', '', '', '']);
+      data.push(['Gudang', safeExportText(warehouseLabel), '', '', '', '', '', 'Status stok', safeExportText(statusLabel), '', '', '', '']);
+      data.push(['Pencarian barang', safeExportText(queryLabel), '', '', '', '', '', '', '', '', '', '', '']);
+      data.push(['Waktu ekspor (WIB)', safeExportText(exportedAt), '', '', '', '', '', 'Diekspor oleh', safeExportText(sesiUser.nama || sesiUser.username || 'Pengguna'), '', '', '', '']);
+      data.push(blankRow());
+      data.push(['RINGKASAN HASIL', ...Array(columnCount - 1).fill('')]);
+      data.push(['Baris lokasi', '', '', 'SKU unik', '', '', 'Stok rendah', '', '', 'Habis / negatif', '', '', '']);
+      data.push([rows.length, '', '', uniqueSkuCount, '', '', lowCount, '', '', emptyCount, '', '', '']);
+      data.push(blankRow());
+      data.push(['RINCIAN SALDO STOK', ...Array(columnCount - 1).fill('')]);
+      data.push(['No', 'Kode Barang', 'Nama Barang', 'Kategori', 'Unit / Farm', 'Gudang', 'Satuan', 'Saldo Awal', 'Masuk', 'Keluar', 'Saldo Akhir', 'Batas Minimum', 'Status']);
+      if (!rows.length) data.push(['Tidak ada barang yang sesuai dengan filter.', ...Array(columnCount - 1).fill('')]);
+
+      rows.forEach((item, index) => data.push([
+        index + 1,
+        safeExportText(item.kodeBarang),
+        safeExportText(item.namaBarang),
+        safeExportText(item.kategori),
+        safeExportText(item.kodeUnit),
+        safeExportText(item.kodeGudang),
+        safeExportText(item.satuan || 'pcs'),
+        Number.isFinite(Number(item.stokAwal)) ? Number(item.stokAwal) : 0,
+        Number.isFinite(Number(item.jumlahMasuk)) ? Number(item.jumlahMasuk) : 0,
+        Number.isFinite(Number(item.jumlahKeluar)) ? Number(item.jumlahKeluar) : 0,
+        Number.isFinite(Number(item.sisaStok)) ? Number(item.sisaStok) : 0,
+        Number.isFinite(Number(item.stokMinimum)) ? Number(item.stokMinimum) : 0,
+        safeExportText(item.statusStok)
+      ]));
+
+      const worksheet = XLSX.utils.aoa_to_sheet(data);
+      const workbook = XLSX.utils.book_new();
+      const merges = [
+        {s:{r:0,c:0},e:{r:0,c:12}}, {s:{r:1,c:0},e:{r:1,c:12}},
+        {s:{r:3,c:0},e:{r:3,c:12}},
+        {s:{r:4,c:1},e:{r:4,c:6}}, {s:{r:4,c:8},e:{r:4,c:12}},
+        {s:{r:5,c:1},e:{r:5,c:6}}, {s:{r:5,c:8},e:{r:5,c:12}},
+        {s:{r:6,c:1},e:{r:6,c:12}},
+        {s:{r:7,c:1},e:{r:7,c:6}}, {s:{r:7,c:8},e:{r:7,c:12}},
+        {s:{r:9,c:0},e:{r:9,c:12}},
+        {s:{r:10,c:0},e:{r:10,c:2}}, {s:{r:10,c:3},e:{r:10,c:5}}, {s:{r:10,c:6},e:{r:10,c:8}}, {s:{r:10,c:9},e:{r:10,c:12}},
+        {s:{r:11,c:0},e:{r:11,c:2}}, {s:{r:11,c:3},e:{r:11,c:5}}, {s:{r:11,c:6},e:{r:11,c:8}}, {s:{r:11,c:9},e:{r:11,c:12}},
+        {s:{r:13,c:0},e:{r:13,c:12}}
+      ];
+      if (!rows.length) merges.push({s:{r:15,c:0},e:{r:15,c:12}});
+      worksheet['!merges'] = merges;
+
+      const thinGray = {style: 'thin', color: {rgb: 'D8E2DC'}};
+      const bordered = {top: thinGray, bottom: thinGray, left: thinGray, right: thinGray};
+      setXlsxRangeStyle(worksheet, 0, 0, 0, 12, {font: {name: 'Aptos Display', sz: 18, bold: true, color: {rgb: 'FFFFFF'}}, fill: {fgColor: {rgb: '14532D'}}, alignment: {horizontal: 'left', vertical: 'center'}});
+      setXlsxRangeStyle(worksheet, 1, 0, 1, 12, {font: {name: 'Aptos', sz: 10, color: {rgb: '355E45'}, italic: true}, fill: {fgColor: {rgb: 'EAF4EC'}}, alignment: {horizontal: 'left', vertical: 'center'}});
+      [3, 9, 13].forEach(row => setXlsxRangeStyle(worksheet, row, 0, row, 12, {font: {name: 'Aptos', sz: 10, bold: true, color: {rgb: 'FFFFFF'}}, fill: {fgColor: {rgb: '276749'}}, alignment: {horizontal: 'left', vertical: 'center'}}));
+
+      [[4,0,4,0],[4,7,4,7],[5,0,5,0],[5,7,5,7],[6,0,6,0],[7,0,7,0],[7,7,7,7]].forEach(range => setXlsxRangeStyle(worksheet, range[0], range[1], range[2], range[3], {font: {name: 'Aptos', sz: 10, bold: true, color: {rgb: '355E45'}}, fill: {fgColor: {rgb: 'F0F5F1'}}, alignment: {vertical: 'center', wrapText: true}, border: bordered}));
+      [[4,1,4,6],[4,8,4,12],[5,1,5,6],[5,8,5,12],[6,1,6,12],[7,1,7,6],[7,8,7,12]].forEach(range => setXlsxRangeStyle(worksheet, range[0], range[1], range[2], range[3], {font: {name: 'Aptos', sz: 10, color: {rgb: '26352B'}}, fill: {fgColor: {rgb: 'FFFFFF'}}, alignment: {vertical: 'center', wrapText: true}, border: bordered}));
+
+      [[10,0,10,2],[10,3,10,5],[10,6,10,8],[10,9,10,12]].forEach(range => setXlsxRangeStyle(worksheet, range[0], range[1], range[2], range[3], {font: {name: 'Aptos', sz: 9, bold: true, color: {rgb: '355E45'}}, fill: {fgColor: {rgb: 'EAF4EC'}}, alignment: {horizontal: 'center', vertical: 'center', wrapText: true}, border: bordered}));
+      [[11,0,11,2],[11,3,11,5],[11,6,11,8],[11,9,11,12]].forEach(range => setXlsxRangeStyle(worksheet, range[0], range[1], range[2], range[3], {font: {name: 'Aptos Display', sz: 16, bold: true, color: {rgb: '14532D'}}, fill: {fgColor: {rgb: 'F7FAF7'}}, alignment: {horizontal: 'center', vertical: 'center'}, border: bordered}));
+
+      setXlsxRangeStyle(worksheet, 14, 0, 14, 12, {font: {name: 'Aptos', sz: 9, bold: true, color: {rgb: 'FFFFFF'}}, fill: {fgColor: {rgb: '14532D'}}, alignment: {horizontal: 'center', vertical: 'center', wrapText: true}, border: bordered});
+      const lastRow = Math.max(15, data.length - 1);
+      for (let row = 15; row <= lastRow; row++) {
+        const fill = row % 2 ? 'FFFFFF' : 'F7FAF7';
+        setXlsxRangeStyle(worksheet, row, 0, row, 12, {font: {name: 'Aptos', sz: 9, color: {rgb: '26352B'}}, fill: {fgColor: {rgb: fill}}, alignment: {vertical: 'center', wrapText: row < data.length}, border: bordered});
+        if (rows.length) {
+          for (let col = 7; col <= 11; col++) worksheet[XLSX.utils.encode_cell({r: row, c: col})].z = '#,##0.###;[Red]-#,##0.###;0';
+          worksheet[XLSX.utils.encode_cell({r: row, c: 0})].alignment = {horizontal: 'center', vertical: 'center'};
+          const status = String(rows[row - 15].statusStok || '').toUpperCase();
+          const statusCell = worksheet[XLSX.utils.encode_cell({r: row, c: 12})];
+          statusCell.s = Object.assign({}, statusCell.s, {
+            font: {name: 'Aptos', sz: 9, bold: true, color: {rgb: status === 'HABIS' ? '991B1B' : status === 'RENDAH' ? '92400E' : '166534'}},
+            fill: {fgColor: {rgb: status === 'HABIS' ? 'FEE2E2' : status === 'RENDAH' ? 'FEF3C7' : 'DCFCE7'}},
+            alignment: {horizontal: 'center', vertical: 'center'}
+          });
+        } else {
+          worksheet[XLSX.utils.encode_cell({r: row, c: 0})].s = {font: {name: 'Aptos', sz: 10, italic: true, color: {rgb: '66746B'}}, fill: {fgColor: {rgb: 'F7FAF7'}}, alignment: {horizontal: 'center', vertical: 'center'}, border: bordered};
+        }
+      }
+
+      worksheet['!cols'] = [
+        {wch: 7}, {wch: 16}, {wch: 30}, {wch: 18}, {wch: 18}, {wch: 22}, {wch: 12},
+        {wch: 15}, {wch: 15}, {wch: 15}, {wch: 15}, {wch: 17}, {wch: 18}
+      ];
+      worksheet['!rows'] = [{hpt: 34}, {hpt: 22}, {hpt: 8}, {hpt: 22}, {hpt: 30}, {hpt: 30}, {hpt: 26}, {hpt: 26}, {hpt: 8}, {hpt: 22}, {hpt: 30}, {hpt: 30}, {hpt: 8}, {hpt: 22}, {hpt: 34}];
+      if (rows.length) {
+        rows.forEach((item, index) => { worksheet['!rows'][15 + index] = {hpt: 26}; });
+        worksheet['!autofilter'] = {ref: XLSX.utils.encode_range({s: {r: 14, c: 0}, e: {r: lastRow, c: 12}})};
+      } else {
+        worksheet['!rows'][15] = {hpt: 28};
+        worksheet['!autofilter'] = {ref: 'A15:M15'};
+      }
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Lihat Stok');
+      workbook.Props = {Title: 'Laporan Posisi Persediaan', Subject: 'Snapshot stok sesuai filter', Author: safeExportText(sesiUser.nama || sesiUser.username || 'Stock ERP'), CreatedDate: new Date()};
+
+      const safeFilePart = value => String(value || '').replace(/[^a-zA-Z0-9_-]/g, '_').replace(/_+/g, '_').slice(0, 36) || 'Semua';
+      const fileDate = filters.tglAsOf || todayJakarta();
+      const filename = `Laporan_Stok_${fileDate}_${safeFilePart(filters.kodeUnit || 'Semua_Unit')}_${safeFilePart(filters.kodeGudang || 'Semua_Gudang')}.xlsx`;
+      XLSX.writeFile(workbook, filename);
+      showToast(`File ${filename} berhasil dibuat.`);
+    } catch (error) {
+      showToast(`Gagal mengekspor stok: ${error.message || error}`, 'error');
+    } finally {
+      if (button) { button.disabled = false; button.removeAttribute('aria-busy'); }
     }
   }
 
