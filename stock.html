@@ -147,8 +147,8 @@
       .erp-container { display: block; min-height: 100vh; padding-bottom: 70px; }
       .erp-sidebar { position: fixed; left: 0; right: 0; bottom: 0; width: 100%; height: 64px; z-index: 100; border-right: 0; border-top: 1px solid #142b1c; }
       .erp-brand, .erp-sidebar-footer, .erp-menu-label { display: none; }
-      .erp-menu { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2px; padding: 4px 6px; margin: 0; }
-      .erp-menu.has-admin-menu { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+      .erp-menu { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 2px; padding: 4px 6px; margin: 0; }
+      .erp-menu.has-admin-menu { grid-template-columns: repeat(6, minmax(0, 1fr)); }
       .erp-menu-item { flex-direction: column; justify-content: center; gap: 3px; padding: 6px 3px; margin: 0; min-height: 54px; border-left: 0; font-size: 9px; text-align: center; line-height: 1.15; }
       .erp-menu-item.active { border-left: 0; border-top: 3px solid var(--erp-accent-yellow); }
       .erp-menu-item i { font-size: 16px; }
@@ -237,24 +237,29 @@
       <li>
         <button type="button" role="tab" aria-selected="true" aria-controls="tabStokView" class="erp-menu-item active" id="tabStokBtn" onclick="switchTab('stok')">
           <i class="fa-solid fa-table-list"></i>
-          <span>Jurnal Stok & Mutasi</span>
+          <span>Jurnal Stok</span>
         </button>
       </li>
       <li>
         <button type="button" role="tab" aria-selected="false" aria-controls="tabTransaksiView" class="erp-menu-item" id="tabTransaksiBtn" onclick="switchTab('transaksi')">
           <i class="fa-solid fa-right-left"></i>
-          <span>Pusat Transaksi Gudang</span>
+          <span>Transaksi</span>
         </button>
       </li>
       <li>
         <button type="button" role="tab" aria-selected="false" aria-controls="tabHistoryView" class="erp-menu-item" id="tabHistoryBtn" onclick="switchTab('history')">
           <i class="fa-solid fa-clock-rotate-left"></i>
-          <span>Status Mutasi Inter-Farm</span>
+          <span>Mutasi</span>
         </button>
       </li>
       <li>
         <button type="button" role="tab" aria-selected="false" aria-controls="tabLihatStokView" class="erp-menu-item" id="tabLihatStokBtn" onclick="switchTab('lihatStok')">
           <i class="fa-solid fa-boxes-stacked"></i><span>Lihat Stok</span>
+        </button>
+      </li>
+      <li>
+        <button type="button" role="tab" aria-selected="false" aria-controls="tabPemakaianKandangView" class="erp-menu-item" id="tabPemakaianKandangBtn" onclick="switchTab('kandang')">
+          <i class="fa-solid fa-house-chimney-window"></i><span>Per Kandang</span>
         </button>
       </li>
       <li id="koreksiStokMenuItem" hidden>
@@ -500,6 +505,10 @@
                   <div class="form-group"><label for="koreksiSatuan">Satuan</label><input type="text" id="koreksiSatuan" maxlength="32" placeholder="kg, zak, botol, pcs"></div>
                 </div>
               </div>
+              <div class="form-row" id="koreksiBatchExpiryRow" style="display:none;">
+                <div class="form-group"><label for="koreksiBatch">Nomor batch (opsional)</label><input type="text" id="koreksiBatch" maxlength="120" placeholder="Nomor batch"></div>
+                <div class="form-group"><label for="koreksiKadaluarsa">Tanggal kedaluwarsa</label><input type="date" id="koreksiKadaluarsa"></div>
+              </div>
               <div class="form-row">
                 <div class="form-group"><label for="koreksiSaldoFisik">Saldo fisik</label><input type="number" id="koreksiSaldoFisik" min="0" max="1000000000" step="any" inputmode="decimal" required><small style="display:block;margin-top:6px;color:var(--erp-text-muted);">Isi jumlah akhir setelah dihitung, bukan jumlah selisih.</small></div>
                 <div class="form-group"><label>Pratinjau selisih</label><div id="koreksiPreview" role="status" aria-live="polite" style="padding:10px 12px;min-height:38px;background:#f6f9f7;border:1px solid var(--erp-border-light);border-radius:6px;color:var(--erp-text-muted);">Pilih lokasi dan barang untuk melihat selisih.</div></div>
@@ -507,6 +516,27 @@
               <div class="form-group"><label for="koreksiAlasan">Alasan koreksi</label><textarea id="koreksiAlasan" minlength="5" maxlength="500" rows="3" required placeholder="Contoh: saldo awal per 1 Januari atau hasil stock opname tanggal ..." style="width:100%;padding:9px 12px;border:1px solid var(--erp-border);border-radius:6px;font:inherit;resize:vertical;"></textarea></div>
               <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Simpan Koreksi</button>
             </form>
+          </div>
+        </div>
+      </div>
+
+      <div id="tabPemakaianKandangView" role="tabpanel" aria-labelledby="tabPemakaianKandangBtn" style="display:none;">
+        <div class="erp-card">
+          <div class="erp-card-header">
+            <div class="erp-card-title"><i class="fa-solid fa-house-chimney-window"></i> Ringkasan Pemakaian per Kandang</div>
+            <span class="badge badge-info" id="kandangUsageCount">0 kombinasi</span>
+          </div>
+          <div class="erp-card-body">
+            <div class="erp-filter-bar">
+              <div class="erp-filter-group"><label for="kandangUsageStart">Dari tanggal</label><input type="date" id="kandangUsageStart"></div>
+              <div class="erp-filter-group"><label for="kandangUsageEnd">Sampai tanggal</label><input type="date" id="kandangUsageEnd"></div>
+              <div class="erp-filter-group"><label for="kandangUsageUnit">Unit / Farm</label><select id="kandangUsageUnit" onchange="updateKandangUsageWarehouseFilter()"></select></div>
+              <div class="erp-filter-group"><label for="kandangUsageWarehouse">Gudang</label><select id="kandangUsageWarehouse"><option value="">Semua Gudang</option></select></div>
+              <div class="erp-filter-group"><label for="kandangUsageCage">Kandang / lokasi</label><select id="kandangUsageCage"><option value="">Semua Kandang</option></select></div>
+              <button type="button" class="btn btn-primary" onclick="muatPemakaianPerKandang()"><i class="fa-solid fa-magnifying-glass"></i> Tampilkan</button>
+            </div>
+            <p class="form-hint" style="margin:0 0 12px;color:var(--erp-text-muted);font-size:11px;">Daftar kandang diambil otomatis dari transaksi pemakaian. Nama kandang baru yang dicatat pada form pemakaian akan muncul setelah transaksi tersimpan.</p>
+            <div id="containerPemakaianKandang" class="erp-table-responsive" aria-live="polite"><p style="padding:20px;text-align:center;color:var(--erp-text-muted);">Pilih filter lalu tampilkan ringkasan.</p></div>
           </div>
         </div>
       </div>
@@ -536,7 +566,7 @@
       </div>
       <div class="form-row">
         <div class="form-group"><label for="penUnit">Masuk Ke Unit</label><select id="penUnit" onchange="updateSubGudangPilih('penUnit', 'penGudang')" required></select></div>
-        <div class="form-group"><label for="penGudang">Masuk Ke Gudang</label><select id="penGudang" required></select></div>
+        <div class="form-group"><label for="penGudang">Masuk Ke Gudang</label><select id="penGudang" onchange="updateReceiptOvkFields()" required></select></div>
       </div>
       <div id="penItemFields">
         <div class="form-group"><label for="penNamaBarang">Nama Barang</label><input type="text" id="penNamaBarang" maxlength="200" placeholder="Ketik nama barang..." required><small id="penItemHint" style="display:block;margin-top:6px;color:var(--erp-text-muted);">Untuk penerimaan tiket, nama dan satuan akan mengikuti item yang disetujui.</small></div>
@@ -552,6 +582,10 @@
         </select>
       </div>
       <div class="form-group" id="penSupplierWrap"><label for="penSupplier">Supplier (opsional)</label><input type="text" id="penSupplier" maxlength="200" placeholder="Nama supplier"></div>
+      <div class="form-row" id="penBatchExpiryRow" style="display:none;">
+        <div class="form-group"><label for="penBatch">Nomor batch (opsional)</label><input type="text" id="penBatch" maxlength="120" placeholder="Nomor batch"></div>
+        <div class="form-group"><label for="penKadaluarsa">Tanggal kedaluwarsa</label><input type="date" id="penKadaluarsa"><small id="ovkReceiptHint" style="display:block;margin-top:5px;color:var(--erp-text-muted);">Wajib di gudang OVK.</small></div>
+      </div>
       <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:15px;">
         <button type="button" onclick="tutupModal('modalPenerimaan')" class="btn btn-outline">Batal</button>
         <button type="submit" class="btn btn-success" style="background:#047857; color:#fff;">Simpan Penerimaan</button>
@@ -569,7 +603,7 @@
     </div>
     <form id="formPemakaian" class="modal-body">
       <div class="form-group"><label for="pemBarangPilih">Pilih Barang Dari Gudang</label><select id="pemBarangPilih" onchange="updateSelectedStockHint('pemBarangPilih', 'pemSaldoTersedia')" required></select><small id="pemSaldoTersedia" aria-live="polite" style="display:block;margin-top:6px;color:var(--erp-text-muted);"></small></div>
-      <div class="form-group"><label for="pemLokasiKandang">Lokasi Kandang / Peruntukan</label><input type="text" id="pemLokasiKandang" maxlength="120" placeholder="Contoh: Kandang 01 / Brood A" required></div>
+      <div class="form-group"><label for="pemLokasiKandang">Kandang / Peruntukan</label><input type="text" id="pemLokasiKandang" maxlength="120" list="listKandangPemakaian" placeholder="Pilih data lama atau ketik kandang baru" autocomplete="off" required><datalist id="listKandangPemakaian"></datalist><small style="display:block;margin-top:5px;color:var(--erp-text-muted);">Pilihan diambil dari riwayat pemakaian dan tetap dapat ditambah.</small></div>
       <div class="form-group"><label for="pemJumlah">Jumlah Pemakaian</label><input type="number" id="pemJumlah" min="0.001" max="1000000000" step="any" aria-describedby="pemSaldoTersedia" required></div>
       <div class="form-group"><label for="pemKet">Keterangan Tambahan</label><input type="text" id="pemKet" maxlength="500"></div>
       <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:15px;">
@@ -597,6 +631,25 @@
       <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:15px;">
         <button type="button" onclick="tutupModal('modalTransfer')" class="btn btn-outline">Batal</button>
         <button type="submit" class="btn btn-primary">Kirim Pengajuan Mutasi</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="modalTransferReceipt" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 style="font-size:14px;font-weight:700;color:var(--erp-primary);"><i class="fa-solid fa-calendar-xmark"></i> Detail Penerimaan Gudang OVK</h3>
+      <button type="button" aria-label="Tutup penerimaan mutasi" onclick="tutupModal('modalTransferReceipt')" style="background:none;border:0;cursor:pointer;font-size:16px;"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form id="formTransferReceipt" class="modal-body">
+      <input type="hidden" id="transferReceiptId">
+      <p style="margin-bottom:14px;color:var(--erp-text-muted);">Penerimaan ke gudang OVK harus mencatat tanggal kedaluwarsa. Nomor batch boleh dikosongkan jika tidak tersedia.</p>
+      <div class="form-group"><label for="transferReceiptBatch">Nomor batch (opsional)</label><input type="text" id="transferReceiptBatch" maxlength="120" placeholder="Nomor batch"></div>
+      <div class="form-group"><label for="transferReceiptExpiry">Tanggal kedaluwarsa</label><input type="date" id="transferReceiptExpiry" required><small style="display:block;margin-top:5px;color:var(--erp-text-muted);">Tanggal tidak boleh sebelum hari ini.</small></div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px;">
+        <button type="button" onclick="tutupModal('modalTransferReceipt')" class="btn btn-outline">Batal</button>
+        <button type="submit" class="btn btn-primary">Konfirmasi Penerimaan</button>
       </div>
     </form>
   </div>
@@ -758,7 +811,7 @@
 
   function switchTab(tab) {
     if (tab === 'koreksi' && !sesiUser.isAdmin) return showToast('Menu koreksi stok hanya tersedia untuk admin.', 'error');
-    const tabs = {stok: ['tabStokBtn','tabStokView','Jurnal Stok & Mutasi'], transaksi: ['tabTransaksiBtn','tabTransaksiView','Pusat Transaksi Gudang'], history: ['tabHistoryBtn','tabHistoryView','Riwayat Mutasi'], lihatStok: ['tabLihatStokBtn','tabLihatStokView','Lihat Saldo Stok'], koreksi: ['tabKoreksiBtn','tabKoreksiView','Koreksi Stok']};
+    const tabs = {stok: ['tabStokBtn','tabStokView','Jurnal Stok & Mutasi'], transaksi: ['tabTransaksiBtn','tabTransaksiView','Pusat Transaksi Gudang'], history: ['tabHistoryBtn','tabHistoryView','Riwayat Mutasi'], lihatStok: ['tabLihatStokBtn','tabLihatStokView','Lihat Saldo Stok'], koreksi: ['tabKoreksiBtn','tabKoreksiView','Koreksi Stok'], kandang: ['tabPemakaianKandangBtn','tabPemakaianKandangView','Pemakaian per Kandang']};
     if (!tabs[tab]) return;
     Object.keys(tabs).forEach(key => {
       const [buttonId, panelId] = tabs[key];
@@ -774,6 +827,7 @@
     if (tab === 'transaksi' || tab === 'history') muatPendingTransfers();
     if (tab === 'transaksi') muatTiketPenerimaan();
     if (tab === 'history') muatStockAudit();
+    if (tab === 'kandang') muatPemakaianPerKandang();
   }
 
   document.querySelector('[role="tablist"]').addEventListener('keydown', function(event) {
@@ -832,6 +886,11 @@
     if (!canViewAll && units.length) unitSelect.value = units[0].kodeUnit;
     if (sesiUser.isPicGudang) unitSelect.disabled = true;
     updateStockWarehouseFilter();
+    const usageUnitSelect = document.getElementById('kandangUsageUnit');
+    usageUnitSelect.innerHTML = unitSelect.innerHTML;
+    usageUnitSelect.value = unitSelect.value;
+    if (sesiUser.isPicGudang) usageUnitSelect.disabled = true;
+    updateKandangUsageWarehouseFilter();
   }
 
   function clientCanAccessWarehouse(kodeUnit, kodeGudang) {
@@ -846,6 +905,70 @@
     const warehouseList = allowedGudang.filter(g => (!unitValue || String(g.kodeUnit).toLowerCase() === unitValue.toLowerCase()) && clientCanAccessWarehouse(g.kodeUnit, g.kodeGudang));
     warehouseSelect.innerHTML = '<option value="">Semua Gudang</option>' + warehouseList.map(g => `<option value="${escapeHtml(g.kodeGudang)}">${escapeHtml(g.namaGudang)} (${escapeHtml(g.kodeUnit)})</option>`).join('');
     if (sesiUser.isPicGudang && warehouseList.length === 1) { warehouseSelect.value = warehouseList[0].kodeGudang; warehouseSelect.disabled = true; }
+  }
+
+  function updateKandangUsageWarehouseFilter() {
+    const unitValue = document.getElementById('kandangUsageUnit').value;
+    const warehouseSelect = document.getElementById('kandangUsageWarehouse');
+    const warehouseList = allowedGudang.filter(g => (!unitValue || String(g.kodeUnit).toLowerCase() === unitValue.toLowerCase()) && clientCanAccessWarehouse(g.kodeUnit, g.kodeGudang));
+    warehouseSelect.innerHTML = '<option value="">Semua Gudang</option>' + warehouseList.map(g => {
+      const value = escapeHtml(JSON.stringify({kodeUnit: String(g.kodeUnit), kodeGudang: String(g.kodeGudang)}));
+      return `<option value="${value}">${escapeHtml(g.namaGudang)} (${escapeHtml(g.kodeUnit)})</option>`;
+    }).join('');
+    if (sesiUser.isPicGudang && warehouseList.length === 1) { warehouseSelect.value = JSON.stringify({kodeUnit: String(warehouseList[0].kodeUnit), kodeGudang: String(warehouseList[0].kodeGudang)}); warehouseSelect.disabled = true; }
+  }
+
+  async function muatPemakaianPerKandang() {
+    const container = document.getElementById('containerPemakaianKandang');
+    container.innerHTML = '<p style="padding:20px;text-align:center;color:var(--erp-text-muted);"><i class="fa-solid fa-spinner fa-spin"></i> Menghitung pemakaian per kandang…</p>';
+    const selectedCage = document.getElementById('kandangUsageCage').value;
+    let warehouseFilter = {};
+    try { warehouseFilter = JSON.parse(document.getElementById('kandangUsageWarehouse').value || '{}'); } catch (error) {}
+    const selectedUnit = document.getElementById('kandangUsageUnit').value || warehouseFilter.kodeUnit || '';
+    try {
+      const res = await postPayload({
+        action: 'getPemakaianPerKandang', token: sesiUser.token,
+        tglAwal: document.getElementById('kandangUsageStart').value,
+        tglAkhir: document.getElementById('kandangUsageEnd').value,
+        kodeUnit: selectedUnit,
+        kodeGudang: warehouseFilter.kodeGudang || '',
+        kandang: selectedCage
+      });
+      const json = await res.json();
+      if (cekSesiBerakhir(json)) return;
+      if (json.status !== 'success') throw new Error(json.message || 'Gagal memuat pemakaian per kandang.');
+      const cages = json.kandangOptions || [];
+      const cageSelect = document.getElementById('kandangUsageCage');
+      cageSelect.innerHTML = '<option value="">Semua Kandang</option>' + cages.map(cage => `<option value="${escapeHtml(cage)}">${escapeHtml(cage)}</option>`).join('');
+      if (cages.some(cage => String(cage).toLowerCase() === selectedCage.toLowerCase())) cageSelect.value = selectedCage;
+      document.getElementById('listKandangPemakaian').innerHTML = cages.map(cage => `<option value="${escapeHtml(cage)}"></option>`).join('');
+      renderPemakaianPerKandang(json.data || []);
+    } catch (error) {
+      container.innerHTML = `<p style="padding:20px;text-align:center;color:var(--erp-danger);">${escapeHtml(error.message || 'Gagal memuat pemakaian per kandang.')}</p>`;
+      document.getElementById('kandangUsageCount').textContent = 'Data gagal dimuat';
+    }
+  }
+
+  async function muatKandangOptions() {
+    if (!sesiUser.token) return;
+    try {
+      const res = await postPayload({action: 'getPemakaianPerKandang', token: sesiUser.token, optionsOnly: true});
+      const json = await res.json();
+      if (cekSesiBerakhir(json) || json.status !== 'success') return;
+      document.getElementById('listKandangPemakaian').innerHTML = (json.kandangOptions || []).map(cage => `<option value="${escapeHtml(cage)}"></option>`).join('');
+    } catch (error) {}
+  }
+
+  function renderPemakaianPerKandang(rows) {
+    const container = document.getElementById('containerPemakaianKandang');
+    document.getElementById('kandangUsageCount').textContent = `${rows.length} kombinasi barang/kandang`;
+    if (!rows.length) {
+      container.innerHTML = '<p style="padding:20px;text-align:center;color:var(--erp-text-muted);">Belum ada pemakaian kandang pada filter ini.</p>';
+      return;
+    }
+    let html = '<table class="erp-table"><thead><tr><th>Kandang / Peruntukan</th><th>Barang</th><th>Unit / Gudang</th><th>Total Pemakaian</th><th>Transaksi</th><th>Pemakaian Terakhir</th></tr></thead><tbody>';
+    html += rows.map(row => `<tr><td><b>${escapeHtml(row.kandang)}</b></td><td>${escapeHtml(row.namaBarang)}<br><small class="mono">${escapeHtml(row.kodeBarang)}</small></td><td>${escapeHtml(row.kodeUnit)}<br><small>${escapeHtml(row.kodeGudang)}</small></td><td class="mono"><b>${formatNumber(row.jumlahPemakaian)} ${escapeHtml(row.satuan)}</b></td><td>${formatNumber(row.jumlahTransaksi)}</td><td>${escapeHtml(row.pemakaianTerakhir || '-')}</td></tr>`).join('');
+    container.innerHTML = html + '</tbody></table>';
   }
 
   function updateJournalWarehouseFilter() {
@@ -1108,6 +1231,23 @@
     const gudangSelect = document.getElementById(gudangSelectId);
     let listG = masterGudang.filter(g => String(g.kodeUnit).toLowerCase() === unitKode.toLowerCase() && (gudangSelectId === 'trGudangTujuan' || clientCanAccessWarehouse(g.kodeUnit, g.kodeGudang)));
     gudangSelect.innerHTML = listG.length > 0 ? '<option value="">-- Pilih Gudang --</option>' + listG.map(g => `<option value="${escapeHtml(g.kodeGudang)}">${escapeHtml(g.namaGudang)}</option>`).join('') : '<option value="">-- Tidak ada gudang --</option>';
+    if (gudangSelectId === 'penGudang') updateReceiptOvkFields();
+  }
+
+  function isOvkWarehouseClient(warehouseCode, unitCode) {
+    const warehouse = masterGudang.find(item => String(item.kodeGudang).toLowerCase() === String(warehouseCode || '').toLowerCase() && (!unitCode || String(item.kodeUnit).toLowerCase() === String(unitCode).toLowerCase()));
+    const pattern = /(^|[^A-Z0-9])OVK([^A-Z0-9]|$)/i;
+    return pattern.test(String(warehouseCode || '')) || Boolean(warehouse && pattern.test(String(warehouse.namaGudang || '')));
+  }
+
+  function updateReceiptOvkFields() {
+    const isOvk = isOvkWarehouseClient(document.getElementById('penGudang').value, document.getElementById('penUnit').value);
+    const row = document.getElementById('penBatchExpiryRow');
+    const expiry = document.getElementById('penKadaluarsa');
+    row.style.display = isOvk ? 'flex' : 'none';
+    expiry.required = isOvk;
+    expiry.min = todayJakarta();
+    document.getElementById('ovkReceiptHint').textContent = isOvk ? 'Tanggal kedaluwarsa wajib dan tidak boleh lewat. Nomor batch opsional.' : 'Diisi jika tersedia; wajib untuk gudang OVK.';
   }
 
   function ubahLokasiKoreksi() {
@@ -1157,6 +1297,14 @@
         item = rawStokList.find(row => String(row.kodeBarang) === String(selected.kodeBarang) && String(row.kodeUnit).toLowerCase() === unit.toLowerCase() && String(row.kodeGudang).toLowerCase() === warehouse.toLowerCase());
       } catch (error) {}
     }
+    const isOvk = isOvkWarehouseClient(warehouse, unit);
+    const currentForCorrection = isNew ? 0 : Number(item && item.sisaStok || 0);
+    const correctionPositive = isNew || (targetField.value !== '' && Number(targetField.value) > currentForCorrection);
+    const correctionExpiryRow = document.getElementById('koreksiBatchExpiryRow');
+    const correctionExpiryInput = document.getElementById('koreksiKadaluarsa');
+    correctionExpiryRow.style.display = isOvk ? 'flex' : 'none';
+    correctionExpiryInput.required = isOvk && correctionPositive;
+    correctionExpiryInput.min = todayJakarta();
     if (!unit || !warehouse || (!isNew && !item)) {
       preview.textContent = 'Pilih unit, gudang, dan barang untuk melihat selisih.';
       return;
@@ -1279,7 +1427,7 @@
     }
 
     let html = `<table class="erp-table"><thead><tr>
-      <th>No</th><th>Waktu Transaksi</th><th>Kode</th><th>Nama Barang</th><th>Jenis</th><th>Masuk</th><th>Keluar</th><th>Running Stok</th><th>Satuan</th><th>Unit / Gudang</th><th>Keterangan Detail</th>
+      <th>No</th><th>Waktu Transaksi</th><th>Kode</th><th>Nama Barang</th><th>Jenis</th><th>Masuk</th><th>Keluar</th><th>Running Stok</th><th>Satuan</th><th>Unit / Gudang</th><th>Batch</th><th>Kedaluwarsa</th><th>Kandang / Peruntukan</th><th>Keterangan Detail</th>
     </tr></thead><tbody>`;
 
     data.forEach((item, idx) => {
@@ -1299,6 +1447,9 @@
         <td class="mono" style="font-weight:700; color:var(--erp-primary);">${formatNumber(item.saldoSetelah)}</td>
         <td>${escapeHtml(item.satuan)}</td>
         <td>${escapeHtml(item.kodeUnit)} <small style="color:var(--erp-text-muted);">(${escapeHtml(item.kodeGudang)})</small></td>
+        <td>${escapeHtml(item.batch || '-')}</td>
+        <td>${escapeHtml(item.tanggalKadaluarsa || '-')}</td>
+        <td>${escapeHtml(item.lokasiKandang || '-')}</td>
         <td><small style="color:var(--erp-text-main);">${escapeHtml(item.keterangan)}</small></td>
       </tr>`;
     });
@@ -1336,6 +1487,9 @@
         "Satuan": safeExportText(item.satuan || "pcs"),
         "Lokasi Unit": safeExportText(item.kodeUnit),
         "Gudang": safeExportText(item.kodeGudang),
+        "Batch": safeExportText(item.batch || "-"),
+        "Tanggal Kedaluwarsa": safeExportText(item.tanggalKadaluarsa || "-"),
+        "Kandang / Peruntukan": safeExportText(item.lokasiKandang || "-"),
         "Keterangan Detail": safeExportText(item.keterangan)
       });
     });
@@ -1431,6 +1585,14 @@
   }
 
   async function konfirmasiTerimaTransfer(idTransfer) {
+    const transfer = transferRows.find(row => String(row.idTransfer) === String(idTransfer));
+    if (transfer && isOvkWarehouseClient(transfer.gudangTujuan, transfer.unitTujuan)) {
+      document.getElementById('formTransferReceipt').reset();
+      document.getElementById('transferReceiptId').value = idTransfer;
+      document.getElementById('transferReceiptExpiry').min = todayJakarta();
+      document.getElementById('modalTransferReceipt').style.display = 'flex';
+      return;
+    }
     if(!confirm("Apakah barang mutasi telah fisik diterima secara akurat?")) return;
     const payload = { action: "konfirmasiTerimaTransfer", idTransfer: idTransfer, idTransaksi: `MUT-${idTransfer}-TERIMA` };
     await kirimAksiStok(payload, function() { muatPendingTransfers(); muatJurnalTransaksiBarang(); muatMasterStokBarang(); });
@@ -1538,6 +1700,7 @@
     unit.value = item.kodeUnit;
     updateSubGudangPilih('penUnit', 'penGudang');
     document.getElementById('penGudang').value = item.kodeGudang || (['ALL', 'UNIT'].includes(String(sesiUser.scopeGudang || '').toUpperCase()) ? '' : sesiUser.scopeGudang);
+    updateReceiptOvkFields();
     document.getElementById('penJumlah').max = String(item.sisaDisetujui);
     document.getElementById('penJumlah').value = '';
     hint.textContent = `Tiket ${item.kodeTiket} · disetujui ${formatNumber(item.jumlahDisetujui)} ${item.satuan}, sudah diterima ${formatNumber(item.jumlahTerpenuhi)} ${item.satuan}, sisa ${formatNumber(item.sisaDisetujui)} ${item.satuan}.`;
@@ -1560,7 +1723,9 @@
       jumlah: document.getElementById('penJumlah').value,
       satuan: document.getElementById('penSatuan').value.trim(),
       kategori: document.getElementById('penKategori').value,
-      supplier: document.getElementById('penSupplier').value.trim()
+      supplier: document.getElementById('penSupplier').value.trim(),
+      batch: document.getElementById('penBatch').value.trim(),
+      tanggalKadaluarsa: document.getElementById('penKadaluarsa').value
     };
     if (payload.sumberPenerimaan === 'PERMINTAAN_ACC') {
       let selected;
@@ -1577,7 +1742,7 @@
     }, 'formPenerimaan');
   });
 
-  function bukaModalPemakaian() { document.getElementById('modalPemakaian').style.display = 'flex'; }
+  function bukaModalPemakaian() { document.getElementById('modalPemakaian').style.display = 'flex'; muatKandangOptions(); }
   document.getElementById('formPemakaian').addEventListener('submit', async function(e) {
     e.preventDefault();
     let selection;
@@ -1615,6 +1780,21 @@
     await kirimAksiStok(payload, async function() { tutupModal('modalTransfer'); await Promise.all([muatPendingTransfers(), muatJurnalTransaksiBarang()]); }, 'formTransferStok');
   });
 
+  document.getElementById('formTransferReceipt').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    const idTransfer = document.getElementById('transferReceiptId').value;
+    if (!idTransfer) return showToast('ID mutasi tidak ditemukan.', 'error');
+    const payload = {
+      action: 'konfirmasiTerimaTransfer', idTransfer, idTransaksi: `MUT-${idTransfer}-TERIMA`,
+      batch: document.getElementById('transferReceiptBatch').value.trim(),
+      tanggalKadaluarsa: document.getElementById('transferReceiptExpiry').value
+    };
+    await kirimAksiStok(payload, async function() {
+      tutupModal('modalTransferReceipt');
+      await Promise.all([muatPendingTransfers(), muatJurnalTransaksiBarang(), muatMasterStokBarang()]);
+    }, 'formTransferReceipt');
+  });
+
   document.getElementById('koreksiSaldoFisik').addEventListener('input', updatePreviewKoreksi);
   document.getElementById('koreksiNamaBarang').addEventListener('input', updatePreviewKoreksi);
   document.getElementById('koreksiSatuan').addEventListener('input', updatePreviewKoreksi);
@@ -1638,6 +1818,8 @@
       payload.kategori = document.getElementById('koreksiKategori').value;
       payload.satuan = document.getElementById('koreksiSatuan').value.trim();
     }
+    payload.batch = document.getElementById('koreksiBatch').value.trim();
+    payload.tanggalKadaluarsa = document.getElementById('koreksiKadaluarsa').value;
     const unitBeforeReset = payload.kodeUnit;
     const warehouseBeforeReset = payload.kodeGudang;
     await kirimAksiStok(payload, async function() {
