@@ -536,7 +536,7 @@
       <button type="button" aria-label="Tutup form mutasi" onclick="tutupModal('modalTransfer')" style="background:none; border:none; cursor:pointer; font-size:16px;"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
     </div>
     <form id="formTransferStok" class="modal-body">
-      <div class="form-group"><label for="trBarangAsal">Pilih Barang Asal</label><select id="trBarangAsal" onchange="updateSelectedStockHint('trBarangAsal', 'trSaldoTersedia')" required></select><small id="trSaldoTersedia" aria-live="polite" style="display:block;margin-top:6px;color:var(--erp-text-muted);"></small></div>
+        <div class="form-group"><label for="trBarangAsal">Pilih Barang Asal</label><select id="trBarangAsal" onchange="updateSelectedStockHint('trBarangAsal', 'trSaldoTersedia'); updateTransferTargetUnitOptions()" required></select><small id="trSaldoTersedia" aria-live="polite" style="display:block;margin-top:6px;color:var(--erp-text-muted);"></small></div>
       <div class="form-row">
         <div class="form-group"><label for="trUnitTujuan">Unit Farm Tujuan</label><select id="trUnitTujuan" onchange="updateSubGudangPilih('trUnitTujuan', 'trGudangTujuan')" required></select></div>
         <div class="form-group"><label for="trGudangTujuan">Gudang Tujuan</label><select id="trGudangTujuan" required></select></div>
@@ -554,7 +554,7 @@
   const GAS_URL = "https://script.google.com/macros/s/AKfycbx_tuIlCd-_n3PMtmv-_hPP4QrbGfPVYzk4tN33WinGtA8fyhe19uwXg6oS7v9jnm9yZw/exec";
 
   let sesiUser = {}; let masterUnits = []; let allUnits = []; let masterGudang = []; let rawJurnalData = []; let rawStokList = [];
-  let rawStockSnapshot = []; let appliedStockSnapshotFilters = null; let transferRows = []; let ticketReceiptOptions = []; let stockTransactionIds = Object.create(null);
+  let rawStockSnapshot = []; let appliedStockSnapshotFilters = null; let transferRows = []; let ticketReceiptOptions = []; let stockTransactionIds = Object.create(null); let allowedGudang = [];
 
   function escapeHtml(value) {
     return String(value == null ? '' : value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
@@ -642,7 +642,7 @@
       <div class="erp-avatar">${escapeHtml(initial)}</div>
       <div style="line-height:1.2;">
         <div style="font-weight:700; font-size:12px; color:var(--erp-text-main);">${escapeHtml(sesiUser.nama)}</div>
-        <div style="font-size:10px; color:var(--erp-text-muted);">${escapeHtml(sesiUser.jabatan)} | <b>${escapeHtml(sesiUser.unitLokasi)}</b> ${sesiUser.isAdmin?'<span style="color:var(--erp-primary);">(ADMIN)</span>':''}</div>
+        <div style="font-size:10px; color:var(--erp-text-muted);">${escapeHtml(sesiUser.roleAccess || sesiUser.jabatan)} | <b>${escapeHtml(sesiUser.scopeGudang === 'ALL' ? 'Semua Gudang' : sesiUser.isPicGudang ? sesiUser.scopeGudang : sesiUser.unitLokasi)}</b></div>
       </div>
     `;
 
@@ -693,7 +693,7 @@
       const json = await res.json();
       if (cekSesiBerakhir(json)) return;
       if (json.status === "success") { 
-        masterUnits = json.units; allUnits = json.allUnits || json.units; masterGudang = json.gudang; 
+        masterUnits = json.units; allUnits = json.allUnits || json.units; masterGudang = json.gudang || []; allowedGudang = json.gudangDiizinkan || masterGudang;
         populateUnitDropdowns(); 
         populateStockViewFilters();
         setConnectionStatus('ok', 'GAS tersambung');
@@ -706,7 +706,7 @@
     const penUnit = document.getElementById('penUnit');
     const trUnitTujuan = document.getElementById('trUnitTujuan');
 
-    if (sesiUser.isAdmin) {
+    if (sesiUser.canViewAllLocations || sesiUser.isAdmin) {
       filterUnit.innerHTML = '<option value="">-- Semua Unit --</option>' + masterUnits.map(u => `<option value="${escapeHtml(u.kodeUnit)}">${escapeHtml(u.namaUnit)}</option>`).join('');
       if(penUnit) penUnit.innerHTML = '<option value="">-- Pilih Unit --</option>' + masterUnits.map(u => `<option value="${escapeHtml(u.kodeUnit)}">${escapeHtml(u.namaUnit)}</option>`).join('');
     } else {
@@ -714,33 +714,39 @@
       filterUnit.disabled = true;
       if(penUnit) { penUnit.innerHTML = masterUnits.map(u => `<option value="${escapeHtml(u.kodeUnit)}">${escapeHtml(u.namaUnit)}</option>`).join(''); penUnit.disabled = true; }
     }
-    if (trUnitTujuan) {
-      let targetList = allUnits.filter(u => u.kodeUnit.toLowerCase() !== sesiUser.unitLokasi.toLowerCase());
-      trUnitTujuan.innerHTML = '<option value="">-- Pilih Unit Farm Tujuan --</option>' + targetList.map(u => `<option value="${escapeHtml(u.kodeUnit)}">${escapeHtml(u.namaUnit)}</option>`).join('');
-    }
+    if (trUnitTujuan) updateTransferTargetUnitOptions();
     updateJournalWarehouseFilter();
   }
 
   function populateStockViewFilters() {
     const unitSelect = document.getElementById('stockViewUnit');
-    const units = sesiUser.isAdmin ? allUnits : masterUnits;
-    unitSelect.innerHTML = (sesiUser.isAdmin ? '<option value="">Semua Unit / Farm</option>' : '') + units.map(u => `<option value="${escapeHtml(u.kodeUnit)}">${escapeHtml(u.namaUnit)}</option>`).join('');
-    if (!sesiUser.isAdmin && units.length) unitSelect.value = units[0].kodeUnit;
+    const canViewAll = sesiUser.canViewAllLocations || sesiUser.isAdmin;
+    const units = canViewAll ? allUnits : masterUnits;
+    unitSelect.innerHTML = (canViewAll ? '<option value="">Semua Unit / Farm</option>' : '') + units.map(u => `<option value="${escapeHtml(u.kodeUnit)}">${escapeHtml(u.namaUnit)}</option>`).join('');
+    if (!canViewAll && units.length) unitSelect.value = units[0].kodeUnit;
+    if (sesiUser.isPicGudang) unitSelect.disabled = true;
     updateStockWarehouseFilter();
+  }
+
+  function clientCanAccessWarehouse(kodeUnit, kodeGudang) {
+    if (sesiUser.isAdmin || sesiUser.canViewAllLocations) return true;
+    if (String(kodeUnit || '').toLowerCase() !== String(sesiUser.unitLokasi || '').toLowerCase()) return false;
+    return sesiUser.scopeGudang === 'UNIT' || String(kodeGudang || '').toLowerCase() === String(sesiUser.scopeGudang || '').toLowerCase();
   }
 
   function updateStockWarehouseFilter() {
     const unitValue = document.getElementById('stockViewUnit').value;
     const warehouseSelect = document.getElementById('stockViewWarehouse');
-    const warehouseList = masterGudang.filter(g => !unitValue || String(g.kodeUnit).toLowerCase() === unitValue.toLowerCase());
+    const warehouseList = allowedGudang.filter(g => (!unitValue || String(g.kodeUnit).toLowerCase() === unitValue.toLowerCase()) && clientCanAccessWarehouse(g.kodeUnit, g.kodeGudang));
     warehouseSelect.innerHTML = '<option value="">Semua Gudang</option>' + warehouseList.map(g => `<option value="${escapeHtml(g.kodeGudang)}">${escapeHtml(g.namaGudang)} (${escapeHtml(g.kodeUnit)})</option>`).join('');
+    if (sesiUser.isPicGudang && warehouseList.length === 1) { warehouseSelect.value = warehouseList[0].kodeGudang; warehouseSelect.disabled = true; }
   }
 
   function updateJournalWarehouseFilter() {
     const unitValue = document.getElementById('filterUnit').value;
     const warehouseSelect = document.getElementById('filterGudangJournal');
     if (!warehouseSelect) return;
-    const warehouseList = masterGudang.filter(g => !unitValue || String(g.kodeUnit).toLowerCase() === unitValue.toLowerCase());
+    const warehouseList = allowedGudang.filter(g => (!unitValue || String(g.kodeUnit).toLowerCase() === unitValue.toLowerCase()) && clientCanAccessWarehouse(g.kodeUnit, g.kodeGudang));
     warehouseSelect.innerHTML = '<option value="">Semua Gudang</option>' + warehouseList.map(g => `<option value="${escapeHtml(g.kodeGudang)}">${escapeHtml(g.namaGudang)}</option>`).join('');
     terapkanFilterJurnal();
   }
@@ -994,8 +1000,20 @@
   function updateSubGudangPilih(unitSelectId, gudangSelectId) {
     const unitKode = document.getElementById(unitSelectId).value;
     const gudangSelect = document.getElementById(gudangSelectId);
-    let listG = masterGudang.filter(g => g.kodeUnit.toLowerCase() === unitKode.toLowerCase());
+    let listG = masterGudang.filter(g => String(g.kodeUnit).toLowerCase() === unitKode.toLowerCase() && (gudangSelectId === 'trGudangTujuan' || clientCanAccessWarehouse(g.kodeUnit, g.kodeGudang)));
     gudangSelect.innerHTML = listG.length > 0 ? '<option value="">-- Pilih Gudang --</option>' + listG.map(g => `<option value="${escapeHtml(g.kodeGudang)}">${escapeHtml(g.namaGudang)}</option>`).join('') : '<option value="">-- Tidak ada gudang --</option>';
+  }
+
+  function updateTransferTargetUnitOptions() {
+    const unitSelect = document.getElementById('trUnitTujuan');
+    if (!unitSelect) return;
+    let originUnit = sesiUser.unitLokasi || '';
+    try { const source = JSON.parse(document.getElementById('trBarangAsal').value); if (source && source.kodeUnit) originUnit = source.kodeUnit; } catch (error) {}
+    const targetList = allUnits.filter(unit => String(unit.kodeUnit).toLowerCase() !== String(originUnit).toLowerCase());
+    const current = unitSelect.value;
+    unitSelect.innerHTML = '<option value="">-- Pilih Unit Farm Tujuan --</option>' + targetList.map(unit => `<option value="${escapeHtml(unit.kodeUnit)}">${escapeHtml(unit.namaUnit)}</option>`).join('');
+    if (targetList.some(unit => String(unit.kodeUnit) === current)) unitSelect.value = current;
+    updateSubGudangPilih('trUnitTujuan', 'trGudangTujuan');
   }
 
   async function muatMasterStokBarang() {
@@ -1208,7 +1226,7 @@
       if (t.status === 'DITOLAK_ADMIN') badge = '<span class="badge badge-danger">Ditolak</span>';
       let actions = '—';
       if (includeActions && t.status === 'PENDING_ADMIN' && sesiUser.isAdmin) actions = `<button class="btn btn-success btn-sm" onclick="prosesAccAdmin(${inlineArg(t.idTransfer)},'ACC')">Setujui</button> <button class="btn btn-outline btn-sm" onclick="prosesAccAdmin(${inlineArg(t.idTransfer)},'TOLAK')">Tolak</button>`;
-      else if (includeActions && t.status === 'ACC_ADMIN' && (sesiUser.isAdmin || String(t.unitTujuan).toLowerCase() === String(sesiUser.unitLokasi).toLowerCase())) actions = `<button class="btn btn-primary btn-sm" onclick="konfirmasiTerimaTransfer(${inlineArg(t.idTransfer)})">Konfirmasi Terima</button>`;
+      else if (includeActions && t.status === 'ACC_ADMIN' && clientCanAccessWarehouse(t.unitTujuan, t.gudangTujuan)) actions = `<button class="btn btn-primary btn-sm" onclick="konfirmasiTerimaTransfer(${inlineArg(t.idTransfer)})">Konfirmasi Terima</button>`;
       html += `<tr><td><small class="mono">${escapeHtml(t.tgl)}</small><br><small>${escapeHtml(t.idTransfer)}</small></td><td><b>${escapeHtml(t.namaBarang)}</b><br><small>${escapeHtml(t.kodeBarang)}</small></td><td>${escapeHtml(t.unitAsal)}<br><small>${escapeHtml(t.gudangAsal)}</small></td><td><b>${escapeHtml(t.unitTujuan)}</b><br><small>${escapeHtml(t.gudangTujuan)}</small></td><td class="mono"><b>${escapeHtml(t.jumlah)} ${escapeHtml(t.satuan)}</b></td><td>${badge}</td><td>${actions}</td></tr>`;
     });
     return html + '</tbody></table>';
@@ -1224,7 +1242,7 @@
   }
 
   function getActionableTransferRows() {
-    return transferRows.filter(t => (t.status === 'PENDING_ADMIN' && sesiUser.isAdmin) || (t.status === 'ACC_ADMIN' && (sesiUser.isAdmin || String(t.unitTujuan).toLowerCase() === String(sesiUser.unitLokasi).toLowerCase())));
+    return transferRows.filter(t => (t.status === 'PENDING_ADMIN' && sesiUser.isAdmin) || (t.status === 'ACC_ADMIN' && clientCanAccessWarehouse(t.unitTujuan, t.gudangTujuan)));
   }
 
   async function prosesAccAdmin(idTransfer, keputusan) {
@@ -1288,7 +1306,7 @@
       ticketReceiptOptions = json.data || [];
       select.innerHTML = ticketReceiptOptions.length ? '<option value="">-- Pilih item tiket yang disetujui --</option>' + ticketReceiptOptions.map(item => {
         const value = escapeHtml(JSON.stringify({ticket: String(item.kodeTiket), noItem: Number(item.noItem)}));
-        return `<option value="${value}">${escapeHtml(item.kodeTiket)} · Item ${escapeHtml(item.noItem)} · ${escapeHtml(item.namaBarang)} · Sisa ${formatNumber(item.sisaDisetujui)} ${escapeHtml(item.satuan)}</option>`;
+        return `<option value="${value}">${escapeHtml(item.kodeTiket)} · ${escapeHtml(item.kodeGudang || 'Gudang belum ditentukan')} · Item ${escapeHtml(item.noItem)} · ${escapeHtml(item.namaBarang)} · Sisa ${formatNumber(item.sisaDisetujui)} ${escapeHtml(item.satuan)}</option>`;
       }).join('') : '<option value="">Tidak ada item tiket disetujui dengan sisa penerimaan</option>';
       document.getElementById('penTicketRemaining').textContent = ticketReceiptOptions.length ? '' : 'Semua item tiket sudah terpenuhi atau belum disetujui.';
       toggleReceiptSource();
@@ -1310,7 +1328,7 @@
     name.readOnly = linked;
     unitLabel.readOnly = linked;
     category.disabled = linked;
-    unit.disabled = linked || !sesiUser.isAdmin;
+    unit.disabled = linked || !(sesiUser.canViewAllLocations || sesiUser.isAdmin);
     document.getElementById('penItemHint').textContent = linked
       ? 'Nama barang, satuan, dan kategori mengikuti persetujuan tiket portal.'
       : 'Gunakan nama dan satuan barang sesuai dokumen penerimaan.';
@@ -1344,6 +1362,7 @@
     document.getElementById('penKategori').value = item.kategori || 'LAINNYA';
     unit.value = item.kodeUnit;
     updateSubGudangPilih('penUnit', 'penGudang');
+    document.getElementById('penGudang').value = item.kodeGudang || (['ALL', 'UNIT'].includes(String(sesiUser.scopeGudang || '').toUpperCase()) ? '' : sesiUser.scopeGudang);
     document.getElementById('penJumlah').max = String(item.sisaDisetujui);
     document.getElementById('penJumlah').value = '';
     hint.textContent = `Tiket ${item.kodeTiket} · disetujui ${formatNumber(item.jumlahDisetujui)} ${item.satuan}, sudah diterima ${formatNumber(item.jumlahTerpenuhi)} ${item.satuan}, sisa ${formatNumber(item.sisaDisetujui)} ${item.satuan}.`;
@@ -1400,7 +1419,7 @@
   });
 
   function bukaModalTransferDirect() { 
-    updateSubGudangPilih('trUnitTujuan', 'trGudangTujuan'); 
+    updateTransferTargetUnitOptions();
     document.getElementById('modalTransfer').style.display = 'flex'; 
   }
 
