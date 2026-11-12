@@ -93,6 +93,14 @@
     .toast.show { opacity: 1; transform: translateX(0); }
     .toast-success { border-color: var(--erp-success); color: var(--erp-success); }
     .toast-error { border-color: var(--erp-danger); color: var(--erp-danger); }
+    @media (max-width: 640px) {
+      .erp-header { padding: 0 12px; gap: 8px; }
+      .erp-brand { font-size: 13px; gap: 7px; }
+      .erp-brand img { height: 30px; }
+      .erp-user-badge { gap: 6px; padding: 4px 7px; }
+      #userInfoHeader > div:nth-child(2) { display: none; }
+    }
+    @media (max-width: 420px) { .erp-brand span { display: none; } }
   </style>
 </head>
 <body>
@@ -237,6 +245,56 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="modalTambahUser">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 style="font-size:15px;font-weight:800;color:var(--erp-primary);"><i class="fa-solid fa-user-plus"></i> Tambah Akun</h3>
+      <button type="button" aria-label="Tutup form tambah akun" onclick="tutupModalTambahUser()" style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--erp-text-muted);"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form id="formTambahUser" class="modal-body" onsubmit="buatAkunBaru(event)">
+      <div class="row-group">
+        <div class="form-group"><label for="userBaruUsername">Username</label><input id="userBaruUsername" type="text" minlength="3" maxlength="40" pattern="[A-Za-z0-9][A-Za-z0-9._-]{2,39}" autocomplete="off" autocapitalize="none" spellcheck="false" required></div>
+        <div class="form-group"><label for="userBaruNama">Nama</label><input id="userBaruNama" type="text" maxlength="120" required></div>
+      </div>
+      <div class="row-group">
+        <div class="form-group"><label for="userBaruPassword">Password awal</label><input id="userBaruPassword" type="password" minlength="8" maxlength="128" autocomplete="new-password" required><small style="display:block;margin-top:5px;color:var(--erp-text-muted);">8–128 karakter; tanpa spasi di awal/akhir. Karakter pertama tidak boleh =, +, @, atau -.</small></div>
+        <div class="form-group"><label for="userBaruPasswordKonfirmasi">Konfirmasi password</label><input id="userBaruPasswordKonfirmasi" type="password" minlength="8" maxlength="128" autocomplete="new-password" required></div>
+      </div>
+      <div class="row-group">
+        <div class="form-group"><label for="userBaruDivisi">Divisi</label><input id="userBaruDivisi" type="text" maxlength="120" placeholder="Contoh: Produksi"></div>
+        <div class="form-group"><label for="userBaruJabatan">Jabatan</label><input id="userBaruJabatan" type="text" maxlength="120" placeholder="Opsional"></div>
+      </div>
+      <div class="row-group">
+        <div class="form-group"><label for="userBaruUnit">Unit / Farm</label><select id="userBaruUnit" required onchange="perbaruiCakupanUserBaru()"><option value="">Memuat unit…</option></select></div>
+        <div class="form-group"><label for="userBaruRole">Role</label><select id="userBaruRole" required onchange="perbaruiCakupanUserBaru()"><option value="STAFF_OPERASIONAL">Staff Operasional</option><option value="PIC_GUDANG">PIC Gudang</option><option value="ADMIN">Admin</option></select></div>
+      </div>
+      <div class="form-group"><label for="userBaruScope">Cakupan</label><select id="userBaruScope" required></select><small id="userBaruScopeHint" style="display:block;margin-top:5px;color:var(--erp-text-muted);">Pilih akses sesuai tugas akun.</small></div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px;">
+        <button type="button" onclick="tutupModalTambahUser()" class="btn btn-outline">Batal</button>
+        <button id="btnBuatUser" type="submit" class="btn btn-primary"><i class="fa-solid fa-user-plus"></i> Buat Akun</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalGantiPassword">
+  <div class="modal-content" style="max-width:480px;">
+    <div class="modal-header">
+      <h3 style="font-size:15px;font-weight:800;color:var(--erp-primary);"><i class="fa-solid fa-key"></i> Ganti Password</h3>
+      <button type="button" aria-label="Tutup form ganti password" onclick="tutupModalGantiPassword()" style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--erp-text-muted);"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form id="formGantiPassword" class="modal-body" onsubmit="gantiPassword(event)">
+      <div class="form-group"><label for="passwordSaatIni">Password saat ini</label><input id="passwordSaatIni" type="password" autocomplete="current-password" required></div>
+      <div class="form-group"><label for="passwordBaru">Password baru</label><input id="passwordBaru" type="password" minlength="8" maxlength="128" autocomplete="new-password" required><small style="display:block;margin-top:5px;color:var(--erp-text-muted);">8–128 karakter, tanpa spasi di awal/akhir. Karakter pertama tidak boleh =, +, @, atau -.</small></div>
+      <div class="form-group"><label for="passwordBaruKonfirmasi">Konfirmasi password baru</label><input id="passwordBaruKonfirmasi" type="password" minlength="8" maxlength="128" autocomplete="new-password" required></div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px;">
+        <button type="button" onclick="tutupModalGantiPassword()" class="btn btn-outline">Batal</button>
+        <button id="btnGantiPassword" type="submit" class="btn btn-primary"><i class="fa-solid fa-key"></i> Simpan Password</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <script>
   const GAS_URL = "https://script.google.com/macros/s/AKfycbx_tuIlCd-_n3PMtmv-_hPP4QrbGfPVYzk4tN33WinGtA8fyhe19uwXg6oS7v9jnm9yZw/exec";
   
@@ -250,6 +308,8 @@
   let submissionKey = null;
   let activeTicketDetail = null;
   let requestWarehouseOptions = [];
+  let adminUserUnits = [];
+  let adminUserWarehouses = [];
 
   function escapeHtml(value) {
     return String(value == null ? '' : value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
@@ -363,12 +423,112 @@
     document.getElementById('userInfoHeader').innerHTML = `
       <div class="erp-avatar">${escapeHtml((sesiUser.nama||"U").substring(0,2).toUpperCase())}</div>
       <div style="line-height:1.2; color:#f8fafc;"><div style="font-weight:700; font-size:12px; color:var(--erp-accent-yellow);">${escapeHtml(sesiUser.nama)}</div><div style="font-size:10px; color:#c2d1c7;">${escapeHtml(sesiUser.roleAccess || sesiUser.jabatan)} | <b>${escapeHtml(sesiUser.scopeGudang === 'ALL' ? 'Semua Gudang' : sesiUser.isPicGudang ? sesiUser.scopeGudang : sesiUser.unitLokasi)}</b></div></div>
+      ${sesiUser.isAdmin ? `<button onclick="bukaModalTambahUser()" class="btn btn-outline" title="Tambah akun" aria-label="Tambah akun" style="padding:6px 9px;color:#fff;border-color:#386641;background:transparent;"><i class="fa-solid fa-user-plus"></i></button>` : ''}
+      <button onclick="bukaModalGantiPassword()" class="btn btn-outline" title="Ganti password" aria-label="Ganti password" style="padding:6px 9px;color:#fff;border-color:#386641;background:transparent;"><i class="fa-solid fa-key"></i></button>
       <button onclick="logoutSesi()" class="btn btn-outline" style="padding:5px 10px; color:#fff; border-color:#386641; background:transparent; margin-left:15px;"><i class="fa-solid fa-power-off"></i></button>`;
     
     let today = todayJakarta();
     document.getElementById('tglPermintaan').value = today; document.getElementById('tglDibutuhkan').min = today; 
     document.getElementById('containerItems').innerHTML = ""; itemCounter = 0;
     muatMasterBarang(); muatGudangTujuanPermintaan(); tambahItemForm(); muatRiwayatPermintaan();
+    if (sesiUser.isAdmin) muatOpsiUserAdmin();
+  }
+
+  async function muatOpsiUserAdmin() {
+    try {
+      const res = await postPayload({action: 'getUnitsAndGudang', token: sesiUser.token});
+      const json = await res.json();
+      if (cekSesiBerakhir(json)) return;
+      if (json.status !== 'success') throw new Error(json.message || 'Gagal memuat unit dan gudang.');
+      adminUserUnits = json.allUnits || json.units || [];
+      adminUserWarehouses = json.gudang || [];
+      const unitSelect = document.getElementById('userBaruUnit');
+      unitSelect.innerHTML = '<option value="">-- Pilih Unit / Farm --</option>' + adminUserUnits.map(unit => `<option value="${escapeHtml(unit.kodeUnit)}">${escapeHtml(unit.namaUnit || unit.kodeUnit)}</option>`).join('');
+      perbaruiCakupanUserBaru();
+    } catch (error) { showToast(error.message || 'Gagal memuat daftar unit.', 'error'); }
+  }
+
+  function perbaruiCakupanUserBaru() {
+    const role = document.getElementById('userBaruRole').value;
+    const unit = document.getElementById('userBaruUnit').value;
+    const scope = document.getElementById('userBaruScope');
+    const hint = document.getElementById('userBaruScopeHint');
+    scope.disabled = role === 'ADMIN';
+    if (role === 'ADMIN') {
+      scope.innerHTML = '<option value="ALL">Semua unit / gudang</option>';
+      hint.textContent = 'Admin dapat mengakses seluruh unit dan gudang.';
+    } else if (role === 'STAFF_OPERASIONAL') {
+      scope.innerHTML = '<option value="UNIT">Semua gudang di unit ini</option><option value="ALL">Semua unit / gudang</option>';
+      hint.textContent = 'Pilih UNIT untuk membatasi staff ke farm di atas, atau ALL untuk akses operasional lintas farm.';
+    } else {
+      const warehouses = adminUserWarehouses.filter(item => String(item.kodeUnit).toLowerCase() === String(unit).toLowerCase());
+      scope.disabled = false;
+      scope.innerHTML = warehouses.length ? '<option value="">-- Pilih satu gudang --</option>' + warehouses.map(item => `<option value="${escapeHtml(item.kodeGudang)}">${escapeHtml(item.namaGudang)} (${escapeHtml(item.kodeGudang)})</option>`).join('') : '<option value="">Tidak ada gudang pada unit ini</option>';
+      hint.textContent = 'PIC Gudang terikat pada tepat satu gudang di unit yang dipilih.';
+    }
+  }
+
+  async function bukaModalTambahUser() {
+    if (!sesiUser.isAdmin) return showToast('Hanya admin yang dapat menambahkan akun.', 'error');
+    if (!adminUserUnits.length) await muatOpsiUserAdmin();
+    if (!adminUserUnits.length) return showToast('Daftar unit belum tersedia. Periksa data sheet Gudang / Units.', 'error');
+    document.getElementById('formTambahUser').reset();
+    document.getElementById('userBaruRole').value = 'STAFF_OPERASIONAL';
+    perbaruiCakupanUserBaru();
+    document.getElementById('modalTambahUser').style.display = 'flex';
+  }
+
+  function tutupModalTambahUser() { document.getElementById('modalTambahUser').style.display = 'none'; }
+
+  async function buatAkunBaru(event) {
+    event.preventDefault();
+    if (!sesiUser.isAdmin) return showToast('Hanya admin yang dapat menambahkan akun.', 'error');
+    const password = document.getElementById('userBaruPassword').value;
+    if (password !== document.getElementById('userBaruPasswordKonfirmasi').value) return showToast('Konfirmasi password tidak cocok.', 'error');
+    const button = document.getElementById('btnBuatUser');
+    button.disabled = true;
+    try {
+      const res = await postPayload({
+        action: 'createUser', token: sesiUser.token,
+        username: document.getElementById('userBaruUsername').value.trim(), nama: document.getElementById('userBaruNama').value.trim(),
+        password: password, divisi: document.getElementById('userBaruDivisi').value.trim(), jabatan: document.getElementById('userBaruJabatan').value.trim(),
+        unitLokasi: document.getElementById('userBaruUnit').value, roleAccess: document.getElementById('userBaruRole').value,
+        scopeGudang: document.getElementById('userBaruScope').value
+      });
+      const result = await res.json();
+      if (cekSesiBerakhir(result)) return;
+      if (result.status !== 'success') throw new Error(result.message || 'Gagal membuat akun.');
+      tutupModalTambahUser();
+      document.getElementById('formTambahUser').reset();
+      perbaruiCakupanUserBaru();
+      showToast(result.message || 'Akun berhasil dibuat.');
+    } catch (error) { showToast(error.message || 'Gagal membuat akun.', 'error'); }
+    finally { button.disabled = false; }
+  }
+
+  function bukaModalGantiPassword() {
+    document.getElementById('formGantiPassword').reset();
+    document.getElementById('modalGantiPassword').style.display = 'flex';
+  }
+
+  function tutupModalGantiPassword() { document.getElementById('modalGantiPassword').style.display = 'none'; }
+
+  async function gantiPassword(event) {
+    event.preventDefault();
+    const newPassword = document.getElementById('passwordBaru').value;
+    if (newPassword !== document.getElementById('passwordBaruKonfirmasi').value) return showToast('Konfirmasi password baru tidak cocok.', 'error');
+    const button = document.getElementById('btnGantiPassword');
+    button.disabled = true;
+    try {
+      const res = await postPayload({action: 'changePassword', token: sesiUser.token, passwordSaatIni: document.getElementById('passwordSaatIni').value, passwordBaru: newPassword, konfirmasiPassword: document.getElementById('passwordBaruKonfirmasi').value});
+      const result = await res.json();
+      if (cekSesiBerakhir(result)) return;
+      if (result.status !== 'success') throw new Error(result.message || 'Gagal mengganti password.');
+      tutupModalGantiPassword();
+      document.getElementById('formGantiPassword').reset();
+      showToast(result.message || 'Password berhasil diperbarui.');
+    } catch (error) { showToast(error.message || 'Gagal mengganti password.', 'error'); }
+    finally { button.disabled = false; }
   }
 
   async function logoutSesi() {
