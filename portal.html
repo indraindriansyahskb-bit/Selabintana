@@ -115,6 +115,7 @@
         <i class="fa-solid fa-right-to-bracket"></i> Masuk Sistem
       </button>
     </form>
+    <div id="loginNotice" role="status" style="display:none;margin-top:16px;padding:12px;border-radius:8px;background:#fff7e6;color:#76520b;font-size:13px;line-height:1.5;"></div>
   </div>
 </div>
 
@@ -147,6 +148,7 @@
             <select id="urgensi"><option value="REGULER">REGULER</option><option value="URGENT">URGENT (Prioritas)</option><option value="TOP URGENT">TOP URGENT (Kritis)</option></select>
           </div>
         </div>
+        <div class="form-group"><label for="kodeGudangTujuan">Farm / Gudang Tujuan</label><select id="kodeGudangTujuan" required><option value="">Memuat daftar gudang…</option></select><small style="display:block;margin-top:5px;color:var(--erp-text-muted);">Permintaan akan diteruskan kepada PIC gudang yang dipilih.</small></div>
         <div style="font-size:13px; font-weight:700; color:var(--erp-primary); margin: 24px 0 12px 0; padding-bottom:8px; border-bottom:1px solid var(--erp-border-light);"><i class="fa-solid fa-boxes-stacked"></i> Rincian Item Barang</div>
         
         <div id="containerItems"></div>
@@ -247,6 +249,7 @@
   let idTiketEdit = null;
   let submissionKey = null;
   let activeTicketDetail = null;
+  let requestWarehouseOptions = [];
 
   function escapeHtml(value) {
     return String(value == null ? '' : value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
@@ -290,6 +293,14 @@
   }
 
   function cekSesiBerakhir(json) {
+    if (json && json.status === "error" && String(json.message || "").indexOf("Akun PIC Gudang hanya dapat menggunakan stock.html") >= 0) {
+      sessionStorage.removeItem('portal_user_session');
+      sesiUser = {};
+      document.getElementById('mainPanel').style.display = 'none';
+      document.getElementById('loginSection').style.display = 'flex';
+      tampilkanNoticeAksesPic();
+      return true;
+    }
     if (json && json.status === "error" && String(json.message || "").indexOf("Sesi tidak valid") >= 0) {
       sessionStorage.removeItem('portal_user_session');
       location.reload();
@@ -303,11 +314,27 @@
     if (saved) {
       try {
         sesiUser = JSON.parse(saved);
-        if (sesiUser.token && Date.now() < Number(sesiUser.expiresAt || 0)) tampilkanDashboard();
+        if (sesiUser.isPicGudang) {
+          sessionStorage.removeItem('portal_user_session'); sesiUser = {};
+          tampilkanNoticeAksesPic();
+        }
+        else if (sesiUser.token && Date.now() < Number(sesiUser.expiresAt || 0)) tampilkanDashboard();
         else { sessionStorage.removeItem('portal_user_session'); sesiUser = {}; }
       } catch (e) { sessionStorage.removeItem('portal_user_session'); sesiUser = {}; }
     }
   };
+
+  function tampilkanNoticeAksesPic() {
+    const notice = document.getElementById('loginNotice');
+    if (!notice) return;
+    notice.textContent = 'Akun PIC Gudang menggunakan halaman stok. ';
+    const link = document.createElement('a');
+    link.href = 'stock.html';
+    link.textContent = 'Buka stock.html';
+    link.style.cssText = 'font-weight:700;color:#315f3b;';
+    notice.appendChild(link);
+    notice.style.display = 'block';
+  }
 
   async function prosesLogin(e) {
     e.preventDefault();
@@ -317,6 +344,13 @@
       const res = await postPayload({ action: "login", username: document.getElementById('loginUser').value.trim(), password: document.getElementById('loginPass').value });
       const result = await res.json();
       if (result.status === "success") {
+        if (result.userData && result.userData.isPicGudang) {
+          sessionStorage.removeItem('portal_user_session');
+          sesiUser = {};
+          tampilkanNoticeAksesPic();
+          try { await postPayload({action: 'logout', token: result.userData.token}); } catch (logoutError) {}
+          return;
+        }
         sesiUser = result.userData; sessionStorage.setItem('portal_user_session', JSON.stringify(sesiUser));
         showToast(`Selamat datang, ${sesiUser.nama}!`); setTimeout(tampilkanDashboard, 400);
       } else showToast(result.message, 'error');
@@ -328,13 +362,13 @@
     document.getElementById('loginSection').style.display = 'none'; document.getElementById('mainPanel').style.display = 'block';
     document.getElementById('userInfoHeader').innerHTML = `
       <div class="erp-avatar">${escapeHtml((sesiUser.nama||"U").substring(0,2).toUpperCase())}</div>
-      <div style="line-height:1.2; color:#f8fafc;"><div style="font-weight:700; font-size:12px; color:var(--erp-accent-yellow);">${escapeHtml(sesiUser.nama)}</div><div style="font-size:10px; color:#c2d1c7;">${escapeHtml(sesiUser.divisi)} | <b>${escapeHtml(sesiUser.unitLokasi)}</b> ${sesiUser.isAdmin?'<span style="color:#fde047;">(ADMIN)</span>':''}</div></div>
+      <div style="line-height:1.2; color:#f8fafc;"><div style="font-weight:700; font-size:12px; color:var(--erp-accent-yellow);">${escapeHtml(sesiUser.nama)}</div><div style="font-size:10px; color:#c2d1c7;">${escapeHtml(sesiUser.roleAccess || sesiUser.jabatan)} | <b>${escapeHtml(sesiUser.scopeGudang === 'ALL' ? 'Semua Gudang' : sesiUser.isPicGudang ? sesiUser.scopeGudang : sesiUser.unitLokasi)}</b></div></div>
       <button onclick="logoutSesi()" class="btn btn-outline" style="padding:5px 10px; color:#fff; border-color:#386641; background:transparent; margin-left:15px;"><i class="fa-solid fa-power-off"></i></button>`;
     
     let today = todayJakarta();
     document.getElementById('tglPermintaan').value = today; document.getElementById('tglDibutuhkan').min = today; 
     document.getElementById('containerItems').innerHTML = ""; itemCounter = 0;
-    muatMasterBarang(); tambahItemForm(); muatRiwayatPermintaan();
+    muatMasterBarang(); muatGudangTujuanPermintaan(); tambahItemForm(); muatRiwayatPermintaan();
   }
 
   async function logoutSesi() {
@@ -354,6 +388,32 @@
         document.getElementById('masterBarangList').innerHTML = uniqueNames.map(n => `<option value="${escapeHtml(n)}"></option>`).join('');
       }
     } catch(e) {}
+  }
+
+  async function muatGudangTujuanPermintaan(selectedWarehouse) {
+    const select = document.getElementById('kodeGudangTujuan');
+    if (!select || !sesiUser.token) return;
+    try {
+      const res = await postPayload({action: 'getUnitsAndGudang', token: sesiUser.token});
+      const json = await res.json();
+      if (cekSesiBerakhir(json)) return;
+      if (json.status !== 'success') throw new Error(json.message || 'Gagal memuat daftar gudang.');
+      requestWarehouseOptions = json.gudangDiizinkan || [];
+      select.innerHTML = requestWarehouseOptions.length
+        ? '<option value="">-- Pilih farm / gudang --</option>' + requestWarehouseOptions.map(item => `<option value="${escapeHtml(item.kodeGudang)}" data-unit="${escapeHtml(item.kodeUnit)}">${escapeHtml(item.namaUnit || item.kodeUnit)} · ${escapeHtml(item.namaGudang)} (${escapeHtml(item.kodeGudang)})</option>`).join('')
+        : '<option value="">Tidak ada gudang pada cakupan akun</option>';
+      if (selectedWarehouse && requestWarehouseOptions.some(item => String(item.kodeGudang).toLowerCase() === String(selectedWarehouse).toLowerCase())) select.value = selectedWarehouse;
+      else if (sesiUser.isPicGudang && requestWarehouseOptions.length === 1) select.value = requestWarehouseOptions[0].kodeGudang;
+    } catch (error) {
+      select.innerHTML = '<option value="">Daftar gudang tidak dapat dimuat</option>';
+      showToast(error.message || 'Gagal memuat daftar gudang.', 'error');
+    }
+  }
+
+  function getRequestWarehouseUnit() {
+    const select = document.getElementById('kodeGudangTujuan');
+    const option = select && select.options[select.selectedIndex];
+    return option ? String(option.dataset.unit || '') : '';
   }
 
   function tambahItemForm(data = null) {
@@ -395,7 +455,8 @@
       action: idTiketEdit ? "editPermintaan" : "submitPermintaan",
       token: sesiUser.token,
       kodeTiketEdit: idTiketEdit,
-      pemohon: sesiUser.nama, divisi: sesiUser.divisi, unitLokasi: sesiUser.unitLokasi,
+      pemohon: sesiUser.nama, divisi: sesiUser.divisi, unitLokasi: getRequestWarehouseUnit(),
+      kodeGudangTujuan: document.getElementById('kodeGudangTujuan').value,
       tglPermintaan: document.getElementById('tglPermintaan').value, tglDibutuhkan: document.getElementById('tglDibutuhkan').value,
       urgensi: document.getElementById('urgensi').value, keterangan: document.getElementById('keterangan').value.trim(),
       items: itemsArr
@@ -431,7 +492,7 @@
           if(!mapTiket[it.kodeTiket]) {
             mapTiket[it.kodeTiket] = {
               kodeTiket: it.kodeTiket, tglPermintaan: it.tglPermintaan, tglDibutuhkan: it.tglDibutuhkan,
-              pemohon: it.pemohon, unitLokasi: it.unitLokasi, urgensi: it.urgensi, 
+              pemohon: it.pemohon, unitLokasi: it.unitLokasi, kodeGudang: it.kodeGudang || '', urgensi: it.urgensi, 
               keterangan: it.keterangan, statusPermintaan: it.statusPermintaan, catatanAdmin: it.catatanAdmin, 
               dokumenPdf: it.dokumenPdf || "", canEdit: Boolean(it.canEdit), items: []
             };
@@ -526,7 +587,7 @@
 
       html += `<tr>
         <td><span class="mono" style="color:var(--erp-primary); font-weight:700;">${escapeHtml(t.kodeTiket)}</span></td>
-        <td><b>${escapeHtml(t.pemohon)}</b><br><small style="color:var(--erp-text-muted);">${escapeHtml(t.unitLokasi)}</small></td>
+        <td><b>${escapeHtml(t.pemohon)}</b><br><small style="color:var(--erp-text-muted);">${escapeHtml(t.unitLokasi)}${t.kodeGudang ? ' · ' + escapeHtml(t.kodeGudang) : ''}</small></td>
         <td><small class="mono">${escapeHtml(t.tglDibutuhkan)}</small></td>
         <td><b>${t.items.length} Barang</b></td>
         <td><small style="color:${String(t.urgensi).includes('URGENT')?'red':''}; font-weight:600;">${escapeHtml(t.urgensi)}</small></td>
@@ -589,6 +650,7 @@
               <th>Tgl Dibutuhkan</th>
               <th>Pemohon</th>
               <th>Unit / Farm</th>
+              <th>Gudang Tujuan</th>
               <th>Urgensi</th>
               <th>Nama Barang</th>
               <th>Kategori</th>
@@ -614,6 +676,7 @@
             <td class="text">${exportText(t.tglDibutuhkan)}</td>
             <td>${exportText(t.pemohon)}</td>
             <td>${exportText(t.unitLokasi)}</td>
+            <td>${exportText(t.kodeGudang || '-')}</td>
             <td>${exportText(t.urgensi)}</td>
             <td><b>${exportText(it.namaBarang)}</b></td>
             <td>${exportText(it.kategori)}</td>
@@ -659,7 +722,8 @@
     
     let html = `
       <div style="display:flex; justify-content:space-between; margin-bottom:15px; background:#f6f9f7; padding:15px; border-radius:8px; border:1px solid var(--erp-border-light);">
-        <div><div style="font-size:11px; color:#5e6e64;">Pemohon</div><div style="font-weight:700;">${escapeHtml(t.pemohon)} (${escapeHtml(t.unitLokasi)})</div></div>
+        <div><div style="font-size:11px; color:#5e6e64;">Pemohon</div><div style="font-weight:700;">${escapeHtml(t.pemohon)}</div></div>
+        <div><div style="font-size:11px; color:#5e6e64;">Farm / Gudang</div><div style="font-weight:700;">${escapeHtml(t.unitLokasi)}${t.kodeGudang ? ' / ' + escapeHtml(t.kodeGudang) : ''}</div></div>
         <div><div style="font-size:11px; color:#5e6e64;">Tgl Dibutuhkan</div><div style="font-weight:700; color:var(--erp-primary);">${escapeHtml(t.tglDibutuhkan)}</div></div>
         <div><div style="font-size:11px; color:#5e6e64;">Urgensi</div><div style="font-weight:700;">${escapeHtml(t.urgensi)}</div></div>
       </div>
@@ -853,7 +917,7 @@
           <td class="sig-cell"><div class="sig-title">PEMOHON</div><div class="sig-line"></div><div class="sig-name">(${escapeHtml(t.pemohon)})</div></td>
           <td class="sig-cell"><div class="sig-title">HEAD FARM</div><div class="sig-line"></div><div class="sig-name">( ....................... )</div></td>
           <td class="sig-cell"><div class="sig-title">FARM MANAGER</div><div class="sig-line"></div><div class="sig-name">( ....................... )</div></td>
-          <td class="sig-cell"><div class="sig-title">GENERAL MANAGER</div><div class="sig-line"></div><div class="sig-name">Drh. Titin Idayati</div></td>
+          <td class="sig-cell"><div class="sig-title">GENERAL MANAGER</div><div class="sig-line"></div><div class="sig-name" style="margin-top: 18px;">drh. Titin Idayati</div></td>
         </tr></table>
       </body></html>`;
     printWin.document.write(printHTML); printWin.document.close();
@@ -877,6 +941,8 @@
     document.getElementById('tglDibutuhkan').value = t.tglDibutuhkan.split(' ')[0];
     document.getElementById('urgensi').value = t.urgensi;
     document.getElementById('keterangan').value = t.keterangan;
+    document.getElementById('kodeGudangTujuan').value = t.kodeGudang || '';
+    if (t.kodeGudang && !document.getElementById('kodeGudangTujuan').value) muatGudangTujuanPermintaan(t.kodeGudang);
     document.getElementById('containerItems').innerHTML = ""; itemCounter = 0;
     t.items.forEach(it => tambahItemForm(it));
     document.getElementById('btnSubmit').innerHTML = `<i class="fa-solid fa-save"></i> Simpan Revisi Tiket`;
@@ -889,6 +955,7 @@
     idTiketEdit = null;
     document.getElementById('formTitle').innerHTML = `<i class="fa-solid fa-file-signature"></i> Buat Tiket Permintaan Baru`;
     document.getElementById('formPermintaan').reset();
+    if (sesiUser.isPicGudang) muatGudangTujuanPermintaan(sesiUser.scopeGudang);
     document.getElementById('containerItems').innerHTML = ""; itemCounter = 0; tambahItemForm();
     document.getElementById('btnSubmit').innerHTML = `<i class="fa-solid fa-paper-plane"></i> Submit Tiket Ke Sistem`;
     document.getElementById('btnBatalEdit').style.display = 'none';
