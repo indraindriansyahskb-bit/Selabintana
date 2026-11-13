@@ -136,8 +136,11 @@
       <section class="hero" aria-labelledby="welcome-title">
         <div class="hero-copy">
           <div class="eyebrow">Operasional farm</div>
-          <h1 id="welcome-title">Data Akurat, Operasional Tepat.</h1>
-          <p class="intro">Pastikan Anda memperbarui data persediaan dan pengajuan barang secara rutin. Konsistensi pengisian Anda menentukan kelancaran operasional farm kita.</p>
+          <h1 id="welcome-title">Semua kebutuhan farm, satu tempat.</h1>
+          <p class="intro">Ajukan kebutuhan barang dan kelola persediaan farm melalui portal internal.</p>
+          <a class="start-link" id="startLink" href="#authPanel"><span id="startLinkText">Masuk untuk melanjutkan</span>
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
         </div>
         <div class="hero-photo">
           <img src="https://images.pexels.com/photos/27083552/pexels-photo-27083552.jpeg?auto=compress&amp;cs=tinysrgb&amp;w=1600" alt="Ayam di dalam fasilitas peternakan modern" fetchpriority="high">
@@ -166,7 +169,7 @@
         <div class="module-list">
           <a class="module" href="portal.html">
             <span class="module-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M6 3.8h8l4 4V20H6V3.8Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M14 4v4h4M9 12h6m-6 3.5h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>
-            <span class="module-text"><h3>Permintaan Barang</h3><p>Ajukan kebutuhan dan pantau status pemenuhan.</p></span>
+            <span class="module-text"><h3>Portal Permintaan</h3><p>Ajukan kebutuhan dan pantau status pemenuhan.</p></span>
             <span class="module-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
           </a>
           <a class="module" href="stock.html">
@@ -248,10 +251,6 @@
       return target === 'portal.html' || target === 'stock.html' ? target : '';
     }
 
-    function escapeHtml(value) {
-      return String(value == null ? '' : value).replace(/[&<>"']/g, character => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[character]));
-    }
-
     async function postAuth(payload) {
       const response = await fetch(AUTH_API_URL, {
         method: 'POST',
@@ -274,6 +273,10 @@
       status.hidden = !message;
     }
 
+    function escapeHtml(value) {
+      const entities = {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'};
+      return String(value == null ? '' : value).replace(/[&<>"']/g, character => entities[character]);
+    }
     async function muatOpsiUserAdmin() {
       if (!isCurrentUserAdmin()) return false;
       try {
