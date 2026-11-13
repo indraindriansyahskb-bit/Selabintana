@@ -58,6 +58,8 @@
     .module-note { margin:6px 0 0; color:var(--muted); font-size:11px; }
     .module-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:15px; }
     .module { min-height:130px; display:flex; align-items:center; gap:16px; padding:21px; border:1px solid var(--line); border-radius:15px; background:#fff; text-decoration:none; transition:border-color .2s,box-shadow .2s,transform .2s; }
+    .module.admin-module { width:100%; color:inherit; font:inherit; text-align:left; cursor:pointer; }
+    .module-list.admin-visible { grid-template-columns:repeat(3,minmax(0,1fr)); }
     .module:hover { transform:translateY(-2px); border-color:#bed0c1; box-shadow:0 10px 25px rgba(28,56,40,.07); }
     .module-icon { width:43px; height:43px; display:grid; place-items:center; flex:0 0 auto; border-radius:12px; color:var(--green); background:#eaf1e9; }
     .module-icon.stock { color:#836321; background:#f5f0df; }
@@ -67,6 +69,25 @@
     .module p { margin:0; color:var(--muted); font-size:11px; line-height:1.55; }
     .module-arrow { color:#789080; }
     footer { display:flex; justify-content:space-between; gap:12px; padding:17px 0 22px; border-top:1px solid var(--line); color:#748077; font-size:10px; }
+    .admin-modal { position:fixed; inset:0; z-index:50; display:none; align-items:center; justify-content:center; padding:18px; background:rgba(18,37,27,.55); }
+    .admin-modal.open { display:flex; }
+    .admin-modal-card { width:min(680px,100%); max-height:92vh; overflow:auto; border:1px solid var(--line); border-radius:16px; background:#fff; box-shadow:0 24px 70px rgba(18,37,27,.24); }
+    .admin-modal-head { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; padding:20px 22px 13px; border-bottom:1px solid var(--line); }
+    .admin-modal-head h2 { margin:0; font:700 19px/1.3 "Manrope",sans-serif; }
+    .admin-modal-head p { margin:5px 0 0; color:var(--muted); font-size:11px; line-height:1.5; }
+    .admin-modal-close { width:34px; height:34px; border:1px solid var(--line); border-radius:8px; background:#fff; color:var(--muted); font-size:18px; cursor:pointer; }
+    .admin-form { display:grid; gap:13px; padding:18px 22px 22px; }
+    .admin-form-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:13px; }
+    .admin-form label { display:block; margin-bottom:5px; color:#52645a; font-size:10px; font-weight:700; }
+    .admin-form input, .admin-form select { width:100%; min-height:40px; border:1px solid #d6dfd7; border-radius:8px; padding:9px 11px; color:var(--ink); background:#fff; font:13px "DM Sans",Arial,sans-serif; }
+    .admin-form small { display:block; margin-top:5px; color:var(--muted); font-size:10px; line-height:1.45; }
+    .admin-form-actions { display:flex; justify-content:flex-end; gap:9px; padding-top:4px; }
+    .admin-form-actions button { min-height:39px; border:1px solid #cbd8cd; border-radius:8px; padding:8px 13px; background:#fff; color:var(--green); font:700 11px "DM Sans",Arial,sans-serif; cursor:pointer; }
+    .admin-form-actions button[type="submit"] { border-color:var(--green); background:var(--green); color:#fff; }
+    .admin-form-actions button:disabled { opacity:.65; cursor:progress; }
+    #adminFormMessage { margin:0; color:#a43d32; font-size:11px; }
+    #adminFormMessage[data-kind="success"] { color:#23734a; }
+    #moduleNotice[hidden], #adminUsersCard[hidden], #adminFormMessage[hidden] { display:none!important; }
     :focus-visible { outline:3px solid #d2a34c; outline-offset:4px; }
     @media(max-width:760px) {
       .wrap { width:min(100% - 36px,560px); }
@@ -74,6 +95,8 @@
       .brand img { width:44px; height:44px; }
       .brand strong { font-size:12px; }
       .internal { font-size:9px; }
+      .header-actions { gap:7px; }
+      .session-user { max-width:145px; text-align:right; line-height:1.4; }
       .auth-panel { grid-template-columns:1fr; gap:18px; padding:21px; }
       main { padding:24px 0 42px; }
       .hero { grid-template-columns:1fr; }
@@ -81,10 +104,14 @@
       h1 { max-width:500px; font-size:clamp(34px,9vw,47px); }
       .hero-photo { min-height:270px; }
       .modules { padding-top:30px; }
+      .module-list.admin-visible { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .admin-modal-card { max-height:94vh; }
+      .admin-modal-head, .admin-form { padding-left:17px; padding-right:17px; }
     }
     @media(max-width:520px) {
       .wrap { width:calc(100% - 28px); }
       .module-list { grid-template-columns:1fr; gap:10px; }
+      .module-list.admin-visible { grid-template-columns:1fr; }
       .module { min-height:112px; padding:17px; }
       footer { flex-direction:column; }
     }
@@ -109,8 +136,11 @@
       <section class="hero" aria-labelledby="welcome-title">
         <div class="hero-copy">
           <div class="eyebrow">Operasional farm</div>
-          <h1 id="welcome-title">Sistem Informasi Manajemen Stok.</h1>
-          <p class="intro">CV. SELABINTANA.</p>
+          <h1 id="welcome-title">Semua kebutuhan farm, satu tempat.</h1>
+          <p class="intro">Ajukan kebutuhan barang dan kelola persediaan farm melalui portal internal.</p>
+          <a class="start-link" id="startLink" href="#authPanel"><span id="startLinkText">Masuk untuk melanjutkan</span>
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
         </div>
         <div class="hero-photo">
           <img src="https://images.pexels.com/photos/27083552/pexels-photo-27083552.jpeg?auto=compress&amp;cs=tinysrgb&amp;w=1600" alt="Ayam di dalam fasilitas peternakan modern" fetchpriority="high">
@@ -134,7 +164,7 @@
 
       <section class="modules" id="moduleSection" aria-labelledby="modules-title" hidden>
         <div class="module-heading">
-          <div><h2 id="modules-title">Pilih modul</h2><p class="module-note" id="moduleWelcome">Sesi aktif.</p></div>
+          <div><h2 id="modules-title">Pilih modul</h2><p class="module-note" id="moduleWelcome">Sesi aktif.</p><p class="module-note" id="moduleNotice" role="status" aria-live="polite" hidden></p></div>
         </div>
         <div class="module-list">
           <a class="module" href="portal.html">
@@ -147,16 +177,57 @@
             <span class="module-text"><h3>Manajemen Stok</h3><p>Kelola penerimaan, pemakaian, dan saldo gudang.</p></span>
             <span class="module-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
           </a>
+          <button class="module admin-module" id="adminUsersCard" type="button" onclick="bukaModalTambahUser()" hidden>
+            <span class="module-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M16 20v-1.5a4.5 4.5 0 0 0-4.5-4.5h-3A4.5 4.5 0 0 0 4 18.5V20m6-9a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm8-2v6m-3-3h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span class="module-text"><h3>Manajemen Pengguna</h3><p>Tambah akun staff, PIC Gudang, atau admin.</p></span>
+            <span class="module-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </button>
         </div>
       </section>
     </main>
 
     <footer><span>&copy; 2026 CV. Selabintana</span><span>Sistem Operasional Internal</span></footer>
   </div>
+  <div class="admin-modal" id="adminUserModal" role="dialog" aria-modal="true" aria-labelledby="adminUserTitle" onclick="if(event.target===this) tutupModalTambahUser()">
+    <div class="admin-modal-card">
+      <div class="admin-modal-head">
+        <div><h2 id="adminUserTitle">Tambah akun pengguna</h2><p>Akun baru mengikuti role dan cakupan unit/gudang yang dipilih.</p></div>
+        <button class="admin-modal-close" type="button" aria-label="Tutup form tambah user" onclick="tutupModalTambahUser()">&times;</button>
+      </div>
+      <form class="admin-form" id="formTambahUser" onsubmit="buatAkunBaru(event)">
+        <div class="admin-form-grid">
+          <div><label for="userBaruUsername">Username</label><input id="userBaruUsername" type="text" minlength="3" maxlength="40" pattern="[A-Za-z0-9][A-Za-z0-9._-]{2,39}" autocomplete="off" autocapitalize="none" spellcheck="false" required></div>
+          <div><label for="userBaruNama">Nama pengguna</label><input id="userBaruNama" type="text" maxlength="120" required></div>
+        </div>
+        <div class="admin-form-grid">
+          <div><label for="userBaruPassword">Password awal</label><input id="userBaruPassword" type="password" minlength="8" maxlength="128" autocomplete="new-password" required><small>8–128 karakter, tanpa spasi di awal/akhir. Karakter pertama tidak boleh =, +, @, atau -.</small></div>
+          <div><label for="userBaruPasswordKonfirmasi">Konfirmasi password</label><input id="userBaruPasswordKonfirmasi" type="password" minlength="8" maxlength="128" autocomplete="new-password" required></div>
+        </div>
+        <div class="admin-form-grid">
+          <div><label for="userBaruDivisi">Divisi</label><input id="userBaruDivisi" type="text" maxlength="120" placeholder="Contoh: Produksi"></div>
+          <div><label for="userBaruJabatan">Jabatan</label><input id="userBaruJabatan" type="text" maxlength="120" placeholder="Opsional"></div>
+        </div>
+        <div class="admin-form-grid">
+          <div><label for="userBaruUnit">Unit / Farm</label><select id="userBaruUnit" required onchange="perbaruiCakupanUserBaru()"><option value="">Memuat unit…</option></select></div>
+          <div><label for="userBaruRole">Role akun</label><select id="userBaruRole" required onchange="perbaruiCakupanUserBaru()"><option value="STAFF_OPERASIONAL">Staff Operasional</option><option value="PIC_GUDANG">PIC Gudang</option><option value="ADMIN">Admin</option></select></div>
+        </div>
+        <div><label for="userBaruScope">Cakupan akses</label><select id="userBaruScope" required></select><small id="userBaruScopeHint">Pilih akses sesuai tugas akun.</small></div>
+        <p id="adminFormMessage" role="status" aria-live="polite" hidden></p>
+        <div class="admin-form-actions">
+          <button type="button" onclick="tutupModalTambahUser()">Batal</button>
+          <button id="btnBuatUser" type="submit"><i class="fa-solid fa-user-plus" aria-hidden="true"></i> Buat Akun</button>
+        </div>
+      </form>
+    </div>
+  </div>
   <script>
     const AUTH_API_URL = "https://script.google.com/macros/s/AKfycbx_tuIlCd-_n3PMtmv-_hPP4QrbGfPVYzk4tN33WinGtA8fyhe19uwXg6oS7v9jnm9yZw/exec";
     const AUTH_SESSION_KEY = 'selabintana_app_session';
     const LEGACY_SESSION_KEYS = ['portal_user_session', 'stok_app_user_session'];
+    let currentCentralUser = null;
+    let adminUserUnits = [];
+    let adminUserWarehouses = [];
+    let userModalInvoker = null;
 
     function readCentralSession() {
       const keys = [AUTH_SESSION_KEY, ...LEGACY_SESSION_KEYS];
@@ -191,6 +262,117 @@
       return result;
     }
 
+    function isCurrentUserAdmin() {
+      return Boolean(currentCentralUser && (currentCentralUser.isAdmin || currentCentralUser.roleAccess === 'ADMIN'));
+    }
+
+    function setAdminFormMessage(message, kind = 'error') {
+      const status = document.getElementById('adminFormMessage');
+      status.textContent = String(message || '');
+      status.dataset.kind = kind;
+      status.hidden = !message;
+    }
+
+    async function muatOpsiUserAdmin() {
+      if (!isCurrentUserAdmin()) return false;
+      try {
+        const result = await postAuth({action: 'getUnitsAndGudang', token: currentCentralUser.token});
+        if (result.status !== 'success') throw new Error(result.message || 'Gagal memuat unit dan gudang.');
+        adminUserUnits = result.allUnits || result.units || [];
+        adminUserWarehouses = result.gudang || [];
+        const unitSelect = document.getElementById('userBaruUnit');
+        unitSelect.innerHTML = '<option value="">-- Pilih Unit / Farm --</option>' + adminUserUnits.map(unit => `<option value="${escapeHtml(unit.kodeUnit)}">${escapeHtml(unit.namaUnit || unit.kodeUnit)}</option>`).join('');
+        perbaruiCakupanUserBaru();
+        if (!adminUserUnits.length) throw new Error('Daftar unit belum tersedia. Periksa sheet Gudang / Units.');
+        return true;
+      } catch (error) {
+        setAdminFormMessage(error.message || 'Gagal memuat daftar unit.');
+        return false;
+      }
+    }
+
+    function perbaruiCakupanUserBaru() {
+      const role = document.getElementById('userBaruRole').value;
+      const unit = document.getElementById('userBaruUnit').value;
+      const scope = document.getElementById('userBaruScope');
+      const hint = document.getElementById('userBaruScopeHint');
+      scope.disabled = role === 'ADMIN';
+      if (role === 'ADMIN') {
+        scope.innerHTML = '<option value="ALL">Semua unit / gudang</option>';
+        hint.textContent = 'Admin dapat mengakses seluruh unit dan gudang.';
+      } else if (role === 'STAFF_OPERASIONAL') {
+        scope.innerHTML = '<option value="UNIT">Semua gudang di unit ini</option><option value="ALL">Semua unit / gudang</option>';
+        hint.textContent = 'Pilih UNIT untuk membatasi staff ke farm di atas, atau ALL untuk akses operasional lintas farm.';
+      } else {
+        const warehouses = adminUserWarehouses.filter(item => String(item.kodeUnit).toLowerCase() === String(unit).toLowerCase());
+        scope.disabled = false;
+        scope.innerHTML = warehouses.length ? '<option value="">-- Pilih satu gudang --</option>' + warehouses.map(item => `<option value="${escapeHtml(item.kodeGudang)}">${escapeHtml(item.namaGudang)} (${escapeHtml(item.kodeGudang)})</option>`).join('') : '<option value="">Tidak ada gudang pada unit ini</option>';
+        hint.textContent = 'PIC Gudang terikat pada tepat satu gudang di unit yang dipilih.';
+      }
+    }
+
+    async function bukaModalTambahUser() {
+      if (!isCurrentUserAdmin()) return;
+      userModalInvoker = document.activeElement;
+      const modal = document.getElementById('adminUserModal');
+      document.getElementById('formTambahUser').reset();
+      document.getElementById('userBaruRole').value = 'STAFF_OPERASIONAL';
+      setAdminFormMessage('');
+      perbaruiCakupanUserBaru();
+      modal.classList.add('open');
+      document.body.style.overflow = 'hidden';
+      const loaded = adminUserUnits.length > 0 || await muatOpsiUserAdmin();
+      if (loaded) document.getElementById('userBaruUsername').focus();
+    }
+
+    function tutupModalTambahUser() {
+      const modal = document.getElementById('adminUserModal');
+      modal.classList.remove('open');
+      document.body.style.overflow = '';
+      if (userModalInvoker && userModalInvoker.isConnected) userModalInvoker.focus();
+    }
+
+    async function buatAkunBaru(event) {
+      event.preventDefault();
+      if (!isCurrentUserAdmin()) return setAdminFormMessage('Hanya admin yang dapat menambahkan akun.');
+      const password = document.getElementById('userBaruPassword').value;
+      if (password !== document.getElementById('userBaruPasswordKonfirmasi').value) return setAdminFormMessage('Konfirmasi password tidak cocok.');
+      const button = document.getElementById('btnBuatUser');
+      button.disabled = true;
+      button.textContent = 'Menyimpan akun…';
+      setAdminFormMessage('');
+      try {
+        const result = await postAuth({
+          action: 'createUser', token: currentCentralUser.token,
+          username: document.getElementById('userBaruUsername').value.trim(),
+          nama: document.getElementById('userBaruNama').value.trim(),
+          password,
+          divisi: document.getElementById('userBaruDivisi').value.trim(),
+          jabatan: document.getElementById('userBaruJabatan').value.trim(),
+          unitLokasi: document.getElementById('userBaruUnit').value,
+          roleAccess: document.getElementById('userBaruRole').value,
+          scopeGudang: document.getElementById('userBaruScope').value
+        });
+        if (result.status !== 'success') throw new Error(result.message || 'Gagal membuat akun.');
+        const username = document.getElementById('userBaruUsername').value.trim();
+        tutupModalTambahUser();
+        document.getElementById('formTambahUser').reset();
+        perbaruiCakupanUserBaru();
+        const notice = document.getElementById('moduleNotice');
+        notice.textContent = result.message || `Akun ${username} berhasil dibuat.`;
+        notice.hidden = false;
+      } catch (error) {
+        setAdminFormMessage(error.message || 'Gagal membuat akun.');
+      } finally {
+        button.disabled = false;
+        button.innerHTML = '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" style="width:15px;height:15px;vertical-align:middle;margin-right:5px;"><path d="M16 20v-1.5a4.5 4.5 0 0 0-4.5-4.5h-3A4.5 4.5 0 0 0 4 18.5V20m6-9a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm8-2v6m-3-3h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg> Buat Akun';
+      }
+    }
+
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && document.getElementById('adminUserModal').classList.contains('open')) tutupModalTambahUser();
+    });
+
     function displayModulePicker(user) {
       if (user.isPicGudang || user.roleAccess === 'PIC_GUDANG') {
         location.replace('stock.html');
@@ -200,11 +382,15 @@
       if (target) { location.replace(target); return; }
       document.getElementById('authPanel').hidden = true;
       document.getElementById('moduleSection').hidden = false;
+      currentCentralUser = user;
       document.getElementById('internalBadge').hidden = true;
       document.getElementById('userBadge').hidden = false;
       document.getElementById('userBadge').textContent = `${user.nama || user.username} • ${user.roleAccess || user.jabatan || 'Pengguna'}`;
       document.getElementById('logoutButton').hidden = false;
       document.getElementById('moduleWelcome').textContent = `Sesi aktif untuk ${user.nama || user.username}. Pilih Portal Permintaan atau Manajemen Stok.`;
+      const isAdmin = Boolean(user.isAdmin || user.roleAccess === 'ADMIN');
+      document.getElementById('adminUsersCard').hidden = !isAdmin;
+      document.querySelector('.module-list').classList.toggle('admin-visible', isAdmin);
       document.getElementById('startLink').href = '#moduleSection';
       document.getElementById('startLinkText').textContent = 'Pilih modul';
     }
