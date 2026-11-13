@@ -4,12 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Portal ERP - CV. SELABINTANA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <style>
     :root {
-      --erp-sidebar-width: 250px; --erp-sidebar-bg: #1b3a26; --erp-sidebar-text: #c2d1c7; --erp-sidebar-active: #2d6a43;
       --erp-bg-body: #f0f4f2; --erp-topbar-bg: #1b3a26; --erp-card-bg: #ffffff;
       --erp-border: #c2d1c7; --erp-border-light: #e3ebe6; --erp-text-main: #19261f;
       --erp-text-muted: #5e6e64; --erp-primary: #2d6a43; --erp-primary-hover: #1f4f30;
@@ -18,28 +20,14 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Inter', sans-serif; background-color: var(--erp-bg-body); color: var(--erp-text-main); font-size: 13px; line-height: 1.5; }
 
-    .erp-container { display:flex; min-height:100vh; }
-    .erp-sidebar { width:var(--erp-sidebar-width); background:var(--erp-sidebar-bg); color:var(--erp-sidebar-text); display:flex; flex-direction:column; flex-shrink:0; border-right:1px solid #142b1c; }
-    .erp-brand { padding:20px 18px; font-size:15px; font-weight:700; color:#fff; display:flex; align-items:center; gap:10px; border-bottom:1px solid #142b1c; letter-spacing:.5px; }
-    .erp-brand img { height:38px; width:38px; object-fit:contain; background:#fff; padding:2px; border-radius:4px; }
-    .erp-menu { list-style:none; padding:15px 10px; flex:1; }
-    .erp-menu-label { font-size:10px; font-weight:700; text-transform:uppercase; color:#73907d; padding:10px 12px 6px; letter-spacing:.8px; }
-    .erp-menu-item { display:flex; align-items:center; gap:12px; padding:11px 14px; color:var(--erp-sidebar-text); text-decoration:none; border-radius:6px; font-family:inherit; font-size:13px; font-weight:500; cursor:pointer; transition:all .15s ease; margin-bottom:4px; width:100%; text-align:left; background:transparent; border:0; }
-    .erp-menu-item:hover { background:#234b32; color:#fff; }
-    .erp-menu-item.active { background:var(--erp-sidebar-active); color:#fff; font-weight:600; border-left:4px solid var(--erp-accent-yellow); }
-    .erp-menu-item i { width:18px; text-align:center; font-size:14px; }
-    .erp-sidebar-footer { padding:16px; border-top:1px solid #142b1c; background:#12271a; font-size:11px; color:#c2d1c7; }
-    .erp-main { flex:1; display:flex; flex-direction:column; min-width:0; }
-    .erp-topbar { min-height:65px; background:#fff; border-bottom:2px solid var(--erp-accent-yellow); display:flex; align-items:center; justify-content:space-between; gap:14px; padding:0 24px; position:sticky; top:0; z-index:10; box-shadow:0 4px 10px rgba(0,0,0,.05); }
-    .erp-breadcrumb { font-size:14px; font-weight:700; color:var(--erp-primary); display:flex; align-items:center; gap:9px; }
-    .erp-topbar-actions { display:flex; align-items:center; gap:9px; }
-    .erp-content { width:100%; max-width:1440px; margin:0 auto; padding:24px; flex:1; min-width:0; }
-    .erp-content [role="region"][hidden] { display:none!important; }
-    .erp-user-badge { display:flex; align-items:center; gap:10px; background:#f6f9f7; border:1px solid var(--erp-border-light); padding:5px 12px; border-radius:20px; color:var(--erp-text-main); font-size:11px; }
-    .erp-avatar { width:30px; height:30px; background:var(--erp-accent-yellow); color:var(--erp-topbar-bg); border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:12px; flex:0 0 auto; }
-    .erp-profile-copy { line-height:1.25; }
-    .erp-profile-copy strong { display:block; color:var(--erp-primary); font-size:11px; }
-    .erp-profile-copy small { color:var(--erp-text-muted); font-size:9px; }
+    .erp-header { background-color: var(--erp-topbar-bg); color: #ffffff; padding: 0 24px; height: 65px; display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid var(--erp-accent-yellow); position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+    .erp-brand { font-size: 18px; font-weight: 700; color: #ffffff; display: flex; align-items: center; gap: 12px; letter-spacing: 0.5px; }
+    .erp-brand img { height: 38px; object-fit: contain; background: #fff; padding: 2px; border-radius: 4px; }
+    
+    .erp-container { max-width: 1200px; margin: 24px auto; padding: 0 20px; }
+    .erp-user-badge { display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); padding: 6px 16px; border-radius: 20px; }
+    .erp-avatar { width: 30px; height: 30px; background: var(--erp-accent-yellow); color: var(--erp-topbar-bg); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px; }
+
     .erp-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 22px; }
     .erp-stat-card { background: #ffffff; padding: 18px; border-radius: 8px; border: 1px solid var(--erp-border-light); box-shadow: 0 1px 3px rgba(0,0,0,0.02); display: flex; align-items: center; justify-content: space-between; transition: transform 0.2s; border-bottom: 3px solid transparent; }
     .erp-stat-card:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(45, 106, 67, 0.08); border-bottom-color: var(--erp-primary); }
@@ -102,49 +90,62 @@
     .page-btn { padding: 6px 12px; border: 1px solid var(--erp-border); background: white; border-radius: 4px; cursor: pointer; color: var(--erp-text-main); font-weight: 600; }
     .page-btn:hover:not(:disabled) { background: #f0f4f2; border-color: var(--erp-primary); }
     .page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline:3px solid #facc15; outline-offset:2px; }
+    #requestDraftStatus[hidden] { display: none !important; }
 
     #toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
     .toast { min-width: 250px; background: #ffffff; border-left: 4px solid var(--erp-primary); box-shadow: 0 4px 15px rgba(0,0,0,0.15); padding: 14px 18px; border-radius: 4px; display: flex; align-items: center; gap: 12px; font-size: 13px; font-weight: 600; opacity: 0; transform: translateX(100%); transition: all 0.3s; pointer-events: auto; }
     .toast.show { opacity: 1; transform: translateX(0); }
     .toast-success { border-color: var(--erp-success); color: var(--erp-success); }
     .toast-error { border-color: var(--erp-danger); color: var(--erp-danger); }
-    @media (max-width: 760px) {
-      .erp-container { display:block; min-height:100vh; padding-bottom:68px; }
-      .erp-sidebar { position:fixed; left:0; right:0; bottom:0; width:100%; height:64px; z-index:100; border-right:0; border-top:1px solid #142b1c; }
-      .erp-brand, .erp-sidebar-footer, .erp-menu-label { display:none; }
-      .erp-menu { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:2px; padding:4px 8px; margin:0; }
-      .erp-menu-item { flex-direction:column; justify-content:center; gap:3px; padding:5px 3px; margin:0; min-height:54px; font-size:9px; text-align:center; line-height:1.15; }
-      .erp-menu-item.active { border-left:0; border-top:3px solid var(--erp-accent-yellow); }
-      .erp-menu-item i { font-size:16px; }
-      .erp-topbar { min-height:58px; height:auto; padding:8px 12px; gap:8px; }
-      .erp-breadcrumb { font-size:12px; }
-      .erp-topbar-actions { gap:5px; }
-      .erp-user-badge { padding:4px 7px; gap:6px; }
-      .erp-content { padding:12px; overflow:visible; }
-      .erp-stats-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
-      .erp-stat-card { padding:12px; gap:8px; }
-      .erp-stat-info .label { font-size:9px; }
-      .erp-stat-info .value { font-size:19px; }
-      .erp-stat-icon { width:34px; height:34px; font-size:15px; flex:0 0 auto; }
-      .erp-card-body { padding:12px; }
-      .erp-card-header { padding:12px; }
-      .form-row { flex-direction:column; gap:0; }
-      .form-row .form-group { margin-bottom:12px; }
-      .erp-table { min-width:850px; }
-      .modal-overlay { padding:8px; align-items:flex-end; }
-      .modal-content { max-width:none; max-height:94vh; overflow-y:auto; border-radius:14px 14px 8px 8px; }
-      .modal-body { padding:16px; }
-      .modal-header { padding:14px 16px; position:sticky; top:0; z-index:2; }
-      .btn { min-height:40px; }
+    @media (max-width: 640px) {
+      .erp-header { padding: 0 12px; gap: 8px; }
+      .erp-brand { font-size: 13px; gap: 7px; }
+      .erp-brand img { height: 30px; }
+      .erp-user-badge { gap: 6px; padding: 4px 7px; }
+      #userInfoHeader > div:nth-child(2) { display: none; }
     }
-    @media (max-width: 420px) {
-      .erp-user-badge { display:none; }
-      .erp-topbar { flex-wrap:wrap; }
-      .erp-topbar-actions { width:100%; justify-content:flex-end; }
-      .erp-stats-grid { grid-template-columns:1fr 1fr; }
-      .erp-stat-card { padding:9px; }
-      .erp-stat-icon { display:none; }
+    @media (max-width: 420px) { .erp-brand span { display: none; } }
+    :root { --erp-sidebar-width:250px; --erp-sidebar-bg:#1b3a26; --erp-sidebar-text:#c2d1c7; --erp-sidebar-active:#2d6a43; }
+    .erp-app { display:flex; min-height:100vh; }
+    .erp-sidebar { width:var(--erp-sidebar-width); flex:0 0 var(--erp-sidebar-width); display:flex; flex-direction:column; color:var(--erp-sidebar-text); background:var(--erp-sidebar-bg); border-right:1px solid #142b1c; }
+    .erp-sidebar .erp-brand { min-height:72px; padding:16px 18px; border-bottom:1px solid #355340; font-size:14px; }
+    .erp-sidebar .erp-brand img { width:38px; height:38px; }
+    .erp-sidebar nav { flex:1; }
+    .erp-menu { list-style:none; margin:0; padding:14px 10px; }
+    .erp-menu-label { padding:10px 12px 7px; color:#91aa99; font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; }
+    .erp-menu-item { width:100%; display:flex; align-items:center; gap:11px; margin:0 0 5px; padding:11px 13px; border:0; border-radius:7px; color:var(--erp-sidebar-text); background:transparent; font:500 12px/1.3 'Inter',sans-serif; text-align:left; text-decoration:none; cursor:pointer; }
+    .erp-menu-item:hover { color:#fff; background:#234b32; }
+    .erp-menu-item.active { border-left:4px solid var(--erp-accent-yellow); color:#fff; background:var(--erp-sidebar-active); font-weight:700; }
+    .erp-menu-item i { width:18px; text-align:center; }
+    .erp-sidebar-footer { padding:15px 18px; border-top:1px solid #355340; background:#12271a; color:#c2d1c7; font-size:11px; }
+    .erp-sidebar-footer small { color:#91aa99; font-size:9px; font-weight:700; letter-spacing:.08em; }
+    .erp-main { min-width:0; flex:1; display:flex; flex-direction:column; }
+    .erp-topbar { min-height:65px; display:flex; align-items:center; justify-content:space-between; gap:14px; padding:8px 22px; color:#fff; background:var(--erp-topbar-bg); border-bottom:2px solid var(--erp-accent-yellow); position:sticky; top:0; z-index:20; box-shadow:0 4px 10px rgba(0,0,0,.05); }
+    .erp-page-title { display:flex; align-items:center; gap:9px; font-size:14px; font-weight:700; white-space:nowrap; }
+    .erp-topbar-actions { display:flex; align-items:center; justify-content:flex-end; gap:8px; min-width:0; }
+    .erp-topbar .topbar-action { padding:6px 9px; color:#fff; border-color:#386641; background:transparent; white-space:nowrap; }
+    .erp-topbar .topbar-action:hover { color:#fff; background:#234b32; }
+    .erp-topbar .topbar-logout { margin-left:4px; }
+    .erp-content { width:100%; max-width:1440px; min-width:0; flex:1; margin:0 auto; padding:24px; }
+    .portal-view[hidden] { display:none!important; }
+    .erp-menu-item:focus-visible, .erp-topbar .btn:focus-visible { outline:3px solid var(--erp-accent-yellow); outline-offset:2px; }
+    @media (max-width:760px) {
+      .erp-app { display:flex; flex-direction:column; padding-bottom:68px; }
+      .erp-sidebar { position:fixed; left:0; right:0; bottom:0; z-index:100; width:100%; height:64px; border:0; border-top:1px solid #142b1c; }
+      .erp-sidebar .erp-brand, .erp-sidebar-footer, .erp-menu-label { display:none; }
+      .erp-menu { height:100%; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:3px; padding:4px 8px; }
+      .erp-menu-item { height:100%; min-height:54px; flex-direction:column; justify-content:center; gap:3px; margin:0; padding:4px; font-size:10px; text-align:center; }
+      .erp-menu-item.active { border-left:0; border-top:3px solid var(--erp-accent-yellow); }
+      .erp-menu-item i { font-size:15px; }
+      .erp-topbar { position:relative; min-height:58px; flex-wrap:wrap; gap:7px; padding:8px 12px; }
+      .erp-page-title { font-size:12px; }
+      .erp-topbar-actions { gap:5px; }
+      .erp-topbar .topbar-action { padding:6px 7px; font-size:10px; }
+      .erp-content { padding:12px; }
+    }
+    @media (max-width:420px) {
+      .erp-topbar-actions { flex:1 1 100%; justify-content:flex-end; }
+      .erp-user-badge { margin-right:auto; }
     }
   </style>
 </head>
@@ -165,46 +166,39 @@
 </div>
 
 <!-- SCREEN 2: DASHBOARD -->
-<div id="mainPanel" class="erp-container" style="display:none;">
+<div id="mainPanel" class="erp-app" style="display:none;">
   <aside class="erp-sidebar">
     <div class="erp-brand"><img src="logo.png" alt=""><span>CV. SELABINTANA</span></div>
     <nav aria-label="Navigasi Portal Permintaan">
       <ul class="erp-menu">
         <li class="erp-menu-label">Portal Permintaan</li>
-        <li><button type="button" aria-current="page" aria-controls="portalRequestView" class="erp-menu-item active" id="menuRequestBtn" onclick="switchPortalView('request')"><i class="fa-solid fa-file-circle-plus" aria-hidden="true"></i><span>Buat Permintaan</span></button></li>
-        <li><button type="button" aria-controls="portalHistoryView" class="erp-menu-item" id="menuHistoryBtn" onclick="switchPortalView('history')"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i><span>Riwayat Tiket</span></button></li>
-        <li><a href="index.html" class="erp-menu-item"><i class="fa-solid fa-house" aria-hidden="true"></i><span>Menu Utama</span></a></li>
+        <li><button type="button" id="menuRequestBtn" class="erp-menu-item active" aria-current="page" aria-controls="portalRequestView" onclick="switchPortalView('request')"><i class="fa-solid fa-file-circle-plus" aria-hidden="true"></i><span>Buat Permintaan</span></button></li>
+        <li><button type="button" id="menuHistoryBtn" class="erp-menu-item" aria-controls="portalHistoryView" onclick="switchPortalView('history')"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i><span>History Permintaan</span></button></li>
       </ul>
     </nav>
-    <div class="erp-sidebar-footer"><div style="color:#73907d;font-size:10px;text-transform:uppercase;font-weight:700;">Portal Internal</div><div style="margin-top:3px;">CV. Selabintana</div></div>
+    <div class="erp-sidebar-footer"><small>PORTAL INTERNAL</small><div>CV. Selabintana</div></div>
   </aside>
-
   <main class="erp-main">
-   <header class="erp-topbar">
-    <div class="erp-breadcrumb"><i class="fa-solid fa-file-signature" aria-hidden="true"></i><span id="portalPageTitle">Buat Permintaan</span></div>
-    <div class="erp-topbar-actions">
-      <div id="userInfoHeader" class="erp-user-badge"></div>
-      <button type="button" onclick="bukaModalGantiPassword()" class="btn btn-outline" title="Ganti password" aria-label="Ganti password" style="padding:6px 10px;"><i class="fa-solid fa-key" aria-hidden="true"></i><span>Password</span></button>
-      <button type="button" onclick="logoutSesi()" class="btn btn-outline" style="padding:6px 10px;color:var(--erp-danger);"><i class="fa-solid fa-power-off" aria-hidden="true"></i> Keluar</button>
-    </div>
-   </header>
-
-  <div class="erp-content">
-   <section id="portalRequestView" role="region" aria-labelledby="menuRequestBtn">
-    <!-- KPI -->
-    <div class="erp-stats-grid">
-      <div class="erp-stat-card"><div class="erp-stat-info"><div class="label">Total Tiket</div><div class="value" id="kpiTotal">0</div></div><div class="erp-stat-icon" style="background:#e6f0eb; color:var(--erp-primary);"><i class="fa-solid fa-layer-group"></i></div></div>
-      <div class="erp-stat-card"><div class="erp-stat-info"><div class="label">Pending</div><div class="value" id="kpiPending">0</div></div><div class="erp-stat-icon" style="background:#fff8e6; color:#b45309;"><i class="fa-solid fa-hourglass-half"></i></div></div>
-      <div class="erp-stat-card"><div class="erp-stat-info"><div class="label">Disetujui (ACC)</div><div class="value" id="kpiAcc">0</div></div><div class="erp-stat-icon" style="background:#e6f8f0; color:#047857;"><i class="fa-solid fa-circle-check"></i></div></div>
-      <div class="erp-stat-card"><div class="erp-stat-info"><div class="label">Ditolak / Revisi / Batal</div><div class="value" id="kpiReject">0</div></div><div class="erp-stat-icon" style="background:#fcebeb; color:#b91c1c;"><i class="fa-solid fa-circle-xmark"></i></div></div>
-    </div>
-
-    <!-- FORM INPUT -->
+    <header class="erp-topbar">
+      <div class="erp-page-title"><i class="fa-solid fa-file-signature" aria-hidden="true"></i><span id="portalPageTitle">Buat Permintaan</span></div>
+      <div class="erp-topbar-actions">
+        <div id="userInfoHeader" class="erp-user-badge"></div>
+        <button type="button" onclick="bukaModalGantiPassword()" class="btn btn-outline topbar-action" title="Ganti password"><i class="fa-solid fa-key" aria-hidden="true"></i><span>Password</span></button>
+        <button type="button" onclick="logoutSesi()" class="btn btn-outline topbar-action topbar-logout"><i class="fa-solid fa-power-off" aria-hidden="true"></i><span>Keluar</span></button>
+      </div>
+    </header>
+    <div class="erp-content">
+      <section id="portalRequestView" class="portal-view" role="region" aria-labelledby="menuRequestBtn">
+<!-- FORM INPUT -->
     <div class="erp-card">
       <div class="erp-card-header">
         <div class="erp-card-title" id="formTitle"><i class="fa-solid fa-file-signature"></i> Buat Tiket Permintaan Baru</div>
       </div>
       <form id="formPermintaan" class="erp-card-body">
+        <div id="requestDraftStatus" hidden role="status" aria-live="polite" style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px;padding:10px 12px;border:1px solid #cfe2d2;border-radius:8px;background:#f0f8f1;color:#28583a;font-size:11px;">
+          <span id="requestDraftMessage">Draft permintaan tersimpan otomatis.</span>
+          <button type="button" onclick="buangDraftPermintaan()" class="btn btn-outline btn-sm" style="white-space:nowrap;">Buang draft</button>
+        </div>
         <div class="row-group">
           <div class="form-group"><label>Tanggal Sistem</label><input type="text" id="tglPermintaan" readonly></div>
           <div class="form-group"><label>Target Tgl Dibutuhkan</label><input type="date" id="tglDibutuhkan" required></div>
@@ -216,7 +210,7 @@
         <div style="font-size:13px; font-weight:700; color:var(--erp-primary); margin: 24px 0 12px 0; padding-bottom:8px; border-bottom:1px solid var(--erp-border-light);"><i class="fa-solid fa-boxes-stacked"></i> Rincian Item Barang</div>
         
         <div id="containerItems"></div>
-        <button type="button" onclick="tambahItemForm()" class="btn btn-outline" style="margin-bottom:20px; border-style:dashed; border-width:2px; width:100%; padding:12px; color:var(--erp-primary);"><i class="fa-solid fa-plus"></i> Tambah Baris Item Baru</button>
+        <button type="button" onclick="tambahItemForm(); scheduleRequestDraftSave()" class="btn btn-outline" style="margin-bottom:20px; border-style:dashed; border-width:2px; width:100%; padding:12px; color:var(--erp-primary);"><i class="fa-solid fa-plus"></i> Tambah Baris Item Baru</button>
 
         <div class="form-group"><label>Justifikasi / Keterangan</label><textarea id="keterangan" rows="3" placeholder="Detail peruntukan..."></textarea></div>
         
@@ -226,11 +220,16 @@
         </div>
       </form>
     </div>
-
-   </section>
-
-   <section id="portalHistoryView" role="region" aria-labelledby="menuHistoryBtn" hidden>
-    <!-- TABLE RIWAYAT & FILTER EXPORT -->
+      </section>
+      <section id="portalHistoryView" class="portal-view" role="region" aria-labelledby="menuHistoryBtn" hidden>
+<!-- KPI -->
+    <div class="erp-stats-grid">
+      <div class="erp-stat-card"><div class="erp-stat-info"><div class="label">Total Tiket</div><div class="value" id="kpiTotal">0</div></div><div class="erp-stat-icon" style="background:#e6f0eb; color:var(--erp-primary);"><i class="fa-solid fa-layer-group"></i></div></div>
+      <div class="erp-stat-card"><div class="erp-stat-info"><div class="label">Pending</div><div class="value" id="kpiPending">0</div></div><div class="erp-stat-icon" style="background:#fff8e6; color:#b45309;"><i class="fa-solid fa-hourglass-half"></i></div></div>
+      <div class="erp-stat-card"><div class="erp-stat-info"><div class="label">Disetujui (ACC)</div><div class="value" id="kpiAcc">0</div></div><div class="erp-stat-icon" style="background:#e6f8f0; color:#047857;"><i class="fa-solid fa-circle-check"></i></div></div>
+      <div class="erp-stat-card"><div class="erp-stat-info"><div class="label">Ditolak / Revisi / Batal</div><div class="value" id="kpiReject">0</div></div><div class="erp-stat-icon" style="background:#fcebeb; color:#b91c1c;"><i class="fa-solid fa-circle-xmark"></i></div></div>
+    </div>
+<!-- TABLE RIWAYAT & FILTER EXPORT -->
     <div class="erp-card">
       <div class="erp-card-header">
         <div class="erp-card-title"><i class="fa-solid fa-clock-rotate-left"></i> Riwayat Pengajuan </div>
@@ -289,11 +288,10 @@
         </div>
       </div>
     </div>
-   </section>
-  </div>
- </main>
+      </section>
+    </div>
+  </main>
 </div>
-
 <!-- MODAL DETAIL TIKET -->
 <div class="modal-overlay" id="modalDetailTiket">
   <div class="modal-content">
@@ -329,14 +327,22 @@
   
   let sesiUser = {};
   let itemCounter = 0;
-  let groupedTickets = []; 
+  let groupedTickets = [];
+  let historyLoaded = false;
+  let historyLoading = false;
+  let masterBarangLoaded = false;
+  let masterBarangLoading = false;
   let filteredTickets = []; 
   let currentPage = 1;
   const itemsPerPage = 10;
   let idTiketEdit = null;
   let submissionKey = null;
+  let draftSaveTimer = null;
+  let restoringRequestDraft = false;
   let activeTicketDetail = null;
   let requestWarehouseOptions = [];
+
+
 
   function escapeHtml(value) {
     return String(value == null ? '' : value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
@@ -361,6 +367,112 @@
 
   function todayJakarta() {
     return new Date(Date.now() + 7 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  }
+
+  function requestDraftStorageKey() {
+    const username = String(sesiUser.username || '').trim().toLowerCase();
+    return username ? `selabintana_request_draft_v1_${encodeURIComponent(username)}` : '';
+  }
+
+  function readRequestDraftForm() {
+    return {
+      tglDibutuhkan: document.getElementById('tglDibutuhkan').value,
+      urgensi: document.getElementById('urgensi').value,
+      kodeGudangTujuan: document.getElementById('kodeGudangTujuan').value,
+      keterangan: document.getElementById('keterangan').value,
+      items: Array.from(document.querySelectorAll('.item-box')).map(box => ({
+        namaBarang: box.querySelector('.it-nama').value,
+        kategori: box.querySelector('.it-kategori').value,
+        jumlah: box.querySelector('.it-jumlah').value,
+        satuan: box.querySelector('.it-satuan').value,
+        kodeSupplier: box.querySelector('.it-kode').value
+      }))
+    };
+  }
+
+  function requestDraftHasContent(draft) {
+    return Boolean(draft.tglDibutuhkan || draft.kodeGudangTujuan || String(draft.keterangan || '').trim() ||
+      String(draft.urgensi || 'REGULER') !== 'REGULER' ||
+      (draft.items || []).some(item => item && [item.namaBarang, item.jumlah, item.satuan, item.kodeSupplier].some(value => String(value || '').trim())));
+  }
+
+  function scheduleRequestDraftSave() {
+    if (restoringRequestDraft || idTiketEdit || !sesiUser.username) return;
+    clearTimeout(draftSaveTimer);
+    draftSaveTimer = setTimeout(saveRequestDraft, 400);
+  }
+
+  function saveRequestDraft() {
+    if (restoringRequestDraft || idTiketEdit) return;
+    const key = requestDraftStorageKey();
+    if (!key) return;
+    const draft = readRequestDraftForm();
+    const status = document.getElementById('requestDraftStatus');
+    if (!requestDraftHasContent(draft)) {
+      sessionStorage.removeItem(key);
+      status.hidden = true;
+      return;
+    }
+    try {
+      const savedAt = new Date().toISOString();
+      sessionStorage.setItem(key, JSON.stringify({savedAt, draft}));
+      document.getElementById('requestDraftMessage').textContent = `Draft tersimpan otomatis pukul ${new Date(savedAt).toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'})}. Data hanya disimpan di tab ini.`;
+      status.hidden = false;
+    } catch (error) {
+      document.getElementById('requestDraftMessage').textContent = 'Penyimpanan draft tidak tersedia pada browser ini.';
+      status.hidden = false;
+    }
+  }
+
+  function restoreRequestDraft() {
+    const key = requestDraftStorageKey();
+    if (!key) return false;
+    let saved;
+    try { saved = JSON.parse(sessionStorage.getItem(key) || 'null'); }
+    catch (error) { sessionStorage.removeItem(key); return false; }
+    const draft = saved && saved.draft;
+    if (!draft || !requestDraftHasContent(draft)) { sessionStorage.removeItem(key); return false; }
+
+    restoringRequestDraft = true;
+    document.getElementById('tglDibutuhkan').value = /^\d{4}-\d{2}-\d{2}$/.test(String(draft.tglDibutuhkan || '')) ? draft.tglDibutuhkan : '';
+    const urgencyOptions = ['REGULER', 'URGENT', 'TOP URGENT'];
+    document.getElementById('urgensi').value = urgencyOptions.includes(draft.urgensi) ? draft.urgensi : 'REGULER';
+    document.getElementById('keterangan').value = String(draft.keterangan || '').slice(0, 2000);
+    const warehouse = document.getElementById('kodeGudangTujuan');
+    const savedWarehouse = String(draft.kodeGudangTujuan || '');
+    warehouse.value = requestWarehouseOptions.some(item => String(item.kodeGudang) === savedWarehouse) ? savedWarehouse : (sesiUser.isPicGudang && requestWarehouseOptions.length === 1 ? requestWarehouseOptions[0].kodeGudang : '');
+
+    const categories = ['PAKAN', 'OBAT', 'VAKSIN', 'KIMIA', 'PERALATAN', 'LAINNYA'];
+    const savedItems = Array.isArray(draft.items) ? draft.items.slice(0, 100) : [];
+    document.getElementById('containerItems').innerHTML = '';
+    itemCounter = 0;
+    (savedItems.length ? savedItems : [{}]).forEach(item => tambahItemForm({
+      namaBarang: String(item.namaBarang || '').slice(0, 200),
+      kategori: categories.includes(item.kategori) ? item.kategori : 'LAINNYA',
+      jumlah: String(item.jumlah || '').slice(0, 32),
+      satuan: String(item.satuan || '').slice(0, 32),
+      kodeSupplier: String(item.kodeSupplier || '').slice(0, 100)
+    }));
+    restoringRequestDraft = false;
+    const savedTime = saved.savedAt && !isNaN(new Date(saved.savedAt).getTime()) ? new Date(saved.savedAt).toLocaleString('id-ID', {hour:'2-digit', minute:'2-digit', day:'2-digit', month:'short'}) : '';
+    document.getElementById('requestDraftMessage').textContent = `Draft dipulihkan${savedTime ? ` dari ${savedTime}` : ''}. Perubahan berikutnya tersimpan otomatis di tab ini.`;
+    document.getElementById('requestDraftStatus').hidden = false;
+    return true;
+  }
+
+  function buangDraftPermintaan() {
+    if (!confirm('Buang draft dan kosongkan form permintaan?')) return;
+    const key = requestDraftStorageKey();
+    if (key) sessionStorage.removeItem(key);
+    document.getElementById('formPermintaan').reset();
+    document.getElementById('tglPermintaan').value = todayJakarta();
+    document.getElementById('tglDibutuhkan').min = todayJakarta();
+    document.getElementById('containerItems').innerHTML = '';
+    itemCounter = 0;
+    tambahItemForm();
+    if (sesiUser.isPicGudang) muatGudangTujuanPermintaan(sesiUser.scopeGudang);
+    document.getElementById('requestDraftStatus').hidden = true;
+    showToast('Draft permintaan dihapus dan form dikosongkan.');
   }
 
   function postPayload(payload) {
@@ -452,6 +564,10 @@
   }
 
   window.addEventListener('load', periksaSesiAktif);
+  document.getElementById('containerItems').addEventListener('focusin', event => {
+    if (event.target.matches('.it-nama')) muatMasterBarang();
+  });
+  document.getElementById('filterNamaBarang').addEventListener('focus', () => muatMasterBarang());
 
   function switchPortalView(view) {
     const showHistory = view === 'history';
@@ -463,24 +579,32 @@
     historyPanel.hidden = !showHistory;
     requestButton.classList.toggle('active', !showHistory);
     historyButton.classList.toggle('active', showHistory);
-    requestButton.toggleAttribute('aria-current', !showHistory);
-    historyButton.toggleAttribute('aria-current', showHistory);
-    document.getElementById('portalPageTitle').textContent = showHistory ? 'Riwayat Tiket' : (idTiketEdit ? 'Revisi Permintaan' : 'Buat Permintaan');
-    if (showHistory) document.getElementById('searchRiwayat').focus({preventScroll:true});
+    if (showHistory) {
+      historyButton.setAttribute('aria-current', 'page');
+      requestButton.removeAttribute('aria-current');
+      if (!historyLoaded && !historyLoading) muatRiwayatPermintaan();
+      document.getElementById('portalPageTitle').textContent = 'History Permintaan';
+      document.getElementById('searchRiwayat').focus({preventScroll:true});
+    } else {
+      requestButton.setAttribute('aria-current', 'page');
+      historyButton.removeAttribute('aria-current');
+      document.getElementById('portalPageTitle').textContent = idTiketEdit ? 'Revisi Permintaan' : 'Buat Permintaan';
+    }
   }
 
-  function tampilkanDashboard() {
+  async function tampilkanDashboard() {
     document.getElementById('mainPanel').style.display = 'flex';
     document.getElementById('userInfoHeader').innerHTML = `
-      <div class="erp-avatar">${escapeHtml((sesiUser.nama||"U").substring(0,2).toUpperCase())}</div>
-      <div class="erp-profile-copy"><strong>${escapeHtml(sesiUser.nama || sesiUser.username)}</strong><small>${escapeHtml(sesiUser.roleAccess || sesiUser.jabatan)} · ${escapeHtml(sesiUser.scopeGudang === 'ALL' ? 'Semua Gudang' : sesiUser.isPicGudang ? sesiUser.scopeGudang : sesiUser.unitLokasi)}</small></div>`;
-    
-    let today = todayJakarta();
-    document.getElementById('tglPermintaan').value = today; document.getElementById('tglDibutuhkan').min = today; 
-    document.getElementById('containerItems').innerHTML = ""; itemCounter = 0;
-    muatMasterBarang(); muatGudangTujuanPermintaan(); tambahItemForm(); muatRiwayatPermintaan();
+      <div class="erp-avatar">${escapeHtml((sesiUser.nama || sesiUser.username || 'U').substring(0,2).toUpperCase())}</div>
+      <div style="line-height:1.2;color:#f8fafc;"><div style="font-weight:700;font-size:12px;color:var(--erp-accent-yellow);">${escapeHtml(sesiUser.nama || sesiUser.username)}</div><div style="font-size:10px;color:#c2d1c7;">${escapeHtml(sesiUser.roleAccess || sesiUser.jabatan || 'Pengguna')} | <b>${escapeHtml(sesiUser.scopeGudang === 'ALL' ? 'Semua Gudang' : sesiUser.isPicGudang ? sesiUser.scopeGudang : sesiUser.unitLokasi)}</b></div></div>`;
+    const today = todayJakarta();
+    document.getElementById('tglPermintaan').value = today;
+    document.getElementById('tglDibutuhkan').min = today;
+    document.getElementById('containerItems').innerHTML = '';
+    itemCounter = 0;
+    await muatGudangTujuanPermintaan();
+    if (!restoreRequestDraft()) tambahItemForm();
   }
-
   function bukaModalGantiPassword() {
     document.getElementById('formGantiPassword').reset();
     document.getElementById('modalGantiPassword').style.display = 'flex';
@@ -508,23 +632,30 @@
 
   async function logoutSesi() {
     const token = sesiUser.token;
+    const draftKey = requestDraftStorageKey();
+    if (draftKey) sessionStorage.removeItem(draftKey);
     clearSharedSession();
     try { await postPayload({ action: "logout", token: token }); } catch (e) {}
     location.replace('index.html');
   }
 
   async function muatMasterBarang() {
+    if (masterBarangLoaded || masterBarangLoading) return;
+    masterBarangLoading = true;
     try {
-      const res = await postPayload({action: "getMasterBarang", token: sesiUser.token});
+      const res = await postPayload({action: 'getMasterBarang', token: sesiUser.token});
       const json = await res.json();
       if (cekSesiBerakhir(json)) return;
-      if (json.status === "success") {
-        const uniqueNames = [...new Set(json.data.map(i => i.namaBarang))].sort();
-        document.getElementById('masterBarangList').innerHTML = uniqueNames.map(n => `<option value="${escapeHtml(n)}"></option>`).join('');
+      if (json.status === 'success') {
+        const uniqueNames = [...new Set(json.data.map(item => item.namaBarang))].sort();
+        document.getElementById('masterBarangList').innerHTML = uniqueNames.map(name => `<option value="${escapeHtml(name)}"></option>`).join('');
+        masterBarangLoaded = true;
       }
-    } catch(e) {}
+    } catch (error) {
+    } finally {
+      masterBarangLoading = false;
+    }
   }
-
   async function muatGudangTujuanPermintaan(selectedWarehouse) {
     const select = document.getElementById('kodeGudangTujuan');
     if (!select || !sesiUser.token) return;
@@ -573,7 +704,11 @@
       </div>`;
     document.getElementById('containerItems').appendChild(div);
   }
-  function hapusItemForm(id) { document.getElementById(id).remove(); }
+  function hapusItemForm(id) {
+    const item = document.getElementById(id);
+    if (item) item.remove();
+    scheduleRequestDraftSave();
+  }
 
   document.getElementById('formPermintaan').addEventListener('submit', async function(e) {
     e.preventDefault();
@@ -608,41 +743,52 @@
       if (json.status === "success") {
         showToast(json.message, 'success');
         submissionKey = null;
+        const draftKey = requestDraftStorageKey();
+        if (draftKey) sessionStorage.removeItem(draftKey);
+        document.getElementById('requestDraftStatus').hidden = true;
         batalkanEdit();
-        muatRiwayatPermintaan();
+        if (historyLoaded) muatRiwayatPermintaan();
       } else showToast(json.message, 'error');
     } catch(err) { showToast("Koneksi terputus.", 'error'); } 
     finally { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Submit Tiket Ke Sistem'; }
   });
 
+  document.getElementById('formPermintaan').addEventListener('input', scheduleRequestDraftSave);
+  document.getElementById('formPermintaan').addEventListener('change', scheduleRequestDraftSave);
+
   async function muatRiwayatPermintaan() {
-    document.getElementById('bodyTabelRiwayat').innerHTML = `<tr><td colspan="8" style="text-align:center; padding:30px;"><i class="fa-solid fa-spinner fa-spin"></i> Mengambil data ERP...</td></tr>`;
+    if (historyLoading) return;
+    historyLoading = true;
+    document.getElementById('bodyTabelRiwayat').innerHTML = `<tr><td colspan="8" style="text-align:center;padding:30px;"><i class="fa-solid fa-spinner fa-spin"></i> Mengambil data ERP...</td></tr>`;
     try {
-      const res = await postPayload({action: "getPermintaan", token: sesiUser.token});
+      const res = await postPayload({action: 'getPermintaan', token: sesiUser.token});
       const json = await res.json();
       if (cekSesiBerakhir(json)) return;
-      if (json.status === "success") {
-        let mapTiket = Object.create(null);
-        json.data.forEach(it => {
-          if(!mapTiket[it.kodeTiket]) {
-            mapTiket[it.kodeTiket] = {
-              kodeTiket: it.kodeTiket, tglPermintaan: it.tglPermintaan, tglDibutuhkan: it.tglDibutuhkan,
-              pemohon: it.pemohon, unitLokasi: it.unitLokasi, kodeGudang: it.kodeGudang || '', urgensi: it.urgensi, 
-              keterangan: it.keterangan, statusPermintaan: it.statusPermintaan, catatanAdmin: it.catatanAdmin, 
-              dokumenPdf: it.dokumenPdf || "", canEdit: Boolean(it.canEdit), items: []
-            };
-          }
-          mapTiket[it.kodeTiket].items.push(it);
-        });
-
-        groupedTickets = Object.values(mapTiket);
-        groupedTickets.forEach(ticket => ticket.items.sort((a, b) => Number(a.noItem) - Number(b.noItem)));
-        currentPage = 1;
-        applyFilters();
-      }
-    } catch(e) { document.getElementById('bodyTabelRiwayat').innerHTML = `<tr><td colspan="8" style="color:red; text-align:center;">Gagal memuat data.</td></tr>`; }
+      if (json.status !== 'success') throw new Error(json.message || 'Gagal memuat riwayat permintaan.');
+      const mapTiket = Object.create(null);
+      (json.data || []).forEach(item => {
+        if (!mapTiket[item.kodeTiket]) {
+          mapTiket[item.kodeTiket] = {
+            kodeTiket: item.kodeTiket, tglPermintaan: item.tglPermintaan, tglDibutuhkan: item.tglDibutuhkan,
+            pemohon: item.pemohon, unitLokasi: item.unitLokasi, kodeGudang: item.kodeGudang || '', urgensi: item.urgensi,
+            keterangan: item.keterangan, statusPermintaan: item.statusPermintaan, catatanAdmin: item.catatanAdmin,
+            dokumenPdf: item.dokumenPdf || '', canEdit: Boolean(item.canEdit), items: []
+          };
+        }
+        mapTiket[item.kodeTiket].items.push(item);
+      });
+      groupedTickets = Object.values(mapTiket);
+      groupedTickets.forEach(ticket => ticket.items.sort((a, b) => Number(a.noItem) - Number(b.noItem)));
+      currentPage = 1;
+      historyLoaded = true;
+      applyFilters();
+    } catch (error) {
+      historyLoaded = false;
+      document.getElementById('bodyTabelRiwayat').innerHTML = `<tr><td colspan="8" style="color:red;text-align:center;">${escapeHtml(error.message || 'Gagal memuat data.')}</td></tr>`;
+    } finally {
+      historyLoading = false;
+    }
   }
-
   function updateKPI(data) {
     let acc = 0, reject = 0, pending = 0;
     data.forEach(t => {
@@ -1052,7 +1198,7 @@
           <td class="sig-cell"><div class="sig-title">PEMOHON</div><div class="sig-line"></div><div class="sig-name">(${escapeHtml(t.pemohon)})</div></td>
           <td class="sig-cell"><div class="sig-title">HEAD FARM</div><div class="sig-line"></div><div class="sig-name">( ....................... )</div></td>
           <td class="sig-cell"><div class="sig-title">FARM MANAGER</div><div class="sig-line"></div><div class="sig-name">( ....................... )</div></td>
-          <td class="sig-cell"><div class="sig-title">GENERAL MANAGER</div><div class="sig-line"></div><div class="sig-name">(Drh. Titin Idayati)</div></td>
+          <td class="sig-cell"><div class="sig-title">GENERAL MANAGER</div><div class="sig-line"></div><div class="sig-name" style="margin-top: 18px;">drh. Titin Idayati</div></td>
         </tr></table>
       </body></html>`;
     printWin.document.write(printHTML); printWin.document.close();
@@ -1071,8 +1217,8 @@
 
   function persiapkanEdit(kode) {
     const t = groupedTickets.find(x => x.kodeTiket === kode);
-    switchPortalView('request');
     tutupModal(); idTiketEdit = kode;
+    switchPortalView('request');
     document.getElementById('formTitle').innerHTML = `<i class="fa-solid fa-pen-to-square"></i> Mode Revisi Tiket: <span style="color:#000;">${escapeHtml(kode)}</span>`;
     document.getElementById('tglDibutuhkan').value = t.tglDibutuhkan.split(' ')[0];
     document.getElementById('urgensi').value = t.urgensi;
@@ -1082,7 +1228,6 @@
     document.getElementById('containerItems').innerHTML = ""; itemCounter = 0;
     t.items.forEach(it => tambahItemForm(it));
     document.getElementById('btnSubmit').innerHTML = `<i class="fa-solid fa-save"></i> Simpan Revisi Tiket`;
-    document.getElementById('portalPageTitle').textContent = 'Revisi Permintaan';
     document.getElementById('btnBatalEdit').style.display = 'block';
     window.scrollTo({ top: 0, behavior: 'smooth' });
     showToast("Silakan edit rincian barang pada form di atas.", "success");
@@ -1090,13 +1235,13 @@
 
   function batalkanEdit() {
     idTiketEdit = null;
-    document.getElementById('portalPageTitle').textContent = 'Buat Permintaan';
     document.getElementById('formTitle').innerHTML = `<i class="fa-solid fa-file-signature"></i> Buat Tiket Permintaan Baru`;
     document.getElementById('formPermintaan').reset();
     if (sesiUser.isPicGudang) muatGudangTujuanPermintaan(sesiUser.scopeGudang);
     document.getElementById('containerItems').innerHTML = ""; itemCounter = 0; tambahItemForm();
     document.getElementById('btnSubmit').innerHTML = `<i class="fa-solid fa-paper-plane"></i> Submit Tiket Ke Sistem`;
     document.getElementById('btnBatalEdit').style.display = 'none';
+    switchPortalView('request');
   }
 </script>
 
