@@ -248,6 +248,10 @@
       return target === 'portal.html' || target === 'stock.html' ? target : '';
     }
 
+    function escapeHtml(value) {
+      return String(value == null ? '' : value).replace(/[&<>"']/g, character => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[character]));
+    }
+
     async function postAuth(payload) {
       const response = await fetch(AUTH_API_URL, {
         method: 'POST',
