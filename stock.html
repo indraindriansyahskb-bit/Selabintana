@@ -4,10 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ERP Inventory & Stock Management - CV. SELABINTANA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
-  <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.min.js"></script>
+
 
   <style>
     :root {
@@ -348,12 +351,15 @@
             <!-- FILTER BAR ERP -->
             <div class="erp-filter-bar">
               <div class="erp-filter-group">
-                <label for="filterTglAwal">Periode Dari</label>
+                <label for="filterTglAwal">Periode dari (30 hari)</label>
                 <input type="date" id="filterTglAwal" onchange="muatJurnalTransaksiBarang()">
               </div>
               <div class="erp-filter-group">
                 <label for="filterTglAkhir">Sampai Tanggal</label>
                 <input type="date" id="filterTglAkhir" onchange="muatJurnalTransaksiBarang()">
+              </div>
+              <div class="erp-filter-group" style="flex:0 0 auto;min-width:auto;">
+                <label>&nbsp;</label><button type="button" class="btn btn-outline btn-sm" onclick="setAllJournalDates()" title="Muat seluruh riwayat transaksi">Semua tanggal</button>
               </div>
               <div class="erp-filter-group">
                 <label for="filterUnit">Unit / Farm</label>
@@ -713,6 +719,19 @@
     location.replace('index.html?return=stock.html');
   }
   function todayJakarta() { return new Date(Date.now() + 7 * 60 * 60 * 1000).toISOString().slice(0, 10); }
+  function setDefaultJournalRange() {
+    const startInput = document.getElementById('filterTglAwal');
+    const endInput = document.getElementById('filterTglAkhir');
+    if (!startInput || !endInput || startInput.value || endInput.value) return;
+    const [year, month, day] = todayJakarta().split('-').map(Number);
+    startInput.value = new Date(Date.UTC(year, month - 1, day - 29)).toISOString().slice(0, 10);
+    endInput.value = todayJakarta();
+  }
+  function setAllJournalDates() {
+    document.getElementById('filterTglAwal').value = '';
+    document.getElementById('filterTglAkhir').value = '';
+    muatJurnalTransaksiBarang();
+  }
   function setConnectionStatus(state, message) {
     const elements = [document.getElementById('connectionStatus'), document.getElementById('connectionStatusMobile')].filter(Boolean);
     const color = state === 'ok' ? 'var(--erp-success)' : state === 'error' ? 'var(--erp-danger)' : 'var(--erp-warning)';
@@ -785,6 +804,7 @@
       </div>
     `;
 
+    setDefaultJournalRange();
     muatMetaUnitsGudang();
     muatMasterStokBarang();
     muatJurnalTransaksiBarang();
@@ -1067,13 +1087,30 @@
     }
   }
 
+  let xlsxLibraryPromise = null;
+  function ensureXlsxLibrary() {
+    if (window.XLSX) return Promise.resolve(window.XLSX);
+    if (xlsxLibraryPromise) return xlsxLibraryPromise;
+    xlsxLibraryPromise = new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.min.js';
+      script.async = true;
+      script.onload = () => {
+        if (window.XLSX) resolve(window.XLSX);
+        else { xlsxLibraryPromise = null; reject(new Error('Pustaka Excel tidak tersedia.')); }
+      };
+      script.onerror = () => { xlsxLibraryPromise = null; reject(new Error('Gagal memuat pustaka Excel.')); };
+      document.head.appendChild(script);
+    });
+    return xlsxLibraryPromise;
+  }
   async function eksporLihatStokKeExcel() {
     const button = document.getElementById('exportStockSnapshotBtn');
     if (!sesiUser.token) return showToast('Silakan login kembali untuk mengekspor stok.', 'error');
-    if (typeof XLSX === 'undefined') return showToast('Pustaka Excel belum termuat. Periksa koneksi lalu muat ulang halaman.', 'error');
 
     if (button) { button.disabled = true; button.setAttribute('aria-busy', 'true'); }
     try {
+      await ensureXlsxLibrary();
       const requestedFilters = getStockSnapshotFilters();
       if (!appliedStockSnapshotFilters || JSON.stringify(requestedFilters) !== JSON.stringify(appliedStockSnapshotFilters)) {
         const loaded = await muatStockSnapshot();
@@ -1471,7 +1508,7 @@
     document.getElementById('containerTabelJurnal').innerHTML = html;
   }
 
-  function eksporKeExcel() {
+  async function eksporKeExcel() {
     const selectedUnit = document.getElementById('filterUnit').value;
     const searchBarangVal = document.getElementById('filterBarangPilih').value.toLowerCase().trim();
     const selectedWarehouse = document.getElementById('filterGudangJournal').value;
@@ -1486,7 +1523,7 @@
     );
 
     if (!filteredData.length) return showToast("Tidak ada rincian transaksi untuk diekspor!", "error");
-    if (typeof XLSX === 'undefined') return showToast('Pustaka Excel belum termuat. Periksa koneksi lalu muat ulang halaman.', 'error');
+    try { await ensureXlsxLibrary(); } catch (error) { return showToast(error.message || 'Pustaka Excel gagal dimuat.', 'error'); }
 
     const columns = ['No', 'Waktu Transaksi', 'Kode Barang', 'Nama Barang', 'Kategori', 'Jenis Transaksi', 'Masuk', 'Keluar', 'Running Stok', 'Satuan', 'Lokasi Unit', 'Gudang', 'Batch', 'Tanggal Kedaluwarsa', 'Kandang / Peruntukan', 'Keterangan Detail'];
     const worksheetRows = [];
