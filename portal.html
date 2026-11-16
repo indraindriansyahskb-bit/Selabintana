@@ -173,6 +173,7 @@
       <ul class="erp-menu">
         <li class="erp-menu-label">Portal Permintaan</li>
         <li><button type="button" id="menuRequestBtn" class="erp-menu-item active" aria-current="page" aria-controls="portalRequestView" onclick="switchPortalView('request')"><i class="fa-solid fa-file-circle-plus" aria-hidden="true"></i><span>Buat Permintaan</span></button></li>
+        <li id="menuQueueItem" hidden><button type="button" id="menuQueueBtn" class="erp-menu-item" aria-controls="portalQueueView" onclick="switchPortalView('queue')"><i class="fa-solid fa-inbox" aria-hidden="true"></i><span>Daftar Permintaan Barang</span></button></li>
         <li><button type="button" id="menuHistoryBtn" class="erp-menu-item" aria-controls="portalHistoryView" onclick="switchPortalView('history')"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i><span>History Permintaan</span></button></li>
       </ul>
     </nav>
@@ -221,11 +222,33 @@
       </form>
     </div>
       </section>
+      <section id="portalQueueView" class="portal-view" role="region" aria-labelledby="menuQueueBtn" hidden>
+        <div class="erp-card">
+          <div class="erp-card-header">
+            <div class="erp-card-title"><i class="fa-solid fa-inbox"></i> Daftar Permintaan Barang <span id="adminQueueCount" class="badge badge-pending">0 menunggu keputusan</span></div>
+            <button type="button" onclick="muatDaftarPermintaanAdmin(1)" class="btn btn-outline" style="padding:6px 10px;" title="Refresh antrean"><i class="fa-solid fa-rotate-right"></i> Refresh</button>
+          </div>
+          <div style="background:#f6f9f7;padding:15px 20px;border-bottom:1px solid var(--erp-border-light);display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
+            <div class="form-group" style="margin:0;flex:1;min-width:180px;"><label for="adminQueueSearch">Cari tiket / pemohon / lokasi</label><input id="adminQueueSearch" type="search" placeholder="Ketik kata kunci…" oninput="applyAdminQueueFilters()" style="padding:7px 10px;font-size:12px;"></div>
+            <div class="form-group" style="margin:0;flex:1;min-width:140px;"><label for="adminQueueFrom">Dari tanggal</label><input id="adminQueueFrom" type="date" onchange="applyAdminQueueFilters()" style="padding:7px 10px;font-size:12px;"></div>
+            <div class="form-group" style="margin:0;flex:1;min-width:140px;"><label for="adminQueueTo">Sampai tanggal</label><input id="adminQueueTo" type="date" onchange="applyAdminQueueFilters()" style="padding:7px 10px;font-size:12px;"></div>
+            <div class="form-group" style="margin:0;flex:1;min-width:160px;"><label for="adminQueueProduct">Nama barang</label><input id="adminQueueProduct" type="search" placeholder="Semua barang" oninput="applyAdminQueueFilters()" style="padding:7px 10px;font-size:12px;"></div>
+            <div class="form-group" style="margin:0;flex:1;min-width:145px;"><label for="adminQueueUrgency">Urgensi</label><select id="adminQueueUrgency" onchange="applyAdminQueueFilters()" style="padding:7px 10px;font-size:12px;"><option value="">Semua urgensi</option><option value="REGULER">Reguler</option><option value="URGENT">Urgent</option><option value="TOP URGENT">Top Urgent</option></select></div>
+          </div>
+          <div class="erp-card-body" style="padding:0;">
+            <div class="erp-table-responsive" style="border:none;border-radius:0;"><table class="erp-table">
+              <thead><tr><th>No. Tiket</th><th>Pemohon / Lokasi</th><th>Tgl Butuh</th><th>Total Item</th><th>Urgensi</th><th>Dokumen</th><th>Status</th><th>Aksi</th></tr></thead>
+              <tbody id="bodyTabelAdminQueue"><tr><td colspan="8" style="text-align:center;padding:30px;color:#5e6e64;">Isi filter untuk menampilkan antrean.</td></tr></tbody>
+            </table></div>
+            <div class="pagination-container"><div id="adminQueuePageInfo">Belum ada pencarian</div><div style="display:flex;gap:8px;"><button class="page-btn" id="adminQueuePrev" onclick="gantiHalamanAdminQueue(-1)" disabled><i class="fa-solid fa-chevron-left"></i> Prev</button><button class="page-btn" id="adminQueueNext" onclick="gantiHalamanAdminQueue(1)" disabled>Next <i class="fa-solid fa-chevron-right"></i></button></div></div>
+          </div>
+        </div>
+      </section>
       <section id="portalHistoryView" class="portal-view" role="region" aria-labelledby="menuHistoryBtn" hidden>
 <!-- KPI -->
     <div class="erp-stats-grid">
       <div class="erp-stat-card"><div class="erp-stat-info"><div class="label">Total Tiket</div><div class="value" id="kpiTotal">0</div></div><div class="erp-stat-icon" style="background:#e6f0eb; color:var(--erp-primary);"><i class="fa-solid fa-layer-group"></i></div></div>
-      <div class="erp-stat-card"><div class="erp-stat-info"><div class="label">Pending</div><div class="value" id="kpiPending">0</div></div><div class="erp-stat-icon" style="background:#fff8e6; color:#b45309;"><i class="fa-solid fa-hourglass-half"></i></div></div>
+      <div class="erp-stat-card"><div class="erp-stat-info"><div class="label" id="kpiPendingLabel">Pending</div><div class="value" id="kpiPending">0</div></div><div class="erp-stat-icon" style="background:#fff8e6; color:#b45309;"><i class="fa-solid fa-hourglass-half"></i></div></div>
       <div class="erp-stat-card"><div class="erp-stat-info"><div class="label">Disetujui (ACC)</div><div class="value" id="kpiAcc">0</div></div><div class="erp-stat-icon" style="background:#e6f8f0; color:#047857;"><i class="fa-solid fa-circle-check"></i></div></div>
       <div class="erp-stat-card"><div class="erp-stat-info"><div class="label">Ditolak / Revisi / Batal</div><div class="value" id="kpiReject">0</div></div><div class="erp-stat-icon" style="background:#fcebeb; color:#b91c1c;"><i class="fa-solid fa-circle-xmark"></i></div></div>
     </div>
@@ -275,7 +298,7 @@
       <div class="erp-card-body" style="padding:0;">
         <div class="erp-table-responsive" style="border:none; border-radius:0;">
           <table class="erp-table">
-            <thead><tr><th>No. Tiket</th><th>Pemohon</th><th>Tgl Butuh</th><th>Total Item</th><th>Urgensi</th><th>Dokumen</th><th>Status ERP</th><th>Aksi</th></tr></thead>
+            <thead><tr id="historyTableHead"><th>No. Tiket</th><th>Pemohon</th><th>Tgl Butuh</th><th>Total Item</th><th>Urgensi</th><th>Dokumen</th><th>Status ERP</th><th>Aksi</th></tr></thead>
             <tbody id="bodyTabelRiwayat"><tr><td colspan="8" style="text-align:center; padding:30px;"><i class="fa-solid fa-spinner fa-spin"></i> Sinkronisasi...</td></tr></tbody>
           </table>
         </div>
@@ -328,6 +351,14 @@
   let sesiUser = {};
   let itemCounter = 0;
   let groupedTickets = [];
+  let adminQueueTickets = [];
+  let adminQueueLoaded = false;
+  let adminQueueLoading = false;
+  let adminQueuePendingPage = null;
+  let adminQueuePage = 1;
+  let adminQueueTotalPages = 1;
+  let adminQueueTotalTickets = 0;
+  let adminQueueFilterTimer = null;
   let historyLoaded = false;
   let historyLoading = false;
   let masterBarangLoaded = false;
@@ -578,30 +609,48 @@
   document.getElementById('filterNamaBarang').addEventListener('focus', () => muatMasterBarang());
 
   function switchPortalView(view) {
+    if (view === 'queue' && !sesiUser.isAdmin) view = 'request';
     const showHistory = view === 'history';
+    const showQueue = view === 'queue';
     const requestPanel = document.getElementById('portalRequestView');
+    const queuePanel = document.getElementById('portalQueueView');
     const historyPanel = document.getElementById('portalHistoryView');
     const requestButton = document.getElementById('menuRequestBtn');
+    const queueButton = document.getElementById('menuQueueBtn');
     const historyButton = document.getElementById('menuHistoryBtn');
-    requestPanel.hidden = showHistory;
+    requestPanel.hidden = showHistory || showQueue;
+    queuePanel.hidden = !showQueue;
     historyPanel.hidden = !showHistory;
-    requestButton.classList.toggle('active', !showHistory);
+    requestButton.classList.toggle('active', !showHistory && !showQueue);
+    queueButton.classList.toggle('active', showQueue);
     historyButton.classList.toggle('active', showHistory);
+    [requestButton, queueButton, historyButton].forEach(button => button.removeAttribute('aria-current'));
+    if (showQueue) {
+      queueButton.setAttribute('aria-current', 'page');
+      document.getElementById('portalPageTitle').textContent = 'Daftar Permintaan Barang';
+      if (!adminQueueLoaded && !adminQueueLoading) muatDaftarPermintaanAdmin(1);
+      document.getElementById('adminQueueSearch').focus({preventScroll:true});
+    }
     if (showHistory) {
       historyButton.setAttribute('aria-current', 'page');
-      requestButton.removeAttribute('aria-current');
+      if (sesiUser.isAdmin) {
+        const pendingOption = document.querySelector('#filterStatus option[value="PENDING"]');
+        if (pendingOption) pendingOption.hidden = true;
+        if (document.getElementById('filterStatus').value === 'PENDING') document.getElementById('filterStatus').value = '';
+      }
       if (!historyLoaded && !historyLoading) muatRiwayatPermintaan();
       document.getElementById('portalPageTitle').textContent = 'History Permintaan';
       document.getElementById('searchRiwayat').focus({preventScroll:true});
-    } else {
+    }
+    if (!showHistory && !showQueue) {
       requestButton.setAttribute('aria-current', 'page');
-      historyButton.removeAttribute('aria-current');
       document.getElementById('portalPageTitle').textContent = idTiketEdit ? 'Revisi Permintaan' : 'Buat Permintaan';
     }
   }
 
   async function tampilkanDashboard() {
     document.getElementById('mainPanel').style.display = 'flex';
+    document.getElementById('menuQueueItem').hidden = !sesiUser.isAdmin;
     document.getElementById('userInfoHeader').innerHTML = `
       <div class="erp-avatar">${escapeHtml((sesiUser.nama || sesiUser.username || 'U').substring(0,2).toUpperCase())}</div>
       <div style="line-height:1.2;color:#f8fafc;"><div style="font-weight:700;font-size:12px;color:var(--erp-accent-yellow);">${escapeHtml(sesiUser.nama || sesiUser.username)}</div><div style="font-size:10px;color:#c2d1c7;">${escapeHtml(sesiUser.roleAccess || sesiUser.jabatan || 'Pengguna')} | <b>${escapeHtml(sesiUser.scopeGudang === 'ALL' ? 'Semua Gudang' : sesiUser.isPicGudang ? sesiUser.scopeGudang : sesiUser.unitLokasi)}</b></div></div>`;
@@ -610,6 +659,7 @@
     document.getElementById('tglDibutuhkan').min = today;
     document.getElementById('containerItems').innerHTML = '';
     itemCounter = 0;
+    switchPortalView(sesiUser.isAdmin ? 'queue' : 'request');
     await muatGudangTujuanPermintaan();
     if (!restoreRequestDraft()) tambahItemForm();
   }
@@ -812,7 +862,11 @@
         if (draftKey) sessionStorage.removeItem(draftKey);
         document.getElementById('requestDraftStatus').hidden = true;
         batalkanEdit();
-        if (historyLoaded) muatRiwayatPermintaan();
+        if (sesiUser.isAdmin) {
+          adminQueueLoaded = false;
+          muatDaftarPermintaanAdmin(1);
+          if (historyLoaded) muatRiwayatPermintaan(1);
+        } else if (historyLoaded) muatRiwayatPermintaan(1);
       } else showToast(json.message, 'error');
     } catch(err) { showToast("Koneksi terputus.", 'error'); } 
     finally { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Submit Tiket Ke Sistem'; }
@@ -821,11 +875,105 @@
   document.getElementById('formPermintaan').addEventListener('input', scheduleRequestDraftSave);
   document.getElementById('formPermintaan').addEventListener('change', scheduleRequestDraftSave);
 
+  function kelompokkanItemTiket(rows) {
+    const map = Object.create(null);
+    (rows || []).forEach(item => {
+      if (!map[item.kodeTiket]) map[item.kodeTiket] = {
+        kodeTiket: item.kodeTiket, tglPermintaan: item.tglPermintaan, tglDibutuhkan: item.tglDibutuhkan,
+        pemohon: item.pemohon, unitLokasi: item.unitLokasi, kodeGudang: item.kodeGudang || '', urgensi: item.urgensi,
+        keterangan: item.keterangan, statusPermintaan: item.statusPermintaan, catatanAdmin: item.catatanAdmin,
+        dokumenPdf: item.dokumenPdf || '', canEdit: Boolean(item.canEdit), items: []
+      };
+      map[item.kodeTiket].items.push(item);
+    });
+    return Object.values(map).map(ticket => {
+      ticket.items.sort((a, b) => Number(a.noItem) - Number(b.noItem));
+      return ticket;
+    });
+  }
+
+  async function muatDaftarPermintaanAdmin(page = 1) {
+    if (!sesiUser.isAdmin) return;
+    if (adminQueueLoading) { adminQueuePendingPage = page; return; }
+    adminQueueLoading = true;
+    const requestedPage = Math.max(1, Number(page) || 1);
+    const tbody = document.getElementById('bodyTabelAdminQueue');
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:30px;"><i class="fa-solid fa-spinner fa-spin"></i> Mengambil antrean permintaan…</td></tr>';
+    try {
+      const res = await postPayload({
+        action: 'getPermintaan', token: sesiUser.token, adminBucket: 'QUEUE',
+        q: document.getElementById('adminQueueSearch').value.trim(),
+        tglAwal: document.getElementById('adminQueueFrom').value,
+        tglAkhir: document.getElementById('adminQueueTo').value,
+        qBarang: document.getElementById('adminQueueProduct').value.trim(),
+        urgensiFilter: document.getElementById('adminQueueUrgency').value,
+        page: requestedPage, pageSize: itemsPerPage
+      });
+      const json = await res.json();
+      if (cekSesiBerakhir(json)) return;
+      if (json.status !== 'success') throw new Error(json.message || 'Gagal memuat antrean permintaan.');
+      adminQueueTickets = kelompokkanItemTiket(json.data || []);
+      adminQueuePage = Number(json.page || requestedPage);
+      adminQueueTotalPages = Math.max(1, Number(json.totalPages || 1));
+      adminQueueTotalTickets = Number(json.totalTickets || 0);
+      adminQueueLoaded = true;
+      document.getElementById('adminQueueCount').textContent = `${adminQueueTotalTickets} menunggu keputusan`;
+      renderDaftarPermintaanAdmin();
+    } catch (error) {
+      adminQueueLoaded = false;
+      tbody.innerHTML = `<tr><td colspan="8" style="color:#b91c1c;text-align:center;padding:24px;">${escapeHtml(error.message || 'Gagal memuat antrean.')}</td></tr>`;
+    } finally {
+      adminQueueLoading = false;
+      if (adminQueuePendingPage != null) {
+        const nextPage = adminQueuePendingPage;
+        adminQueuePendingPage = null;
+        muatDaftarPermintaanAdmin(nextPage);
+      }
+    }
+  }
+
+  function renderDaftarPermintaanAdmin() {
+    const tbody = document.getElementById('bodyTabelAdminQueue');
+    if (!adminQueueTotalTickets) {
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:30px;color:#5e6e64;">Tidak ada permintaan yang menunggu keputusan.</td></tr>';
+      document.getElementById('adminQueuePageInfo').textContent = 'Menampilkan 0 tiket';
+      document.getElementById('adminQueuePrev').disabled = true;
+      document.getElementById('adminQueueNext').disabled = true;
+      return;
+    }
+    tbody.innerHTML = adminQueueTickets.map(ticket => {
+      const badgeDoc = ticket.dokumenPdf ? '<span class="badge badge-upload-yes"><i class="fa-solid fa-check"></i> Uploaded</span>' : '<span class="badge badge-upload-no"><i class="fa-solid fa-clock"></i> Belum</span>';
+      return `<tr>
+        <td><span class="mono" style="color:var(--erp-primary);font-weight:700;">${escapeHtml(ticket.kodeTiket)}</span></td>
+        <td><b>${escapeHtml(ticket.pemohon)}</b><br><small style="color:var(--erp-text-muted);">${escapeHtml(ticket.unitLokasi)}${ticket.kodeGudang ? ' · ' + escapeHtml(ticket.kodeGudang) : ''}</small></td>
+        <td><small class="mono">${escapeHtml(ticket.tglDibutuhkan || '-')}</small></td>
+        <td><b>${ticket.items.length} Barang</b></td>
+        <td><small style="color:${String(ticket.urgensi).includes('URGENT')?'#b91c1c':''};font-weight:600;">${escapeHtml(ticket.urgensi)}</small></td>
+        <td>${badgeDoc}</td><td><span class="badge badge-pending">PENDING</span></td>
+        <td><button type="button" class="btn btn-outline btn-sm" onclick="bukaDetailTiket(${inlineArg(ticket.kodeTiket)})"><i class="fa-solid fa-eye"></i> Tinjau</button></td>
+      </tr>`;
+    }).join('');
+    document.getElementById('adminQueuePageInfo').textContent = `Halaman ${adminQueuePage} dari ${adminQueueTotalPages} (Total ${adminQueueTotalTickets} Tiket)`;
+    document.getElementById('adminQueuePrev').disabled = adminQueuePage <= 1;
+    document.getElementById('adminQueueNext').disabled = adminQueuePage >= adminQueueTotalPages;
+  }
+
+  function applyAdminQueueFilters() {
+    clearTimeout(adminQueueFilterTimer);
+    adminQueueFilterTimer = setTimeout(() => muatDaftarPermintaanAdmin(1), 350);
+  }
+
+  function gantiHalamanAdminQueue(step) {
+    const nextPage = Math.max(1, Math.min(adminQueueTotalPages, adminQueuePage + step));
+    if (nextPage !== adminQueuePage) muatDaftarPermintaanAdmin(nextPage);
+  }
+
   async function muatRiwayatPermintaan(page = 1) {
     if (historyLoading) { historyPendingPage = page; return; }
     historyLoading = true;
     const requestedPage = Math.max(1, Number(page) || 1);
-    document.getElementById('bodyTabelRiwayat').innerHTML = `<tr><td colspan="8" style="text-align:center;padding:30px;"><i class="fa-solid fa-spinner fa-spin"></i> Mengambil data ERP...</td></tr>`;
+    const historyColspan = sesiUser.isAdmin ? 9 : 8;
+    document.getElementById('bodyTabelRiwayat').innerHTML = `<tr><td colspan="${historyColspan}" style="text-align:center;padding:30px;"><i class="fa-solid fa-spinner fa-spin"></i> Mengambil data ERP...</td></tr>`;
     try {
       const res = await postPayload({
         action: 'getPermintaan', token: sesiUser.token,
@@ -835,38 +983,27 @@
         qBarang: document.getElementById('filterNamaBarang').value.trim(),
         statusFilter: document.getElementById('filterStatus').value,
         urgensiFilter: document.getElementById('filterUrgensi').value,
+        adminBucket: sesiUser.isAdmin ? 'DECIDED' : '',
         page: requestedPage, pageSize: itemsPerPage
       });
       const json = await res.json();
       if (cekSesiBerakhir(json)) return;
       if (json.status !== 'success') throw new Error(json.message || 'Gagal memuat riwayat permintaan.');
-      const mapTiket = Object.create(null);
-      (json.data || []).forEach(item => {
-        if (!mapTiket[item.kodeTiket]) {
-          mapTiket[item.kodeTiket] = {
-            kodeTiket: item.kodeTiket, tglPermintaan: item.tglPermintaan, tglDibutuhkan: item.tglDibutuhkan,
-            pemohon: item.pemohon, unitLokasi: item.unitLokasi, kodeGudang: item.kodeGudang || '', urgensi: item.urgensi,
-            keterangan: item.keterangan, statusPermintaan: item.statusPermintaan, catatanAdmin: item.catatanAdmin,
-            dokumenPdf: item.dokumenPdf || '', canEdit: Boolean(item.canEdit), items: []
-          };
-        }
-        mapTiket[item.kodeTiket].items.push(item);
-      });
-      groupedTickets = Object.values(mapTiket);
-      groupedTickets.forEach(ticket => ticket.items.sort((a, b) => Number(a.noItem) - Number(b.noItem)));
+      groupedTickets = kelompokkanItemTiket(json.data || []);
       filteredTickets = groupedTickets;
       currentPage = Number(json.page || requestedPage);
       historyTotalTickets = Number(json.totalTickets || 0);
       historyTotalPages = Math.max(1, Number(json.totalPages || 1));
       historyLoaded = true;
       document.getElementById('kpiTotal').innerText = Number(json.kpi && json.kpi.total || 0);
-      document.getElementById('kpiPending').innerText = Number(json.kpi && json.kpi.pending || 0);
+      document.getElementById('kpiPendingLabel').innerText = sesiUser.isAdmin ? 'Menunggu Penerimaan' : 'Pending';
+      document.getElementById('kpiPending').innerText = Number(json.kpi && (sesiUser.isAdmin ? json.kpi.receiptPending : json.kpi.pending) || 0);
       document.getElementById('kpiAcc').innerText = Number(json.kpi && json.kpi.acc || 0);
       document.getElementById('kpiReject').innerText = Number(json.kpi && json.kpi.reject || 0);
       renderPaging();
     } catch (error) {
       historyLoaded = false;
-      document.getElementById('bodyTabelRiwayat').innerHTML = `<tr><td colspan="8" style="color:red;text-align:center;">${escapeHtml(error.message || 'Gagal memuat data.')}</td></tr>`;
+      document.getElementById('bodyTabelRiwayat').innerHTML = `<tr><td colspan="${historyColspan}" style="color:red;text-align:center;">${escapeHtml(error.message || 'Gagal memuat data.')}</td></tr>`;
     } finally {
       historyLoading = false;
       if (historyPendingPage != null) {
@@ -904,8 +1041,10 @@
 
   function renderPaging() {
     const tbody = document.getElementById('bodyTabelRiwayat');
+    const columns = sesiUser.isAdmin ? 9 : 8;
+    document.getElementById('historyTableHead').innerHTML = `<th>No. Tiket</th><th>Pemohon</th><th>Tgl Butuh</th><th>Total Item</th><th>Urgensi</th><th>Dokumen</th><th>Status ERP</th>${sesiUser.isAdmin ? '<th>Penerimaan Gudang</th>' : ''}<th>Aksi</th>`;
     if(historyTotalTickets === 0) {
-      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:30px; color:#5e6e64;">Data tiket kosong.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="${columns}" style="text-align:center; padding:30px; color:#5e6e64;">${sesiUser.isAdmin ? 'Belum ada tiket yang sudah diputuskan.' : 'Data tiket kosong.'}</td></tr>`;
       document.getElementById('pageInfo').innerText = "Menampilkan 0 data";
       document.getElementById('btnPrevPage').disabled = true; document.getElementById('btnNextPage').disabled = true;
       return;
@@ -927,6 +1066,7 @@
       else if(st==="DIBATALKAN") badge = `<span class="badge badge-reject">DIBATALKAN</span>`;
       
       let badgeDoc = t.dokumenPdf ? `<span class="badge badge-upload-yes"><i class="fa-solid fa-check"></i> Uploaded</span>` : `<span class="badge badge-upload-no"><i class="fa-solid fa-clock"></i> Belum</span>`;
+      const receiptSummary = sesiUser.isAdmin ? `<td>${ringkasanPenerimaanTiket(t)}</td>` : '';
 
       html += `<tr>
         <td><span class="mono" style="color:var(--erp-primary); font-weight:700;">${escapeHtml(t.kodeTiket)}</span></td>
@@ -936,6 +1076,7 @@
         <td><small style="color:${String(t.urgensi).includes('URGENT')?'red':''}; font-weight:600;">${escapeHtml(t.urgensi)}</small></td>
         <td>${badgeDoc}</td>
         <td>${badge}</td>
+        ${receiptSummary}
         <td>
           <button class="btn btn-outline btn-sm" onclick="bukaDetailTiket(${inlineArg(t.kodeTiket)})"><i class="fa-solid fa-eye"></i> Detail</button>
         </td>
@@ -946,6 +1087,17 @@
     document.getElementById('pageInfo').innerText = `Halaman ${currentPage} dari ${maxPage} (Total ${historyTotalTickets} Tiket)`;
     document.getElementById('btnPrevPage').disabled = currentPage === 1;
     document.getElementById('btnNextPage').disabled = currentPage === maxPage;
+  }
+
+  function ringkasanPenerimaanTiket(ticket) {
+    const approvedItems = (ticket.items || []).filter(item => Number(item.jumlahDisetujui || 0) > 0);
+    if (!approvedItems.length) return '<span class="badge badge-upload-no">Tidak ada item ACC</span>';
+    const complete = approvedItems.filter(item => item.statusPenerimaanGudang === 'DITERIMA LENGKAP').length;
+    const partial = approvedItems.filter(item => item.statusPenerimaanGudang === 'DITERIMA SEBAGIAN').length;
+    const waiting = approvedItems.filter(item => item.statusPenerimaanGudang === 'BELUM DITERIMA').length;
+    const tone = waiting > 0 ? '#b45309' : (partial > 0 ? '#b45309' : '#047857');
+    const label = complete === approvedItems.length ? 'Lengkap' : (complete + partial > 0 ? 'Sebagian diterima' : 'Belum diterima');
+    return `<span style="display:inline-block;color:${tone};font-weight:700;">${label}</span><br><small>${complete} lengkap · ${partial} sebagian · ${waiting} belum</small>`;
   }
 
   // ==========================================
@@ -963,6 +1115,7 @@
         qBarang: document.getElementById('filterNamaBarang').value.trim(),
         statusFilter: document.getElementById('filterStatus').value,
         urgensiFilter: document.getElementById('filterUrgensi').value,
+        adminBucket: sesiUser.isAdmin ? 'DECIDED' : '',
         exportAll: true
       });
       const json = await res.json();
@@ -1028,6 +1181,10 @@
               <th>Kategori</th>
               <th>Jumlah</th>
               <th>Satuan</th>
+              <th>Jumlah Disetujui</th>
+              <th>Jumlah Diterima Gudang</th>
+              <th>Status Penerimaan</th>
+              <th>Penerimaan Terakhir</th>
               <th>Status ERP</th>
               <th>Catatan Admin</th>
             </tr>
@@ -1054,6 +1211,10 @@
             <td>${exportText(it.kategori)}</td>
             <td>${exportText(it.jumlah)}</td>
             <td>${exportText(it.satuan)}</td>
+            <td>${exportText(it.jumlahDisetujui || 0)}</td>
+            <td>${exportText(it.jumlahDiterimaGudang || 0)}</td>
+            <td>${exportText(it.statusPenerimaanGudang || 'BELUM DITERIMA')}</td>
+            <td>${exportText(it.tanggalPenerimaanTerakhir || '-')}</td>
             <td>${exportText(t.statusPermintaan)}</td>
             <td>${exportText(t.catatanAdmin)}</td>
           </tr>
@@ -1082,7 +1243,7 @@
   }
 
   async function bukaDetailTiket(kode) {
-    const t = groupedTickets.find(x => x.kodeTiket === kode);
+    const t = groupedTickets.find(x => x.kodeTiket === kode) || adminQueueTickets.find(x => x.kodeTiket === kode);
     if(!t) return;
     activeTicketDetail = kode;
     
@@ -1099,10 +1260,19 @@
         <div><div style="font-size:11px; color:#5e6e64;">Tgl Dibutuhkan</div><div style="font-weight:700; color:var(--erp-primary);">${escapeHtml(t.tglDibutuhkan)}</div></div>
         <div><div style="font-size:11px; color:#5e6e64;">Urgensi</div><div style="font-weight:700;">${escapeHtml(t.urgensi)}</div></div>
       </div>
-      <table class="erp-table" style="margin-bottom:15px;">
-        <thead><tr><th>Nama Barang</th><th>Diminta</th><th>Disetujui</th><th>Terpenuhi</th><th>Status Item</th><th>Kategori</th></tr></thead><tbody>`;
-        t.items.forEach(it => { html += `<tr><td><b>${escapeHtml(it.namaBarang)}</b></td><td>${escapeHtml(it.jumlah)} ${escapeHtml(it.satuan)}</td><td>${Number(it.jumlahDisetujui || 0)} ${escapeHtml(it.satuan)}</td><td>${Number(it.jumlahTerpenuhi || 0)} ${escapeHtml(it.satuan)}</td><td>${escapeHtml(it.statusItem || st)}</td><td>${escapeHtml(it.kategori)}</td></tr>`; });
-    html += `</tbody></table>
+      <div class="erp-table-responsive" style="margin-bottom:15px;"><table class="erp-table">
+        <thead><tr><th>Nama Barang</th><th>Diminta</th><th>Disetujui</th><th>${sesiUser.isAdmin ? 'Catatan Pemenuhan' : 'Terpenuhi'}</th>${sesiUser.isAdmin ? '<th>Diterima Stok</th><th>Status Penerimaan</th><th>Penerimaan Terakhir</th>' : '<th>Status Item</th>'}<th>Kategori</th></tr></thead><tbody>`;
+        t.items.forEach(it => {
+          const receiptStatus = String(it.statusPenerimaanGudang || 'BELUM DITERIMA');
+          const receiptColor = receiptStatus === 'DITERIMA LENGKAP' ? '#047857' : (receiptStatus === 'DITERIMA SEBAGIAN' ? '#b45309' : (receiptStatus === 'BELUM DISETUJUI' ? '#64748b' : '#b91c1c'));
+          const receiptLocation = [it.unitPenerimaan, it.gudangPenerimaan].filter(Boolean).join(' / ');
+          const receiptCells = sesiUser.isAdmin
+            ? `<td>${Number(it.jumlahDiterimaGudang || 0)} ${escapeHtml(it.satuan)}</td><td><b style="color:${receiptColor};">${escapeHtml(receiptStatus)}</b></td><td>${escapeHtml(receiptLocation || '-')}<br><small>${escapeHtml(it.tanggalPenerimaanTerakhir || 'Belum ada penerimaan')}</small></td>`
+            : `<td>${escapeHtml(it.statusItem || st)}</td>`;
+          html += `<tr><td><b>${escapeHtml(it.namaBarang)}</b></td><td>${escapeHtml(it.jumlah)} ${escapeHtml(it.satuan)}</td><td>${Number(it.jumlahDisetujui || 0)} ${escapeHtml(it.satuan)}</td><td>${Number(it.jumlahTerpenuhi || 0)} ${escapeHtml(it.satuan)}</td>${receiptCells}<td>${escapeHtml(it.kategori)}</td></tr>`;
+        });
+    html += `</tbody></table></div>
+      ${sesiUser.isAdmin ? '<small style="display:block;margin:-7px 0 12px;color:#64748b;">Penerimaan dihitung dari transaksi stok yang berhasil dan tertaut ke tiket. Catatan pemenuhan administratif tidak dianggap sebagai barang diterima.</small>' : ''}
       <div style="background:#fff8e6; padding:10px; border-left:3px solid #f59e0b; font-size:12px; margin-bottom:10px;"><b>Ket. Pemohon:</b> ${escapeHtml(t.keterangan||'-')}</div>
       <div style="background:#e6f0eb; padding:10px; border-left:3px solid #10b981; font-size:12px; margin-bottom:15px;"><b>Catatan Admin / Status:</b> ${escapeHtml(t.catatanAdmin||'-')}</div>`;
 
@@ -1206,13 +1376,22 @@
 
     showToast("Menyimpan keputusan admin...", "success");
     try {
-      const ticket = groupedTickets.find(item => item.kodeTiket === kodeTiket);
+      const ticket = groupedTickets.find(item => item.kodeTiket === kodeTiket) || adminQueueTickets.find(item => item.kodeTiket === kodeTiket);
+      if (!ticket) throw new Error('Data tiket sudah tidak tersedia. Muat ulang daftar permintaan.');
       const payload = { action: "adminKonfirmasi", token: sesiUser.token, kodeTiket: kodeTiket, statusPermintaan: statusVal, catatanAdmin: catatanVal };
       if (statusVal === 'ACC') payload.approvedQuantities = [...ticket.items].sort((a,b) => Number(a.noItem)-Number(b.noItem)).map(item => document.getElementById(`approveQty_${Number(item.noItem)}`).value);
       const res = await postPayload(payload);
       const json = await res.json();
       if (cekSesiBerakhir(json)) return;
-      if(json.status === "success") { showToast(json.message, "success"); tutupModal(); muatRiwayatPermintaan(); } 
+      if(json.status === "success") {
+        showToast(json.message, "success");
+        tutupModal();
+        if (sesiUser.isAdmin) {
+          adminQueueLoaded = false;
+          if (document.getElementById('portalQueueView').hidden === false) muatDaftarPermintaanAdmin(1);
+          if (historyLoaded) muatRiwayatPermintaan(1);
+        } else if (historyLoaded) muatRiwayatPermintaan(1);
+      }
       else { showToast(json.message, "error"); }
     } catch(err) { showToast("Gagal terhubung ke server.", "error"); }
   }
@@ -1251,14 +1430,22 @@
         const res = await postPayload(payload);
         const json = await res.json();
         if (cekSesiBerakhir(json)) return;
-        if(json.status === "success") { showToast("PDF berhasil diunggah!", "success"); muatRiwayatPermintaan(); tutupModal(); } 
+        if(json.status === "success") {
+          showToast("PDF berhasil diunggah!", "success");
+          if (sesiUser.isAdmin) {
+            adminQueueLoaded = false;
+            if (document.getElementById('portalQueueView').hidden === false) muatDaftarPermintaanAdmin(1);
+            if (historyLoaded) muatRiwayatPermintaan(1);
+          } else muatRiwayatPermintaan(1);
+          tutupModal();
+        }
         else { showToast("Gagal upload: " + json.message, "error"); }
       } catch(err) { showToast("Kesalahan koneksi.", "error"); }
     };
   }
 
   function cetakStruk(kode) {
-    const t = groupedTickets.find(x => x.kodeTiket === kode);
+    const t = groupedTickets.find(x => x.kodeTiket === kode) || adminQueueTickets.find(x => x.kodeTiket === kode);
     if(!t) return;
     let printWin = window.open('', '_blank');
     let htmlItems = t.items.map((it) => `
@@ -1302,12 +1489,20 @@
       const res = await postPayload({ action: "hapusPermintaan", token: sesiUser.token, kodeTiket: kode });
       const json = await res.json();
       if (cekSesiBerakhir(json)) return;
-      if(json.status === "success") { showToast(json.message); muatRiwayatPermintaan(); } else showToast(json.message, 'error');
+      if(json.status === "success") {
+        showToast(json.message);
+        if (sesiUser.isAdmin) {
+          adminQueueLoaded = false;
+          if (document.getElementById('portalQueueView').hidden === false) muatDaftarPermintaanAdmin(1);
+          if (historyLoaded) muatRiwayatPermintaan(1);
+        } else muatRiwayatPermintaan(1);
+      } else showToast(json.message, 'error');
     } catch(e) { showToast("Gagal menghapus tiket.", "error"); }
   }
 
   function persiapkanEdit(kode) {
-    const t = groupedTickets.find(x => x.kodeTiket === kode);
+    const t = groupedTickets.find(x => x.kodeTiket === kode) || adminQueueTickets.find(x => x.kodeTiket === kode);
+    if (!t) return showToast('Data tiket tidak tersedia. Muat ulang daftar permintaan.', 'error');
     tutupModal(); idTiketEdit = kode;
     switchPortalView('request');
     document.getElementById('formTitle').innerHTML = `<i class="fa-solid fa-pen-to-square"></i> Mode Revisi Tiket: <span style="color:#000;">${escapeHtml(kode)}</span>`;
