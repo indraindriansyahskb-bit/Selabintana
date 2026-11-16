@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Inventory & Stock Management - CV. SELABINTANA</title>
+  <title>ERP Inventory & Stock Management - CV. SELABINTANA</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
@@ -122,6 +122,30 @@
     .modal-content { background: white; width: 100%; max-width: 525px; border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); overflow: hidden; }
     .modal-header { padding: 18px 24px; background: #f6f9f7; border-bottom: 1px solid var(--erp-border-light); display: flex; justify-content: space-between; align-items: center; }
     .modal-body { padding: 24px; }
+    .opening-stock-row { border: 1px solid var(--erp-border-light); border-radius: 8px; padding: 14px; margin: 10px 0; background: #fff; }
+    .opening-stock-row-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+    .print-voucher-content { background: #fff; color: #17211a; padding: 28px; font-size: 12px; }
+    .print-voucher-content h1 { font-size: 20px; margin: 4px 0; color: #1b3a26; }
+    .print-voucher-content h2 { font-size: 15px; margin: 18px 0 10px; }
+    .print-voucher-content .voucher-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 7px 18px; margin: 16px 0; }
+    .print-voucher-content table { width: 100%; border-collapse: collapse; margin: 10px 0 20px; }
+    .print-voucher-content th, .print-voucher-content td { border: 1px solid #aab7ad; padding: 8px; text-align: left; vertical-align: top; }
+    .print-voucher-content th { background: #edf3ef; }
+    .voucher-signatures { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 42px; text-align: center; }
+    .voucher-signature { min-height: 80px; border-top: 1px solid #47534a; padding-top: 6px; }
+    @media print {
+      @page { size: A4 landscape; margin: 12mm; }
+      body.printing-voucher > :not(#modalPrintVoucher) { display: none !important; }
+      body.printing-voucher * { visibility: hidden !important; }
+      body.printing-voucher #modalPrintVoucher, body.printing-voucher #modalPrintVoucher * { visibility: visible !important; }
+      body.printing-voucher #modalPrintVoucher { display: block !important; position: absolute !important; inset: 0 !important; padding: 0 !important; margin: 0 !important; overflow: visible !important; background: #fff !important; backdrop-filter: none !important; }
+      body.printing-voucher #modalPrintVoucher .modal-content { width: 100% !important; max-width: none !important; max-height: none !important; border-radius: 0 !important; box-shadow: none !important; overflow: visible !important; }
+      body.printing-voucher #modalPrintVoucher .modal-header, body.printing-voucher .print-voucher-actions { display: none !important; }
+      body.printing-voucher .print-voucher-content { padding: 0 !important; }
+      body.printing-voucher .print-voucher-content { font-size: 10px !important; }
+      body.printing-voucher .print-voucher-content th, body.printing-voucher .print-voucher-content td { padding: 5px !important; }
+      body.printing-voucher .print-voucher-content tr { break-inside: avoid; }
+    }
 
     /* LOGIN SCREEN MODAL */
     .login-wrapper { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #1b3a26 0%, #2d6a43 100%); padding: 20px; }
@@ -495,8 +519,13 @@
           </div>
           <div class="erp-card-body">
             <div style="background:#fffbe6;border:1px solid #ffe58f;border-radius:8px;padding:12px 14px;margin-bottom:18px;color:#78520a;">
-              Masukkan saldo fisik hasil hitung. Sistem mencatat selisih sebagai mutasi masuk atau keluar dan menyimpan pelaku serta alasan pada audit stok. Untuk saldo awal, pilih barang baru dan masukkan jumlah awalnya.
+              Koreksi satu barang yang sudah ada, atau masukkan saldo awal beberapa barang sekaligus ke satu gudang. Setiap barang tetap mendapat kode transaksi dan catatan audit tersendiri.
             </div>
+            <div class="erp-filter-bar" style="margin-bottom:16px;">
+              <button type="button" id="btnModeKoreksiSatu" class="btn btn-primary" onclick="setCorrectionModeView('single')">Koreksi satu barang</button>
+              <button type="button" id="btnModeSaldoAwalBulk" class="btn btn-outline" onclick="setCorrectionModeView('bulk')"><i class="fa-solid fa-layer-group"></i> Saldo awal banyak barang</button>
+            </div>
+            <div id="singleCorrectionPanel">
             <form id="formKoreksiStok">
               <div class="form-row">
                 <div class="form-group"><label for="koreksiUnit">Unit / Farm</label><select id="koreksiUnit" onchange="ubahLokasiKoreksi()" required><option value="">-- Pilih Unit --</option></select></div>
@@ -529,6 +558,24 @@
               <div class="form-group"><label for="koreksiAlasan">Alasan koreksi</label><textarea id="koreksiAlasan" minlength="5" maxlength="500" rows="3" required placeholder="Contoh: saldo awal per 1 Januari atau hasil stock opname tanggal ..." style="width:100%;padding:9px 12px;border:1px solid var(--erp-border);border-radius:6px;font:inherit;resize:vertical;"></textarea></div>
               <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Simpan Koreksi</button>
             </form>
+            </div>
+            <div id="bulkOpeningPanel" hidden>
+              <form id="formSaldoAwalBulk">
+                <div class="form-row">
+                  <div class="form-group"><label for="saldoAwalUnit">Unit / Farm</label><select id="saldoAwalUnit" onchange="updateBulkOpeningWarehouses()" required><option value="">-- Pilih Unit --</option></select></div>
+                  <div class="form-group"><label for="saldoAwalGudang">Gudang</label><select id="saldoAwalGudang" onchange="updateBulkOpeningExpiryRequirements()" required><option value="">-- Pilih Gudang --</option></select></div>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:12px 0;">
+                  <b>Daftar barang saldo awal</b>
+                  <button type="button" class="btn btn-outline btn-sm" onclick="tambahBarisSaldoAwal()"><i class="fa-solid fa-plus"></i> Tambah Barang</button>
+                </div>
+                <small id="saldoAwalExpiryHint" style="display:block;margin:0 0 10px;color:var(--erp-text-muted);">Pilih gudang untuk melihat aturan kedaluwarsa.</small>
+                <div id="saldoAwalRows"></div>
+                <div class="form-group" style="margin-top:14px;"><label for="saldoAwalAlasan">Alasan / tanggal saldo awal</label><textarea id="saldoAwalAlasan" minlength="5" maxlength="500" rows="3" required placeholder="Contoh: saldo awal per 1 Januari 2026 berdasarkan stock opname ..." style="width:100%;padding:9px 12px;border:1px solid var(--erp-border);border-radius:6px;font:inherit;resize:vertical;"></textarea></div>
+                <small style="display:block;margin:-4px 0 12px;color:var(--erp-text-muted);">Maksimal 50 barang per gudang dalam sekali simpan. Barang yang sudah memiliki saldo di gudang ini harus dikoreksi melalui form satu barang. Untuk gudang OVK, tanggal kedaluwarsa setiap barang wajib diisi.</small>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Simpan Saldo Awal</button>
+              </form>
+            </div>
           </div>
         </div>
         <div class="erp-card" style="margin-top:16px;">
@@ -751,15 +798,30 @@
   </div>
 </div>
 
+<div id="modalPrintVoucher" class="modal" role="dialog" aria-modal="true" aria-labelledby="printVoucherTitle">
+  <div class="modal-content" style="max-width:900px;max-height:92vh;overflow:auto;">
+    <div class="modal-header print-voucher-actions">
+      <h3 id="printVoucherTitle" style="font-size:14px;font-weight:700;color:var(--erp-primary);"><i class="fa-solid fa-print"></i> Formulir Transaksi</h3>
+      <button type="button" aria-label="Tutup formulir cetak" onclick="tutupBuktiTransaksi()" style="background:none;border:0;cursor:pointer;font-size:16px;"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div id="printVoucherContent" class="print-voucher-content"></div>
+    <div class="print-voucher-actions" style="display:flex;justify-content:flex-end;gap:8px;padding:0 24px 20px;">
+      <button type="button" class="btn btn-outline" onclick="tutupBuktiTransaksi()">Tutup</button>
+      <button type="button" class="btn btn-primary" onclick="cetakBuktiTransaksi()"><i class="fa-solid fa-print"></i> Cetak / Simpan PDF</button>
+    </div>
+  </div>
+</div>
+
 <script>
   const GAS_URL = "https://script.google.com/macros/s/AKfycbx_tuIlCd-_n3PMtmv-_hPP4QrbGfPVYzk4tN33WinGtA8fyhe19uwXg6oS7v9jnm9yZw/exec";
   const AUTH_SESSION_KEY = 'selabintana_app_session';
   const LEGACY_SESSION_KEYS = ['portal_user_session', 'stok_app_user_session'];
 
-  let sesiUser = {}; let masterUnits = []; let allUnits = []; let masterGudang = []; let rawJurnalData = []; let rawStokList = [];
+  let sesiUser = {}; let masterUnits = []; let allUnits = []; let masterGudang = []; let rawJurnalData = []; let displayedJournalRows = []; let rawStokList = [];
   let rawStockSnapshot = []; let appliedStockSnapshotFilters = null; let transferRows = []; let ticketReceiptOptions = []; let stockTransactionIds = Object.create(null); let allowedGudang = [];
   let jurnalLoaded = false; let stockAuditLoaded = false; let correctionHistoryLoaded = false;
   let deletableTransactionRows = []; let deleteCandidatesLoaded = false; let deletedHistoryLoaded = false;
+  let openingStockRowCounter = 0;
 
   function escapeHtml(value) {
     return String(value == null ? '' : value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
@@ -994,6 +1056,9 @@
       const correctionUnits = sesiUser.isAdmin ? (allUnits.length ? allUnits : masterUnits) : [];
       koreksiUnit.innerHTML = '<option value="">-- Pilih Unit --</option>' + correctionUnits.map(u => `<option value="${escapeHtml(u.kodeUnit)}">${escapeHtml(u.namaUnit)}</option>`).join('');
     }
+    const openingUnit = document.getElementById('saldoAwalUnit');
+    if (openingUnit) openingUnit.innerHTML = '<option value="">-- Pilih Unit --</option>' + (sesiUser.isAdmin ? (allUnits.length ? allUnits : masterUnits) : []).map(u => `<option value="${escapeHtml(u.kodeUnit)}">${escapeHtml(u.namaUnit)}</option>`).join('');
+    updateBulkOpeningWarehouses();
     if (trUnitTujuan) updateTransferTargetUnitOptions();
     updateJournalWarehouseFilter();
     if (koreksiUnit && koreksiUnit.value) ubahLokasiKoreksi();
@@ -1406,6 +1471,75 @@
     updatePreviewKoreksi();
   }
 
+  function setCorrectionModeView(mode) {
+    const showBulk = mode === 'bulk';
+    document.getElementById('singleCorrectionPanel').hidden = showBulk;
+    document.getElementById('bulkOpeningPanel').hidden = !showBulk;
+    document.getElementById('btnModeKoreksiSatu').className = showBulk ? 'btn btn-outline' : 'btn btn-primary';
+    document.getElementById('btnModeSaldoAwalBulk').className = showBulk ? 'btn btn-primary' : 'btn btn-outline';
+    if (showBulk && !document.querySelector('#saldoAwalRows .opening-stock-row')) tambahBarisSaldoAwal();
+  }
+
+  function updateBulkOpeningWarehouses() {
+    const unitSelect = document.getElementById('saldoAwalUnit');
+    const warehouseSelect = document.getElementById('saldoAwalGudang');
+    if (!unitSelect || !warehouseSelect) return;
+    const unit = unitSelect.value;
+    const previous = warehouseSelect.value;
+    const warehouses = masterGudang.filter(item => String(item.kodeUnit).toLowerCase() === String(unit).toLowerCase());
+    warehouseSelect.innerHTML = '<option value="">-- Pilih Gudang --</option>' + warehouses.map(item => `<option value="${escapeHtml(item.kodeGudang)}">${escapeHtml(item.namaGudang)} (${escapeHtml(item.kodeGudang)})</option>`).join('');
+    if (warehouses.some(item => String(item.kodeGudang) === previous)) warehouseSelect.value = previous;
+    updateBulkOpeningExpiryRequirements();
+  }
+
+  function updateBulkOpeningExpiryRequirements() {
+    const isOvk = isOvkWarehouseClient(document.getElementById('saldoAwalGudang').value, document.getElementById('saldoAwalUnit').value);
+    document.querySelectorAll('#saldoAwalRows [data-field="expiry"]').forEach(input => {
+      input.required = isOvk;
+      input.min = todayJakarta();
+    });
+    const hint = document.getElementById('saldoAwalExpiryHint');
+    if (hint) hint.textContent = isOvk ? 'Gudang OVK: kedaluwarsa wajib dan tidak boleh lewat.' : 'Batch opsional; tanggal kedaluwarsa dapat dicatat bila tersedia.';
+  }
+
+  function tambahBarisSaldoAwal() {
+    const container = document.getElementById('saldoAwalRows');
+    const currentRows = container.querySelectorAll('.opening-stock-row').length;
+    if (currentRows >= 50) return showToast('Maksimal 50 barang dalam satu proses.', 'error');
+    const index = ++openingStockRowCounter;
+    const row = document.createElement('div');
+    row.className = 'opening-stock-row';
+    row.innerHTML = `
+      <div class="opening-stock-row-header"><b>Barang <span class="opening-stock-row-number">${currentRows + 1}</span></b><button type="button" class="btn btn-outline btn-sm" aria-label="Hapus baris barang" onclick="hapusBarisSaldoAwal(this)"><i class="fa-solid fa-xmark"></i> Hapus</button></div>
+      <div class="form-row">
+        <div class="form-group"><label>Nama barang</label><input type="text" data-field="name" maxlength="200" required placeholder="Nama barang"></div>
+        <div class="form-group"><label>Kategori</label><select data-field="category" required><option>PAKAN</option><option>OBAT</option><option>VAKSIN</option><option>VITAMIN</option><option>KIMIA</option><option>PERALATAN</option><option>LAINNYA</option></select></div>
+        <div class="form-group"><label>Satuan</label><input type="text" data-field="unit" maxlength="32" required placeholder="kg, zak, botol, pcs"></div>
+        <div class="form-group"><label>Jumlah saldo awal</label><input type="number" data-field="quantity" min="0.001" max="1000000000" step="any" inputmode="decimal" required placeholder="0"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Nomor batch (opsional)</label><input type="text" data-field="batch" maxlength="120" placeholder="Nomor batch"></div>
+        <div class="form-group"><label>Tanggal kedaluwarsa</label><input type="date" data-field="expiry" min="${todayJakarta()}"></div>
+      </div>`;
+    row.dataset.rowKey = String(index);
+    container.appendChild(row);
+    updateBulkOpeningRowNumbers();
+    updateBulkOpeningExpiryRequirements();
+  }
+
+  function hapusBarisSaldoAwal(button) {
+    const rows = document.querySelectorAll('#saldoAwalRows .opening-stock-row');
+    if (rows.length <= 1) return showToast('Form saldo awal harus memiliki minimal satu barang.', 'error');
+    button.closest('.opening-stock-row').remove();
+    updateBulkOpeningRowNumbers();
+  }
+
+  function updateBulkOpeningRowNumbers() {
+    document.querySelectorAll('#saldoAwalRows .opening-stock-row').forEach((row, index) => {
+      row.querySelector('.opening-stock-row-number').textContent = String(index + 1);
+    });
+  }
+
   function ubahModeKoreksi() {
     const isNew = document.getElementById('koreksiMode').value === 'BARU';
     const itemSelect = document.getElementById('koreksiBarang');
@@ -1581,12 +1715,14 @@
 
   function renderTabelJurnal(data) {
     if (data.length === 0) { 
+      displayedJournalRows = [];
       document.getElementById('containerTabelJurnal').innerHTML = "<p style='text-align:center; padding:30px; color:var(--erp-text-muted);'>Tidak ada rincian transaksi barang yang sesuai.</p>"; 
       return; 
     }
+    displayedJournalRows = data.slice();
 
     let html = `<table class="erp-table"><thead><tr>
-      <th>No</th><th>Waktu Transaksi</th><th>Kode</th><th>Nama Barang</th><th>Jenis</th><th>Masuk</th><th>Keluar</th><th>Running Stok</th><th>Satuan</th><th>Unit / Gudang</th><th>Batch</th><th>Kedaluwarsa</th><th>Kandang / Peruntukan</th><th>Keterangan Detail</th>
+      <th>No</th><th>Waktu Transaksi</th><th>Kode</th><th>Nama Barang</th><th>Jenis</th><th>Masuk</th><th>Keluar</th><th>Running Stok</th><th>Satuan</th><th>Unit / Gudang</th><th>Batch</th><th>Kedaluwarsa</th><th>Kandang / Peruntukan</th><th>Keterangan Detail</th><th>Formulir</th>
     </tr></thead><tbody>`;
 
     data.forEach((item, idx) => {
@@ -1597,7 +1733,7 @@
 
       html += `<tr>
         <td>${idx + 1}</td>
-        <td><small class="mono" style="color:var(--erp-text-muted);">${escapeHtml(item.tglSistem)}</small></td>
+        <td><small class="mono" style="color:var(--erp-text-muted);">${escapeHtml(item.tglSistem)}</small><br><small class="mono">${escapeHtml(item.idTransaksi || '-')}</small></td>
         <td><span class="mono">${escapeHtml(item.kodeBarang)}</span></td>
         <td><b>${escapeHtml(item.namaBarang)}</b><br><small>${escapeHtml(item.kategori)}</small></td>
         <td><span class="badge ${tipe === 'MASUK' ? 'badge-success' : 'badge-danger'}">${escapeHtml(item.tipeMutasi)}</span></td>
@@ -1610,11 +1746,87 @@
         <td>${escapeHtml(item.tanggalKadaluarsa || '-')}</td>
         <td>${escapeHtml(item.lokasiKandang || '-')}</td>
         <td><small style="color:var(--erp-text-main);">${escapeHtml(item.keterangan)}</small></td>
+        <td><button type="button" class="btn btn-outline btn-sm" onclick="cetakBuktiJurnal(${idx})" aria-label="Cetak formulir transaksi ${escapeHtml(item.idTransaksi || item.idLog)}"><i class="fa-solid fa-print"></i> Cetak</button></td>
       </tr>`;
     });
 
     html += `</tbody></table>`;
     document.getElementById('containerTabelJurnal').innerHTML = html;
+  }
+
+  function tampilkanBuktiTransaksi(voucher) {
+    const data = voucher || {};
+    const rows = Array.isArray(data.items) ? data.items : [];
+    const itemRows = rows.map((item, index) => {
+      const direction = String(item.tipeMutasi || data.tipeMutasi || '').toUpperCase();
+      const masuk = direction === 'MASUK' ? Number(item.jumlah || 0) : 0;
+      const keluar = direction === 'KELUAR' || direction === 'TRANSFER' ? Number(item.jumlah || 0) : 0;
+      const movementText = item.arah || (direction === 'DIAJUKAN' ? 'PENGAJUAN MUTASI' : direction === 'DITOLAK' ? 'MUTASI DITOLAK' : masuk ? 'MASUK' : keluar ? 'KELUAR' : direction === 'TRANSFER' ? 'MUTASI' : 'KOREKSI');
+      const balanceText = item.saldoSebelum != null || item.saldoSesudah != null
+        ? `${formatNumber(item.saldoSebelum)} → ${formatNumber(item.saldoSesudah)}` : '-';
+      return `<tr><td>${index + 1}</td><td>${escapeHtml(item.kodeBarang || '-')}</td><td><b>${escapeHtml(item.namaBarang || '-')}</b><br><small>${escapeHtml(item.kategori || '-')}</small></td><td>${escapeHtml(movementText)}</td><td>${formatNumber(item.jumlah || 0)} ${escapeHtml(item.satuan || 'pcs')}</td><td>${escapeHtml(item.batch || '-')}</td><td>${escapeHtml(item.tanggalKadaluarsa || '-')}</td><td>${escapeHtml(item.lokasiKandang || '-')}</td><td>${escapeHtml(balanceText)}</td><td><small>${escapeHtml(item.idTransaksi || data.idTransaksi || '-')}</small></td></tr>`;
+    }).join('');
+    const meta = [
+      ['Nomor formulir', data.nomor || data.idTransaksi || data.idTransfer || '-'],
+      ['Waktu transaksi', data.waktu || new Date().toLocaleString('id-ID', {timeZone: 'Asia/Jakarta'})],
+      ['Status', data.status || 'Tercatat'],
+      ['Sumber', data.sumber || '-'],
+      ['Unit / gudang', [data.kodeUnit || data.unit, data.kodeGudang || data.gudang].filter(Boolean).join(' / ') || '-'],
+      ['Asal mutasi', data.asal || '-'],
+      ['Tujuan mutasi', data.tujuan || '-'],
+      ['Pelaku', data.pelaku || sesiUser.nama || sesiUser.username || '-']
+    ].map(([label, value]) => `<div><b>${escapeHtml(label)}:</b> ${escapeHtml(value)}</div>`).join('');
+    document.getElementById('printVoucherTitle').textContent = data.judul || 'Formulir Transaksi';
+    document.getElementById('printVoucherContent').innerHTML = `
+      <header style="text-align:center;border-bottom:2px solid #1b3a26;padding-bottom:12px;">
+        <div style="font-size:11px;font-weight:700;letter-spacing:1.2px;">CV. SELABINTANA</div>
+        <h1>Sistem Operasional Farm</h1>
+        <div style="font-size:17px;font-weight:700;margin-top:10px;">${escapeHtml(data.judul || 'Formulir Transaksi')}</div>
+      </header>
+      <section class="voucher-meta">${meta}</section>
+      ${data.catatan ? `<p style="margin:10px 0;"><b>Keterangan:</b> ${escapeHtml(data.catatan)}</p>` : ''}
+      <h2>Rincian Barang</h2>
+      <table><thead><tr><th>No</th><th>Kode</th><th>Nama / Kategori</th><th>Jenis</th><th>Jumlah</th><th>Batch</th><th>Kedaluwarsa</th><th>Kandang / Peruntukan</th><th>Saldo Sebelum → Sesudah</th><th>ID Transaksi</th></tr></thead><tbody>${itemRows || '<tr><td colspan="10">Tidak ada rincian barang.</td></tr>'}</tbody></table>
+      <div class="voucher-signatures">
+        <div class="voucher-signature">Diserahkan / dikeluarkan</div>
+        <div class="voucher-signature">Diterima / digunakan</div>
+        <div class="voucher-signature">Diperiksa / disetujui</div>
+      </div>
+      <footer style="margin-top:18px;color:#5e6e64;font-size:10px;text-align:right;">Dicetak dari Sistem Operasional Farm · ${escapeHtml(new Date().toLocaleString('id-ID', {timeZone: 'Asia/Jakarta'}))}</footer>`;
+    document.getElementById('modalPrintVoucher').style.display = 'flex';
+  }
+
+  function tutupBuktiTransaksi() {
+    document.getElementById('modalPrintVoucher').style.display = 'none';
+    document.body.classList.remove('printing-voucher');
+  }
+
+  function cetakBuktiTransaksi() {
+    document.body.classList.add('printing-voucher');
+    window.print();
+  }
+  window.addEventListener('afterprint', function() { document.body.classList.remove('printing-voucher'); });
+
+  function cetakBuktiJurnal(index) {
+    const item = displayedJournalRows[Number(index)];
+    if (!item) return showToast('Rincian transaksi tidak tersedia. Muat ulang jurnal.', 'error');
+    const note = String(item.keterangan || '');
+    const type = String(item.tipeMutasi || '').toUpperCase();
+    let title = type === 'MASUK' ? 'Bukti Penerimaan Barang' : 'Bukti Pengeluaran Barang';
+    let source = '-';
+    if (/^Pembatalan transaksi/i.test(note)) title = 'Bukti Pembatalan Transaksi Stok';
+    else if (/^Mutasi Masuk Dari/i.test(note)) { title = 'Bukti Penerimaan Mutasi'; source = 'Mutasi antar gudang'; }
+    else if (/^Mutasi Keluar Ke/i.test(note)) { title = 'Bukti Pengeluaran Mutasi'; source = 'Mutasi antar gudang'; }
+    else if (/^Pemakaian untuk/i.test(note)) { title = 'Bukti Pemakaian Barang'; source = 'Pemakaian kandang / operasional'; }
+    else source = type === 'MASUK' ? 'Penerimaan langsung / stok' : 'Pengeluaran stok';
+    const qty = Number(item.jumlah || 0);
+    const previous = type === 'MASUK' ? Number(item.saldoSetelah || 0) - qty : Number(item.saldoSetelah || 0) + qty;
+    tampilkanBuktiTransaksi({
+      judul: title, idTransaksi: item.idTransaksi || item.idLog, waktu: item.tglSistem, status: 'Tercatat',
+      sumber: source, kodeUnit: item.kodeUnit, kodeGudang: item.kodeGudang, pelaku: item.pelaku,
+      catatan: note,
+      items: [{idTransaksi: item.idTransaksi || item.idLog, kodeBarang: item.kodeBarang, namaBarang: item.namaBarang, kategori: item.kategori, tipeMutasi: item.tipeMutasi, jumlah: qty, satuan: item.satuan, batch: item.batch, tanggalKadaluarsa: item.tanggalKadaluarsa, lokasiKandang: item.lokasiKandang, saldoSebelum: previous, saldoSesudah: item.saldoSetelah}]
+    });
   }
 
   async function eksporKeExcel() {
@@ -1978,9 +2190,9 @@
       if (t.status === 'ACC_ADMIN') badge = '<span class="badge badge-info">Dalam Perjalanan</span>';
       if (t.status === 'DITERIMA') badge = '<span class="badge badge-success">Diterima</span>';
       if (t.status === 'DITOLAK_ADMIN') badge = '<span class="badge badge-danger">Ditolak</span>';
-      let actions = '—';
-      if (includeActions && t.status === 'PENDING_ADMIN' && sesiUser.isAdmin) actions = `<button class="btn btn-success btn-sm" onclick="prosesAccAdmin(${inlineArg(t.idTransfer)},'ACC')">Setujui</button> <button class="btn btn-outline btn-sm" onclick="prosesAccAdmin(${inlineArg(t.idTransfer)},'TOLAK')">Tolak</button>`;
-      else if (includeActions && t.status === 'ACC_ADMIN' && clientCanAccessWarehouse(t.unitTujuan, t.gudangTujuan)) actions = `<button class="btn btn-primary btn-sm" onclick="konfirmasiTerimaTransfer(${inlineArg(t.idTransfer)})">Konfirmasi Terima</button>`;
+      let actions = `<button type="button" class="btn btn-outline btn-sm" onclick="cetakFormMutasi(${inlineArg(t.idTransfer)})"><i class="fa-solid fa-print"></i> Cetak</button>`;
+      if (includeActions && t.status === 'PENDING_ADMIN' && sesiUser.isAdmin) actions += ` <button class="btn btn-success btn-sm" onclick="prosesAccAdmin(${inlineArg(t.idTransfer)},'ACC')">Setujui</button> <button class="btn btn-outline btn-sm" onclick="prosesAccAdmin(${inlineArg(t.idTransfer)},'TOLAK')">Tolak</button>`;
+      else if (includeActions && t.status === 'ACC_ADMIN' && clientCanAccessWarehouse(t.unitTujuan, t.gudangTujuan)) actions += ` <button class="btn btn-primary btn-sm" onclick="konfirmasiTerimaTransfer(${inlineArg(t.idTransfer)})">Konfirmasi Terima</button>`;
       html += `<tr><td><small class="mono">${escapeHtml(t.tgl)}</small><br><small>${escapeHtml(t.idTransfer)}</small></td><td><b>${escapeHtml(t.namaBarang)}</b><br><small>${escapeHtml(t.kodeBarang)}</small></td><td>${escapeHtml(t.unitAsal)}<br><small>${escapeHtml(t.gudangAsal)}</small></td><td><b>${escapeHtml(t.unitTujuan)}</b><br><small>${escapeHtml(t.gudangTujuan)}</small></td><td class="mono"><b>${escapeHtml(t.jumlah)} ${escapeHtml(t.satuan)}</b></td><td>${badge}</td><td>${actions}</td></tr>`;
     });
     return html + '</tbody></table>';
@@ -1995,11 +2207,34 @@
     document.getElementById('containerTabelHistory').innerHTML = renderTransferTable(history, false);
   }
 
+  function bentukVoucherMutasi(transfer, overrides = {}) {
+    const row = Object.assign({}, transfer || {}, overrides);
+    const status = String(row.status || '').toUpperCase();
+    const title = status === 'DITERIMA' ? 'Bukti Penerimaan Mutasi' : status === 'ACC_ADMIN' ? 'Surat Jalan Mutasi Barang' : status === 'DITOLAK_ADMIN' ? 'Formulir Mutasi Ditolak' : 'Form Pengajuan Mutasi';
+    const direction = status === 'DITERIMA' ? 'MASUK' : status === 'ACC_ADMIN' ? 'KELUAR' : status === 'DITOLAK_ADMIN' ? 'DITOLAK' : 'DIAJUKAN';
+    return {
+      judul: title, nomor: row.idTransfer || '-', idTransaksi: row.idTransaksi || row.idTransfer || '-',
+      idTransfer: row.idTransfer || '-', waktu: row.waktu || row.tgl || new Date().toLocaleString('id-ID', {timeZone: 'Asia/Jakarta'}),
+      status: row.status || '-', sumber: 'Mutasi antar gudang',
+      asal: `${row.unitAsal || '-'} / ${row.gudangAsal || '-'}`, tujuan: `${row.unitTujuan || '-'} / ${row.gudangTujuan || '-'}`,
+      pelaku: row.pelaku || sesiUser.nama || sesiUser.username || '-', catatan: row.catatan || `Referensi transfer: ${row.idTransfer || '-'}`,
+      items: [{idTransaksi: row.idTransaksi || row.idTransfer || '-', kodeBarang: row.kodeBarang || '-', namaBarang: row.namaBarang || '-', kategori: row.kategori || '-', tipeMutasi: direction, jumlah: row.jumlah, satuan: row.satuan || 'pcs', batch: row.batch || '', tanggalKadaluarsa: row.tanggalKadaluarsa || '', saldoSebelum: row.saldoSebelum, saldoSesudah: row.saldoSesudah}]
+    };
+  }
+
+  function cetakFormMutasi(idTransfer) {
+    const transfer = transferRows.find(row => String(row.idTransfer) === String(idTransfer));
+    if (!transfer) return showToast('Data mutasi tidak ditemukan. Muat ulang riwayat mutasi.', 'error');
+    tampilkanBuktiTransaksi(bentukVoucherMutasi(transfer));
+  }
+
   function getActionableTransferRows() {
     return transferRows.filter(t => (t.status === 'PENDING_ADMIN' && sesiUser.isAdmin) || (t.status === 'ACC_ADMIN' && clientCanAccessWarehouse(t.unitTujuan, t.gudangTujuan)));
   }
 
   async function prosesAccAdmin(idTransfer, keputusan) {
+    const transfer = transferRows.find(row => String(row.idTransfer) === String(idTransfer));
+    if (!transfer) return showToast('Pengajuan mutasi tidak ditemukan. Muat ulang antrean.', 'error');
     if(!confirm(`Apakah Anda yakin ingin ${keputusan} mutasi ini?`)) return;
     let catatanKeputusan = '';
     if (keputusan === 'TOLAK') {
@@ -2009,7 +2244,10 @@
       if (catatanKeputusan.length < 5 || catatanKeputusan.length > 500) return showToast('Alasan penolakan wajib 5–500 karakter.', 'error');
     }
     const payload = { action: "prosesAccAdminMutasi", idTransfer: idTransfer, keputusan: keputusan, catatanKeputusan, idTransaksi: `MUT-${idTransfer}-${keputusan}` };
-    await kirimAksiStok(payload, function() { muatPendingTransfers(); muatJurnalTransaksiBarang(); muatMasterStokBarang(); });
+    await kirimAksiStok(payload, async function(result) {
+      await Promise.all([muatPendingTransfers(), muatJurnalTransaksiBarang(), muatMasterStokBarang()]);
+      if (!result.duplicate) tampilkanBuktiTransaksi(bentukVoucherMutasi(Object.assign({}, transfer, {status: keputusan === 'ACC' ? 'ACC_ADMIN' : 'DITOLAK_ADMIN', waktu: new Date().toLocaleString('id-ID', {timeZone: 'Asia/Jakarta'}), idTransaksi: result.idTransaksi || payload.idTransaksi, saldoSebelum: result.saldoSebelum, saldoSesudah: result.saldoSesudah, catatan: catatanKeputusan || 'Disetujui admin.'})));
+    });
   }
 
   async function konfirmasiTerimaTransfer(idTransfer) {
@@ -2023,7 +2261,10 @@
     }
     if(!confirm("Apakah barang mutasi telah fisik diterima secara akurat?")) return;
     const payload = { action: "konfirmasiTerimaTransfer", idTransfer: idTransfer, idTransaksi: `MUT-${idTransfer}-TERIMA` };
-    await kirimAksiStok(payload, function() { muatPendingTransfers(); muatJurnalTransaksiBarang(); muatMasterStokBarang(); });
+    await kirimAksiStok(payload, async function(result, submittedPayload) {
+      await Promise.all([muatPendingTransfers(), muatJurnalTransaksiBarang(), muatMasterStokBarang()]);
+      if (!result.duplicate) tampilkanBuktiTransaksi(bentukVoucherMutasi(Object.assign({}, transfer, {status: 'DITERIMA', waktu: new Date().toLocaleString('id-ID', {timeZone: 'Asia/Jakarta'}), idTransaksi: result.idTransaksi || submittedPayload.idTransaksi, kodeBarang: result.kodeBarang || transfer.kodeBarang, saldoSebelum: result.saldoSebelum, saldoSesudah: result.saldoSesudah})));
+    });
   }
 
   async function kirimAksiStok(payload, onSuccess, formId) {
@@ -2049,7 +2290,7 @@
       showToast(json.message || "Transaksi berhasil disimpan.");
       setConnectionStatus('ok', 'Transaksi tersimpan');
       if (transactionKey) delete stockTransactionIds[transactionKey];
-      if (onSuccess) await onSuccess(json);
+      if (onSuccess) await onSuccess(json, payload);
     } catch (e) {
       setConnectionStatus('error', 'Koneksi gagal');
       showToast("Koneksi bermasalah. Coba ulangi; sistem akan mencegah ID transaksi yang sama tercatat dua kali.", "error");
@@ -2161,12 +2402,20 @@
       payload.kodeTiket = selected.ticket;
       payload.noItem = selected.noItem;
     }
-    await kirimAksiStok(payload, async function() {
+    await kirimAksiStok(payload, async function(result, submittedPayload) {
       document.getElementById('formPenerimaan').reset();
       toggleReceiptSource();
       updateSubGudangPilih('penUnit', 'penGudang');
       tutupModal('modalPenerimaan');
       await Promise.all([muatJurnalTransaksiBarang(), muatMasterStokBarang(), muatTiketPenerimaan()]);
+      if (!result.duplicate) tampilkanBuktiTransaksi({
+        judul: 'Bukti Penerimaan Barang', idTransaksi: result.idTransaksi || submittedPayload.idTransaksi,
+        waktu: new Date().toLocaleString('id-ID', {timeZone: 'Asia/Jakarta'}), status: 'Tercatat',
+        sumber: submittedPayload.sumberPenerimaan === 'PERMINTAAN_ACC' ? `Tiket Portal ${submittedPayload.kodeTiket} · item ${submittedPayload.noItem}` : `Supplier: ${submittedPayload.supplier || '-'}`,
+        kodeUnit: submittedPayload.kodeUnit, kodeGudang: submittedPayload.kodeGudang, pelaku: sesiUser.nama || sesiUser.username,
+        catatan: submittedPayload.sumberPenerimaan === 'PERMINTAAN_ACC' ? 'Penerimaan untuk pemenuhan tiket portal.' : 'Penerimaan langsung / pembelian supplier.',
+        items: [{idTransaksi: result.idTransaksi || submittedPayload.idTransaksi, kodeBarang: result.kodeBarang, namaBarang: submittedPayload.namaBarang, kategori: submittedPayload.kategori, tipeMutasi: 'MASUK', jumlah: submittedPayload.jumlah, satuan: submittedPayload.satuan, batch: submittedPayload.batch, tanggalKadaluarsa: submittedPayload.tanggalKadaluarsa, saldoSebelum: result.saldoSebelum, saldoSesudah: result.saldoSesudah}]
+      });
     }, 'formPenerimaan');
   });
 
@@ -2184,7 +2433,18 @@
       jumlah: document.getElementById('pemJumlah').value,
       keterangan: document.getElementById('pemKet').value.trim()
     };
-    await kirimAksiStok(payload, async function() { tutupModal('modalPemakaian'); await Promise.all([muatJurnalTransaksiBarang(), muatMasterStokBarang()]); }, 'formPemakaian');
+    const usedItem = rawStokList.find(item => String(item.kodeBarang) === String(selection.kodeBarang) && String(item.kodeUnit) === String(selection.kodeUnit) && String(item.kodeGudang) === String(selection.kodeGudang));
+    await kirimAksiStok(payload, async function(result, submittedPayload) {
+      tutupModal('modalPemakaian');
+      await Promise.all([muatJurnalTransaksiBarang(), muatMasterStokBarang()]);
+      if (!result.duplicate) tampilkanBuktiTransaksi({
+        judul: 'Bukti Pengeluaran / Pemakaian Barang', idTransaksi: result.idTransaksi || submittedPayload.idTransaksi,
+        waktu: new Date().toLocaleString('id-ID', {timeZone: 'Asia/Jakarta'}), status: 'Tercatat', sumber: 'Pemakaian kandang / operasional',
+        kodeUnit: submittedPayload.kodeUnit, kodeGudang: submittedPayload.kodeGudang, pelaku: sesiUser.nama || sesiUser.username,
+        catatan: submittedPayload.keterangan || `Pemakaian untuk: ${submittedPayload.lokasiKandang}`,
+        items: [{idTransaksi: result.idTransaksi || submittedPayload.idTransaksi, kodeBarang: result.kodeBarang || submittedPayload.kodeBarang, namaBarang: usedItem && usedItem.namaBarang, kategori: usedItem && usedItem.kategori, tipeMutasi: 'KELUAR', jumlah: submittedPayload.jumlah, satuan: usedItem && usedItem.satuan, lokasiKandang: submittedPayload.lokasiKandang, saldoSebelum: result.saldoSebelum, saldoSesudah: result.saldoSesudah}]
+      });
+    }, 'formPemakaian');
   });
 
   function bukaModalTransferDirect() { 
@@ -2205,27 +2465,78 @@
       gudangTujuan: document.getElementById('trGudangTujuan').value,
       jumlahTransfer: document.getElementById('trJumlah').value
     };
-    await kirimAksiStok(payload, async function() { tutupModal('modalTransfer'); await Promise.all([muatPendingTransfers(), muatJurnalTransaksiBarang()]); }, 'formTransferStok');
+    const transferItem = rawStokList.find(item => String(item.kodeBarang) === String(selection.kodeBarang) && String(item.kodeUnit) === String(selection.kodeUnit) && String(item.kodeGudang) === String(selection.kodeGudang));
+    await kirimAksiStok(payload, async function(result, submittedPayload) {
+      tutupModal('modalTransfer');
+      await Promise.all([muatPendingTransfers(), muatJurnalTransaksiBarang()]);
+      const transferDocument = {idTransfer: result.idTransfer, idTransaksi: submittedPayload.idTransaksi, tgl: new Date().toLocaleString('id-ID', {timeZone: 'Asia/Jakarta'}), namaBarang: transferItem && transferItem.namaBarang, kodeBarang: submittedPayload.kodeBarangAsal, jumlah: submittedPayload.jumlahTransfer, satuan: transferItem && transferItem.satuan, unitAsal: submittedPayload.kodeUnitAsal, gudangAsal: submittedPayload.kodeGudangAsal, unitTujuan: submittedPayload.unitTujuan, gudangTujuan: submittedPayload.gudangTujuan, status: 'PENDING_ADMIN'};
+      if (!result.duplicate) tampilkanBuktiTransaksi(bentukVoucherMutasi(transferDocument));
+    }, 'formTransferStok');
   });
 
   document.getElementById('formTransferReceipt').addEventListener('submit', async function(event) {
     event.preventDefault();
     const idTransfer = document.getElementById('transferReceiptId').value;
     if (!idTransfer) return showToast('ID mutasi tidak ditemukan.', 'error');
+    const transfer = transferRows.find(row => String(row.idTransfer) === String(idTransfer));
+    if (!transfer) return showToast('Data mutasi tidak ditemukan. Muat ulang antrean.', 'error');
     const payload = {
       action: 'konfirmasiTerimaTransfer', idTransfer, idTransaksi: `MUT-${idTransfer}-TERIMA`,
       batch: document.getElementById('transferReceiptBatch').value.trim(),
       tanggalKadaluarsa: document.getElementById('transferReceiptExpiry').value
     };
-    await kirimAksiStok(payload, async function() {
+    await kirimAksiStok(payload, async function(result, submittedPayload) {
       tutupModal('modalTransferReceipt');
       await Promise.all([muatPendingTransfers(), muatJurnalTransaksiBarang(), muatMasterStokBarang()]);
+      if (!result.duplicate) tampilkanBuktiTransaksi(bentukVoucherMutasi(Object.assign({}, transfer, {status: 'DITERIMA', waktu: new Date().toLocaleString('id-ID', {timeZone: 'Asia/Jakarta'}), idTransaksi: result.idTransaksi || submittedPayload.idTransaksi, kodeBarang: result.kodeBarang || transfer.kodeBarang, batch: submittedPayload.batch, tanggalKadaluarsa: submittedPayload.tanggalKadaluarsa, saldoSebelum: result.saldoSebelum, saldoSesudah: result.saldoSesudah})));
     }, 'formTransferReceipt');
   });
 
   document.getElementById('koreksiSaldoFisik').addEventListener('input', updatePreviewKoreksi);
   document.getElementById('koreksiNamaBarang').addEventListener('input', updatePreviewKoreksi);
   document.getElementById('koreksiSatuan').addEventListener('input', updatePreviewKoreksi);
+  document.getElementById('formSaldoAwalBulk').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    if (!sesiUser.isAdmin) return showToast('Saldo awal beberapa barang hanya dapat dimasukkan admin.', 'error');
+    if (!this.reportValidity()) return;
+    const items = Array.from(document.querySelectorAll('#saldoAwalRows .opening-stock-row')).map(row => ({
+      namaBarang: row.querySelector('[data-field="name"]').value.trim(),
+      kategori: row.querySelector('[data-field="category"]').value,
+      satuan: row.querySelector('[data-field="unit"]').value.trim(),
+      jumlah: row.querySelector('[data-field="quantity"]').value,
+      batch: row.querySelector('[data-field="batch"]').value.trim(),
+      tanggalKadaluarsa: row.querySelector('[data-field="expiry"]').value
+    }));
+    const unit = document.getElementById('saldoAwalUnit').value;
+    const warehouse = document.getElementById('saldoAwalGudang').value;
+    const reason = document.getElementById('saldoAwalAlasan').value.trim();
+    const payload = {action: 'koreksiStokBulk', kodeUnit: unit, kodeGudang: warehouse, alasan: reason, items};
+    await kirimAksiStok(payload, async function(result, submittedPayload) {
+      const printedItems = (result.items || []).map(item => Object.assign({tipeMutasi: 'MASUK'}, item));
+      const form = document.getElementById('formSaldoAwalBulk');
+      form.reset();
+      document.getElementById('saldoAwalRows').innerHTML = '';
+      openingStockRowCounter = 0;
+      document.getElementById('saldoAwalUnit').value = unit;
+      updateBulkOpeningWarehouses();
+      document.getElementById('saldoAwalGudang').value = warehouse;
+      tambahBarisSaldoAwal();
+      updateBulkOpeningExpiryRequirements();
+      const refreshTasks = [muatMasterStokBarang()];
+      if (jurnalLoaded) refreshTasks.push(muatJurnalTransaksiBarang());
+      if (appliedStockSnapshotFilters) refreshTasks.push(muatStockSnapshot());
+      if (stockAuditLoaded) refreshTasks.push(muatStockAudit());
+      if (correctionHistoryLoaded) refreshTasks.push(muatRiwayatKoreksiStok());
+      await Promise.all(refreshTasks);
+      if (!result.duplicate) tampilkanBuktiTransaksi({
+        judul: 'Bukti Input Saldo Awal', idTransaksi: submittedPayload.idTransaksi,
+        waktu: new Date().toLocaleString('id-ID', {timeZone: 'Asia/Jakarta'}), status: 'Tercatat',
+        sumber: 'Saldo awal / stock opname', kodeUnit: unit, kodeGudang: warehouse,
+        pelaku: sesiUser.nama || sesiUser.username, catatan: reason, items: printedItems
+      });
+    }, 'formSaldoAwalBulk');
+  });
+
   document.getElementById('formKoreksiStok').addEventListener('submit', async function(event) {
     event.preventDefault();
     if (!sesiUser.isAdmin) return showToast('Koreksi stok hanya dapat dilakukan admin.', 'error');
@@ -2250,7 +2561,7 @@
     payload.tanggalKadaluarsa = document.getElementById('koreksiKadaluarsa').value;
     const unitBeforeReset = payload.kodeUnit;
     const warehouseBeforeReset = payload.kodeGudang;
-    await kirimAksiStok(payload, async function() {
+    await kirimAksiStok(payload, async function(result, submittedPayload) {
       document.getElementById('formKoreksiStok').reset();
       document.getElementById('koreksiUnit').value = unitBeforeReset;
       ubahLokasiKoreksi();
@@ -2264,6 +2575,21 @@
       if (stockAuditLoaded) refreshTasks.push(muatStockAudit());
       if (correctionHistoryLoaded) refreshTasks.push(muatRiwayatKoreksiStok());
       await Promise.all(refreshTasks);
+      const item = rawStokList.find(row => String(row.kodeBarang) === String(result.kodeBarang) && String(row.kodeUnit).toLowerCase() === String(unitBeforeReset).toLowerCase() && String(row.kodeGudang).toLowerCase() === String(warehouseBeforeReset).toLowerCase());
+      if (!result.duplicate) tampilkanBuktiTransaksi({
+        judul: mode === 'BARU' ? 'Bukti Input Saldo Awal' : 'Bukti Koreksi Saldo Stok',
+        idTransaksi: submittedPayload.idTransaksi, waktu: new Date().toLocaleString('id-ID', {timeZone: 'Asia/Jakarta'}),
+        status: 'Tercatat', sumber: mode === 'BARU' ? 'Saldo awal barang baru' : 'Koreksi hasil hitung fisik',
+        kodeUnit: unitBeforeReset, kodeGudang: warehouseBeforeReset, pelaku: sesiUser.nama || sesiUser.username, catatan: submittedPayload.alasan,
+        items: [{
+          idTransaksi: submittedPayload.idTransaksi, kodeBarang: result.kodeBarang,
+          namaBarang: submittedPayload.namaBarang || item && item.namaBarang || result.kodeBarang,
+          kategori: submittedPayload.kategori || item && item.kategori || '-',
+          tipeMutasi: Number(result.selisih || 0) >= 0 ? 'MASUK' : 'KELUAR', jumlah: Math.abs(Number(result.selisih || 0)),
+          satuan: submittedPayload.satuan || item && item.satuan || 'pcs', batch: submittedPayload.batch,
+          tanggalKadaluarsa: submittedPayload.tanggalKadaluarsa, saldoSebelum: result.saldoSebelum, saldoSesudah: result.saldoSesudah
+        }]
+      });
     }, 'formKoreksiStok');
   });
 
