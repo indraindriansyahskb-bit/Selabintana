@@ -245,6 +245,11 @@
         </button>
       </li>
       <li>
+        <button type="button" role="tab" aria-selected="false" aria-controls="tabAuditView" class="erp-menu-item" id="tabAuditBtn" onclick="switchTab('audit')">
+          <i class="fa-solid fa-clipboard-check"></i><span>Jejak Audit</span>
+        </button>
+      </li>
+      <li>
         <button type="button" role="tab" aria-selected="false" aria-controls="tabLihatStokView" class="erp-menu-item" id="tabLihatStokBtn" onclick="switchTab('lihatStok')">
           <i class="fa-solid fa-boxes-stacked"></i><span>Lihat Stok</span>
         </button>
@@ -308,14 +313,14 @@
           <div class="erp-stat-card">
             <div class="erp-stat-info">
               <div class="label">Jumlah Barang Masuk</div>
-              <div class="value" id="kpiTotalMasuk">0</div>
+              <div class="value" id="kpiTotalMasuk">—</div>
             </div>
             <div class="erp-stat-icon" style="background: #d1fae5; color: #047857;"><i class="fa-solid fa-circle-arrow-down"></i></div>
           </div>
           <div class="erp-stat-card">
             <div class="erp-stat-info">
               <div class="label">Jumlah Barang Keluar</div>
-              <div class="value" id="kpiTotalKeluar">0</div>
+              <div class="value" id="kpiTotalKeluar">—</div>
             </div>
             <div class="erp-stat-icon" style="background: #fee2e2; color: #b91c1c;"><i class="fa-solid fa-circle-arrow-up"></i></div>
           </div>
@@ -352,14 +357,14 @@
             <div class="erp-filter-bar">
               <div class="erp-filter-group">
                 <label for="filterTglAwal">Periode dari (30 hari)</label>
-                <input type="date" id="filterTglAwal" onchange="muatJurnalTransaksiBarang()">
+                <input type="date" id="filterTglAwal" onchange="invalidateJournalResults()">
               </div>
               <div class="erp-filter-group">
                 <label for="filterTglAkhir">Sampai Tanggal</label>
-                <input type="date" id="filterTglAkhir" onchange="muatJurnalTransaksiBarang()">
+                <input type="date" id="filterTglAkhir" onchange="invalidateJournalResults()">
               </div>
               <div class="erp-filter-group" style="flex:0 0 auto;min-width:auto;">
-                <label>&nbsp;</label><button type="button" class="btn btn-outline btn-sm" onclick="setAllJournalDates()" title="Muat seluruh riwayat transaksi">Semua tanggal</button>
+                <label>&nbsp;</label><button type="button" class="btn btn-outline btn-sm" onclick="setAllJournalDates()" title="Kosongkan batas tanggal">Semua tanggal</button>
               </div>
               <div class="erp-filter-group">
                 <label for="filterUnit">Unit / Farm</label>
@@ -378,10 +383,11 @@
                 <input type="text" id="filterBarangPilih" list="listOptionsBarang" placeholder="-- Ketik atau Pilih Barang --" oninput="terapkanFilterJurnal()">
                 <datalist id="listOptionsBarang"></datalist>
               </div>
+              <button type="button" class="btn btn-primary" onclick="muatJurnalTransaksiBarang(true)"><i class="fa-solid fa-magnifying-glass"></i> Tampilkan Jurnal</button>
             </div>
 
             <div class="erp-table-responsive" id="containerTabelJurnal">
-              <p style="text-align:center; padding:30px; color: var(--erp-text-muted);"><i class="fa-solid fa-spinner fa-spin"></i> Memuat data jurnal persediaan...</p>
+              <p style="text-align:center; padding:30px; color: var(--erp-text-muted);">Atur filter jurnal, lalu pilih <b>Tampilkan Jurnal</b>.</p>
             </div>
           </div>
         </div>
@@ -430,16 +436,20 @@
             <div class="erp-table-responsive" id="containerTabelHistory"></div>
           </div>
         </div>
-        <div class="erp-card" style="margin-top:16px;">
+      </div>
+
+      <div id="tabAuditView" role="tabpanel" aria-labelledby="tabAuditBtn" style="display:none;">
+        <div class="erp-card">
           <div class="erp-card-header"><div class="erp-card-title"><i class="fa-solid fa-clipboard-check"></i> Jejak Audit Stok</div></div>
           <div class="erp-card-body">
+            <p class="form-hint" style="margin:0 0 12px;color:var(--erp-text-muted);font-size:11px;">Isi minimal satu filter tanggal atau kata kunci agar pencarian audit lebih cepat dan terarah.</p>
             <div class="erp-filter-bar" style="margin-bottom:12px;">
-              <div class="erp-filter-group"><label for="auditFilterStart">Dari tanggal</label><input type="date" id="auditFilterStart"></div>
-              <div class="erp-filter-group"><label for="auditFilterEnd">Sampai tanggal</label><input type="date" id="auditFilterEnd"></div>
-              <div class="erp-filter-group" style="flex:2;min-width:220px;"><label for="auditFilterSearch">Cari ID / barang / pelaku / keterangan</label><input type="search" id="auditFilterSearch" placeholder="Kata kunci audit"></div>
-              <button type="button" class="btn btn-primary" onclick="muatStockAudit()"><i class="fa-solid fa-magnifying-glass"></i> Tampilkan Audit</button>
+              <div class="erp-filter-group"><label for="auditFilterStart">Dari tanggal</label><input type="date" id="auditFilterStart" onchange="invalidateStockAuditResults()"></div>
+              <div class="erp-filter-group"><label for="auditFilterEnd">Sampai tanggal</label><input type="date" id="auditFilterEnd" onchange="invalidateStockAuditResults()"></div>
+              <div class="erp-filter-group" style="flex:2;min-width:220px;"><label for="auditFilterSearch">Cari ID / barang / pelaku / keterangan</label><input type="search" id="auditFilterSearch" oninput="invalidateStockAuditResults()" placeholder="Kata kunci audit"></div>
+              <button type="button" class="btn btn-primary" onclick="muatStockAudit(true)"><i class="fa-solid fa-magnifying-glass"></i> Cari Audit</button>
             </div>
-            <div class="erp-table-responsive" id="containerStockAudit" aria-live="polite"><p style="padding:16px;color:var(--erp-text-muted);">Pilih tab ini untuk memuat catatan audit.</p></div>
+            <div class="erp-table-responsive" id="containerStockAudit" aria-live="polite"><p style="padding:16px;color:var(--erp-text-muted);">Isi filter lalu pilih Cari Audit.</p></div>
           </div>
         </div>
       </div>
@@ -457,11 +467,11 @@
           </div>
           <div class="erp-card-body">
             <div class="erp-filter-bar">
-              <div class="erp-filter-group"><label for="stockViewDate">Saldo per tanggal</label><input type="date" id="stockViewDate"></div>
-              <div class="erp-filter-group"><label for="stockViewUnit">Unit / Farm</label><select id="stockViewUnit" onchange="updateStockWarehouseFilter()"></select></div>
-              <div class="erp-filter-group"><label for="stockViewWarehouse">Gudang</label><select id="stockViewWarehouse"><option value="">Semua Gudang</option></select></div>
-              <div class="erp-filter-group"><label for="stockViewStatus">Status Stok</label><select id="stockViewStatus"><option value="">Semua Status</option><option value="RENDAH">Rendah</option><option value="HABIS">Habis / Negatif</option><option value="AMAN">Aman</option></select></div>
-              <div class="erp-filter-group"><label for="stockViewSearch">Barang / kode / kategori</label><input type="search" id="stockViewSearch" placeholder="Cari barang"></div>
+              <div class="erp-filter-group"><label for="stockViewDate">Saldo per tanggal</label><input type="date" id="stockViewDate" onchange="invalidateStockSnapshotResults()"></div>
+              <div class="erp-filter-group"><label for="stockViewUnit">Unit / Farm</label><select id="stockViewUnit" onchange="updateStockWarehouseFilter();invalidateStockSnapshotResults()"></select></div>
+              <div class="erp-filter-group"><label for="stockViewWarehouse">Gudang</label><select id="stockViewWarehouse" onchange="invalidateStockSnapshotResults()"><option value="">Semua Gudang</option></select></div>
+              <div class="erp-filter-group"><label for="stockViewStatus">Status Stok</label><select id="stockViewStatus" onchange="invalidateStockSnapshotResults()"><option value="">Semua Status</option><option value="RENDAH">Rendah</option><option value="HABIS">Habis / Negatif</option><option value="AMAN">Aman</option></select></div>
+              <div class="erp-filter-group"><label for="stockViewSearch">Barang / kode / kategori</label><input type="search" id="stockViewSearch" oninput="invalidateStockSnapshotResults()" placeholder="Cari barang"></div>
               <button type="button" onclick="muatStockSnapshot()" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i> Tampilkan</button>
             </div>
             <p class="form-hint" style="margin:0 0 12px;color:var(--erp-text-muted);font-size:11px;">Tanggal kosong menampilkan saldo terkini. Pilih tanggal untuk melihat saldo akhir hari itu.</p>
@@ -512,6 +522,19 @@
               <div class="form-group"><label for="koreksiAlasan">Alasan koreksi</label><textarea id="koreksiAlasan" minlength="5" maxlength="500" rows="3" required placeholder="Contoh: saldo awal per 1 Januari atau hasil stock opname tanggal ..." style="width:100%;padding:9px 12px;border:1px solid var(--erp-border);border-radius:6px;font:inherit;resize:vertical;"></textarea></div>
               <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Simpan Koreksi</button>
             </form>
+          </div>
+        </div>
+        <div class="erp-card" style="margin-top:16px;">
+          <div class="erp-card-header"><div class="erp-card-title"><i class="fa-solid fa-clock-rotate-left"></i> Riwayat Koreksi Stok</div></div>
+          <div class="erp-card-body">
+            <p class="form-hint" style="margin:0 0 12px;color:var(--erp-text-muted);font-size:11px;">Isi minimal satu filter tanggal atau kata kunci. Riwayat hanya menampilkan aksi koreksi stok.</p>
+            <div class="erp-filter-bar" style="margin-bottom:12px;">
+              <div class="erp-filter-group"><label for="koreksiHistoryStart">Dari tanggal</label><input type="date" id="koreksiHistoryStart" onchange="invalidateCorrectionHistoryResults()"></div>
+              <div class="erp-filter-group"><label for="koreksiHistoryEnd">Sampai tanggal</label><input type="date" id="koreksiHistoryEnd" onchange="invalidateCorrectionHistoryResults()"></div>
+              <div class="erp-filter-group" style="flex:2;min-width:220px;"><label for="koreksiHistorySearch">Cari barang / pelaku / alasan</label><input type="search" id="koreksiHistorySearch" oninput="invalidateCorrectionHistoryResults()" placeholder="Kode, nama, pengguna, atau alasan"></div>
+              <button type="button" class="btn btn-primary" onclick="muatRiwayatKoreksiStok(true)"><i class="fa-solid fa-magnifying-glass"></i> Cari Riwayat</button>
+            </div>
+            <div id="containerKoreksiHistory" class="erp-table-responsive" aria-live="polite"><p style="padding:16px;color:var(--erp-text-muted);">Isi filter lalu pilih Cari Riwayat.</p></div>
           </div>
         </div>
       </div>
@@ -676,6 +699,7 @@
 
   let sesiUser = {}; let masterUnits = []; let allUnits = []; let masterGudang = []; let rawJurnalData = []; let rawStokList = [];
   let rawStockSnapshot = []; let appliedStockSnapshotFilters = null; let transferRows = []; let ticketReceiptOptions = []; let stockTransactionIds = Object.create(null); let allowedGudang = [];
+  let jurnalLoaded = false; let stockAuditLoaded = false; let correctionHistoryLoaded = false;
 
   function escapeHtml(value) {
     return String(value == null ? '' : value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
@@ -730,7 +754,14 @@
   function setAllJournalDates() {
     document.getElementById('filterTglAwal').value = '';
     document.getElementById('filterTglAkhir').value = '';
-    muatJurnalTransaksiBarang();
+    invalidateJournalResults();
+  }
+  function invalidateJournalResults() {
+    jurnalLoaded = false;
+    rawJurnalData = [];
+    document.getElementById('kpiTotalMasuk').textContent = '—';
+    document.getElementById('kpiTotalKeluar').textContent = '—';
+    document.getElementById('containerTabelJurnal').innerHTML = '<p style="text-align:center;padding:30px;color:var(--erp-text-muted);">Filter berubah. Pilih <b>Tampilkan Jurnal</b> untuk memuat ulang.</p>';
   }
   function setConnectionStatus(state, message) {
     const elements = [document.getElementById('connectionStatus'), document.getElementById('connectionStatusMobile')].filter(Boolean);
@@ -807,7 +838,6 @@
     setDefaultJournalRange();
     muatMetaUnitsGudang();
     muatMasterStokBarang();
-    muatJurnalTransaksiBarang();
   }
 
   async function logoutSesi() {
@@ -844,7 +874,7 @@
 
   function switchTab(tab) {
     if (tab === 'koreksi' && !sesiUser.isAdmin) return showToast('Menu koreksi stok hanya tersedia untuk admin.', 'error');
-    const tabs = {stok: ['tabStokBtn','tabStokView','Jurnal Stok & Mutasi'], transaksi: ['tabTransaksiBtn','tabTransaksiView','Pusat Transaksi Gudang'], history: ['tabHistoryBtn','tabHistoryView','Riwayat Mutasi'], lihatStok: ['tabLihatStokBtn','tabLihatStokView','Lihat Saldo Stok'], koreksi: ['tabKoreksiBtn','tabKoreksiView','Koreksi Stok'], kandang: ['tabPemakaianKandangBtn','tabPemakaianKandangView','Pemakaian per Kandang']};
+    const tabs = {stok: ['tabStokBtn','tabStokView','Jurnal Stok & Mutasi'], transaksi: ['tabTransaksiBtn','tabTransaksiView','Pusat Transaksi Gudang'], history: ['tabHistoryBtn','tabHistoryView','Riwayat Mutasi'], audit: ['tabAuditBtn','tabAuditView','Jejak Audit Stok'], lihatStok: ['tabLihatStokBtn','tabLihatStokView','Lihat Saldo Stok'], koreksi: ['tabKoreksiBtn','tabKoreksiView','Koreksi Stok'], kandang: ['tabPemakaianKandangBtn','tabPemakaianKandangView','Pemakaian per Kandang']};
     if (!tabs[tab]) return;
     Object.keys(tabs).forEach(key => {
       const [buttonId, panelId] = tabs[key];
@@ -856,11 +886,8 @@
       panel.style.display = tab === key ? 'block' : 'none';
     });
     document.getElementById('currentPageTitle').textContent = tabs[tab][2];
-    if (tab === 'lihatStok') muatStockSnapshot();
     if (tab === 'transaksi' || tab === 'history') muatPendingTransfers();
     if (tab === 'transaksi') muatTiketPenerimaan();
-    if (tab === 'history') muatStockAudit();
-    if (tab === 'kandang') muatPemakaianPerKandang();
   }
 
   document.querySelector('[role="tablist"]').addEventListener('keydown', function(event) {
@@ -1048,8 +1075,12 @@
   async function muatStockSnapshot() {
     if (!sesiUser.token) return false;
     const container = document.getElementById('containerStockSnapshot');
-    container.innerHTML = '<p style="padding:20px;text-align:center;color:var(--erp-text-muted);"><i class="fa-solid fa-spinner fa-spin"></i> Menghitung saldo...</p>';
     const filters = getStockSnapshotFilters();
+    if (!Object.values(filters).some(value => String(value || '').trim())) {
+      container.innerHTML = '<p style="padding:20px;text-align:center;color:var(--erp-text-muted);">Isi minimal satu filter, lalu pilih Tampilkan. Untuk seluruh stok saat ini, pilih tanggal hari ini.</p>';
+      return false;
+    }
+    container.innerHTML = '<p style="padding:20px;text-align:center;color:var(--erp-text-muted);"><i class="fa-solid fa-spinner fa-spin"></i> Menghitung saldo...</p>';
     const payload = Object.assign({action: 'getStockSnapshot', token: sesiUser.token}, filters);
     try {
       const res = await postPayload(payload);
@@ -1067,6 +1098,12 @@
       setConnectionStatus('error', 'Gagal memuat stok');
       return false;
     }
+  }
+
+  function invalidateStockSnapshotResults() {
+    appliedStockSnapshotFilters = null;
+    rawStockSnapshot = [];
+    document.getElementById('containerStockSnapshot').innerHTML = '<p style="padding:20px;text-align:center;color:var(--erp-text-muted);">Filter berubah. Pilih Tampilkan untuk memuat saldo.</p>';
   }
 
   function getStockSnapshotFilterLabel(selectId, value, emptyLabel) {
@@ -1107,6 +1144,7 @@
   async function eksporLihatStokKeExcel() {
     const button = document.getElementById('exportStockSnapshotBtn');
     if (!sesiUser.token) return showToast('Silakan login kembali untuk mengekspor stok.', 'error');
+    if (!Object.values(getStockSnapshotFilters()).some(value => String(value || '').trim())) return showToast('Isi filter lihat stok sebelum mengekspor.', 'error');
 
     if (button) { button.disabled = true; button.setAttribute('aria-busy', 'true'); }
     try {
@@ -1246,6 +1284,7 @@
     document.getElementById('stockViewDate').value = '';
     document.getElementById('stockViewStatus').value = status;
     switchTab('lihatStok');
+    muatStockSnapshot();
   }
 
   function renderStockSnapshot(data) {
@@ -1422,9 +1461,15 @@
     dataListElement.innerHTML = opts;
   }
 
-  async function muatJurnalTransaksiBarang() {
+  async function muatJurnalTransaksiBarang(force = false) {
+    if (!force && !jurnalLoaded) return false;
     const tAwal = document.getElementById('filterTglAwal').value;
     const tAkhir = document.getElementById('filterTglAkhir').value;
+    const hasOtherFilter = ['filterUnit', 'filterGudangJournal', 'filterJenisJurnal', 'filterBarangPilih'].some(id => String(document.getElementById(id).value || '').trim());
+    if (!tAwal && !tAkhir && !hasOtherFilter) {
+      document.getElementById('containerTabelJurnal').innerHTML = '<p style="padding:24px;text-align:center;color:var(--erp-text-muted);">Isi minimal satu filter jurnal sebelum menampilkan data.</p>';
+      return false;
+    }
     document.getElementById('containerTabelJurnal').innerHTML = '<p style="padding:24px;text-align:center;color:var(--erp-text-muted);"><i class="fa-solid fa-spinner fa-spin"></i> Memuat jurnal…</p>';
     try {
       const res = await postPayload({action: 'getHistoryMutasi', token: sesiUser.token, tglAwal: tAwal, tglAkhir: tAkhir});
@@ -1438,13 +1483,16 @@
           const keyB = `${b.kodeBarang}|${b.kodeUnit}|${b.kodeGudang}`.toLowerCase();
           return keyA.localeCompare(keyB) || String(a.tglSistem).localeCompare(String(b.tglSistem));
         });
+        jurnalLoaded = true;
         terapkanFilterJurnal();
         setConnectionStatus('ok', 'Jurnal diperbarui');
+        return true;
       }
-    } catch(e) { document.getElementById('containerTabelJurnal').innerHTML = `<p style="padding:24px;text-align:center;color:var(--erp-danger);">${escapeHtml(e.message || 'Gagal memuat jurnal.')}</p>`; setConnectionStatus('error', 'Gagal memuat jurnal'); }
+    } catch(e) { document.getElementById('containerTabelJurnal').innerHTML = `<p style="padding:24px;text-align:center;color:var(--erp-danger);">${escapeHtml(e.message || 'Gagal memuat jurnal.')}</p>`; setConnectionStatus('error', 'Gagal memuat jurnal'); return false; }
   }
 
   function terapkanFilterJurnal() {
+    if (!jurnalLoaded) return;
     const selectedUnit = document.getElementById('filterUnit').value;
     const searchBarangVal = document.getElementById('filterBarangPilih').value.toLowerCase().trim();
     const selectedWarehouse = document.getElementById('filterGudangJournal').value;
@@ -1509,6 +1557,13 @@
   }
 
   async function eksporKeExcel() {
+    if (!jurnalLoaded) {
+      const hasDateFilter = document.getElementById('filterTglAwal').value || document.getElementById('filterTglAkhir').value;
+      const hasOtherFilter = ['filterUnit', 'filterGudangJournal', 'filterJenisJurnal', 'filterBarangPilih'].some(id => String(document.getElementById(id).value || '').trim());
+      if (!hasDateFilter && !hasOtherFilter) return showToast('Isi filter jurnal sebelum mengekspor.', 'error');
+      const loaded = await muatJurnalTransaksiBarang(true);
+      if (!loaded) return showToast('Jurnal gagal dimuat, ekspor dibatalkan.', 'error');
+    }
     const selectedUnit = document.getElementById('filterUnit').value;
     const searchBarangVal = document.getElementById('filterBarangPilih').value.toLowerCase().trim();
     const selectedWarehouse = document.getElementById('filterGudangJournal').value;
@@ -1679,29 +1734,70 @@
     } catch(e) { document.getElementById('containerPendingTransfer').innerHTML = `<p style="padding:15px;color:var(--erp-danger);">${escapeHtml(e.message || 'Gagal memuat antrean mutasi.')}</p>`; }
   }
 
-  async function muatStockAudit() {
+  function renderStockAuditRows(container, rows, emptyMessage) {
+    if (!rows.length) { container.innerHTML = `<p style="padding:16px;text-align:center;color:var(--erp-text-muted);">${escapeHtml(emptyMessage)}</p>`; return; }
+    let html = '<table class="erp-table"><thead><tr><th>Waktu / ID</th><th>Perubahan</th><th>Pelaku</th><th>Barang</th><th>Lokasi</th><th>Jumlah</th><th>Saldo Sebelum → Sesudah</th><th>Referensi / Keterangan</th></tr></thead><tbody>';
+    html += rows.map(row => {
+      const minimumChange = row.minimumSebelum == null ? '' : `<br><small>Minimum: ${formatNumber(row.minimumSebelum)} → ${formatNumber(row.minimumSesudah)}</small>`;
+      return `<tr><td><small class="mono">${escapeHtml(row.waktu)}</small><br><small>${escapeHtml(row.idTransaksi)}</small></td><td><span class="badge badge-info">${escapeHtml(row.aksi)}</span>${minimumChange}</td><td>${escapeHtml(row.pelaku)}<br><small>${escapeHtml(row.username)}</small></td><td><b>${escapeHtml(row.namaBarang)}</b><br><small class="mono">${escapeHtml(row.kodeBarang)}</small></td><td>${escapeHtml(row.kodeUnit)}<br><small>${escapeHtml(row.kodeGudang)}</small></td><td class="mono">${formatNumber(row.jumlah)}</td><td class="mono">${formatNumber(row.saldoSebelum)} → ${formatNumber(row.saldoSesudah)}</td><td>${escapeHtml(row.referensi)}<br><small>${escapeHtml(row.keterangan)}</small></td></tr>`;
+    }).join('');
+    container.innerHTML = html + '</tbody></table>';
+  }
+
+  function invalidateStockAuditResults() {
+    stockAuditLoaded = false;
+    document.getElementById('containerStockAudit').innerHTML = '<p style="padding:16px;text-align:center;color:var(--erp-text-muted);">Filter berubah. Pilih Cari Audit untuk menampilkan hasil.</p>';
+  }
+  function invalidateCorrectionHistoryResults() {
+    correctionHistoryLoaded = false;
+    document.getElementById('containerKoreksiHistory').innerHTML = '<p style="padding:16px;text-align:center;color:var(--erp-text-muted);">Filter berubah. Pilih Cari Riwayat untuk menampilkan hasil.</p>';
+  }
+
+  async function muatStockAudit(force = false) {
+    if (!force && !stockAuditLoaded) return false;
     const container = document.getElementById('containerStockAudit');
+    const tglAwal = document.getElementById('auditFilterStart').value;
+    const tglAkhir = document.getElementById('auditFilterEnd').value;
+    const q = document.getElementById('auditFilterSearch').value.trim();
+    if (!tglAwal && !tglAkhir && !q) { showToast('Isi minimal satu filter tanggal atau kata kunci audit.', 'error'); return false; }
     container.innerHTML = '<p style="padding:16px;text-align:center;color:var(--erp-text-muted);">Memuat jejak audit stok…</p>';
     try {
       const res = await postPayload({
         action: 'getStockAudit', token: sesiUser.token,
-        tglAwal: document.getElementById('auditFilterStart').value,
-        tglAkhir: document.getElementById('auditFilterEnd').value,
-        q: document.getElementById('auditFilterSearch').value.trim()
+        tglAwal, tglAkhir, q
       });
       const json = await res.json();
       if (cekSesiBerakhir(json)) return;
       if (json.status !== 'success') throw new Error(json.message || 'Gagal memuat audit stok.');
-      const rows = json.data || [];
-      if (!rows.length) { container.innerHTML = '<p style="padding:16px;text-align:center;color:var(--erp-text-muted);">Tidak ada catatan audit untuk filter ini.</p>'; return; }
-      let html = '<table class="erp-table"><thead><tr><th>Waktu / ID</th><th>Perubahan</th><th>Pelaku</th><th>Barang</th><th>Lokasi</th><th>Jumlah</th><th>Saldo Sebelum → Sesudah</th><th>Referensi / Keterangan</th></tr></thead><tbody>';
-      html += rows.map(row => {
-        const minimumChange = row.minimumSebelum == null ? '' : `<br><small>Minimum: ${formatNumber(row.minimumSebelum)} → ${formatNumber(row.minimumSesudah)}</small>`;
-        return `<tr><td><small class="mono">${escapeHtml(row.waktu)}</small><br><small>${escapeHtml(row.idTransaksi)}</small></td><td><span class="badge badge-info">${escapeHtml(row.aksi)}</span>${minimumChange}</td><td>${escapeHtml(row.pelaku)}<br><small>${escapeHtml(row.username)}</small></td><td><b>${escapeHtml(row.namaBarang)}</b><br><small class="mono">${escapeHtml(row.kodeBarang)}</small></td><td>${escapeHtml(row.kodeUnit)}<br><small>${escapeHtml(row.kodeGudang)}</small></td><td class="mono">${formatNumber(row.jumlah)}</td><td class="mono">${formatNumber(row.saldoSebelum)} → ${formatNumber(row.saldoSesudah)}</td><td>${escapeHtml(row.referensi)}<br><small>${escapeHtml(row.keterangan)}</small></td></tr>`;
-      }).join('');
-      container.innerHTML = html + '</tbody></table>';
+      stockAuditLoaded = true;
+      renderStockAuditRows(container, json.data || [], 'Tidak ada catatan audit untuk filter ini.');
+      return true;
     } catch (error) {
       container.innerHTML = `<p style="padding:16px;text-align:center;color:var(--erp-danger);">${escapeHtml(error.message || 'Gagal memuat audit stok.')}</p>`;
+      return false;
+    }
+  }
+
+  async function muatRiwayatKoreksiStok(force = false) {
+    if (!sesiUser.isAdmin) return false;
+    if (!force && !correctionHistoryLoaded) return false;
+    const container = document.getElementById('containerKoreksiHistory');
+    const tglAwal = document.getElementById('koreksiHistoryStart').value;
+    const tglAkhir = document.getElementById('koreksiHistoryEnd').value;
+    const q = document.getElementById('koreksiHistorySearch').value.trim();
+    if (!tglAwal && !tglAkhir && !q) { showToast('Isi minimal satu filter tanggal atau kata kunci koreksi.', 'error'); return false; }
+    container.innerHTML = '<p style="padding:16px;text-align:center;color:var(--erp-text-muted);"><i class="fa-solid fa-spinner fa-spin"></i> Memuat riwayat koreksi…</p>';
+    try {
+      const res = await postPayload({action: 'getStockAudit', token: sesiUser.token, tglAwal, tglAkhir, q, aksi: 'KOREKSI_STOK'});
+      const json = await res.json();
+      if (cekSesiBerakhir(json)) return false;
+      if (json.status !== 'success') throw new Error(json.message || 'Gagal memuat riwayat koreksi stok.');
+      correctionHistoryLoaded = true;
+      renderStockAuditRows(container, json.data || [], 'Tidak ada koreksi stok untuk filter ini.');
+      return true;
+    } catch (error) {
+      container.innerHTML = `<p style="padding:16px;text-align:center;color:var(--erp-danger);">${escapeHtml(error.message || 'Gagal memuat riwayat koreksi.')}</p>`;
+      return false;
     }
   }
 
@@ -1993,7 +2089,12 @@
       document.getElementById('koreksiMode').value = mode;
       ubahModeKoreksi();
       populateBarangKoreksi();
-      await Promise.all([muatMasterStokBarang(), muatJurnalTransaksiBarang(), muatStockSnapshot(), muatStockAudit()]);
+      const refreshTasks = [muatMasterStokBarang()];
+      if (jurnalLoaded) refreshTasks.push(muatJurnalTransaksiBarang());
+      if (appliedStockSnapshotFilters) refreshTasks.push(muatStockSnapshot());
+      if (stockAuditLoaded) refreshTasks.push(muatStockAudit());
+      if (correctionHistoryLoaded) refreshTasks.push(muatRiwayatKoreksiStok());
+      await Promise.all(refreshTasks);
     }, 'formKoreksiStok');
   });
 
