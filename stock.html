@@ -676,18 +676,18 @@
         <div class="form-group"><label for="penGudang">Masuk Ke Gudang</label><select id="penGudang" onchange="updateReceiptOvkFields()" required></select></div>
       </div>
       <div id="penItemFields">
-        <div class="form-group"><label for="penNamaBarang">Nama Barang</label><input type="text" id="penNamaBarang" maxlength="200" placeholder="Ketik nama barang..." required><small id="penItemHint" style="display:block;margin-top:6px;color:var(--erp-text-muted);">Untuk penerimaan tiket, nama dan satuan akan mengikuti item yang disetujui.</small></div>
+        <div class="form-group"><label for="penNamaBarang">Nama Barang</label><input type="text" id="penNamaBarang" list="stockMasterBarangList" maxlength="200" placeholder="Ketik nama barang..." required><datalist id="stockMasterBarangList"></datalist><small id="penItemHint" style="display:block;margin-top:6px;color:var(--erp-text-muted);">Untuk penerimaan tiket, nama dan satuan akan mengikuti item yang disetujui.</small></div>
       </div>
       <div class="form-row">
         <div class="form-group"><label for="penJumlah">Jumlah Masuk</label><input type="number" id="penJumlah" min="0.001" max="1000000000" step="any" aria-describedby="penTicketRemaining" required></div>
         <div class="form-group"><label for="penSatuan">Satuan</label><input type="text" id="penSatuan" maxlength="32" placeholder="pcs/kg/zak" required></div>
       </div>
-      <div class="form-group"><label for="penKategori">Kategori Barang</label>
-        <select id="penKategori">
+      <div class="form-group"><label for="penKategori">Kategori Barang</label><div style="display:flex;gap:6px;align-items:center;">
+        <select id="penKategori" style="flex:1;min-width:0;">
           <option value="PAKAN">PAKAN</option><option value="OBAT">OBAT</option><option value="VAKSIN">VAKSIN</option>
           <option value="VITAMIN">VITAMIN</option><option value="KIMIA">KIMIA</option><option value="PERALATAN">PERALATAN</option><option value="LAINNYA">LAINNYA</option>
-        </select>
-      </div>
+        </select><button id="btnTambahKategoriPenerimaan" type="button" class="btn btn-outline btn-sm" onclick="tambahKategoriStok()" title="Tambah kategori baru">+ Kategori</button>
+      </div></div>
       <div class="form-group" id="penSupplierWrap"><label for="penSupplier">Supplier (opsional)</label><input type="text" id="penSupplier" maxlength="200" placeholder="Nama supplier"></div>
       <div class="form-row" id="penBatchExpiryRow" style="display:none;">
         <div class="form-group"><label for="penBatch">Nomor batch (opsional)</label><input type="text" id="penBatch" maxlength="120" placeholder="Nomor batch"></div>
@@ -822,6 +822,8 @@
   let jurnalLoaded = false; let stockAuditLoaded = false; let correctionHistoryLoaded = false;
   let deletableTransactionRows = []; let deleteCandidatesLoaded = false; let deletedHistoryLoaded = false;
   let openingStockRowCounter = 0;
+  let masterBarangData = []; let masterBarangCategories = ['PAKAN', 'OBAT', 'VAKSIN', 'VITAMIN', 'KIMIA', 'PERALATAN', 'LAINNYA'];
+  let masterCategoriesLoaded = false; let masterCategoriesLoading = false;
 
   function escapeHtml(value) {
     return String(value == null ? '' : value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
@@ -1010,6 +1012,7 @@
     });
     document.getElementById('currentPageTitle').textContent = tabs[tab][2];
     if (tab === 'transaksi' || tab === 'history') muatPendingTransfers();
+    if (tab === 'koreksi') muatMasterBarangKategori();
     if (tab === 'transaksi') muatTiketPenerimaan();
   }
 
@@ -1465,6 +1468,89 @@
     document.getElementById('ovkReceiptHint').textContent = isOvk ? 'Tanggal kedaluwarsa wajib dan tidak boleh lewat. Nomor batch opsional.' : 'Diisi jika tersedia; wajib untuk gudang OVK.';
   }
 
+  function gabungkanKategoriStok(...groups) {
+    const result = [];
+    const seen = new Set();
+    groups.flat().forEach(value => {
+      const category = String(value || '').trim().replace(/\s+/g, ' ').toUpperCase();
+      const key = category.toLowerCase();
+      if (category && !seen.has(key)) { seen.add(key); result.push(category); }
+    });
+    return result;
+  }
+
+  function opsiKategoriStok(selectedValue) {
+    const selected = String(selectedValue || 'LAINNYA').trim().toUpperCase();
+    return gabungkanKategoriStok(masterBarangCategories, [selected]).map(category => `<option value="${escapeHtml(category)}"${category === selected ? ' selected' : ''}>${escapeHtml(category)}</option>`).join('');
+  }
+
+  function perbaruiDropdownKategoriStok() {
+    ['penKategori', 'koreksiKategori'].forEach(id => {
+      const select = document.getElementById(id);
+      if (!select) return;
+      const selected = select.value || 'LAINNYA';
+      select.innerHTML = opsiKategoriStok(selected);
+      select.value = selected;
+    });
+    document.querySelectorAll('#saldoAwalRows [data-field="category"]').forEach(select => {
+      const selected = select.value || 'PAKAN';
+      select.innerHTML = opsiKategoriStok(selected);
+      select.value = selected;
+    });
+  }
+
+  async function muatMasterBarangKategori() {
+    if (masterCategoriesLoaded || masterCategoriesLoading || !sesiUser.token) return;
+    masterCategoriesLoading = true;
+    try {
+      const response = await postPayload({action: 'getMasterBarang', token: sesiUser.token});
+      const result = await response.json();
+      if (cekSesiBerakhir(result)) return;
+      if (result.status !== 'success') throw new Error(result.message || 'Daftar kategori barang gagal dimuat.');
+      masterBarangData = Array.isArray(result.data) ? result.data : [];
+      masterBarangCategories = gabungkanKategoriStok(result.categories || [], masterBarangData.map(item => item.kategori));
+      const names = [...new Set(masterBarangData.map(item => String(item.namaBarang || '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+      document.getElementById('stockMasterBarangList').innerHTML = names.map(name => `<option value="${escapeHtml(name)}"></option>`).join('');
+      perbaruiDropdownKategoriStok();
+      masterCategoriesLoaded = true;
+      autofillReceiptCategoryFromName();
+      if (document.getElementById('penSumber').value === 'PERMINTAAN_ACC' && document.getElementById('penTicketItem').value) pilihTiketPenerimaan();
+    } catch (error) { showToast(error.message || 'Daftar kategori barang gagal dimuat.', 'error'); }
+    finally { masterCategoriesLoading = false; }
+  }
+
+  function autofillReceiptCategoryFromName() {
+    const name = String(document.getElementById('penNamaBarang').value || '').trim().toLowerCase();
+    if (!name || !masterBarangData.length || document.getElementById('penSumber').value === 'PERMINTAAN_ACC') return;
+    const item = masterBarangData.find(row => String(row.namaBarang || '').trim().toLowerCase() === name);
+    if (!item || !item.kategori) return;
+    const category = String(item.kategori).trim().toUpperCase();
+    if (!masterBarangCategories.some(value => value.toLowerCase() === category.toLowerCase())) masterBarangCategories = gabungkanKategoriStok(masterBarangCategories, [category]);
+    perbaruiDropdownKategoriStok();
+    document.getElementById('penKategori').value = category;
+  }
+
+  async function tambahKategoriStok() {
+    if (!sesiUser.isAdmin && !['STAFF_OPERASIONAL', 'PIC_GUDANG'].includes(String(sesiUser.roleAccess || '').toUpperCase())) return showToast('Akun ini tidak diizinkan menambahkan kategori barang.', 'error');
+    const entered = prompt('Nama kategori baru (maksimal 80 karakter):', '');
+    if (entered === null) return;
+    const kategori = entered.trim().replace(/\s+/g, ' ').toUpperCase();
+    if (!kategori) return showToast('Nama kategori wajib diisi.', 'error');
+    const button = document.getElementById('btnTambahKategoriPenerimaan');
+    button.disabled = true;
+    try {
+      const response = await postPayload({action: 'addItemCategory', token: sesiUser.token, kategori});
+      const result = await response.json();
+      if (cekSesiBerakhir(result)) return;
+      if (result.status !== 'success') throw new Error(result.message || 'Kategori tidak dapat ditambahkan.');
+      masterBarangCategories = gabungkanKategoriStok(result.categories || [], masterBarangCategories);
+      perbaruiDropdownKategoriStok();
+      document.getElementById('penKategori').value = result.kategori || kategori;
+      showToast(result.alreadyExists ? 'Kategori sudah ada dan dipilih.' : result.message || 'Kategori berhasil ditambahkan.');
+    } catch (error) { showToast(error.message || 'Kategori tidak dapat ditambahkan.', 'error'); }
+    finally { button.disabled = false; }
+  }
+
   function ubahLokasiKoreksi() {
     updateSubGudangPilih('koreksiUnit', 'koreksiGudang');
     populateBarangKoreksi();
@@ -1513,7 +1599,7 @@
       <div class="opening-stock-row-header"><b>Barang <span class="opening-stock-row-number">${currentRows + 1}</span></b><button type="button" class="btn btn-outline btn-sm" aria-label="Hapus baris barang" onclick="hapusBarisSaldoAwal(this)"><i class="fa-solid fa-xmark"></i> Hapus</button></div>
       <div class="form-row">
         <div class="form-group"><label>Nama barang</label><input type="text" data-field="name" maxlength="200" required placeholder="Nama barang"></div>
-        <div class="form-group"><label>Kategori</label><select data-field="category" required><option>PAKAN</option><option>OBAT</option><option>VAKSIN</option><option>VITAMIN</option><option>KIMIA</option><option>PERALATAN</option><option>LAINNYA</option></select></div>
+        <div class="form-group"><label>Kategori</label><select data-field="category" required>${opsiKategoriStok('PAKAN')}</select></div>
         <div class="form-group"><label>Satuan</label><input type="text" data-field="unit" maxlength="32" required placeholder="kg, zak, botol, pcs"></div>
         <div class="form-group"><label>Jumlah saldo awal</label><input type="number" data-field="quantity" min="0.001" max="1000000000" step="any" inputmode="decimal" required placeholder="0"></div>
       </div>
@@ -2327,12 +2413,14 @@
     const name = document.getElementById('penNamaBarang');
     const unitLabel = document.getElementById('penSatuan');
     const category = document.getElementById('penKategori');
+    const addCategoryButton = document.getElementById('btnTambahKategoriPenerimaan');
     const supplier = document.getElementById('penSupplier');
     document.getElementById('penSupplierWrap').style.display = linked ? 'none' : 'block';
     const unit = document.getElementById('penUnit');
     name.readOnly = linked;
     unitLabel.readOnly = linked;
     category.disabled = linked;
+    addCategoryButton.disabled = linked;
     unit.disabled = linked || !(sesiUser.canViewAllLocations || sesiUser.isAdmin);
     document.getElementById('penItemHint').textContent = linked
       ? 'Nama barang, satuan, dan kategori mengikuti persetujuan tiket portal.'
@@ -2365,7 +2453,10 @@
     if (!item) { hint.textContent = 'Item tiket sudah tidak tersedia. Muat ulang daftar tiket.'; return; }
     document.getElementById('penNamaBarang').value = item.namaBarang || '';
     document.getElementById('penSatuan').value = item.satuan || 'pcs';
-    document.getElementById('penKategori').value = item.kategori || 'LAINNYA';
+    const ticketCategory = String(item.kategori || 'LAINNYA').trim().toUpperCase();
+    masterBarangCategories = gabungkanKategoriStok(masterBarangCategories, [ticketCategory]);
+    perbaruiDropdownKategoriStok();
+    document.getElementById('penKategori').value = ticketCategory;
     unit.value = item.kodeUnit;
     updateSubGudangPilih('penUnit', 'penGudang');
     document.getElementById('penGudang').value = item.kodeGudang || (['ALL', 'UNIT'].includes(String(sesiUser.scopeGudang || '').toUpperCase()) ? '' : sesiUser.scopeGudang);
@@ -2378,9 +2469,14 @@
   async function bukaModalPenerimaan() {
     updateSubGudangPilih('penUnit', 'penGudang');
     document.getElementById('modalPenerimaan').style.display = 'flex';
+    muatMasterBarangKategori();
     toggleReceiptSource();
     if (document.getElementById('penSumber').value === 'PERMINTAAN_ACC') await muatTiketPenerimaan();
   }
+  document.getElementById('penNamaBarang').addEventListener('input', function() {
+    if (!masterCategoriesLoaded) muatMasterBarangKategori();
+    else autofillReceiptCategoryFromName();
+  });
   document.getElementById('formPenerimaan').addEventListener('submit', async function(e) {
     e.preventDefault();
     const payload = {
