@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ERP Inventory & Stock Management - CV. SELABINTANA</title>
+  <title>Inventory & Stock Management - CV. SELABINTANA</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
@@ -96,6 +96,8 @@
     .btn-success { background: var(--erp-success); color: white; }
     .btn-success:hover { background: #059669; }
     .btn-warning { background: var(--erp-warning); color: #000; }
+    .btn-danger { background: var(--erp-danger); color: #fff; }
+    .btn-danger:hover { background: #dc2626; }
     .btn-secondary { background: #64748b; color: white; }
     .btn-outline { background: white; border: 1px solid var(--erp-border); color: var(--erp-text-main); }
     .btn-outline:hover { background: #f0f4f2; border-color: var(--erp-primary); color: var(--erp-primary); }
@@ -262,6 +264,11 @@
       <li id="koreksiStokMenuItem" hidden>
         <button type="button" role="tab" aria-selected="false" aria-controls="tabKoreksiView" class="erp-menu-item" id="tabKoreksiBtn" onclick="switchTab('koreksi')">
           <i class="fa-solid fa-scale-balanced"></i><span>Koreksi Stok</span>
+        </button>
+      </li>
+      <li id="hapusTransaksiMenuItem" hidden>
+        <button type="button" role="tab" aria-selected="false" aria-controls="tabHapusTransaksiView" class="erp-menu-item" id="tabHapusTransaksiBtn" onclick="switchTab('hapusTransaksi')">
+          <i class="fa-solid fa-trash-can"></i><span>Hapus Transaksi</span>
         </button>
       </li>
     </ul></nav>
@@ -539,6 +546,40 @@
         </div>
       </div>
 
+      <div id="tabHapusTransaksiView" role="tabpanel" aria-labelledby="tabHapusTransaksiBtn" style="display:none;">
+        <div class="erp-card">
+          <div class="erp-card-header">
+            <div class="erp-card-title"><i class="fa-solid fa-trash-can"></i> Cari Transaksi untuk Dihapus</div>
+            <span class="badge badge-warning">Khusus Admin</span>
+          </div>
+          <div class="erp-card-body">
+            <div style="background:#fff8e6;border:1px solid #f6d98a;border-radius:8px;padding:12px 14px;margin-bottom:16px;color:#78520a;">
+              Penghapusan membatalkan saldo dengan mutasi pembalik, sementara jejak transaksi dan alasan tetap tersimpan. Transaksi tiket portal dan mutasi antar-gudang dibatalkan melalui alur asalnya.
+            </div>
+            <div class="erp-filter-bar">
+              <div class="erp-filter-group"><label for="deleteTxnStart">Dari tanggal</label><input type="date" id="deleteTxnStart" onchange="invalidateDeleteCandidates()"></div>
+              <div class="erp-filter-group"><label for="deleteTxnEnd">Sampai tanggal</label><input type="date" id="deleteTxnEnd" onchange="invalidateDeleteCandidates()"></div>
+              <div class="erp-filter-group" style="flex:2;min-width:220px;"><label for="deleteTxnSearch">Cari ID / barang / pelaku / lokasi</label><input type="search" id="deleteTxnSearch" oninput="invalidateDeleteCandidates()" placeholder="Masukkan kata kunci"></div>
+              <button type="button" class="btn btn-primary" onclick="muatTransactionsForDeletion(true)"><i class="fa-solid fa-magnifying-glass"></i> Cari Transaksi</button>
+            </div>
+            <div id="deleteTxnResults" class="erp-table-responsive" aria-live="polite"><p style="padding:18px;text-align:center;color:var(--erp-text-muted);">Isi minimal satu filter lalu pilih Cari Transaksi.</p></div>
+          </div>
+        </div>
+        <div class="erp-card" style="margin-top:16px;">
+          <div class="erp-card-header"><div class="erp-card-title"><i class="fa-solid fa-clipboard-list"></i> Riwayat Transaksi Dihapus</div></div>
+          <div class="erp-card-body">
+            <div class="erp-filter-bar">
+              <div class="erp-filter-group"><label for="deletedHistoryStart">Dihapus dari tanggal</label><input type="date" id="deletedHistoryStart" onchange="invalidateDeletedHistory()"></div>
+              <div class="erp-filter-group"><label for="deletedHistoryEnd">Sampai tanggal</label><input type="date" id="deletedHistoryEnd" onchange="invalidateDeletedHistory()"></div>
+              <div class="erp-filter-group" style="flex:2;min-width:220px;"><label for="deletedHistorySearch">Cari ID / barang / pelaku / admin / alasan</label><input type="search" id="deletedHistorySearch" oninput="invalidateDeletedHistory()" placeholder="Masukkan kata kunci"></div>
+              <button type="button" class="btn btn-primary" onclick="muatDeletedTransactions(true)"><i class="fa-solid fa-magnifying-glass"></i> Cari Riwayat</button>
+            </div>
+            <div id="deletedHistorySummary" aria-live="polite" style="margin-bottom:12px;"></div>
+            <div id="deletedHistoryResults" class="erp-table-responsive" aria-live="polite"><p style="padding:18px;text-align:center;color:var(--erp-text-muted);">Isi minimal satu filter lalu pilih Cari Riwayat.</p></div>
+          </div>
+        </div>
+      </div>
+
       <div id="tabPemakaianKandangView" role="tabpanel" aria-labelledby="tabPemakaianKandangBtn" style="display:none;">
         <div class="erp-card">
           <div class="erp-card-header">
@@ -692,6 +733,24 @@
   </div>
 </div>
 
+<div id="modalHapusTransaksi" class="modal">
+  <div class="modal-content" style="max-width:600px;">
+    <div class="modal-header">
+      <h3 style="font-size:14px;font-weight:700;color:var(--erp-danger);"><i class="fa-solid fa-trash-can"></i> Batalkan Transaksi Stok</h3>
+      <button type="button" aria-label="Tutup pembatalan transaksi" onclick="tutupModal('modalHapusTransaksi')" style="background:none;border:none;cursor:pointer;font-size:16px;"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form id="formHapusTransaksi" class="modal-body">
+      <input type="hidden" id="hapusTransaksiIdSumber">
+      <div id="hapusTransaksiDetail" style="background:#f6f9f7;border:1px solid var(--erp-border-light);border-radius:8px;padding:12px;margin-bottom:14px;"></div>
+      <div class="form-group"><label for="hapusTransaksiAlasan">Alasan penghapusan (wajib)</label><textarea id="hapusTransaksiAlasan" minlength="10" maxlength="500" rows="4" required placeholder="Jelaskan kesalahan input dan alasan transaksi dibatalkan." style="width:100%;padding:9px 12px;border:1px solid var(--erp-border);border-radius:6px;font:inherit;resize:vertical;"></textarea><small style="display:block;margin-top:5px;color:var(--erp-text-muted);">10–500 karakter. Alasan dan nama admin disimpan dalam riwayat penghapusan.</small></div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px;">
+        <button type="button" onclick="tutupModal('modalHapusTransaksi')" class="btn btn-outline">Batal</button>
+        <button id="btnKonfirmasiHapusTransaksi" type="submit" class="btn btn-danger"><i class="fa-solid fa-trash-can"></i> Hapus dan Catat Alasan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <script>
   const GAS_URL = "https://script.google.com/macros/s/AKfycbx_tuIlCd-_n3PMtmv-_hPP4QrbGfPVYzk4tN33WinGtA8fyhe19uwXg6oS7v9jnm9yZw/exec";
   const AUTH_SESSION_KEY = 'selabintana_app_session';
@@ -700,6 +759,7 @@
   let sesiUser = {}; let masterUnits = []; let allUnits = []; let masterGudang = []; let rawJurnalData = []; let rawStokList = [];
   let rawStockSnapshot = []; let appliedStockSnapshotFilters = null; let transferRows = []; let ticketReceiptOptions = []; let stockTransactionIds = Object.create(null); let allowedGudang = [];
   let jurnalLoaded = false; let stockAuditLoaded = false; let correctionHistoryLoaded = false;
+  let deletableTransactionRows = []; let deleteCandidatesLoaded = false; let deletedHistoryLoaded = false;
 
   function escapeHtml(value) {
     return String(value == null ? '' : value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
@@ -824,6 +884,7 @@
     document.getElementById('mainPanel').style.display = 'flex';
     const koreksiMenu = document.getElementById('koreksiStokMenuItem');
     koreksiMenu.hidden = !sesiUser.isAdmin;
+    document.getElementById('hapusTransaksiMenuItem').hidden = !sesiUser.isAdmin;
     document.querySelector('.erp-menu').classList.toggle('has-admin-menu', Boolean(sesiUser.isAdmin));
     
     let initial = (sesiUser.nama || "U").substring(0,2).toUpperCase();
@@ -873,8 +934,8 @@
   }
 
   function switchTab(tab) {
-    if (tab === 'koreksi' && !sesiUser.isAdmin) return showToast('Menu koreksi stok hanya tersedia untuk admin.', 'error');
-    const tabs = {stok: ['tabStokBtn','tabStokView','Jurnal Stok & Mutasi'], transaksi: ['tabTransaksiBtn','tabTransaksiView','Pusat Transaksi Gudang'], history: ['tabHistoryBtn','tabHistoryView','Riwayat Mutasi'], audit: ['tabAuditBtn','tabAuditView','Jejak Audit Stok'], lihatStok: ['tabLihatStokBtn','tabLihatStokView','Lihat Saldo Stok'], koreksi: ['tabKoreksiBtn','tabKoreksiView','Koreksi Stok'], kandang: ['tabPemakaianKandangBtn','tabPemakaianKandangView','Pemakaian per Kandang']};
+    if ((tab === 'koreksi' || tab === 'hapusTransaksi') && !sesiUser.isAdmin) return showToast('Menu ini hanya tersedia untuk admin.', 'error');
+    const tabs = {stok: ['tabStokBtn','tabStokView','Jurnal Stok & Mutasi'], transaksi: ['tabTransaksiBtn','tabTransaksiView','Pusat Transaksi Gudang'], history: ['tabHistoryBtn','tabHistoryView','Riwayat Mutasi'], audit: ['tabAuditBtn','tabAuditView','Jejak Audit Stok'], lihatStok: ['tabLihatStokBtn','tabLihatStokView','Lihat Saldo Stok'], koreksi: ['tabKoreksiBtn','tabKoreksiView','Koreksi Stok'], hapusTransaksi: ['tabHapusTransaksiBtn','tabHapusTransaksiView','Hapus Transaksi'], kandang: ['tabPemakaianKandangBtn','tabPemakaianKandangView','Pemakaian per Kandang']};
     if (!tabs[tab]) return;
     Object.keys(tabs).forEach(key => {
       const [buttonId, panelId] = tabs[key];
@@ -1797,6 +1858,114 @@
       return true;
     } catch (error) {
       container.innerHTML = `<p style="padding:16px;text-align:center;color:var(--erp-danger);">${escapeHtml(error.message || 'Gagal memuat riwayat koreksi.')}</p>`;
+      return false;
+    }
+  }
+
+  function invalidateDeleteCandidates() {
+    deleteCandidatesLoaded = false;
+    deletableTransactionRows = [];
+    document.getElementById('deleteTxnResults').innerHTML = '<p style="padding:18px;text-align:center;color:var(--erp-text-muted);">Filter berubah. Pilih Cari Transaksi untuk memuat hasil baru.</p>';
+  }
+  async function muatTransactionsForDeletion(force = false) {
+    if (!sesiUser.isAdmin) return false;
+    if (!force && !deleteCandidatesLoaded) return false;
+    const start = document.getElementById('deleteTxnStart').value;
+    const end = document.getElementById('deleteTxnEnd').value;
+    const q = document.getElementById('deleteTxnSearch').value.trim();
+    const container = document.getElementById('deleteTxnResults');
+    if (!start && !end && !q) { showToast('Isi minimal satu filter transaksi sebelum mencari.', 'error'); return false; }
+    container.innerHTML = '<p style="padding:18px;text-align:center;color:var(--erp-text-muted);"><i class="fa-solid fa-spinner fa-spin"></i> Mencari transaksi…</p>';
+    try {
+      const res = await postPayload({action: 'getTransactionsForDeletion', token: sesiUser.token, tglAwal: start, tglAkhir: end, q});
+      const json = await res.json();
+      if (cekSesiBerakhir(json)) return false;
+      if (json.status !== 'success') throw new Error(json.message || 'Gagal mencari transaksi.');
+      deletableTransactionRows = json.data || [];
+      deleteCandidatesLoaded = true;
+      renderTransactionsForDeletion(deletableTransactionRows);
+      return true;
+    } catch (error) {
+      container.innerHTML = `<p style="padding:18px;text-align:center;color:var(--erp-danger);">${escapeHtml(error.message || 'Gagal mencari transaksi.')}</p>`;
+      return false;
+    }
+  }
+  function renderTransactionsForDeletion(rows) {
+    const container = document.getElementById('deleteTxnResults');
+    if (!rows.length) { container.innerHTML = '<p style="padding:18px;text-align:center;color:var(--erp-text-muted);">Tidak ada transaksi mandiri yang memenuhi filter. Tiket portal dan mutasi antargudang dikecualikan.</p>'; return; }
+    let html = '<table class="erp-table"><thead><tr><th>Waktu / ID Transaksi</th><th>Barang</th><th>Jenis</th><th>Jumlah</th><th>Lokasi</th><th>Pelaku / Catatan</th><th>Aksi</th></tr></thead><tbody>';
+    html += rows.map(row => `<tr><td><small class="mono">${escapeHtml(row.waktu)}</small><br><small>${escapeHtml(row.idTransaksi)}</small></td><td><b>${escapeHtml(row.namaBarang)}</b><br><small class="mono">${escapeHtml(row.kodeBarang)} · ${escapeHtml(row.kategori)}</small></td><td><span class="badge ${row.tipeMutasi === 'MASUK' ? 'badge-success' : 'badge-danger'}">${escapeHtml(row.aksi)} / ${escapeHtml(row.tipeMutasi)}</span></td><td class="mono"><b>${formatNumber(row.jumlah)} ${escapeHtml(row.satuan)}</b></td><td>${escapeHtml(row.kodeUnit)}<br><small>${escapeHtml(row.kodeGudang)}</small></td><td>${escapeHtml(row.pelaku)}<br><small>${escapeHtml(row.keterangan)}</small></td><td><button type="button" class="btn btn-outline btn-sm" style="color:var(--erp-danger);" onclick="bukaModalHapusTransaksi(${inlineArg(row.idTransaksi)})"><i class="fa-solid fa-trash-can"></i> Hapus</button></td></tr>`).join('');
+    container.innerHTML = html + '</tbody></table>';
+  }
+  function bukaModalHapusTransaksi(transactionId) {
+    if (!sesiUser.isAdmin) return showToast('Hanya admin yang dapat membatalkan transaksi.', 'error');
+    const row = deletableTransactionRows.find(item => String(item.idTransaksi) === String(transactionId));
+    if (!row) return showToast('Transaksi tidak lagi tersedia. Cari ulang sebelum menghapus.', 'error');
+    document.getElementById('formHapusTransaksi').reset();
+    document.getElementById('hapusTransaksiIdSumber').value = row.idTransaksi;
+    document.getElementById('hapusTransaksiDetail').innerHTML = `<b>${escapeHtml(row.namaBarang)}</b> · ${escapeHtml(row.kodeBarang)}<br>${escapeHtml(row.tipeMutasi)} ${formatNumber(row.jumlah)} ${escapeHtml(row.satuan)} · ${escapeHtml(row.kodeUnit)} / ${escapeHtml(row.kodeGudang)}<br><small>${escapeHtml(row.waktu)} · ID ${escapeHtml(row.idTransaksi)}</small>`;
+    document.getElementById('modalHapusTransaksi').style.display = 'flex';
+    document.getElementById('hapusTransaksiAlasan').focus();
+  }
+  document.getElementById('formHapusTransaksi').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    if (!sesiUser.isAdmin) return showToast('Hanya admin yang dapat membatalkan transaksi.', 'error');
+    const reason = document.getElementById('hapusTransaksiAlasan').value.trim();
+    if (reason.length < 10 || reason.length > 500) return showToast('Alasan harus 10–500 karakter.', 'error');
+    const payload = {action: 'hapusTransaksiStok', idTransaksiSumber: document.getElementById('hapusTransaksiIdSumber').value, alasan: reason};
+    await kirimAksiStok(payload, async function() {
+      tutupModal('modalHapusTransaksi');
+      document.getElementById('formHapusTransaksi').reset();
+      const refreshTasks = [muatMasterStokBarang()];
+      if (deleteCandidatesLoaded) refreshTasks.push(muatTransactionsForDeletion());
+      if (deletedHistoryLoaded) refreshTasks.push(muatDeletedTransactions());
+      if (jurnalLoaded) refreshTasks.push(muatJurnalTransaksiBarang());
+      if (appliedStockSnapshotFilters) refreshTasks.push(muatStockSnapshot());
+      if (stockAuditLoaded) refreshTasks.push(muatStockAudit());
+      if (correctionHistoryLoaded) refreshTasks.push(muatRiwayatKoreksiStok());
+      await Promise.all(refreshTasks);
+    }, 'formHapusTransaksi');
+  });
+
+  function invalidateDeletedHistory() {
+    deletedHistoryLoaded = false;
+    document.getElementById('deletedHistorySummary').innerHTML = '';
+    document.getElementById('deletedHistoryResults').innerHTML = '<p style="padding:18px;text-align:center;color:var(--erp-text-muted);">Filter berubah. Pilih Cari Riwayat untuk memuat hasil baru.</p>';
+  }
+  async function muatDeletedTransactions(force = false) {
+    if (!sesiUser.isAdmin) return false;
+    if (!force && !deletedHistoryLoaded) return false;
+    const start = document.getElementById('deletedHistoryStart').value;
+    const end = document.getElementById('deletedHistoryEnd').value;
+    const q = document.getElementById('deletedHistorySearch').value.trim();
+    const container = document.getElementById('deletedHistoryResults');
+    if (!start && !end && !q) { showToast('Isi minimal satu filter riwayat penghapusan.', 'error'); return false; }
+    document.getElementById('deletedHistorySummary').innerHTML = '';
+    container.innerHTML = '<p style="padding:18px;text-align:center;color:var(--erp-text-muted);"><i class="fa-solid fa-spinner fa-spin"></i> Memuat riwayat penghapusan…</p>';
+    try {
+      const res = await postPayload({action: 'getDeletedTransactions', token: sesiUser.token, tglAwal: start, tglAkhir: end, q});
+      const json = await res.json();
+      if (cekSesiBerakhir(json)) return false;
+      if (json.status !== 'success') throw new Error(json.message || 'Gagal memuat riwayat penghapusan.');
+      deletedHistoryLoaded = true;
+      const rows = json.data || [];
+      const actorCounts = Object.create(null);
+      rows.filter(row => String(row.status || '').toUpperCase() === 'SELESAI').forEach(row => {
+        const username = String(row.usernamePelakuAsal || '').trim() || String(row.pelakuAsal || 'Tidak diketahui').trim();
+        if (!actorCounts[username]) actorCounts[username] = {username, name: row.pelakuAsal || username, count: 0};
+        actorCounts[username].count++;
+      });
+      const actorSummary = Object.values(actorCounts).sort((a, b) => b.count - a.count || String(a.name).localeCompare(String(b.name)));
+      document.getElementById('deletedHistorySummary').innerHTML = rows.length
+        ? `<div style="border:1px solid var(--erp-border-light);border-radius:8px;padding:12px 14px;background:#f6f9f7;"><b style="font-size:12px;">Ringkasan transaksi dibatalkan per pelaku asal</b><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;">${actorSummary.length ? actorSummary.map(actor => `<span class="badge badge-info" title="${escapeHtml(actor.username)}">${escapeHtml(actor.name)} · ${escapeHtml(actor.username)}: ${actor.count} transaksi</span>`).join('') : '<small>Tidak ada pembatalan berstatus selesai pada filter ini.</small>'}</div><small style="display:block;margin-top:8px;color:var(--erp-text-muted);">Ringkasan mengikuti filter dan maksimal 500 transaksi hasil pencarian.</small></div>`
+        : '';
+      if (!rows.length) { container.innerHTML = '<p style="padding:18px;text-align:center;color:var(--erp-text-muted);">Belum ada transaksi dihapus pada filter ini.</p>'; return true; }
+      let html = '<table class="erp-table"><thead><tr><th>Waktu / ID Pembatalan</th><th>Transaksi Asal</th><th>Barang</th><th>Mutasi</th><th>Lokasi</th><th>Pelaku Asal</th><th>Admin / Alasan</th><th>Status</th></tr></thead><tbody>';
+      html += rows.map(row => `<tr><td><small class="mono">${escapeHtml(row.waktuDihapus)}</small><br><small>${escapeHtml(row.idPenghapusan)}</small></td><td><small>${escapeHtml(row.waktuAsal)}</small><br><span class="mono">${escapeHtml(row.idTransaksi)}</span></td><td><b>${escapeHtml(row.namaBarang)}</b><br><small class="mono">${escapeHtml(row.kodeBarang)} · ${escapeHtml(row.kategori)}</small></td><td>${escapeHtml(row.tipeMutasi)}<br><b>${formatNumber(row.jumlah)} ${escapeHtml(row.satuan)}</b></td><td>${escapeHtml(row.kodeUnit)}<br><small>${escapeHtml(row.kodeGudang)}</small></td><td><b>${escapeHtml(row.pelakuAsal)}</b><br><small class="mono">${escapeHtml(row.usernamePelakuAsal || '-')}</small></td><td><b>${escapeHtml(row.admin)}</b><br><small>${escapeHtml(row.alasan)}</small></td><td><span class="badge ${row.status === 'SELESAI' ? 'badge-success' : 'badge-warning'}">${escapeHtml(row.status)}</span><br><small>${escapeHtml(row.idLogPembalik)}</small></td></tr>`).join('');
+      container.innerHTML = html + '</tbody></table>';
+      return true;
+    } catch (error) {
+      container.innerHTML = `<p style="padding:18px;text-align:center;color:var(--erp-danger);">${escapeHtml(error.message || 'Gagal memuat riwayat penghapusan.')}</p>`;
       return false;
     }
   }
