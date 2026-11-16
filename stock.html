@@ -505,8 +505,29 @@
               <div class="erp-filter-group"><label for="stockViewSearch">Barang / kode / kategori</label><input type="search" id="stockViewSearch" oninput="invalidateStockSnapshotResults()" placeholder="Cari barang"></div>
               <button type="button" onclick="muatStockSnapshot()" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i> Tampilkan</button>
             </div>
-            <p class="form-hint" style="margin:0 0 12px;color:var(--erp-text-muted);font-size:11px;">Tanggal kosong menampilkan saldo terkini. Pilih tanggal untuk melihat saldo akhir hari itu.</p>
+            <p class="form-hint" style="margin:0 0 12px;color:var(--erp-text-muted);font-size:11px;">Tanggal kosong menampilkan saldo terkini. Pilih tanggal untuk melihat saldo akhir hari itu. Klik <b>Riwayat</b> pada baris barang untuk melihat rincian mutasi dan saldo berjalan per periode.</p>
             <div id="containerStockSnapshot" class="erp-table-responsive" aria-live="polite"><p style="padding:20px;text-align:center;color:var(--erp-text-muted);">Pilih filter lalu tampilkan saldo.</p></div>
+          </div>
+        </div>
+        <div id="stockItemHistoryPanel" class="erp-card" style="display:none;margin-top:16px;">
+          <div class="erp-card-header">
+            <div><div class="erp-card-title"><i class="fa-solid fa-clock-rotate-left"></i> History Stok per Barang</div><div id="stockItemHistoryTitle" style="margin-top:5px;font-size:11px;color:var(--erp-text-muted);"></div></div>
+            <button type="button" class="btn btn-outline btn-sm" onclick="tutupRiwayatBarangStock()" aria-label="Tutup history stok"><i class="fa-solid fa-xmark"></i> Tutup</button>
+          </div>
+          <div class="erp-card-body">
+            <div class="erp-filter-bar" style="margin-bottom:14px;">
+              <div class="erp-filter-group"><label for="stockItemHistoryStart">Dari tanggal</label><input id="stockItemHistoryStart" type="date" required></div>
+              <div class="erp-filter-group"><label for="stockItemHistoryEnd">Sampai tanggal</label><input id="stockItemHistoryEnd" type="date" required></div>
+              <button id="stockItemHistorySearchBtn" type="button" class="btn btn-primary" onclick="muatRiwayatBarangStock()"><i class="fa-solid fa-magnifying-glass"></i> Tampilkan History</button>
+            </div>
+            <p id="stockItemHistoryHint" class="form-hint" style="margin:0 0 14px;color:var(--erp-text-muted);font-size:11px;">Pilih periode untuk melihat saldo awal, transaksi, dan saldo akhir.</p>
+            <div id="stockItemHistorySummary" style="display:none;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:14px;">
+              <div style="padding:12px;border:1px solid var(--erp-border-light);border-radius:8px;background:#f8faf9;"><small>Saldo awal periode</small><div id="stockItemHistoryOpening" class="mono" style="margin-top:4px;font-weight:700;"></div></div>
+              <div style="padding:12px;border:1px solid var(--erp-border-light);border-radius:8px;background:#f0fdf4;"><small>Total masuk</small><div id="stockItemHistoryIn" class="mono" style="margin-top:4px;font-weight:700;color:#047857;"></div></div>
+              <div style="padding:12px;border:1px solid var(--erp-border-light);border-radius:8px;background:#fff7ed;"><small>Total keluar</small><div id="stockItemHistoryOut" class="mono" style="margin-top:4px;font-weight:700;color:#b45309;"></div></div>
+              <div style="padding:12px;border:1px solid #b7d9c2;border-radius:8px;background:#eaf4ec;"><small>Saldo akhir periode</small><div id="stockItemHistoryClosing" class="mono" style="margin-top:4px;font-weight:800;color:var(--erp-primary);"></div></div>
+            </div>
+            <div id="containerStockItemHistory" class="erp-table-responsive" aria-live="polite"><p style="padding:16px;color:var(--erp-text-muted);">History belum dimuat.</p></div>
           </div>
         </div>
       </div>
@@ -818,7 +839,7 @@
   const LEGACY_SESSION_KEYS = ['portal_user_session', 'stok_app_user_session'];
 
   let sesiUser = {}; let masterUnits = []; let allUnits = []; let masterGudang = []; let rawJurnalData = []; let displayedJournalRows = []; let rawStokList = [];
-  let rawStockSnapshot = []; let appliedStockSnapshotFilters = null; let transferRows = []; let ticketReceiptOptions = []; let stockTransactionIds = Object.create(null); let allowedGudang = [];
+  let rawStockSnapshot = []; let appliedStockSnapshotFilters = null; let selectedStockHistoryItem = null; let stockItemHistoryLoading = false; let transferRows = []; let ticketReceiptOptions = []; let stockTransactionIds = Object.create(null); let allowedGudang = [];
   let jurnalLoaded = false; let stockAuditLoaded = false; let correctionHistoryLoaded = false;
   let deletableTransactionRows = []; let deleteCandidatesLoaded = false; let deletedHistoryLoaded = false;
   let openingStockRowCounter = 0;
@@ -1233,6 +1254,7 @@
     appliedStockSnapshotFilters = null;
     rawStockSnapshot = [];
     document.getElementById('containerStockSnapshot').innerHTML = '<p style="padding:20px;text-align:center;color:var(--erp-text-muted);">Filter berubah. Pilih Tampilkan untuk memuat saldo.</p>';
+    tutupRiwayatBarangStock();
   }
 
   function getStockSnapshotFilterLabel(selectId, value, emptyLabel) {
@@ -1419,13 +1441,111 @@
   function renderStockSnapshot(data) {
     const container = document.getElementById('containerStockSnapshot');
     if (!data.length) { container.innerHTML = '<p style="padding:20px;text-align:center;color:var(--erp-text-muted);">Tidak ada barang pada filter ini.</p>'; return; }
-    let html = '<table class="erp-table"><thead><tr><th>Barang</th><th>Kategori</th><th>Unit / Farm</th><th>Gudang</th><th>Saldo Awal</th><th>Masuk</th><th>Keluar</th><th>Saldo</th><th>Minimum</th><th>Status</th></tr></thead><tbody>';
+    let html = '<table class="erp-table"><thead><tr><th>Barang</th><th>Kategori</th><th>Unit / Farm</th><th>Gudang</th><th>Saldo Awal</th><th>Masuk</th><th>Keluar</th><th>Saldo</th><th>Minimum</th><th>Status</th><th>History</th></tr></thead><tbody>';
     html += data.map(item => {
       const statusClass = item.statusStok === 'HABIS' ? 'empty' : item.statusStok === 'RENDAH' ? 'low' : 'safe';
       const minControl = sesiUser.isAdmin ? `<div style="display:flex;gap:5px;align-items:center;"><input class="inline-minimum" type="number" min="0" max="1000000000" step="any" value="${Number(item.stokMinimum || 0)}" aria-label="Batas minimum ${escapeHtml(item.namaBarang)}"><button type="button" class="btn btn-outline btn-sm" aria-label="Simpan batas minimum ${escapeHtml(item.namaBarang)}" onclick="simpanStokMinimum(${inlineArg(item.kodeBarang)},${inlineArg(item.kodeUnit)},${inlineArg(item.kodeGudang)},this)"><i class="fa-solid fa-floppy-disk"></i></button></div>` : formatNumber(item.stokMinimum || 0);
-      return `<tr><td><b>${escapeHtml(item.namaBarang)}</b><br><small class="mono">${escapeHtml(item.kodeBarang)}</small></td><td>${escapeHtml(item.kategori)}</td><td>${escapeHtml(item.kodeUnit)}</td><td>${escapeHtml(item.kodeGudang)}</td><td>${formatNumber(item.stokAwal)} ${escapeHtml(item.satuan)}</td><td>${formatNumber(item.jumlahMasuk)} ${escapeHtml(item.satuan)}</td><td>${formatNumber(item.jumlahKeluar)} ${escapeHtml(item.satuan)}</td><td class="mono"><b>${formatNumber(item.sisaStok)} ${escapeHtml(item.satuan)}</b></td><td>${minControl}</td><td><span class="stock-status ${statusClass}">${escapeHtml(item.statusStok)}</span></td></tr>`;
+      return `<tr><td><b>${escapeHtml(item.namaBarang)}</b><br><small class="mono">${escapeHtml(item.kodeBarang)}</small></td><td>${escapeHtml(item.kategori)}</td><td>${escapeHtml(item.kodeUnit)}</td><td>${escapeHtml(item.kodeGudang)}</td><td>${formatNumber(item.stokAwal)} ${escapeHtml(item.satuan)}</td><td>${formatNumber(item.jumlahMasuk)} ${escapeHtml(item.satuan)}</td><td>${formatNumber(item.jumlahKeluar)} ${escapeHtml(item.satuan)}</td><td class="mono"><b>${formatNumber(item.sisaStok)} ${escapeHtml(item.satuan)}</b></td><td>${minControl}</td><td><span class="stock-status ${statusClass}">${escapeHtml(item.statusStok)}</span></td><td><button type="button" class="btn btn-outline btn-sm" onclick="bukaRiwayatBarangStock(${inlineArg(item.kodeBarang)},${inlineArg(item.kodeUnit)},${inlineArg(item.kodeGudang)})"><i class="fa-solid fa-clock-rotate-left"></i> Riwayat</button></td></tr>`;
     }).join('');
     container.innerHTML = html + '</tbody></table>';
+  }
+
+  function bukaRiwayatBarangStock(kodeBarang, kodeUnit, kodeGudang) {
+    const item = rawStockSnapshot.find(row => String(row.kodeBarang) === String(kodeBarang) && String(row.kodeUnit) === String(kodeUnit) && String(row.kodeGudang) === String(kodeGudang));
+    if (!item) return showToast('Barang tidak ditemukan pada hasil saldo saat ini. Tampilkan ulang daftar stok.', 'error');
+    selectedStockHistoryItem = item;
+    document.getElementById('stockItemHistoryTitle').textContent = `${item.namaBarang} (${item.kodeBarang}) · ${item.kodeUnit} / ${item.kodeGudang}`;
+    document.getElementById('stockItemHistoryStart').value = '';
+    document.getElementById('stockItemHistoryEnd').value = '';
+    document.getElementById('stockItemHistorySummary').style.display = 'none';
+    document.getElementById('stockItemHistoryHint').textContent = `Pilih periode untuk melihat transaksi ${item.namaBarang}. Saldo berjalan dan saldo akhir dihitung untuk lokasi ini.`;
+    document.getElementById('containerStockItemHistory').innerHTML = '<p style="padding:16px;color:var(--erp-text-muted);">Pilih tanggal awal dan akhir, lalu tampilkan history.</p>';
+    document.getElementById('stockItemHistoryPanel').style.display = 'block';
+    document.getElementById('stockItemHistoryPanel').scrollIntoView({behavior: 'smooth', block: 'start'});
+  }
+
+  function tutupRiwayatBarangStock() {
+    const panel = document.getElementById('stockItemHistoryPanel');
+    if (panel) panel.style.display = 'none';
+    selectedStockHistoryItem = null;
+  }
+
+  async function muatRiwayatBarangStock() {
+    if (!selectedStockHistoryItem || !sesiUser.token) return false;
+    const start = document.getElementById('stockItemHistoryStart').value;
+    const end = document.getElementById('stockItemHistoryEnd').value;
+    const container = document.getElementById('containerStockItemHistory');
+    const button = document.getElementById('stockItemHistorySearchBtn');
+    if (!start || !end) return showToast('Pilih tanggal awal dan akhir periode.', 'error');
+    if (start > end) return showToast('Tanggal awal tidak boleh melewati tanggal akhir.', 'error');
+    if (stockItemHistoryLoading) return false;
+    stockItemHistoryLoading = true;
+    button.disabled = true;
+    button.setAttribute('aria-busy', 'true');
+    container.innerHTML = '<p style="padding:18px;text-align:center;color:var(--erp-text-muted);"><i class="fa-solid fa-spinner fa-spin"></i> Menghitung riwayat dan saldo berjalan…</p>';
+    const itemForHistory = selectedStockHistoryItem;
+    try {
+      const response = await postPayload({action: 'getStockItemHistory', token: sesiUser.token, kodeBarang: itemForHistory.kodeBarang, kodeUnit: itemForHistory.kodeUnit, kodeGudang: itemForHistory.kodeGudang, tglAwal: start, tglAkhir: end});
+      const result = await response.json();
+      if (cekSesiBerakhir(result)) return false;
+      if (!selectedStockHistoryItem || String(selectedStockHistoryItem.kodeBarang) !== String(itemForHistory.kodeBarang) || String(selectedStockHistoryItem.kodeUnit) !== String(itemForHistory.kodeUnit) || String(selectedStockHistoryItem.kodeGudang) !== String(itemForHistory.kodeGudang)) return false;
+      if (document.getElementById('stockItemHistoryStart').value !== start || document.getElementById('stockItemHistoryEnd').value !== end) {
+        container.innerHTML = '<p style="padding:18px;text-align:center;color:var(--erp-text-muted);">Filter periode berubah. Pilih Tampilkan History untuk memuat ulang.</p>';
+        return false;
+      }
+      if (result.status !== 'success') throw new Error(result.message || 'Gagal memuat history stok barang.');
+      const summary = result.summary || {};
+      const unit = String(result.item && result.item.satuan || itemForHistory.satuan || 'pcs');
+      document.getElementById('stockItemHistoryOpening').textContent = `${formatNumber(summary.saldoAwalPeriode)} ${unit}`;
+      document.getElementById('stockItemHistoryIn').textContent = `${formatNumber(summary.jumlahMasuk)} ${unit}`;
+      document.getElementById('stockItemHistoryOut').textContent = `${formatNumber(summary.jumlahKeluar)} ${unit}`;
+      document.getElementById('stockItemHistoryClosing').textContent = `${formatNumber(summary.saldoAkhirPeriode)} ${unit}`;
+      document.getElementById('stockItemHistorySummary').style.display = 'grid';
+      document.getElementById('stockItemHistoryHint').textContent = `Periode ${result.tglAwal} sampai ${result.tglAkhir} · ${result.kodeUnit} / ${result.kodeGudang} · ${(result.data || []).length} transaksi`;
+      renderRiwayatBarangStock(result.data || [], unit);
+      setConnectionStatus('ok', 'History stok diperbarui');
+      return true;
+    } catch (error) {
+      if (!selectedStockHistoryItem || String(selectedStockHistoryItem.kodeBarang) !== String(itemForHistory.kodeBarang) || String(selectedStockHistoryItem.kodeUnit) !== String(itemForHistory.kodeUnit) || String(selectedStockHistoryItem.kodeGudang) !== String(itemForHistory.kodeGudang)) return false;
+      if (document.getElementById('stockItemHistoryStart').value !== start || document.getElementById('stockItemHistoryEnd').value !== end) {
+        container.innerHTML = '<p style="padding:18px;text-align:center;color:var(--erp-text-muted);">Filter periode berubah. Pilih Tampilkan History untuk memuat ulang.</p>';
+        return false;
+      }
+      container.innerHTML = `<p style="padding:18px;text-align:center;color:var(--erp-danger);">${escapeHtml(error.message || 'Gagal memuat history stok.')}</p>`;
+      return false;
+    } finally {
+      stockItemHistoryLoading = false;
+      button.disabled = false;
+      button.removeAttribute('aria-busy');
+    }
+  }
+
+  function renderRiwayatBarangStock(rows, unit) {
+    const container = document.getElementById('containerStockItemHistory');
+    if (!rows.length) {
+      container.innerHTML = '<p style="padding:18px;text-align:center;color:var(--erp-text-muted);">Tidak ada transaksi pada periode ini. Saldo awal dan akhir tetap menunjukkan posisi barang di periode tersebut.</p>';
+      return;
+    }
+    const safeUnit = escapeHtml(unit || 'pcs');
+    const body = rows.map((row, index) => {
+      const masuk = Number(row.jumlahMasuk || 0);
+      const keluar = Number(row.jumlahKeluar || 0);
+      const cancelled = row.statusTransaksi === 'DIBATALKAN';
+      const expiry = row.tanggalKadaluarsa ? `<br><small>Kedaluwarsa: ${escapeHtml(row.tanggalKadaluarsa)}</small>` : '';
+      const batch = row.batch ? `${escapeHtml(row.batch)}${expiry}` : (row.tanggalKadaluarsa ? escapeHtml(row.tanggalKadaluarsa) : '-');
+      return `<tr${cancelled ? ' style="background:#fff7ed;"' : ''}>
+        <td>${index + 1}</td><td class="mono">${escapeHtml(row.waktu)}</td>
+        <td><span class="stock-status ${masuk ? 'safe' : 'low'}">${escapeHtml(row.tipeMutasi)}${cancelled ? ' · DIBATALKAN' : ''}</span></td>
+        <td><b>${escapeHtml(row.rincian || '-')}</b><br><small>${escapeHtml(row.kodeUnit)} / ${escapeHtml(row.kodeGudang)}</small></td>
+        <td style="color:#047857;font-weight:700;">${masuk ? `${formatNumber(masuk)} ${safeUnit}` : '-'}</td>
+        <td style="color:#b91c1c;font-weight:700;">${keluar ? `${formatNumber(keluar)} ${safeUnit}` : '-'}</td>
+        <td class="mono">${formatNumber(row.saldoSebelum)} → <b>${formatNumber(row.saldoSetelah)} ${safeUnit}</b></td>
+        <td style="min-width:210px;white-space:normal;">${escapeHtml(row.keterangan || '-')}</td>
+        <td><small>${escapeHtml(row.idTransaksi || '-')}</small><br><small>${escapeHtml(row.pelaku || '-')}</small></td>
+        <td>${batch}</td>
+      </tr>`;
+    }).join('');
+    container.innerHTML = `<table class="erp-table"><thead><tr><th>No</th><th>Waktu</th><th>Transaksi</th><th>Asal / Tujuan / Rincian</th><th>Masuk</th><th>Keluar</th><th>Saldo Sebelum → Sesudah</th><th>Keterangan</th><th>ID / Pelaku</th><th>Batch / Kedaluwarsa</th></tr></thead><tbody>${body}</tbody></table>`;
   }
 
   async function simpanStokMinimum(kodeBarang, kodeUnit, kodeGudang, button) {
