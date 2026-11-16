@@ -335,6 +335,10 @@
   let filteredTickets = []; 
   let currentPage = 1;
   const itemsPerPage = 10;
+  let historyTotalTickets = 0;
+  let historyTotalPages = 1;
+  let historyFilterTimer = null;
+  let historyPendingPage = null;
   let idTiketEdit = null;
   let submissionKey = null;
   let draftSaveTimer = null;
@@ -756,12 +760,22 @@
   document.getElementById('formPermintaan').addEventListener('input', scheduleRequestDraftSave);
   document.getElementById('formPermintaan').addEventListener('change', scheduleRequestDraftSave);
 
-  async function muatRiwayatPermintaan() {
-    if (historyLoading) return;
+  async function muatRiwayatPermintaan(page = 1) {
+    if (historyLoading) { historyPendingPage = page; return; }
     historyLoading = true;
+    const requestedPage = Math.max(1, Number(page) || 1);
     document.getElementById('bodyTabelRiwayat').innerHTML = `<tr><td colspan="8" style="text-align:center;padding:30px;"><i class="fa-solid fa-spinner fa-spin"></i> Mengambil data ERP...</td></tr>`;
     try {
-      const res = await postPayload({action: 'getPermintaan', token: sesiUser.token});
+      const res = await postPayload({
+        action: 'getPermintaan', token: sesiUser.token,
+        q: document.getElementById('searchRiwayat').value.trim(),
+        tglAwal: document.getElementById('filterTglMulai').value,
+        tglAkhir: document.getElementById('filterTglSelesai').value,
+        qBarang: document.getElementById('filterNamaBarang').value.trim(),
+        statusFilter: document.getElementById('filterStatus').value,
+        urgensiFilter: document.getElementById('filterUrgensi').value,
+        page: requestedPage, pageSize: itemsPerPage
+      });
       const json = await res.json();
       if (cekSesiBerakhir(json)) return;
       if (json.status !== 'success') throw new Error(json.message || 'Gagal memuat riwayat permintaan.');
@@ -779,14 +793,26 @@
       });
       groupedTickets = Object.values(mapTiket);
       groupedTickets.forEach(ticket => ticket.items.sort((a, b) => Number(a.noItem) - Number(b.noItem)));
-      currentPage = 1;
+      filteredTickets = groupedTickets;
+      currentPage = Number(json.page || requestedPage);
+      historyTotalTickets = Number(json.totalTickets || 0);
+      historyTotalPages = Math.max(1, Number(json.totalPages || 1));
       historyLoaded = true;
-      applyFilters();
+      document.getElementById('kpiTotal').innerText = Number(json.kpi && json.kpi.total || 0);
+      document.getElementById('kpiPending').innerText = Number(json.kpi && json.kpi.pending || 0);
+      document.getElementById('kpiAcc').innerText = Number(json.kpi && json.kpi.acc || 0);
+      document.getElementById('kpiReject').innerText = Number(json.kpi && json.kpi.reject || 0);
+      renderPaging();
     } catch (error) {
       historyLoaded = false;
       document.getElementById('bodyTabelRiwayat').innerHTML = `<tr><td colspan="8" style="color:red;text-align:center;">${escapeHtml(error.message || 'Gagal memuat data.')}</td></tr>`;
     } finally {
       historyLoading = false;
+      if (historyPendingPage != null) {
+        const nextPage = historyPendingPage;
+        historyPendingPage = null;
+        muatRiwayatPermintaan(nextPage);
+      }
     }
   }
   function updateKPI(data) {
@@ -804,53 +830,28 @@
   }
 
   function applyFilters() {
-    const kw = document.getElementById('searchRiwayat').value.toLowerCase().trim();
-    const fromDate = document.getElementById('filterTglMulai').value;
-    const toDate = document.getElementById('filterTglSelesai').value;
-    const product = document.getElementById('filterNamaBarang').value.toLowerCase().trim();
-    const statusFilter = document.getElementById('filterStatus').value;
-    const urgencyFilter = document.getElementById('filterUrgensi').value;
-    filteredTickets = groupedTickets.filter(t => {
-      const requestedDate = String(t.tglPermintaan || '').split(' ')[0];
-      const status = String(t.statusPermintaan || '').toUpperCase();
-      const queryMatch = !kw || String(t.kodeTiket || '').toLowerCase().includes(kw) || String(t.pemohon || '').toLowerCase().includes(kw) || String(t.unitLokasi || '').toLowerCase().includes(kw) || t.items.some(item => String(item.namaBarang || '').toLowerCase().includes(kw));
-      const productMatch = !product || t.items.some(item => String(item.namaBarang || '').toLowerCase().includes(product));
-      const dateMatch = (!fromDate || requestedDate >= fromDate) && (!toDate || requestedDate <= toDate);
-      const urgencyMatch = !urgencyFilter || String(t.urgensi || '').toUpperCase().includes(urgencyFilter);
-      let statusMatch = !statusFilter;
-      if (statusFilter === 'APPROVED') statusMatch = ['ACC','APPROVED','ACC_SEBAGIAN','DIPROSES'].includes(status);
-      else if (statusFilter === 'SEBAGIAN') statusMatch = status === 'SEBAGIAN_TERPENUHI';
-      else if (statusFilter) statusMatch = status === statusFilter;
-      return queryMatch && productMatch && dateMatch && urgencyMatch && statusMatch;
-    });
-    currentPage = 1;
-    updateKPI(filteredTickets);
-    renderPaging();
+    clearTimeout(historyFilterTimer);
+    historyFilterTimer = setTimeout(() => muatRiwayatPermintaan(1), 350);
   }
 
   function filterTabelTiket() { applyFilters(); }
 
   function gantiHalaman(step) {
-    const maxPage = Math.ceil(filteredTickets.length / itemsPerPage);
-    currentPage += step;
-    if (currentPage < 1) currentPage = 1;
-    if (currentPage > maxPage) currentPage = maxPage;
-    renderPaging();
+    const nextPage = Math.max(1, Math.min(historyTotalPages, currentPage + step));
+    if (nextPage !== currentPage) muatRiwayatPermintaan(nextPage);
   }
 
   function renderPaging() {
     const tbody = document.getElementById('bodyTabelRiwayat');
-    if(filteredTickets.length === 0) {
+    if(historyTotalTickets === 0) {
       tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:30px; color:#5e6e64;">Data tiket kosong.</td></tr>`;
       document.getElementById('pageInfo').innerText = "Menampilkan 0 data";
       document.getElementById('btnPrevPage').disabled = true; document.getElementById('btnNextPage').disabled = true;
       return;
     }
 
-    const maxPage = Math.ceil(filteredTickets.length / itemsPerPage);
-    const startIdx = (currentPage - 1) * itemsPerPage;
-    const endIdx = startIdx + itemsPerPage;
-    const pageData = filteredTickets.slice(startIdx, endIdx);
+    const maxPage = historyTotalPages;
+    const pageData = groupedTickets;
 
     let html = "";
     pageData.forEach(t => {
@@ -881,7 +882,7 @@
     });
     tbody.innerHTML = html;
 
-    document.getElementById('pageInfo').innerText = `Halaman ${currentPage} dari ${maxPage} (Total ${filteredTickets.length} Tiket)`;
+    document.getElementById('pageInfo').innerText = `Halaman ${currentPage} dari ${maxPage} (Total ${historyTotalTickets} Tiket)`;
     document.getElementById('btnPrevPage').disabled = currentPage === 1;
     document.getElementById('btnNextPage').disabled = currentPage === maxPage;
   }
@@ -889,9 +890,38 @@
   // ==========================================
   // FUNGSI EXPORT EXCEL (FORMAT RAPI / TAB DELIMITED)
   // ==========================================
-  function exportToExcel() {
+  async function exportToExcel() {
     const namaBarangFilter = document.getElementById('filterNamaBarang').value.toLowerCase().trim();
-    let dataToExport = filteredTickets;
+    let dataToExport = [];
+    try {
+      const res = await postPayload({
+        action: 'getPermintaan', token: sesiUser.token,
+        q: document.getElementById('searchRiwayat').value.trim(),
+        tglAwal: document.getElementById('filterTglMulai').value,
+        tglAkhir: document.getElementById('filterTglSelesai').value,
+        qBarang: document.getElementById('filterNamaBarang').value.trim(),
+        statusFilter: document.getElementById('filterStatus').value,
+        urgensiFilter: document.getElementById('filterUrgensi').value,
+        exportAll: true
+      });
+      const json = await res.json();
+      if (cekSesiBerakhir(json)) return;
+      if (json.status !== 'success') throw new Error(json.message || 'Gagal mengambil data ekspor.');
+      const exportMap = Object.create(null);
+      (json.data || []).forEach(item => {
+        if (!exportMap[item.kodeTiket]) exportMap[item.kodeTiket] = {
+          kodeTiket: item.kodeTiket, tglPermintaan: item.tglPermintaan, tglDibutuhkan: item.tglDibutuhkan,
+          pemohon: item.pemohon, unitLokasi: item.unitLokasi, kodeGudang: item.kodeGudang || '', urgensi: item.urgensi,
+          keterangan: item.keterangan, statusPermintaan: item.statusPermintaan, catatanAdmin: item.catatanAdmin, items: []
+        };
+        exportMap[item.kodeTiket].items.push(item);
+      });
+      dataToExport = Object.values(exportMap);
+      if (Number(json.totalTickets || 0) > dataToExport.length) throw new Error('Hasil ekspor terlalu besar untuk satu file. Persempit filter tanggal atau kata kunci.');
+    } catch (error) {
+      showToast(error.message || 'Ekspor riwayat gagal dimuat.', 'error');
+      return;
+    }
 
     if (dataToExport.length === 0) {
       alert("Tidak ada data pada rentang tanggal tersebut.");
@@ -1198,7 +1228,7 @@
           <td class="sig-cell"><div class="sig-title">PEMOHON</div><div class="sig-line"></div><div class="sig-name">(${escapeHtml(t.pemohon)})</div></td>
           <td class="sig-cell"><div class="sig-title">HEAD FARM</div><div class="sig-line"></div><div class="sig-name">( ....................... )</div></td>
           <td class="sig-cell"><div class="sig-title">FARM MANAGER</div><div class="sig-line"></div><div class="sig-name">( ....................... )</div></td>
-          <td class="sig-cell"><div class="sig-title">GENERAL MANAGER</div><div class="sig-line"></div><div class="sig-name" style="margin-top: 18px;">drh. Titin Idayati</div></td>
+          <td class="sig-cell"><div class="sig-title">GENERAL MANAGER</div><div class="sig-line"></div><div class="sig-name">( Drh. Titin Idayati )</div></td>
         </tr></table>
       </body></html>`;
     printWin.document.write(printHTML); printWin.document.close();
