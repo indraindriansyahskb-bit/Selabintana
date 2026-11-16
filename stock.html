@@ -173,12 +173,12 @@
     button[aria-busy="true"] { opacity: .7; cursor: progress; }
 
     @media (max-width: 760px) {
-      .erp-container { display: block; min-height: 100vh; padding-bottom: 70px; }
-      .erp-sidebar { position: fixed; left: 0; right: 0; bottom: 0; width: 100%; height: 64px; z-index: 100; border-right: 0; border-top: 1px solid #142b1c; }
+      .erp-container { display: block; min-height: 100vh; padding-bottom: 84px; }
+      .erp-sidebar { position: fixed; left: 0; right: 0; bottom: 0; width: 100%; height: 76px; z-index: 100; border-right: 0; border-top: 1px solid #142b1c; }
       .erp-brand, .erp-sidebar-footer, .erp-menu-label { display: none; }
-      .erp-menu { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 2px; padding: 4px 6px; margin: 0; }
-      .erp-menu.has-admin-menu { grid-template-columns: repeat(6, minmax(0, 1fr)); }
-      .erp-menu-item { flex-direction: column; justify-content: center; gap: 3px; padding: 6px 3px; margin: 0; min-height: 54px; border-left: 0; font-size: 9px; text-align: center; line-height: 1.15; }
+      .erp-menu, .erp-menu.has-admin-menu { display: flex; gap: 4px; padding: 4px 8px; margin: 0; overflow-x: auto; overflow-y: hidden; scrollbar-width: thin; }
+      .erp-menu > li { flex: 0 0 82px; }
+      .erp-menu-item { width: 100%; flex-direction: column; justify-content: center; gap: 3px; padding: 5px 3px; margin: 0; min-height: 64px; border-left: 0; font-size: 9px; text-align: center; line-height: 1.15; }
       .erp-menu-item.active { border-left: 0; border-top: 3px solid var(--erp-accent-yellow); }
       .erp-menu-item i { font-size: 16px; }
       .erp-main { min-height: 100vh; }
@@ -278,6 +278,11 @@
       <li>
         <button type="button" role="tab" aria-selected="false" aria-controls="tabLihatStokView" class="erp-menu-item" id="tabLihatStokBtn" onclick="switchTab('lihatStok')">
           <i class="fa-solid fa-boxes-stacked"></i><span>Lihat Stok</span>
+        </button>
+      </li>
+      <li>
+        <button type="button" role="tab" aria-selected="false" aria-controls="tabHistoryBarangView" class="erp-menu-item" id="tabHistoryBarangBtn" onclick="switchTab('historyBarang')">
+          <i class="fa-solid fa-clock-rotate-left"></i><span>History Stok per Barang</span>
         </button>
       </li>
       <li>
@@ -505,29 +510,35 @@
               <div class="erp-filter-group"><label for="stockViewSearch">Barang / kode / kategori</label><input type="search" id="stockViewSearch" oninput="invalidateStockSnapshotResults()" placeholder="Cari barang"></div>
               <button type="button" onclick="muatStockSnapshot()" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i> Tampilkan</button>
             </div>
-            <p class="form-hint" style="margin:0 0 12px;color:var(--erp-text-muted);font-size:11px;">Tanggal kosong menampilkan saldo terkini. Pilih tanggal untuk melihat saldo akhir hari itu. Klik <b>Riwayat</b> pada baris barang untuk melihat rincian mutasi dan saldo berjalan per periode.</p>
+            <p class="form-hint" style="margin:0 0 12px;color:var(--erp-text-muted);font-size:11px;">Tanggal kosong menampilkan saldo terkini. Pilih tanggal untuk melihat saldo akhir hari itu. Untuk rincian transaksi dan saldo per periode, gunakan menu <b>History Stok per Barang</b>.</p>
             <div id="containerStockSnapshot" class="erp-table-responsive" aria-live="polite"><p style="padding:20px;text-align:center;color:var(--erp-text-muted);">Pilih filter lalu tampilkan saldo.</p></div>
           </div>
         </div>
-        <div id="stockItemHistoryPanel" class="erp-card" style="display:none;margin-top:16px;">
+      </div>
+
+      <div id="tabHistoryBarangView" role="tabpanel" aria-labelledby="tabHistoryBarangBtn" style="display:none;">
+        <div class="erp-card">
           <div class="erp-card-header">
-            <div><div class="erp-card-title"><i class="fa-solid fa-clock-rotate-left"></i> History Stok per Barang</div><div id="stockItemHistoryTitle" style="margin-top:5px;font-size:11px;color:var(--erp-text-muted);"></div></div>
-            <button type="button" class="btn btn-outline btn-sm" onclick="tutupRiwayatBarangStock()" aria-label="Tutup history stok"><i class="fa-solid fa-xmark"></i> Tutup</button>
+            <div class="erp-card-title"><i class="fa-solid fa-clock-rotate-left"></i> History Stok per Barang</div>
+            <button type="button" id="exportStockItemHistoryBtn" class="btn btn-success" onclick="eksporHistoryStokBarang()" disabled><i class="fa-solid fa-file-excel"></i> Ekspor XLSX</button>
           </div>
           <div class="erp-card-body">
-            <div class="erp-filter-bar" style="margin-bottom:14px;">
-              <div class="erp-filter-group"><label for="stockItemHistoryStart">Dari tanggal</label><input id="stockItemHistoryStart" type="date" required></div>
-              <div class="erp-filter-group"><label for="stockItemHistoryEnd">Sampai tanggal</label><input id="stockItemHistoryEnd" type="date" required></div>
+            <div class="erp-filter-bar" style="margin-bottom:12px;">
+              <div class="erp-filter-group"><label for="stockItemHistoryStart">Dari tanggal</label><input id="stockItemHistoryStart" type="date" onchange="invalidateStockItemHistory()" required></div>
+              <div class="erp-filter-group"><label for="stockItemHistoryEnd">Sampai tanggal</label><input id="stockItemHistoryEnd" type="date" onchange="invalidateStockItemHistory()" required></div>
+              <div class="erp-filter-group"><label for="stockItemHistoryUnit">Unit / Farm</label><select id="stockItemHistoryUnit" onchange="updateStockItemHistoryWarehouses();invalidateStockItemHistory()" required></select></div>
+              <div class="erp-filter-group"><label for="stockItemHistoryWarehouse">Gudang</label><select id="stockItemHistoryWarehouse" onchange="populateStockItemHistoryItems();invalidateStockItemHistory()" required><option value="">-- Pilih Gudang --</option></select></div>
+              <div class="erp-filter-group" style="flex:1.5;min-width:210px;"><label for="stockItemHistoryItem">Barang</label><select id="stockItemHistoryItem" onchange="invalidateStockItemHistory()" required disabled><option value="">-- Pilih gudang terlebih dahulu --</option></select></div>
               <button id="stockItemHistorySearchBtn" type="button" class="btn btn-primary" onclick="muatRiwayatBarangStock()"><i class="fa-solid fa-magnifying-glass"></i> Tampilkan History</button>
             </div>
-            <p id="stockItemHistoryHint" class="form-hint" style="margin:0 0 14px;color:var(--erp-text-muted);font-size:11px;">Pilih periode untuk melihat saldo awal, transaksi, dan saldo akhir.</p>
-            <div id="stockItemHistorySummary" style="display:none;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:14px;">
+            <p id="stockItemHistoryHint" class="form-hint" style="margin:0 0 14px;color:var(--erp-text-muted);font-size:11px;">Pilih periode, gudang, dan barang. PIC gudang hanya dapat memilih gudang yang ditugaskan kepadanya.</p>
+            <div id="stockItemHistorySummary" style="display:none;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px;">
               <div style="padding:12px;border:1px solid var(--erp-border-light);border-radius:8px;background:#f8faf9;"><small>Saldo awal periode</small><div id="stockItemHistoryOpening" class="mono" style="margin-top:4px;font-weight:700;"></div></div>
               <div style="padding:12px;border:1px solid var(--erp-border-light);border-radius:8px;background:#f0fdf4;"><small>Total masuk</small><div id="stockItemHistoryIn" class="mono" style="margin-top:4px;font-weight:700;color:#047857;"></div></div>
               <div style="padding:12px;border:1px solid var(--erp-border-light);border-radius:8px;background:#fff7ed;"><small>Total keluar</small><div id="stockItemHistoryOut" class="mono" style="margin-top:4px;font-weight:700;color:#b45309;"></div></div>
               <div style="padding:12px;border:1px solid #b7d9c2;border-radius:8px;background:#eaf4ec;"><small>Saldo akhir periode</small><div id="stockItemHistoryClosing" class="mono" style="margin-top:4px;font-weight:800;color:var(--erp-primary);"></div></div>
             </div>
-            <div id="containerStockItemHistory" class="erp-table-responsive" aria-live="polite"><p style="padding:16px;color:var(--erp-text-muted);">History belum dimuat.</p></div>
+            <div id="containerStockItemHistory" class="erp-table-responsive" aria-live="polite"><p style="padding:18px;color:var(--erp-text-muted);">Isi filter lalu pilih Tampilkan History.</p></div>
           </div>
         </div>
       </div>
@@ -839,7 +850,7 @@
   const LEGACY_SESSION_KEYS = ['portal_user_session', 'stok_app_user_session'];
 
   let sesiUser = {}; let masterUnits = []; let allUnits = []; let masterGudang = []; let rawJurnalData = []; let displayedJournalRows = []; let rawStokList = [];
-  let rawStockSnapshot = []; let appliedStockSnapshotFilters = null; let selectedStockHistoryItem = null; let stockItemHistoryLoading = false; let transferRows = []; let ticketReceiptOptions = []; let stockTransactionIds = Object.create(null); let allowedGudang = [];
+  let rawStockSnapshot = []; let appliedStockSnapshotFilters = null; let stockItemHistoryLoading = false; let loadedStockItemHistory = null; let loadedStockItemHistoryFilters = null; let transferRows = []; let ticketReceiptOptions = []; let stockTransactionIds = Object.create(null); let allowedGudang = [];
   let jurnalLoaded = false; let stockAuditLoaded = false; let correctionHistoryLoaded = false;
   let deletableTransactionRows = []; let deleteCandidatesLoaded = false; let deletedHistoryLoaded = false;
   let openingStockRowCounter = 0;
@@ -1020,7 +1031,7 @@
 
   function switchTab(tab) {
     if ((tab === 'koreksi' || tab === 'hapusTransaksi') && !sesiUser.isAdmin) return showToast('Menu ini hanya tersedia untuk admin.', 'error');
-    const tabs = {stok: ['tabStokBtn','tabStokView','Jurnal Stok & Mutasi'], transaksi: ['tabTransaksiBtn','tabTransaksiView','Pusat Transaksi Gudang'], history: ['tabHistoryBtn','tabHistoryView','Riwayat Mutasi'], audit: ['tabAuditBtn','tabAuditView','Jejak Audit Stok'], lihatStok: ['tabLihatStokBtn','tabLihatStokView','Lihat Saldo Stok'], koreksi: ['tabKoreksiBtn','tabKoreksiView','Koreksi Stok'], hapusTransaksi: ['tabHapusTransaksiBtn','tabHapusTransaksiView','Hapus Transaksi'], kandang: ['tabPemakaianKandangBtn','tabPemakaianKandangView','Pemakaian per Kandang']};
+    const tabs = {stok: ['tabStokBtn','tabStokView','Jurnal Stok & Mutasi'], transaksi: ['tabTransaksiBtn','tabTransaksiView','Pusat Transaksi Gudang'], history: ['tabHistoryBtn','tabHistoryView','Riwayat Mutasi'], audit: ['tabAuditBtn','tabAuditView','Jejak Audit Stok'], lihatStok: ['tabLihatStokBtn','tabLihatStokView','Lihat Saldo Stok'], historyBarang: ['tabHistoryBarangBtn','tabHistoryBarangView','History Stok per Barang'], koreksi: ['tabKoreksiBtn','tabKoreksiView','Koreksi Stok'], hapusTransaksi: ['tabHapusTransaksiBtn','tabHapusTransaksiView','Hapus Transaksi'], kandang: ['tabPemakaianKandangBtn','tabPemakaianKandangView','Pemakaian per Kandang']};
     if (!tabs[tab]) return;
     Object.keys(tabs).forEach(key => {
       const [buttonId, panelId] = tabs[key];
@@ -1035,6 +1046,7 @@
     if (tab === 'transaksi' || tab === 'history') muatPendingTransfers();
     if (tab === 'koreksi') muatMasterBarangKategori();
     if (tab === 'transaksi') muatTiketPenerimaan();
+    if (tab === 'historyBarang') { populateStockItemHistoryUnits(); populateStockItemHistoryItems(); }
   }
 
   document.querySelector('[role="tablist"]').addEventListener('keydown', function(event) {
@@ -1057,6 +1069,7 @@
         masterUnits = json.units; allUnits = json.allUnits || json.units; masterGudang = json.gudang || []; allowedGudang = json.gudangDiizinkan || masterGudang;
         populateUnitDropdowns(); 
         populateStockViewFilters();
+        populateStockItemHistoryUnits();
         setConnectionStatus('ok', 'GAS tersambung');
       } else setConnectionStatus('error', 'Gagal memuat data');
     } catch(e) { setConnectionStatus('error', 'Koneksi gagal'); }
@@ -1101,6 +1114,60 @@
     usageUnitSelect.value = unitSelect.value;
     if (sesiUser.isPicGudang) usageUnitSelect.disabled = true;
     updateKandangUsageWarehouseFilter();
+  }
+
+  function populateStockItemHistoryUnits() {
+    const unitSelect = document.getElementById('stockItemHistoryUnit');
+    if (!unitSelect) return;
+    const all = sesiUser.isAdmin;
+    const availableUnits = all ? (allUnits.length ? allUnits : masterUnits) : (masterUnits.length ? masterUnits : [{kodeUnit: sesiUser.unitLokasi, namaUnit: sesiUser.unitLokasi}]);
+    if (all) {
+      unitSelect.innerHTML = '<option value="">-- Pilih Unit / Farm --</option>' + availableUnits.map(unit => `<option value="${escapeHtml(unit.kodeUnit)}">${escapeHtml(unit.namaUnit)}</option>`).join('');
+      unitSelect.disabled = false;
+    } else {
+      const ownUnit = String(sesiUser.unitLokasi || (availableUnits[0] && availableUnits[0].kodeUnit) || '');
+      const unit = availableUnits.find(item => String(item.kodeUnit).toLowerCase() === ownUnit.toLowerCase());
+      unitSelect.innerHTML = `<option value="${escapeHtml(ownUnit)}">${escapeHtml(unit ? unit.namaUnit : ownUnit)}</option>`;
+      unitSelect.value = ownUnit;
+      unitSelect.disabled = true;
+    }
+    updateStockItemHistoryWarehouses();
+  }
+
+  function updateStockItemHistoryWarehouses() {
+    const unitCode = document.getElementById('stockItemHistoryUnit').value;
+    const warehouseSelect = document.getElementById('stockItemHistoryWarehouse');
+    const list = allowedGudang.filter(warehouse =>
+      String(warehouse.kodeUnit).toLowerCase() === String(unitCode || '').toLowerCase() &&
+      (sesiUser.isAdmin || String(warehouse.kodeUnit).toLowerCase() === String(sesiUser.unitLokasi || '').toLowerCase()) &&
+      (!sesiUser.isPicGudang || String(warehouse.kodeGudang).toLowerCase() === String(sesiUser.scopeGudang || '').toLowerCase())
+    );
+    warehouseSelect.innerHTML = '<option value="">-- Pilih Gudang --</option>' + list.map(warehouse => `<option value="${escapeHtml(warehouse.kodeGudang)}">${escapeHtml(warehouse.namaGudang)} (${escapeHtml(warehouse.kodeGudang)})</option>`).join('');
+    warehouseSelect.disabled = sesiUser.isPicGudang || !unitCode || !list.length;
+    if (sesiUser.isPicGudang && list.length === 1) warehouseSelect.value = list[0].kodeGudang;
+    populateStockItemHistoryItems();
+  }
+
+  function populateStockItemHistoryItems() {
+    const itemSelect = document.getElementById('stockItemHistoryItem');
+    if (!itemSelect) return;
+    const unitCode = document.getElementById('stockItemHistoryUnit').value;
+    const warehouseCode = document.getElementById('stockItemHistoryWarehouse').value;
+    const rows = rawStokList.filter(item => String(item.kodeUnit).toLowerCase() === String(unitCode || '').toLowerCase() && String(item.kodeGudang).toLowerCase() === String(warehouseCode || '').toLowerCase());
+    const uniqueItems = [];
+    const seen = new Set();
+    rows.forEach(item => {
+      const code = String(item.kodeBarang || '');
+      if (!code || seen.has(code.toLowerCase())) return;
+      seen.add(code.toLowerCase());
+      uniqueItems.push(item);
+    });
+    uniqueItems.sort((a, b) => String(a.namaBarang).localeCompare(String(b.namaBarang)));
+    itemSelect.innerHTML = warehouseCode
+      ? '<option value="">-- Pilih Barang --</option>' + uniqueItems.map(item => `<option value="${escapeHtml(item.kodeBarang)}">${escapeHtml(item.namaBarang)} (${escapeHtml(item.kodeBarang)})</option>`).join('')
+      : '<option value="">-- Pilih gudang terlebih dahulu --</option>';
+    itemSelect.disabled = !warehouseCode;
+    if (warehouseCode && uniqueItems.length === 0) itemSelect.innerHTML = '<option value="">Tidak ada barang pada gudang ini</option>';
   }
 
   function clientCanAccessWarehouse(kodeUnit, kodeGudang) {
@@ -1254,7 +1321,6 @@
     appliedStockSnapshotFilters = null;
     rawStockSnapshot = [];
     document.getElementById('containerStockSnapshot').innerHTML = '<p style="padding:20px;text-align:center;color:var(--erp-text-muted);">Filter berubah. Pilih Tampilkan untuk memuat saldo.</p>';
-    tutupRiwayatBarangStock();
   }
 
   function getStockSnapshotFilterLabel(selectId, value, emptyLabel) {
@@ -1441,73 +1507,77 @@
   function renderStockSnapshot(data) {
     const container = document.getElementById('containerStockSnapshot');
     if (!data.length) { container.innerHTML = '<p style="padding:20px;text-align:center;color:var(--erp-text-muted);">Tidak ada barang pada filter ini.</p>'; return; }
-    let html = '<table class="erp-table"><thead><tr><th>Barang</th><th>Kategori</th><th>Unit / Farm</th><th>Gudang</th><th>Saldo Awal</th><th>Masuk</th><th>Keluar</th><th>Saldo</th><th>Minimum</th><th>Status</th><th>History</th></tr></thead><tbody>';
+    let html = '<table class="erp-table"><thead><tr><th>Barang</th><th>Kategori</th><th>Unit / Farm</th><th>Gudang</th><th>Saldo Awal</th><th>Masuk</th><th>Keluar</th><th>Saldo</th><th>Minimum</th><th>Status</th></tr></thead><tbody>';
     html += data.map(item => {
       const statusClass = item.statusStok === 'HABIS' ? 'empty' : item.statusStok === 'RENDAH' ? 'low' : 'safe';
       const minControl = sesiUser.isAdmin ? `<div style="display:flex;gap:5px;align-items:center;"><input class="inline-minimum" type="number" min="0" max="1000000000" step="any" value="${Number(item.stokMinimum || 0)}" aria-label="Batas minimum ${escapeHtml(item.namaBarang)}"><button type="button" class="btn btn-outline btn-sm" aria-label="Simpan batas minimum ${escapeHtml(item.namaBarang)}" onclick="simpanStokMinimum(${inlineArg(item.kodeBarang)},${inlineArg(item.kodeUnit)},${inlineArg(item.kodeGudang)},this)"><i class="fa-solid fa-floppy-disk"></i></button></div>` : formatNumber(item.stokMinimum || 0);
-      return `<tr><td><b>${escapeHtml(item.namaBarang)}</b><br><small class="mono">${escapeHtml(item.kodeBarang)}</small></td><td>${escapeHtml(item.kategori)}</td><td>${escapeHtml(item.kodeUnit)}</td><td>${escapeHtml(item.kodeGudang)}</td><td>${formatNumber(item.stokAwal)} ${escapeHtml(item.satuan)}</td><td>${formatNumber(item.jumlahMasuk)} ${escapeHtml(item.satuan)}</td><td>${formatNumber(item.jumlahKeluar)} ${escapeHtml(item.satuan)}</td><td class="mono"><b>${formatNumber(item.sisaStok)} ${escapeHtml(item.satuan)}</b></td><td>${minControl}</td><td><span class="stock-status ${statusClass}">${escapeHtml(item.statusStok)}</span></td><td><button type="button" class="btn btn-outline btn-sm" onclick="bukaRiwayatBarangStock(${inlineArg(item.kodeBarang)},${inlineArg(item.kodeUnit)},${inlineArg(item.kodeGudang)})"><i class="fa-solid fa-clock-rotate-left"></i> Riwayat</button></td></tr>`;
+      return `<tr><td><b>${escapeHtml(item.namaBarang)}</b><br><small class="mono">${escapeHtml(item.kodeBarang)}</small></td><td>${escapeHtml(item.kategori)}</td><td>${escapeHtml(item.kodeUnit)}</td><td>${escapeHtml(item.kodeGudang)}</td><td>${formatNumber(item.stokAwal)} ${escapeHtml(item.satuan)}</td><td>${formatNumber(item.jumlahMasuk)} ${escapeHtml(item.satuan)}</td><td>${formatNumber(item.jumlahKeluar)} ${escapeHtml(item.satuan)}</td><td class="mono"><b>${formatNumber(item.sisaStok)} ${escapeHtml(item.satuan)}</b></td><td>${minControl}</td><td><span class="stock-status ${statusClass}">${escapeHtml(item.statusStok)}</span></td></tr>`;
     }).join('');
     container.innerHTML = html + '</tbody></table>';
   }
 
-  function bukaRiwayatBarangStock(kodeBarang, kodeUnit, kodeGudang) {
-    const item = rawStockSnapshot.find(row => String(row.kodeBarang) === String(kodeBarang) && String(row.kodeUnit) === String(kodeUnit) && String(row.kodeGudang) === String(kodeGudang));
-    if (!item) return showToast('Barang tidak ditemukan pada hasil saldo saat ini. Tampilkan ulang daftar stok.', 'error');
-    selectedStockHistoryItem = item;
-    document.getElementById('stockItemHistoryTitle').textContent = `${item.namaBarang} (${item.kodeBarang}) · ${item.kodeUnit} / ${item.kodeGudang}`;
-    document.getElementById('stockItemHistoryStart').value = '';
-    document.getElementById('stockItemHistoryEnd').value = '';
-    document.getElementById('stockItemHistorySummary').style.display = 'none';
-    document.getElementById('stockItemHistoryHint').textContent = `Pilih periode untuk melihat transaksi ${item.namaBarang}. Saldo berjalan dan saldo akhir dihitung untuk lokasi ini.`;
-    document.getElementById('containerStockItemHistory').innerHTML = '<p style="padding:16px;color:var(--erp-text-muted);">Pilih tanggal awal dan akhir, lalu tampilkan history.</p>';
-    document.getElementById('stockItemHistoryPanel').style.display = 'block';
-    document.getElementById('stockItemHistoryPanel').scrollIntoView({behavior: 'smooth', block: 'start'});
+  function getStockItemHistoryFilters() {
+    return {
+      tglAwal: document.getElementById('stockItemHistoryStart').value,
+      tglAkhir: document.getElementById('stockItemHistoryEnd').value,
+      kodeUnit: document.getElementById('stockItemHistoryUnit').value,
+      kodeGudang: document.getElementById('stockItemHistoryWarehouse').value,
+      kodeBarang: document.getElementById('stockItemHistoryItem').value
+    };
   }
 
-  function tutupRiwayatBarangStock() {
-    const panel = document.getElementById('stockItemHistoryPanel');
-    if (panel) panel.style.display = 'none';
-    selectedStockHistoryItem = null;
+  function invalidateStockItemHistory() {
+    loadedStockItemHistory = null;
+    loadedStockItemHistoryFilters = null;
+    document.getElementById('stockItemHistorySummary').style.display = 'none';
+    document.getElementById('exportStockItemHistoryBtn').disabled = true;
+    document.getElementById('containerStockItemHistory').innerHTML = '<p style="padding:18px;color:var(--erp-text-muted);">Filter berubah. Pilih Tampilkan History untuk memuat data sesuai filter.</p>';
   }
 
   async function muatRiwayatBarangStock() {
-    if (!selectedStockHistoryItem || !sesiUser.token) return false;
-    const start = document.getElementById('stockItemHistoryStart').value;
-    const end = document.getElementById('stockItemHistoryEnd').value;
+    if (!sesiUser.token) return false;
+    const filters = getStockItemHistoryFilters();
     const container = document.getElementById('containerStockItemHistory');
     const button = document.getElementById('stockItemHistorySearchBtn');
-    if (!start || !end) return showToast('Pilih tanggal awal dan akhir periode.', 'error');
-    if (start > end) return showToast('Tanggal awal tidak boleh melewati tanggal akhir.', 'error');
+    if (!filters.tglAwal || !filters.tglAkhir) return showToast('Pilih tanggal awal dan akhir periode.', 'error');
+    if (filters.tglAwal > filters.tglAkhir) return showToast('Tanggal awal tidak boleh melewati tanggal akhir.', 'error');
+    if (!filters.kodeUnit || !filters.kodeGudang || !filters.kodeBarang) return showToast('Pilih unit, gudang, dan barang terlebih dahulu.', 'error');
+    if (!clientCanAccessWarehouse(filters.kodeUnit, filters.kodeGudang)) return showToast('Gudang tersebut di luar cakupan akun Anda.', 'error');
     if (stockItemHistoryLoading) return false;
     stockItemHistoryLoading = true;
     button.disabled = true;
     button.setAttribute('aria-busy', 'true');
+    invalidateStockItemHistory();
     container.innerHTML = '<p style="padding:18px;text-align:center;color:var(--erp-text-muted);"><i class="fa-solid fa-spinner fa-spin"></i> Menghitung riwayat dan saldo berjalan…</p>';
-    const itemForHistory = selectedStockHistoryItem;
     try {
-      const response = await postPayload({action: 'getStockItemHistory', token: sesiUser.token, kodeBarang: itemForHistory.kodeBarang, kodeUnit: itemForHistory.kodeUnit, kodeGudang: itemForHistory.kodeGudang, tglAwal: start, tglAkhir: end});
+      const response = await postPayload({action: 'getStockItemHistory', token: sesiUser.token, ...filters});
       const result = await response.json();
       if (cekSesiBerakhir(result)) return false;
-      if (!selectedStockHistoryItem || String(selectedStockHistoryItem.kodeBarang) !== String(itemForHistory.kodeBarang) || String(selectedStockHistoryItem.kodeUnit) !== String(itemForHistory.kodeUnit) || String(selectedStockHistoryItem.kodeGudang) !== String(itemForHistory.kodeGudang)) return false;
-      if (document.getElementById('stockItemHistoryStart').value !== start || document.getElementById('stockItemHistoryEnd').value !== end) {
+      if (JSON.stringify(getStockItemHistoryFilters()) !== JSON.stringify(filters)) {
         container.innerHTML = '<p style="padding:18px;text-align:center;color:var(--erp-text-muted);">Filter periode berubah. Pilih Tampilkan History untuk memuat ulang.</p>';
         return false;
       }
       if (result.status !== 'success') throw new Error(result.message || 'Gagal memuat history stok barang.');
       const summary = result.summary || {};
-      const unit = String(result.item && result.item.satuan || itemForHistory.satuan || 'pcs');
+      const selectedItem = rawStokList.find(item => String(item.kodeBarang) === String(filters.kodeBarang) && String(item.kodeUnit) === String(filters.kodeUnit) && String(item.kodeGudang) === String(filters.kodeGudang));
+      const unit = String(result.item && result.item.satuan || selectedItem && selectedItem.satuan || 'pcs');
       document.getElementById('stockItemHistoryOpening').textContent = `${formatNumber(summary.saldoAwalPeriode)} ${unit}`;
       document.getElementById('stockItemHistoryIn').textContent = `${formatNumber(summary.jumlahMasuk)} ${unit}`;
       document.getElementById('stockItemHistoryOut').textContent = `${formatNumber(summary.jumlahKeluar)} ${unit}`;
       document.getElementById('stockItemHistoryClosing').textContent = `${formatNumber(summary.saldoAkhirPeriode)} ${unit}`;
       document.getElementById('stockItemHistorySummary').style.display = 'grid';
-      document.getElementById('stockItemHistoryHint').textContent = `Periode ${result.tglAwal} sampai ${result.tglAkhir} · ${result.kodeUnit} / ${result.kodeGudang} · ${(result.data || []).length} transaksi`;
-      renderRiwayatBarangStock(result.data || [], unit);
+      const unitLabel = getStockItemHistorySelectLabel('stockItemHistoryUnit', filters.kodeUnit);
+      const warehouseLabel = getStockItemHistorySelectLabel('stockItemHistoryWarehouse', filters.kodeGudang);
+      const itemLabel = getStockItemHistorySelectLabel('stockItemHistoryItem', filters.kodeBarang);
+      document.getElementById('stockItemHistoryHint').textContent = `${unitLabel} · ${warehouseLabel} · ${itemLabel} · Periode ${result.tglAwal} s.d. ${result.tglAkhir} · ${(result.data || []).length} transaksi`;
+      loadedStockItemHistory = result;
+      loadedStockItemHistoryFilters = filters;
+      renderRiwayatBarangStock(result.data || [], unit, result.summary || {});
+      document.getElementById('exportStockItemHistoryBtn').disabled = false;
       setConnectionStatus('ok', 'History stok diperbarui');
       return true;
     } catch (error) {
-      if (!selectedStockHistoryItem || String(selectedStockHistoryItem.kodeBarang) !== String(itemForHistory.kodeBarang) || String(selectedStockHistoryItem.kodeUnit) !== String(itemForHistory.kodeUnit) || String(selectedStockHistoryItem.kodeGudang) !== String(itemForHistory.kodeGudang)) return false;
-      if (document.getElementById('stockItemHistoryStart').value !== start || document.getElementById('stockItemHistoryEnd').value !== end) {
+      if (JSON.stringify(getStockItemHistoryFilters()) !== JSON.stringify(filters)) {
         container.innerHTML = '<p style="padding:18px;text-align:center;color:var(--erp-text-muted);">Filter periode berubah. Pilih Tampilkan History untuk memuat ulang.</p>';
         return false;
       }
@@ -1520,12 +1590,14 @@
     }
   }
 
-  function renderRiwayatBarangStock(rows, unit) {
+  function getStockItemHistorySelectLabel(selectId, value) {
+    const select = document.getElementById(selectId);
+    const option = select && Array.from(select.options).find(item => String(item.value) === String(value));
+    return option ? option.textContent.trim() : String(value || '-');
+  }
+
+  function renderRiwayatBarangStock(rows, unit, summary) {
     const container = document.getElementById('containerStockItemHistory');
-    if (!rows.length) {
-      container.innerHTML = '<p style="padding:18px;text-align:center;color:var(--erp-text-muted);">Tidak ada transaksi pada periode ini. Saldo awal dan akhir tetap menunjukkan posisi barang di periode tersebut.</p>';
-      return;
-    }
     const safeUnit = escapeHtml(unit || 'pcs');
     const body = rows.map((row, index) => {
       const masuk = Number(row.jumlahMasuk || 0);
@@ -1545,7 +1617,75 @@
         <td>${batch}</td>
       </tr>`;
     }).join('');
-    container.innerHTML = `<table class="erp-table"><thead><tr><th>No</th><th>Waktu</th><th>Transaksi</th><th>Asal / Tujuan / Rincian</th><th>Masuk</th><th>Keluar</th><th>Saldo Sebelum → Sesudah</th><th>Keterangan</th><th>ID / Pelaku</th><th>Batch / Kedaluwarsa</th></tr></thead><tbody>${body}</tbody></table>`;
+    const emptyRow = rows.length ? '' : `<tr><td colspan="10" style="text-align:center;padding:18px;color:var(--erp-text-muted);">Tidak ada transaksi pada periode ini.</td></tr>`;
+    const closingRow = `<tr style="font-weight:800;background:#eaf4ec;"><td colspan="4">SALDO AKHIR PERIODE</td><td>${formatNumber(summary.jumlahMasuk || 0)} ${safeUnit}</td><td>${formatNumber(summary.jumlahKeluar || 0)} ${safeUnit}</td><td colspan="3">${formatNumber(summary.saldoAkhirPeriode || 0)} ${safeUnit}</td><td></td></tr>`;
+    container.innerHTML = `<table class="erp-table"><thead><tr><th>No</th><th>Waktu</th><th>Transaksi</th><th>Asal / Tujuan / Rincian</th><th>Masuk</th><th>Keluar</th><th>Saldo Sebelum → Sesudah</th><th>Keterangan</th><th>ID / Pelaku</th><th>Batch / Kedaluwarsa</th></tr></thead><tbody>${body || emptyRow}${closingRow}</tbody></table>`;
+  }
+
+  async function eksporHistoryStokBarang() {
+    const button = document.getElementById('exportStockItemHistoryBtn');
+    if (!loadedStockItemHistory || !loadedStockItemHistoryFilters || JSON.stringify(getStockItemHistoryFilters()) !== JSON.stringify(loadedStockItemHistoryFilters)) return showToast('Tampilkan history sesuai filter sebelum mengekspor.', 'error');
+    button.disabled = true;
+    button.setAttribute('aria-busy', 'true');
+    try {
+      await ensureXlsxLibrary();
+      const result = loadedStockItemHistory;
+      const filters = loadedStockItemHistoryFilters;
+      const summary = result.summary || {};
+      const unit = String(result.item && result.item.satuan || 'pcs');
+      const exportedAt = new Date().toLocaleString('id-ID', {timeZone: 'Asia/Jakarta', dateStyle: 'medium', timeStyle: 'short'});
+      const colCount = 14;
+      const blank = () => Array(colCount).fill('');
+      const data = [
+        ['HISTORY STOK PER BARANG', ...Array(colCount - 1).fill('')],
+        ['CV. SELABINTANA  |  STOCK ERP', ...Array(colCount - 1).fill('')],
+        blank(),
+        ['FILTER LAPORAN', ...Array(colCount - 1).fill('')],
+        ['Periode', safeExportText(`${filters.tglAwal} s.d. ${filters.tglAkhir}`), '', '', '', '', '', 'Unit / Farm', safeExportText(getStockItemHistorySelectLabel('stockItemHistoryUnit', filters.kodeUnit)), '', '', '', '', ''],
+        ['Gudang', safeExportText(getStockItemHistorySelectLabel('stockItemHistoryWarehouse', filters.kodeGudang)), '', '', '', '', '', 'Barang', safeExportText(getStockItemHistorySelectLabel('stockItemHistoryItem', filters.kodeBarang)), '', '', '', '', ''],
+        ['Waktu ekspor (WIB)', safeExportText(exportedAt), '', '', '', '', '', 'Diekspor oleh', safeExportText(sesiUser.nama || sesiUser.username || 'Pengguna'), '', '', '', '', ''],
+        blank(),
+        ['RINGKASAN SALDO PERIODE', ...Array(colCount - 1).fill('')],
+        ['Saldo awal periode', Number(summary.saldoAwalPeriode || 0), '', 'Total masuk', Number(summary.jumlahMasuk || 0), '', 'Total keluar', Number(summary.jumlahKeluar || 0), '', 'Saldo akhir periode', Number(summary.saldoAkhirPeriode || 0), '', 'Satuan', safeExportText(unit)],
+        blank(),
+        ['RINCIAN TRANSAKSI', ...Array(colCount - 1).fill('')],
+        ['No', 'Waktu', 'Jenis', 'Asal / Tujuan / Rincian', 'Masuk', 'Keluar', 'Saldo Sebelum', 'Saldo Sesudah', 'Keterangan', 'ID Transaksi', 'Pelaku', 'Batch', 'Kedaluwarsa', 'Status']
+      ];
+      (result.data || []).forEach((row, index) => data.push([
+        index + 1, safeExportText(row.waktu), safeExportText(`${row.tipeMutasi}${row.statusTransaksi === 'DIBATALKAN' ? ' · DIBATALKAN' : ''}`), safeExportText(row.rincian || '-'),
+        Number(row.jumlahMasuk || 0), Number(row.jumlahKeluar || 0), Number(row.saldoSebelum || 0), Number(row.saldoSetelah || 0), safeExportText(row.keterangan || '-'),
+        safeExportText(row.idTransaksi || '-'), safeExportText(row.pelaku || '-'), safeExportText(row.batch || '-'), safeExportText(row.tanggalKadaluarsa || '-'), safeExportText(row.statusTransaksi || 'AKTIF')
+      ]));
+      if (!(result.data || []).length) data.push(['-', '-', '-', 'Tidak ada transaksi pada periode ini', 0, 0, Number(summary.saldoAwalPeriode || 0), Number(summary.saldoAkhirPeriode || 0), ...Array(6).fill('-')]);
+      data.push(['', '', '', 'SALDO AKHIR PERIODE', Number(summary.jumlahMasuk || 0), Number(summary.jumlahKeluar || 0), '', Number(summary.saldoAkhirPeriode || 0), ...Array(6).fill('')]);
+
+      const worksheet = XLSX.utils.aoa_to_sheet(data);
+      worksheet['!merges'] = [
+        {s:{r:0,c:0},e:{r:0,c:13}}, {s:{r:1,c:0},e:{r:1,c:13}}, {s:{r:3,c:0},e:{r:3,c:13}},
+        {s:{r:4,c:1},e:{r:4,c:6}}, {s:{r:4,c:8},e:{r:4,c:13}}, {s:{r:5,c:1},e:{r:5,c:6}}, {s:{r:5,c:8},e:{r:5,c:13}},
+        {s:{r:6,c:1},e:{r:6,c:6}}, {s:{r:6,c:8},e:{r:6,c:13}}, {s:{r:8,c:0},e:{r:8,c:13}}, {s:{r:11,c:0},e:{r:11,c:13}}
+      ];
+      const border = {top:{style:'thin',color:{rgb:'D8E2DC'}},bottom:{style:'thin',color:{rgb:'D8E2DC'}},left:{style:'thin',color:{rgb:'D8E2DC'}},right:{style:'thin',color:{rgb:'D8E2DC'}}};
+      setXlsxRangeStyle(worksheet, 0, 0, 0, 13, {font:{name:'Aptos Display',sz:18,bold:true,color:{rgb:'FFFFFF'}},fill:{fgColor:{rgb:'14532D'}},alignment:{vertical:'center'}});
+      setXlsxRangeStyle(worksheet, 1, 0, 1, 13, {font:{name:'Aptos',sz:10,italic:true,color:{rgb:'355E45'}},fill:{fgColor:{rgb:'EAF4EC'}}});
+      [3,8,11].forEach(row => setXlsxRangeStyle(worksheet, row, 0, row, 13, {font:{name:'Aptos',sz:10,bold:true,color:{rgb:'FFFFFF'}},fill:{fgColor:{rgb:'276749'}}}));
+      setXlsxRangeStyle(worksheet, 4, 0, 6, 13, {font:{name:'Aptos',sz:10,color:{rgb:'26352C'}},border,alignment:{vertical:'center',wrapText:true}});
+      setXlsxRangeStyle(worksheet, 9, 0, 9, 13, {font:{name:'Aptos',sz:10,bold:true,color:{rgb:'14532D'}},fill:{fgColor:{rgb:'EAF4EC'}},border,alignment:{vertical:'center',wrapText:true}});
+      const headerRow = 12;
+      setXlsxRangeStyle(worksheet, headerRow, 0, headerRow, 13, {font:{name:'Aptos',sz:10,bold:true,color:{rgb:'FFFFFF'}},fill:{fgColor:{rgb:'276749'}},border,alignment:{horizontal:'center',vertical:'center',wrapText:true}});
+      const finalRow = data.length - 1;
+      if (finalRow > headerRow) setXlsxRangeStyle(worksheet, headerRow + 1, 0, finalRow, 13, {font:{name:'Aptos',sz:10,color:{rgb:'26352C'}},border,alignment:{vertical:'center',wrapText:true}});
+      setXlsxRangeStyle(worksheet, finalRow, 0, finalRow, 13, {font:{name:'Aptos',sz:10,bold:true,color:{rgb:'14532D'}},fill:{fgColor:{rgb:'EAF4EC'}},border});
+      worksheet['!cols'] = [{wch:6},{wch:21},{wch:22},{wch:42},{wch:13},{wch:13},{wch:16},{wch:16},{wch:48},{wch:30},{wch:24},{wch:20},{wch:18},{wch:18}];
+      worksheet['!rows'] = [{hpt:30},{hpt:19},{hpt:8},{hpt:21},{hpt:25},{hpt:25},{hpt:25},{hpt:8},{hpt:21},{hpt:25},{hpt:8},{hpt:21},{hpt:34}];
+      worksheet['!freeze'] = {xSplit:0,ySplit:headerRow + 1,topLeftCell:`A${headerRow + 2}`,activePane:'bottomLeft',state:'frozen'};
+      worksheet['!autofilter'] = {ref:`A${headerRow + 1}:N${Math.max(headerRow + 1, finalRow - 1)}`};
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'History Stok Barang');
+      const safeItem = String(result.item && result.item.kodeBarang || filters.kodeBarang).replace(/[^A-Za-z0-9_-]/g, '_');
+      XLSX.writeFile(workbook, `History_Stok_${safeItem}_${filters.tglAwal}_${filters.tglAkhir}.xlsx`);
+    } catch (error) { showToast(error.message || 'Gagal mengekspor history stok.', 'error'); }
+    finally { button.disabled = false; button.removeAttribute('aria-busy'); }
   }
 
   async function simpanStokMinimum(kodeBarang, kodeUnit, kodeGudang, button) {
@@ -1836,6 +1976,7 @@
         populateBarangSelects(); 
         populateBarangKoreksi();
         populateFilterBarangDatalist();
+        populateStockItemHistoryItems();
       }
     } catch(e) { showToast('Gagal memuat stok terkini.', 'error'); }
   }
