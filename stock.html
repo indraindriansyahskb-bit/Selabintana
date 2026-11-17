@@ -585,6 +585,7 @@
                 <div class="form-group"><label for="koreksiBatch">Nomor batch (opsional)</label><input type="text" id="koreksiBatch" maxlength="120" placeholder="Nomor batch"></div>
                 <div class="form-group"><label for="koreksiKadaluarsa">Tanggal kedaluwarsa</label><input type="date" id="koreksiKadaluarsa"></div>
               </div>
+              <div class="form-group" id="koreksiSaldoAwalTanggalWrap" style="display:none;"><label for="koreksiSaldoAwalTanggal">Tanggal pertama saldo awal</label><input type="date" id="koreksiSaldoAwalTanggal"><small style="display:block;margin-top:5px;color:var(--erp-text-muted);">Tanggal efektif awal barang tercatat pada gudang.</small></div>
               <div class="form-row">
                 <div class="form-group"><label for="koreksiSaldoFisik">Saldo fisik</label><input type="number" id="koreksiSaldoFisik" min="0" max="1000000000" step="any" inputmode="decimal" required><small style="display:block;margin-top:6px;color:var(--erp-text-muted);">Isi jumlah akhir setelah dihitung, bukan jumlah selisih.</small></div>
                 <div class="form-group"><label>Pratinjau selisih</label><div id="koreksiPreview" role="status" aria-live="polite" style="padding:10px 12px;min-height:38px;background:#f6f9f7;border:1px solid var(--erp-border-light);border-radius:6px;color:var(--erp-text-muted);">Pilih lokasi dan barang untuk melihat selisih.</div></div>
@@ -599,6 +600,7 @@
                   <div class="form-group"><label for="saldoAwalUnit">Unit / Farm</label><select id="saldoAwalUnit" onchange="updateBulkOpeningWarehouses()" required><option value="">-- Pilih Unit --</option></select></div>
                   <div class="form-group"><label for="saldoAwalGudang">Gudang</label><select id="saldoAwalGudang" onchange="updateBulkOpeningExpiryRequirements()" required><option value="">-- Pilih Gudang --</option></select></div>
                 </div>
+                <div class="form-group"><label for="saldoAwalTanggal">Tanggal pertama saldo awal</label><input type="date" id="saldoAwalTanggal" required><small style="display:block;margin-top:5px;color:var(--erp-text-muted);">Tanggal efektif saldo awal ini mulai berlaku, bukan tanggal Anda mengisi formulir.</small></div>
                 <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:12px 0;">
                   <b>Daftar barang saldo awal</b>
                   <button type="button" class="btn btn-outline btn-sm" onclick="tambahBarisSaldoAwal()"><i class="fa-solid fa-plus"></i> Tambah Barang</button>
@@ -723,10 +725,8 @@
         </select><button id="btnTambahKategoriPenerimaan" type="button" class="btn btn-outline btn-sm" onclick="tambahKategoriStok()" title="Tambah kategori baru">+ Kategori</button>
       </div></div>
       <div class="form-group" id="penSupplierWrap"><label for="penSupplier">Supplier (opsional)</label><input type="text" id="penSupplier" maxlength="200" placeholder="Nama supplier"></div>
-      <div class="form-row" id="penBatchExpiryRow" style="display:none;">
-        <div class="form-group"><label for="penBatch">Nomor batch (opsional)</label><input type="text" id="penBatch" maxlength="120" placeholder="Nomor batch"></div>
-        <div class="form-group"><label for="penKadaluarsa">Tanggal kedaluwarsa</label><input type="date" id="penKadaluarsa"><small id="ovkReceiptHint" style="display:block;margin-top:5px;color:var(--erp-text-muted);">Wajib di gudang OVK.</small></div>
-      </div>
+      <div class="form-group"><label for="penBatch">Nomor batch (opsional)</label><input type="text" id="penBatch" maxlength="120" placeholder="Nomor batch"></div>
+      <div class="form-group" id="penExpiryRow" style="display:none;"><label for="penKadaluarsa">Tanggal kedaluwarsa</label><input type="date" id="penKadaluarsa"><small id="ovkReceiptHint" style="display:block;margin-top:5px;color:var(--erp-text-muted);">Wajib di gudang OVK.</small></div>
       <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:15px;">
         <button type="button" onclick="tutupModal('modalPenerimaan')" class="btn btn-outline">Batal</button>
         <button type="submit" class="btn btn-success" style="background:#047857; color:#fff;">Simpan Penerimaan</button>
@@ -742,7 +742,13 @@
       <h3 style="font-size:14px; font-weight:700; color:var(--erp-primary);"><i class="fa-solid fa-circle-arrow-up" style="color:var(--erp-warning);"></i> Form Pemakaian / Outflow Barang</h3>
       <button type="button" aria-label="Tutup form pemakaian" onclick="tutupModal('modalPemakaian')" style="background:none; border:none; cursor:pointer; font-size:16px;"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
     </div>
-    <form id="formPemakaian" class="modal-body">
+    <div class="modal-body">
+      <div class="erp-filter-bar" style="margin:0 0 14px;padding:0;border:0;background:transparent;">
+        <button type="button" id="modePemakaianSatuBtn" class="btn btn-primary" onclick="switchPemakaianMode('single')">Satu transaksi</button>
+        <button type="button" id="modePemakaianPakanBtn" class="btn btn-outline" onclick="switchPemakaianMode('feed')"><i class="fa-solid fa-layer-group"></i> Pemakaian pakan harian multipel</button>
+      </div>
+      <div id="singlePemakaianPanel">
+      <form id="formPemakaian">
       <div class="form-group"><label for="pemBarangPilih">Pilih Barang Dari Gudang</label><select id="pemBarangPilih" onchange="updateSelectedStockHint('pemBarangPilih', 'pemSaldoTersedia')" required></select><small id="pemSaldoTersedia" aria-live="polite" style="display:block;margin-top:6px;color:var(--erp-text-muted);"></small></div>
       <div class="form-group"><label for="pemLokasiKandang">Kandang / Peruntukan</label><input type="text" id="pemLokasiKandang" maxlength="120" list="listKandangPemakaian" placeholder="Pilih data lama atau ketik kandang baru" autocomplete="off" required><datalist id="listKandangPemakaian"></datalist><small style="display:block;margin-top:5px;color:var(--erp-text-muted);">Pilihan diambil dari riwayat pemakaian dan tetap dapat ditambah.</small></div>
       <div class="form-group"><label for="pemJumlah">Jumlah Pemakaian</label><input type="number" id="pemJumlah" min="0.001" max="1000000000" step="any" aria-describedby="pemSaldoTersedia" required></div>
@@ -751,9 +757,36 @@
         <button type="button" onclick="tutupModal('modalPemakaian')" class="btn btn-outline">Batal</button>
         <button type="submit" class="btn btn-warning">Catat Pemakaian</button>
       </div>
-    </form>
+      </form>
+      </div>
+      <div id="bulkFeedPanel" hidden>
+        <form id="formPemakaianPakanBulk">
+          <div class="form-row">
+            <div class="form-group"><label for="pemakaianPakanTanggal">Tanggal pemakaian</label><input type="date" id="pemakaianPakanTanggal" required><small style="display:block;margin-top:5px;color:var(--erp-text-muted);">Masukkan pemakaian harian untuk tanggal ini.</small></div>
+            <div class="form-group"><label for="pemakaianPakanCatatan">Catatan umum (opsional)</label><input type="text" id="pemakaianPakanCatatan" maxlength="500" placeholder="Contoh: pembagian pakan harian"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:8px 0 10px;">
+            <b>Daftar kandang dan jenis pakan</b>
+            <button type="button" class="btn btn-outline btn-sm" onclick="tambahBarisPemakaianPakan()"><i class="fa-solid fa-plus"></i> Tambah baris</button>
+          </div>
+          <small style="display:block;margin-bottom:10px;color:var(--erp-text-muted);">Tambahkan satu baris untuk setiap kombinasi kandang dan pakan. Stok untuk barang yang sama akan divalidasi sebagai satu total.</small>
+          <div id="pemakaianPakanRows"></div>
+          <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:15px;">
+            <button type="button" onclick="tutupModal('modalPemakaian')" class="btn btn-outline">Batal</button>
+            <button type="submit" class="btn btn-warning"><i class="fa-solid fa-floppy-disk"></i> Simpan Semua Pemakaian</button>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
 </div>
+
+<style>
+  @media (max-width: 720px) {
+    #pemakaianPakanRows .bulk-feed-row { grid-template-columns: 1fr !important; }
+    #pemakaianPakanRows .bulk-feed-row > button { justify-self: end; }
+  }
+</style>
 
 <!-- MODAL 3: MUTASI / TRANSFER ANTAR FARM -->
 <div id="modalTransfer" class="modal">
@@ -856,6 +889,7 @@
   let jurnalLoaded = false; let stockAuditLoaded = false; let correctionHistoryLoaded = false;
   let deletableTransactionRows = []; let deleteCandidatesLoaded = false; let deletedHistoryLoaded = false;
   let openingStockRowCounter = 0;
+  let pemakaianPakanRowCounter = 0;
   let masterBarangData = []; let masterBarangCategories = ['PAKAN', 'OBAT', 'VAKSIN', 'VITAMIN', 'KIMIA', 'PERALATAN', 'LAINNYA'];
   let masterCategoriesLoaded = false; let masterCategoriesLoading = false;
 
@@ -967,6 +1001,10 @@
         redirectToCentralLogin();
         return;
       }
+      if (['ADMIN_TEKNISI', 'ADMIN_DIVISI'].includes(String(result.userData.roleAccess || '').toUpperCase())) {
+        location.replace('portal.html');
+        return;
+      }
       sesiUser = Object.assign({}, saved, result.userData, {token: saved.token, expiresAt: saved.expiresAt});
       sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(sesiUser));
       document.getElementById('sessionGate').style.display = 'none';
@@ -980,6 +1018,10 @@
 
   function tampilkanDashboard() {
     document.getElementById('mainPanel').style.display = 'flex';
+    const openingDate = document.getElementById('saldoAwalTanggal');
+    if (openingDate) { openingDate.max = todayJakarta(); if (!openingDate.value) openingDate.value = todayJakarta(); }
+    const singleOpeningDate = document.getElementById('koreksiSaldoAwalTanggal');
+    if (singleOpeningDate) { singleOpeningDate.max = todayJakarta(); if (!singleOpeningDate.value) singleOpeningDate.value = todayJakarta(); }
     const koreksiMenu = document.getElementById('koreksiStokMenuItem');
     koreksiMenu.hidden = !sesiUser.isAdmin;
     document.getElementById('hapusTransaksiMenuItem').hidden = !sesiUser.isAdmin;
@@ -1236,6 +1278,52 @@
       if (cekSesiBerakhir(json) || json.status !== 'success') return;
       document.getElementById('listKandangPemakaian').innerHTML = (json.kandangOptions || []).map(cage => `<option value="${escapeHtml(cage)}"></option>`).join('');
     } catch (error) {}
+  }
+
+  function switchPemakaianMode(mode) {
+    const feedMode = mode === 'feed';
+    document.getElementById('singlePemakaianPanel').hidden = feedMode;
+    document.getElementById('bulkFeedPanel').hidden = !feedMode;
+    document.getElementById('modePemakaianSatuBtn').className = feedMode ? 'btn btn-outline' : 'btn btn-primary';
+    document.getElementById('modePemakaianPakanBtn').className = feedMode ? 'btn btn-primary' : 'btn btn-outline';
+    if (feedMode) {
+      const date = document.getElementById('pemakaianPakanTanggal');
+      date.max = todayJakarta();
+      if (!date.value) date.value = todayJakarta();
+      if (!document.querySelector('#pemakaianPakanRows .bulk-feed-row')) tambahBarisPemakaianPakan();
+    }
+  }
+
+  function daftarOpsiStokPakan() {
+    return rawStokList.filter(item => String(item.kategori || '').trim().toUpperCase() === 'PAKAN' && Number(item.sisaStok || 0) > 0 && clientCanAccessWarehouse(item.kodeUnit, item.kodeGudang));
+  }
+
+  function tambahBarisPemakaianPakan() {
+    const container = document.getElementById('pemakaianPakanRows');
+    if (container.querySelectorAll('.bulk-feed-row').length >= 100) return showToast('Maksimal 100 baris pemakaian dalam satu formulir.', 'error');
+    const rowId = ++pemakaianPakanRowCounter;
+    const options = daftarOpsiStokPakan();
+    const row = document.createElement('div');
+    row.className = 'bulk-feed-row';
+    row.style.cssText = 'display:grid;grid-template-columns:minmax(220px,2fr) minmax(140px,1.2fr) minmax(100px,.8fr) auto;gap:8px;align-items:end;padding:10px;margin-bottom:8px;border:1px solid var(--erp-border);border-radius:8px;background:#fff;';
+    row.innerHTML = `<div class="form-group" style="margin:0;"><label for="feedItem_${rowId}">Jenis pakan / gudang</label><select id="feedItem_${rowId}" class="bulk-feed-item" onchange="updateBulkFeedRowHint(this)" required><option value="">-- Pilih pakan --</option>${options.map(item => {
+      const value = JSON.stringify({kodeBarang: item.kodeBarang, kodeUnit: item.kodeUnit, kodeGudang: item.kodeGudang});
+      return `<option value="${escapeHtml(value)}">${escapeHtml(item.namaBarang)} · ${escapeHtml(item.kodeUnit)}/${escapeHtml(item.kodeGudang)} · sisa ${formatNumber(item.sisaStok)} ${escapeHtml(item.satuan)}</option>`;
+    }).join('')}</select><small class="bulk-feed-hint" style="display:block;min-height:15px;margin-top:4px;color:var(--erp-text-muted);"></small></div>
+      <div class="form-group" style="margin:0;"><label for="feedCage_${rowId}">Kandang</label><input id="feedCage_${rowId}" class="bulk-feed-cage" type="text" maxlength="120" list="listKandangPemakaian" placeholder="Contoh: BD01" required></div>
+      <div class="form-group" style="margin:0;"><label for="feedQty_${rowId}">Jumlah</label><input id="feedQty_${rowId}" class="bulk-feed-quantity" type="number" min="0.001" max="1000000000" step="any" required></div>
+      <button type="button" class="btn btn-outline btn-sm" style="color:var(--erp-danger);margin-bottom:1px;" aria-label="Hapus baris pemakaian pakan" onclick="this.closest('.bulk-feed-row').remove()"><i class="fa-solid fa-trash"></i></button>`;
+    container.appendChild(row);
+  }
+
+  function updateBulkFeedRowHint(select) {
+    const row = select.closest('.bulk-feed-row');
+    const hint = row && row.querySelector('.bulk-feed-hint');
+    if (!hint) return;
+    let selection;
+    try { selection = JSON.parse(select.value); } catch (error) { hint.textContent = ''; return; }
+    const item = rawStokList.find(stock => String(stock.kodeBarang) === String(selection.kodeBarang) && String(stock.kodeUnit) === String(selection.kodeUnit) && String(stock.kodeGudang) === String(selection.kodeGudang));
+    hint.textContent = item ? `Tersedia ${formatNumber(item.sisaStok)} ${item.satuan}` : 'Stok tidak tersedia; muat ulang data.';
   }
 
   function renderPemakaianPerKandang(rows) {
@@ -1722,7 +1810,7 @@
 
   function updateReceiptOvkFields() {
     const isOvk = isOvkWarehouseClient(document.getElementById('penGudang').value, document.getElementById('penUnit').value);
-    const row = document.getElementById('penBatchExpiryRow');
+    const row = document.getElementById('penExpiryRow');
     const expiry = document.getElementById('penKadaluarsa');
     row.style.display = isOvk ? 'flex' : 'none';
     expiry.required = isOvk;
@@ -1897,6 +1985,12 @@
     document.getElementById('koreksiNamaBarang').required = isNew;
     document.getElementById('koreksiSatuan').required = isNew;
     document.getElementById('koreksiSaldoFisik').min = isNew ? '0.001' : '0';
+    const openingDateWrap = document.getElementById('koreksiSaldoAwalTanggalWrap');
+    const openingDate = document.getElementById('koreksiSaldoAwalTanggal');
+    openingDateWrap.style.display = isNew ? 'block' : 'none';
+    openingDate.required = isNew;
+    openingDate.max = todayJakarta();
+    if (isNew && !openingDate.value) openingDate.value = todayJakarta();
     updatePreviewKoreksi();
   }
 
@@ -2113,7 +2207,8 @@
       const movementText = item.arah || (direction === 'DIAJUKAN' ? 'PENGAJUAN MUTASI' : direction === 'DITOLAK' ? 'MUTASI DITOLAK' : masuk ? 'MASUK' : keluar ? 'KELUAR' : direction === 'TRANSFER' ? 'MUTASI' : 'KOREKSI');
       const balanceText = item.saldoSebelum != null || item.saldoSesudah != null
         ? `${formatNumber(item.saldoSebelum)} → ${formatNumber(item.saldoSesudah)}` : '-';
-      return `<tr><td>${index + 1}</td><td>${escapeHtml(item.kodeBarang || '-')}</td><td><b>${escapeHtml(item.namaBarang || '-')}</b><br><small>${escapeHtml(item.kategori || '-')}</small></td><td>${escapeHtml(movementText)}</td><td>${formatNumber(item.jumlah || 0)} ${escapeHtml(item.satuan || 'pcs')}</td><td>${escapeHtml(item.batch || '-')}</td><td>${escapeHtml(item.tanggalKadaluarsa || '-')}</td><td>${escapeHtml(item.lokasiKandang || '-')}</td><td>${escapeHtml(balanceText)}</td><td><small>${escapeHtml(item.idTransaksi || data.idTransaksi || '-')}</small></td></tr>`;
+      const itemLocation = [item.kodeUnit || data.kodeUnit || data.unit, item.kodeGudang || data.kodeGudang || data.gudang].filter(Boolean).join(' / ') || '-';
+      return `<tr><td>${index + 1}</td><td>${escapeHtml(item.kodeBarang || '-')}</td><td><b>${escapeHtml(item.namaBarang || '-')}</b><br><small>${escapeHtml(item.kategori || '-')}</small></td><td>${escapeHtml(itemLocation)}</td><td>${escapeHtml(movementText)}</td><td>${formatNumber(item.jumlah || 0)} ${escapeHtml(item.satuan || 'pcs')}</td><td>${escapeHtml(item.batch || '-')}</td><td>${escapeHtml(item.tanggalKadaluarsa || '-')}</td><td>${escapeHtml(item.lokasiKandang || '-')}</td><td>${escapeHtml(balanceText)}</td><td><small>${escapeHtml(item.idTransaksi || data.idTransaksi || '-')}</small></td></tr>`;
     }).join('');
     const meta = [
       ['Nomor formulir', data.nomor || data.idTransaksi || data.idTransfer || '-'],
@@ -2135,7 +2230,7 @@
       <section class="voucher-meta">${meta}</section>
       ${data.catatan ? `<p style="margin:10px 0;"><b>Keterangan:</b> ${escapeHtml(data.catatan)}</p>` : ''}
       <h2>Rincian Barang</h2>
-      <table><thead><tr><th>No</th><th>Kode</th><th>Nama / Kategori</th><th>Jenis</th><th>Jumlah</th><th>Batch</th><th>Kedaluwarsa</th><th>Kandang / Peruntukan</th><th>Saldo Sebelum → Sesudah</th><th>ID Transaksi</th></tr></thead><tbody>${itemRows || '<tr><td colspan="10">Tidak ada rincian barang.</td></tr>'}</tbody></table>
+      <table><thead><tr><th>No</th><th>Kode</th><th>Nama / Kategori</th><th>Unit / Gudang</th><th>Jenis</th><th>Jumlah</th><th>Batch</th><th>Kedaluwarsa</th><th>Kandang / Peruntukan</th><th>Saldo Sebelum → Sesudah</th><th>ID Transaksi</th></tr></thead><tbody>${itemRows || '<tr><td colspan="11">Tidak ada rincian barang.</td></tr>'}</tbody></table>
       <div class="voucher-signatures">
         <div class="voucher-signature">Diserahkan / dikeluarkan</div>
         <div class="voucher-signature">Diterima / digunakan</div>
@@ -2778,7 +2873,13 @@
     }, 'formPenerimaan');
   });
 
-  function bukaModalPemakaian() { document.getElementById('modalPemakaian').style.display = 'flex'; muatKandangOptions(); }
+  async function bukaModalPemakaian() {
+    if (!rawStokList.length) await muatMasterStokBarang();
+    document.getElementById('modalPemakaian').style.display = 'flex';
+    switchPemakaianMode('single');
+    document.getElementById('pemakaianPakanTanggal').max = todayJakarta();
+    await muatKandangOptions();
+  }
   document.getElementById('formPemakaian').addEventListener('submit', async function(e) {
     e.preventDefault();
     let selection;
@@ -2804,6 +2905,41 @@
         items: [{idTransaksi: result.idTransaksi || submittedPayload.idTransaksi, kodeBarang: result.kodeBarang || submittedPayload.kodeBarang, namaBarang: usedItem && usedItem.namaBarang, kategori: usedItem && usedItem.kategori, tipeMutasi: 'KELUAR', jumlah: submittedPayload.jumlah, satuan: usedItem && usedItem.satuan, lokasiKandang: submittedPayload.lokasiKandang, saldoSebelum: result.saldoSebelum, saldoSesudah: result.saldoSesudah}]
       });
     }, 'formPemakaian');
+  });
+
+  document.getElementById('formPemakaianPakanBulk').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    if (!this.reportValidity()) return;
+    const lines = Array.from(document.querySelectorAll('#pemakaianPakanRows .bulk-feed-row')).map(row => {
+      let selection = {};
+      try { selection = JSON.parse(row.querySelector('.bulk-feed-item').value || '{}'); } catch (error) {}
+      return Object.assign(selection, {lokasiKandang: row.querySelector('.bulk-feed-cage').value.trim(), jumlah: row.querySelector('.bulk-feed-quantity').value});
+    });
+    if (!lines.length) return showToast('Tambahkan minimal satu kombinasi kandang dan pakan.', 'error');
+    const payload = {
+      action: 'prosesPemakaianBarangBulk',
+      tanggalPemakaian: document.getElementById('pemakaianPakanTanggal').value,
+      keterangan: document.getElementById('pemakaianPakanCatatan').value.trim(),
+      items: lines
+    };
+    await kirimAksiStok(payload, async function(result, submittedPayload) {
+      tutupModal('modalPemakaian');
+      document.getElementById('formPemakaianPakanBulk').reset();
+      document.getElementById('pemakaianPakanRows').innerHTML = '';
+      pemakaianPakanRowCounter = 0;
+      const refreshTasks = [muatJurnalTransaksiBarang(), muatMasterStokBarang()];
+      if (appliedStockSnapshotFilters) refreshTasks.push(muatStockSnapshot());
+      if (loadedStockItemHistoryFilters) refreshTasks.push(muatRiwayatBarangStock());
+      await Promise.all(refreshTasks);
+      if (!result.duplicate) tampilkanBuktiTransaksi({
+        judul: 'Bukti Pemakaian Pakan Harian', idTransaksi: result.idTransaksi || submittedPayload.idTransaksi,
+        waktu: new Date(`${submittedPayload.tanggalPemakaian}T12:00:00+07:00`).toLocaleString('id-ID', {timeZone: 'Asia/Jakarta'}),
+        status: 'Tercatat', sumber: 'Pemakaian pakan beberapa kandang',
+        kodeUnit: result.kodeUnit || '-', kodeGudang: result.kodeGudang || 'Lihat rincian per baris',
+        pelaku: sesiUser.nama || sesiUser.username, catatan: submittedPayload.keterangan || 'Pemakaian harian pakan',
+        items: (result.items || []).map(item => Object.assign({}, item, {tipeMutasi: 'KELUAR'}))
+      });
+    }, 'formPemakaianPakanBulk');
   });
 
   function bukaModalTransferDirect() { 
@@ -2868,12 +3004,14 @@
     }));
     const unit = document.getElementById('saldoAwalUnit').value;
     const warehouse = document.getElementById('saldoAwalGudang').value;
+    const tanggalSaldoAwal = document.getElementById('saldoAwalTanggal').value;
     const reason = document.getElementById('saldoAwalAlasan').value.trim();
-    const payload = {action: 'koreksiStokBulk', kodeUnit: unit, kodeGudang: warehouse, alasan: reason, items};
+    const payload = {action: 'koreksiStokBulk', kodeUnit: unit, kodeGudang: warehouse, tanggalSaldoAwal, alasan: reason, items};
     await kirimAksiStok(payload, async function(result, submittedPayload) {
       const printedItems = (result.items || []).map(item => Object.assign({tipeMutasi: 'MASUK'}, item));
       const form = document.getElementById('formSaldoAwalBulk');
       form.reset();
+      document.getElementById('saldoAwalTanggal').value = todayJakarta();
       document.getElementById('saldoAwalRows').innerHTML = '';
       openingStockRowCounter = 0;
       document.getElementById('saldoAwalUnit').value = unit;
@@ -2889,7 +3027,7 @@
       await Promise.all(refreshTasks);
       if (!result.duplicate) tampilkanBuktiTransaksi({
         judul: 'Bukti Input Saldo Awal', idTransaksi: submittedPayload.idTransaksi,
-        waktu: new Date().toLocaleString('id-ID', {timeZone: 'Asia/Jakarta'}), status: 'Tercatat',
+        waktu: new Date(`${tanggalSaldoAwal}T12:00:00+07:00`).toLocaleString('id-ID', {timeZone: 'Asia/Jakarta'}), status: 'Tercatat',
         sumber: 'Saldo awal / stock opname', kodeUnit: unit, kodeGudang: warehouse,
         pelaku: sesiUser.nama || sesiUser.username, catatan: reason, items: printedItems
       });
@@ -2915,6 +3053,7 @@
       payload.namaBarang = document.getElementById('koreksiNamaBarang').value.trim();
       payload.kategori = document.getElementById('koreksiKategori').value;
       payload.satuan = document.getElementById('koreksiSatuan').value.trim();
+      payload.tanggalSaldoAwal = document.getElementById('koreksiSaldoAwalTanggal').value;
     }
     payload.batch = document.getElementById('koreksiBatch').value.trim();
     payload.tanggalKadaluarsa = document.getElementById('koreksiKadaluarsa').value;
@@ -2937,7 +3076,7 @@
       const item = rawStokList.find(row => String(row.kodeBarang) === String(result.kodeBarang) && String(row.kodeUnit).toLowerCase() === String(unitBeforeReset).toLowerCase() && String(row.kodeGudang).toLowerCase() === String(warehouseBeforeReset).toLowerCase());
       if (!result.duplicate) tampilkanBuktiTransaksi({
         judul: mode === 'BARU' ? 'Bukti Input Saldo Awal' : 'Bukti Koreksi Saldo Stok',
-        idTransaksi: submittedPayload.idTransaksi, waktu: new Date().toLocaleString('id-ID', {timeZone: 'Asia/Jakarta'}),
+        idTransaksi: submittedPayload.idTransaksi, waktu: mode === 'BARU' ? new Date(`${submittedPayload.tanggalSaldoAwal}T12:00:00+07:00`).toLocaleString('id-ID', {timeZone: 'Asia/Jakarta'}) : new Date().toLocaleString('id-ID', {timeZone: 'Asia/Jakarta'}),
         status: 'Tercatat', sumber: mode === 'BARU' ? 'Saldo awal barang baru' : 'Koreksi hasil hitung fisik',
         kodeUnit: unitBeforeReset, kodeGudang: warehouseBeforeReset, pelaku: sesiUser.nama || sesiUser.username, catatan: submittedPayload.alasan,
         items: [{
