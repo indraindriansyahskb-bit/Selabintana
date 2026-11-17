@@ -782,9 +782,31 @@
 </div>
 
 <style>
+  #pemakaianPakanRows .bulk-feed-row {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1.2fr) minmax(0, .8fr) 38px;
+    gap: 8px;
+    align-items: end;
+    box-sizing: border-box;
+  }
+  #pemakaianPakanRows .bulk-feed-row > .form-group,
+  #pemakaianPakanRows .bulk-feed-row select,
+  #pemakaianPakanRows .bulk-feed-row input { min-width: 0; width: 100%; box-sizing: border-box; }
+  #pemakaianPakanRows .bulk-feed-row > button { min-width: 0; padding-left: 8px; padding-right: 8px; }
+
   @media (max-width: 720px) {
-    #pemakaianPakanRows .bulk-feed-row { grid-template-columns: 1fr !important; }
-    #pemakaianPakanRows .bulk-feed-row > button { justify-self: end; }
+    #pemakaianPakanRows .bulk-feed-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 38px; }
+    #pemakaianPakanRows .bulk-feed-row > .form-group:first-child { grid-column: 1 / -1; }
+    #pemakaianPakanRows .bulk-feed-row > .form-group:nth-child(2) { grid-column: 1; }
+    #pemakaianPakanRows .bulk-feed-row > .form-group:nth-child(3) { grid-column: 2; }
+    #pemakaianPakanRows .bulk-feed-row > button { grid-column: 3; justify-self: stretch; }
+  }
+  @media (max-width: 420px) {
+    #pemakaianPakanRows .bulk-feed-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+    #pemakaianPakanRows .bulk-feed-row > .form-group:first-child { grid-column: 1 / -1; }
+    #pemakaianPakanRows .bulk-feed-row > .form-group:nth-child(2) { grid-column: 1; }
+    #pemakaianPakanRows .bulk-feed-row > .form-group:nth-child(3) { grid-column: 2; }
+    #pemakaianPakanRows .bulk-feed-row > button { grid-column: 1 / -1; justify-self: end; }
   }
 </style>
 
@@ -1305,7 +1327,7 @@
     const options = daftarOpsiStokPakan();
     const row = document.createElement('div');
     row.className = 'bulk-feed-row';
-    row.style.cssText = 'display:grid;grid-template-columns:minmax(220px,2fr) minmax(140px,1.2fr) minmax(100px,.8fr) auto;gap:8px;align-items:end;padding:10px;margin-bottom:8px;border:1px solid var(--erp-border);border-radius:8px;background:#fff;';
+    row.style.cssText = 'gap:8px;align-items:end;padding:10px;margin-bottom:8px;border:1px solid var(--erp-border);border-radius:8px;background:#fff;';
     row.innerHTML = `<div class="form-group" style="margin:0;"><label for="feedItem_${rowId}">Jenis pakan / gudang</label><select id="feedItem_${rowId}" class="bulk-feed-item" onchange="updateBulkFeedRowHint(this)" required><option value="">-- Pilih pakan --</option>${options.map(item => {
       const value = JSON.stringify({kodeBarang: item.kodeBarang, kodeUnit: item.kodeUnit, kodeGudang: item.kodeGudang});
       return `<option value="${escapeHtml(value)}">${escapeHtml(item.namaBarang)} · ${escapeHtml(item.kodeUnit)}/${escapeHtml(item.kodeGudang)} · sisa ${formatNumber(item.sisaStok)} ${escapeHtml(item.satuan)}</option>`;
