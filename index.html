@@ -136,8 +136,8 @@
       <section class="hero" aria-labelledby="welcome-title">
         <div class="hero-copy">
           <div class="eyebrow">Operasional farm</div>
-          <h1 id="welcome-title">Kerja keras hari ini, hasil luar biasa menanti."</h1>
-          <p class="intro">Setiap detail yang Anda kerjakan hari ini membawa dampak besar bagi kesuksesan bersama. Mari wujudkan operasional yang tangguh, hebat, dan membanggakan.</p>
+          <h1 id="welcome-title">Semua kebutuhan farm, satu tempat.</h1>
+          <p class="intro">Ajukan kebutuhan barang dan kelola persediaan farm melalui portal internal.</p>
           <a class="start-link" id="startLink" href="#authPanel"><span id="startLinkText">Masuk untuk melanjutkan</span>
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </a>
@@ -209,7 +209,7 @@
         </div>
         <div class="admin-form-grid">
           <div><label for="userBaruUnit">Unit / Farm</label><select id="userBaruUnit" required onchange="perbaruiCakupanUserBaru()"><option value="">Memuat unit…</option></select></div>
-          <div><label for="userBaruRole">Role akun</label><select id="userBaruRole" required onchange="perbaruiCakupanUserBaru()"><option value="STAFF_OPERASIONAL">Staff Operasional</option><option value="PIC_GUDANG">PIC Gudang</option><option value="ADMIN">Admin</option></select></div>
+          <div><label for="userBaruRole">Role akun</label><select id="userBaruRole" required onchange="perbaruiCakupanUserBaru()"><option value="STAFF_OPERASIONAL">Staff Operasional</option><option value="PIC_GUDANG">PIC Gudang</option><option value="ADMIN_DIVISI">Admin Divisi</option><option value="ADMIN_TEKNISI">Admin Teknisi</option><option value="ADMIN">Admin</option></select></div>
         </div>
         <div><label for="userBaruScope">Cakupan akses</label><select id="userBaruScope" required></select><small id="userBaruScopeHint">Pilih akses sesuai tugas akun.</small></div>
         <p id="adminFormMessage" role="status" aria-live="polite" hidden></p>
@@ -297,13 +297,30 @@
 
     function perbaruiCakupanUserBaru() {
       const role = document.getElementById('userBaruRole').value;
-      const unit = document.getElementById('userBaruUnit').value;
+      document.getElementById('userBaruDivisi').required = role === 'ADMIN_DIVISI';
+      const unitSelect = document.getElementById('userBaruUnit');
+      const previousUnit = unitSelect.value;
+      const portalOnlyRole = ['ADMIN_TEKNISI', 'ADMIN_DIVISI'].includes(role);
+      unitSelect.innerHTML = portalOnlyRole ? '<option value="ALL">Semua unit / farm</option>' : '<option value="">-- Pilih Unit / Farm --</option>' + adminUserUnits.map(unit => `<option value="${escapeHtml(unit.kodeUnit)}">${escapeHtml(unit.namaUnit || unit.kodeUnit)}</option>`).join('');
+      unitSelect.disabled = portalOnlyRole;
+      if (portalOnlyRole) unitSelect.value = 'ALL';
+      else if (adminUserUnits.some(unit => String(unit.kodeUnit).toLowerCase() === String(previousUnit).toLowerCase())) unitSelect.value = previousUnit;
+      const unit = unitSelect.value;
       const scope = document.getElementById('userBaruScope');
       const hint = document.getElementById('userBaruScopeHint');
-      scope.disabled = role === 'ADMIN';
+      scope.disabled = role === 'ADMIN' || portalOnlyRole;
       if (role === 'ADMIN') {
         scope.innerHTML = '<option value="ALL">Semua unit / gudang</option>';
         hint.textContent = 'Admin dapat mengakses seluruh unit dan gudang.';
+      } else if (role === 'ADMIN_TEKNISI') {
+        scope.innerHTML = '<option value="PORTAL_TEKNISI">Antrean teknisi semua unit</option>';
+        hint.textContent = 'Admin Teknisi hanya dapat meninjau permintaan bertujuan Teknisi dan memberikan persetujuan Kepala Teknisi.';
+        if (!document.getElementById('userBaruDivisi').value.trim()) document.getElementById('userBaruDivisi').value = 'Teknik';
+        if (!document.getElementById('userBaruJabatan').value.trim()) document.getElementById('userBaruJabatan').value = 'Kepala Teknisi';
+      } else if (role === 'ADMIN_DIVISI') {
+        scope.innerHTML = '<option value="DIVISION">Semua unit dalam divisi ini</option>';
+        hint.textContent = 'Admin Divisi hanya dapat memutuskan permintaan dengan divisi yang sama.';
+        if (!document.getElementById('userBaruJabatan').value.trim()) document.getElementById('userBaruJabatan').value = 'Admin Divisi';
       } else if (role === 'STAFF_OPERASIONAL') {
         scope.innerHTML = '<option value="UNIT">Semua gudang di unit ini</option><option value="ALL">Semua unit / gudang</option>';
         hint.textContent = 'Pilih UNIT untuk membatasi staff ke farm di atas, atau ALL untuk akses operasional lintas farm.';
@@ -380,6 +397,10 @@
     function displayModulePicker(user) {
       if (user.isPicGudang || user.roleAccess === 'PIC_GUDANG') {
         location.replace('stock.html');
+        return;
+      }
+      if (['ADMIN_TEKNISI', 'ADMIN_DIVISI'].includes(String(user.roleAccess || '').toUpperCase())) {
+        location.replace('portal.html');
         return;
       }
       const target = returnTarget();
