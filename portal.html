@@ -1579,18 +1579,35 @@
     } catch (error) { showToast(error.message || 'Foto gagal diunggah.', 'error'); }
   }
 
-  function cetakStruk(kode) {
+  async function cetakStruk(kode) {
     const t = groupedTickets.find(x => x.kodeTiket === kode) || adminQueueTickets.find(x => x.kodeTiket === kode);
     if(!t) return;
     const isTechTarget = String(t.tujuanPermintaan || 'PURCHASING').toUpperCase() === 'TEKNISI';
     const techSigned = isTechTarget && String(t.statusTeknisi || '').toUpperCase() === 'ACC';
     const techSignature = isTechTarget ? `<td class="sig-cell"><div class="sig-title">KEPALA TEKNISI</div>${techSigned ? `<div class="sig-status">ACC · ${escapeHtml(t.waktuAccTeknisi || '')}</div><div class="sig-line"></div><div class="sig-name">( M. Silvado )</div>` : `<div class="sig-line"></div><div class="sig-name">( ....................... )</div>`}</td>` : '';
-    const printPhotos = t.items.map(it => {
-      const imageUrl = safeImageUrl(it.fotoBarangUrl);
-      return imageUrl ? `<figure><img src="${escapeHtml(imageUrl)}" alt="Foto ${escapeHtml(it.namaBarang)}"><figcaption>Item ${Number(it.noItem)} · ${escapeHtml(it.namaBarang)} · ${escapeHtml(it.kodeBarang || '')}</figcaption></figure>` : '';
-    }).filter(Boolean).join('');
     let printWin = window.open('', '_blank');
     if (!printWin) return showToast('Izinkan pop-up untuk mencetak formulir permintaan.', 'error');
+    printWin.document.write('<!DOCTYPE html><html lang="id"><meta charset="UTF-8"><title>Menyiapkan cetakan</title><body style="font:14px Arial;padding:32px;color:#334155">Menyiapkan formulir dan lampiran foto untuk dicetak…</body></html>');
+    printWin.document.close();
+    const photoItems = t.items.filter(item => item.fotoBarangUrl);
+    const photoResults = await Promise.all(photoItems.map(async item => {
+      try {
+        const response = await postPayload({action: 'getRequestPhotoForPrint', token: sesiUser.token, kodeTiket: t.kodeTiket, noItem: Number(item.noItem)});
+        const result = await response.json();
+        if (cekSesiBerakhir(result)) throw new Error('Sesi akun telah berakhir.');
+        if (result.status !== 'success' || !['image/jpeg', 'image/png', 'image/webp'].includes(result.mimeType) || !result.imageData) throw new Error(result.message || 'Foto tidak dapat dibaca dari penyimpanan.');
+        return {item, src: `data:${result.mimeType};base64,${result.imageData}`};
+      } catch (error) { return {item, error: error.message || 'Foto gagal dimuat.'}; }
+    }));
+    const failedPhotos = photoResults.filter(result => result.error);
+    if (failedPhotos.length) {
+      showToast(`${failedPhotos.length} foto gagal dimuat. Formulir tidak dicetak agar lampiran tidak terlewat.`, 'error');
+      printWin.document.open();
+      printWin.document.write(`<!DOCTYPE html><html lang="id"><meta charset="UTF-8"><title>Lampiran gagal dimuat</title><body style="font:14px Arial;padding:32px;color:#7f1d1d"><h2>Foto belum siap dicetak</h2><p>Periksa koneksi lalu coba cetak kembali. Foto yang gagal:</p><ul>${failedPhotos.map(result => `<li>${escapeHtml(result.item.namaBarang)} (item ${Number(result.item.noItem)}) — ${escapeHtml(result.error)}</li>`).join('')}</ul></body></html>`);
+      printWin.document.close();
+      return;
+    }
+    const printPhotos = photoResults.map(({item, src}) => `<figure><img src="${src}" alt="Foto ${escapeHtml(item.namaBarang)}"><figcaption>Item ${Number(item.noItem)} · ${escapeHtml(item.namaBarang)} · ${escapeHtml(item.kodeBarang || '')}</figcaption></figure>`).join('');
     let htmlItems = t.items.map((it) => `
       <tr>
         <td style="padding: 8px 10px; border-bottom: 1px solid #cbd5e1; font-family: monospace; font-size: 11px;">${escapeHtml(it.kodeSupplier || '-')}</td>
@@ -1618,14 +1635,14 @@
       .sig-line { border-bottom: 1px dashed #475569; margin-bottom: 5px; width: 85%; margin-left: auto; margin-right: auto; }
       .sig-name { font-size: 11px; font-weight: 700; color: #0f172a; }
       .sig-status {font-size:9px;color:#475569;margin-top:3px}
-      .photo-page{page-break-before:always;break-before:page}.photo-page h2{font-size:15px;border-bottom:1px solid #cbd5e1;padding-bottom:8px}.photo-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.photo-grid figure{margin:0;page-break-inside:avoid;break-inside:avoid}.photo-grid img{display:block;width:100%;max-height:9cm;object-fit:contain;border:1px solid #cbd5e1}.photo-grid figcaption{font-size:10px;margin-top:5px;color:#334155}
+      .photo-page{page-break-before:always;break-before:page}.photo-page h2{font-size:15px;border-bottom:1px solid #cbd5e1;padding-bottom:8px;margin-top:0}.photo-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.photo-grid figure{margin:0;page-break-inside:avoid;break-inside:avoid}.photo-grid img{display:block;width:100%;height:60mm;object-fit:contain;border:1px solid #cbd5e1}.photo-grid figcaption{font-size:10px;margin-top:5px;color:#334155}
       @media screen { .print-page { max-width: calc(100% - 32px); } }
       @media print {
         html, body { width: 100%; height: auto; background: #fff; }
         body { padding: 0; }
         .print-page { width: 100%; min-height: 0; margin: 0; padding: 0; box-shadow: none; }
         .header-container, .info-box, table { break-inside: avoid; }
-        .photo-page { margin: 0; }
+        .photo-page { margin: 0; page-break-before: always; break-before: page; }
       }
       </style></head><body>
         <main class="print-page">
@@ -1639,8 +1656,8 @@
           ${techSignature}
           <td class="sig-cell"><div class="sig-title">GENERAL MANAGER</div><div class="sig-line"></div><div class="sig-name">( Drh. Titin Idayati )</div></td>
         </tr></table>
-         ${printPhotos ? `<section class="photo-page"><h2>Lampiran Foto Barang — ${escapeHtml(t.kodeTiket)}</h2><div class="photo-grid">${printPhotos}</div></section>` : ''}
         </main>
+        ${printPhotos ? `<section class="print-page photo-page"><h2>Lampiran Foto Barang — ${escapeHtml(t.kodeTiket)}</h2><div class="photo-grid">${printPhotos}</div></section>` : ''}
       </body></html>`;
     printWin.addEventListener('load', function() {
       const images = Array.from(printWin.document.images);
@@ -1653,7 +1670,7 @@
       });
     }, {once: true});
     printWin.addEventListener('afterprint', function() { printWin.close(); }, {once: true});
-    printWin.document.write(printHTML); printWin.document.close();
+    printWin.document.open(); printWin.document.write(printHTML); printWin.document.close();
   }
 
   async function hapusTiket(kode) {
