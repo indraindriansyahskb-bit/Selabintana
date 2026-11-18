@@ -319,7 +319,7 @@
         if (!document.getElementById('userBaruJabatan').value.trim()) document.getElementById('userBaruJabatan').value = 'Kepala Teknisi';
       } else if (role === 'ADMIN_DIVISI') {
         scope.innerHTML = '<option value="DIVISION">Semua unit dalam divisi ini</option>';
-        hint.textContent = 'Admin Divisi hanya dapat memutuskan permintaan dengan divisi yang sama.';
+        hint.textContent = 'Dapat memutuskan permintaan dan mengakses stok unit yang Divisi-nya cocok pada kolom Divisi di sheet Units.';
         if (!document.getElementById('userBaruJabatan').value.trim()) document.getElementById('userBaruJabatan').value = 'Admin Divisi';
       } else if (role === 'STAFF_OPERASIONAL') {
         scope.innerHTML = '<option value="UNIT">Semua gudang di unit ini</option><option value="ALL">Semua unit / gudang</option>';
@@ -399,7 +399,7 @@
         location.replace('stock.html');
         return;
       }
-      if (['ADMIN_TEKNISI', 'ADMIN_DIVISI'].includes(String(user.roleAccess || '').toUpperCase())) {
+      if (String(user.roleAccess || '').toUpperCase() === 'ADMIN_TEKNISI') {
         location.replace('portal.html');
         return;
       }
