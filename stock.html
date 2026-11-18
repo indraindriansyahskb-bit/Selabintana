@@ -1138,8 +1138,12 @@
         populateStockItemHistoryUnits();
         setConnectionStatus('ok', 'GAS tersambung');
       } else {
-        setConnectionStatus('error', 'Gagal memuat data');
-        if (sesiUser.isAdminDivisi && json.message) showToast(json.message, 'error');
+        const message = String(json.message || 'Gagal memuat data');
+        setConnectionStatus('error', message);
+        if (sesiUser.isAdminDivisi) {
+          const snapshotContainer = document.getElementById('containerStockSnapshot');
+          if (snapshotContainer) snapshotContainer.innerHTML = `<p style="padding:16px;text-align:center;color:var(--erp-danger);overflow-wrap:anywhere;">${escapeHtml(message)}</p>`;
+        }
       }
     } catch(e) { setConnectionStatus('error', 'Koneksi gagal'); }
   }
