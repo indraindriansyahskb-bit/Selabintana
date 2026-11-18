@@ -184,6 +184,7 @@
       <div class="erp-page-title"><i class="fa-solid fa-file-signature" aria-hidden="true"></i><span id="portalPageTitle">Buat Permintaan</span></div>
       <div class="erp-topbar-actions">
         <div id="userInfoHeader" class="erp-user-badge"></div>
+        <a id="stockModuleLink" href="stock.html" class="btn btn-outline topbar-action" hidden style="text-decoration:none;"><i class="fa-solid fa-warehouse" aria-hidden="true"></i><span>Manajemen Stok</span></a>
         <button type="button" onclick="bukaModalGantiPassword()" class="btn btn-outline topbar-action" title="Ganti password"><i class="fa-solid fa-key" aria-hidden="true"></i><span>Password</span></button>
         <button type="button" onclick="logoutSesi()" class="btn btn-outline topbar-action topbar-logout"><i class="fa-solid fa-power-off" aria-hidden="true"></i><span>Keluar</span></button>
       </div>
@@ -670,11 +671,13 @@
 
   async function tampilkanDashboard() {
     document.getElementById('mainPanel').style.display = 'flex';
+    const role = String(sesiUser.roleAccess || '').toUpperCase();
+    document.getElementById('stockModuleLink').hidden = ['ADMIN_TEKNISI', 'PIC_GUDANG'].includes(role);
     document.getElementById('menuQueueItem').hidden = !canReviewRequestQueue();
     document.getElementById('menuRequestBtn').parentElement.hidden = isPortalApprovalOnly();
     document.getElementById('userInfoHeader').innerHTML = `
       <div class="erp-avatar">${escapeHtml((sesiUser.nama || sesiUser.username || 'U').substring(0,2).toUpperCase())}</div>
-      <div style="line-height:1.2;color:#f8fafc;"><div style="font-weight:700;font-size:12px;color:var(--erp-accent-yellow);">${escapeHtml(sesiUser.nama || sesiUser.username)}</div><div style="font-size:10px;color:#c2d1c7;">${escapeHtml(sesiUser.roleAccess || sesiUser.jabatan || 'Pengguna')} | <b>${escapeHtml(sesiUser.scopeGudang === 'ALL' ? 'Semua Gudang' : sesiUser.isPicGudang ? sesiUser.scopeGudang : sesiUser.unitLokasi)}</b></div></div>`;
+      <div style="line-height:1.2;color:#f8fafc;"><div style="font-weight:700;font-size:12px;color:var(--erp-accent-yellow);">${escapeHtml(sesiUser.nama || sesiUser.username)}</div><div style="font-size:10px;color:#c2d1c7;">${escapeHtml(sesiUser.roleAccess || sesiUser.jabatan || 'Pengguna')} | <b>${escapeHtml(sesiUser.isAdminDivisi ? `Divisi ${sesiUser.divisi || ''}` : sesiUser.scopeGudang === 'ALL' ? 'Semua Gudang' : sesiUser.isPicGudang ? sesiUser.scopeGudang : sesiUser.unitLokasi)}</b></div></div>`;
     const today = todayJakarta();
     document.getElementById('tglPermintaan').value = today;
     document.getElementById('tglDibutuhkan').min = today;
