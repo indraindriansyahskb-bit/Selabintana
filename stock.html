@@ -1023,7 +1023,7 @@
         redirectToCentralLogin();
         return;
       }
-      if (['ADMIN_TEKNISI', 'ADMIN_DIVISI'].includes(String(result.userData.roleAccess || '').toUpperCase())) {
+      if (String(result.userData.roleAccess || '').toUpperCase() === 'ADMIN_TEKNISI') {
         location.replace('portal.html');
         return;
       }
@@ -1054,7 +1054,7 @@
       <div class="erp-avatar">${escapeHtml(initial)}</div>
       <div style="line-height:1.2;">
         <div style="font-weight:700; font-size:12px; color:var(--erp-text-main);">${escapeHtml(sesiUser.nama)}</div>
-        <div style="font-size:10px; color:var(--erp-text-muted);">${escapeHtml(sesiUser.roleAccess || sesiUser.jabatan)} | <b>${escapeHtml(sesiUser.scopeGudang === 'ALL' ? 'Semua Gudang' : sesiUser.isPicGudang ? sesiUser.scopeGudang : sesiUser.unitLokasi)}</b></div>
+        <div style="font-size:10px; color:var(--erp-text-muted);">${escapeHtml(sesiUser.roleAccess || sesiUser.jabatan)} | <b>${escapeHtml(sesiUser.isAdminDivisi ? `Semua unit ${sesiUser.divisi || ''}` : sesiUser.scopeGudang === 'ALL' ? 'Semua Gudang' : sesiUser.isPicGudang ? sesiUser.scopeGudang : sesiUser.unitLokasi)}</b></div>
       </div>
     `;
 
@@ -1137,7 +1137,10 @@
         populateStockViewFilters();
         populateStockItemHistoryUnits();
         setConnectionStatus('ok', 'GAS tersambung');
-      } else setConnectionStatus('error', 'Gagal memuat data');
+      } else {
+        setConnectionStatus('error', 'Gagal memuat data');
+        if (sesiUser.isAdminDivisi && json.message) showToast(json.message, 'error');
+      }
     } catch(e) { setConnectionStatus('error', 'Koneksi gagal'); }
   }
 
