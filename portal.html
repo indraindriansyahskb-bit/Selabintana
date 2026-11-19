@@ -409,6 +409,8 @@
   }
 
   function isTechApprover() { return String(sesiUser.roleAccess || '').toUpperCase() === 'ADMIN_TEKNISI'; }
+  function isDivisionAdmin() { return String(sesiUser.roleAccess || '').toUpperCase() === 'ADMIN_DIVISI'; }
+  function queueWaitingLabel() { return isTechApprover() ? 'teknisi' : (isDivisionAdmin() ? 'keputusan' : 'Purchasing'); }
   function canManagePurchasingRequests() { return Boolean(sesiUser.isAdmin || String(sesiUser.roleAccess || '').toUpperCase() === 'ADMIN_DIVISI'); }
   function canReviewRequestQueue() { return isTechApprover() || canManagePurchasingRequests(); }
   function canViewReceiptProgress() { return canReviewRequestQueue(); }
@@ -957,7 +959,7 @@
       adminQueueTotalPages = Math.max(1, Number(json.totalPages || 1));
       adminQueueTotalTickets = Number(json.totalTickets || 0);
       adminQueueLoaded = true;
-      document.getElementById('adminQueueCount').textContent = `${adminQueueTotalTickets} menunggu ${isTechApprover() ? 'teknisi' : 'Purchasing'}`;
+      document.getElementById('adminQueueCount').textContent = `${adminQueueTotalTickets} menunggu ${queueWaitingLabel()}`;
       renderDaftarPermintaanAdmin();
     } catch (error) {
       adminQueueLoaded = false;
@@ -983,7 +985,12 @@
     }
     tbody.innerHTML = adminQueueTickets.map(ticket => {
       const badgeDoc = ticket.dokumenPdf ? '<span class="badge badge-upload-yes"><i class="fa-solid fa-check"></i> Uploaded</span>' : '<span class="badge badge-upload-no"><i class="fa-solid fa-clock"></i> Belum</span>';
-      const queueStatus = isTechApprover() ? 'MENUNGGU TEKNISI' : (ticket.tujuanPermintaan === 'TEKNISI' ? (ticket.dokumenTeknisiUrl ? 'ACC TEKNISI · MENUNGGU PURCHASING' : 'ACC TEKNISI · MENUNGGU SCAN') : 'MENUNGGU PURCHASING');
+      const statusNow = String(ticket.statusPermintaan || '').toUpperCase();
+      const queueStatus = isTechApprover() || statusNow === 'PENDING_TEKNISI'
+        ? 'MENUNGGU TEKNISI'
+        : (ticket.tujuanPermintaan === 'TEKNISI'
+          ? (ticket.dokumenTeknisiUrl ? 'MENUNGGU PURCHASING' : 'ACC TEKNISI · MENUNGGU SCAN')
+          : 'MENUNGGU PURCHASING');
       return `<tr>
         <td><span class="mono" style="color:var(--erp-primary);font-weight:700;">${escapeHtml(ticket.kodeTiket)}</span></td>
         <td><b>${escapeHtml(ticket.pemohon)}</b><br><small style="color:var(--erp-text-muted);">${escapeHtml(ticket.unitLokasi)}${ticket.kodeGudang ? ' · ' + escapeHtml(ticket.kodeGudang) : ''}</small></td>
