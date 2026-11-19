@@ -209,6 +209,10 @@
           </div>
         </div>
         <div class="form-group"><label for="kodeGudangTujuan">Farm / Gudang Tujuan</label><select id="kodeGudangTujuan" required><option value="">Memuat daftar gudang…</option></select><small style="display:block;margin-top:5px;color:var(--erp-text-muted);">Permintaan akan diteruskan kepada PIC gudang yang dipilih.</small></div>
+        <div class="row-group">
+          <div class="form-group"><label for="namaHeadFarm">Nama Head Farm</label><input type="text" id="namaHeadFarm" maxlength="120" placeholder="Nama penanda tangan (opsional)"><small>Dicetak di bawah kolom tanda tangan Head Farm.</small></div>
+          <div class="form-group"><label for="namaFarmManager">Nama Farm Manager</label><input type="text" id="namaFarmManager" maxlength="120" placeholder="Nama penanda tangan (opsional)"><small>Dicetak di bawah kolom tanda tangan Farm Manager.</small></div>
+        </div>
         <div class="form-group"><label for="tujuanPermintaan">Tujuan proses permintaan</label><select id="tujuanPermintaan" required onchange="scheduleRequestDraftSave()"><option value="PURCHASING">Purchasing</option><option value="TEKNISI">Teknisi (perlu ACC Kepala Teknisi, lalu Purchasing)</option></select><small style="display:block;margin-top:5px;color:var(--erp-text-muted);">Permintaan Teknisi akan melalui persetujuan teknisi terlebih dahulu, kemudian tetap diteruskan ke Purchasing.</small></div>
         <div style="font-size:13px; font-weight:700; color:var(--erp-primary); margin: 24px 0 12px 0; padding-bottom:8px; border-bottom:1px solid var(--erp-border-light);"><i class="fa-solid fa-boxes-stacked"></i> Rincian Item Barang</div>
         
@@ -436,6 +440,8 @@
       kodeGudangTujuan: document.getElementById('kodeGudangTujuan').value,
       tujuanPermintaan: document.getElementById('tujuanPermintaan').value,
       keterangan: document.getElementById('keterangan').value,
+      namaHeadFarm: document.getElementById('namaHeadFarm').value,
+      namaFarmManager: document.getElementById('namaFarmManager').value,
       items: Array.from(document.querySelectorAll('.item-box')).map(box => ({
         namaBarang: box.querySelector('.it-nama').value,
         kategori: box.querySelector('.it-kategori').value,
@@ -447,7 +453,7 @@
   }
 
   function requestDraftHasContent(draft) {
-    return Boolean(draft.tglDibutuhkan || draft.kodeGudangTujuan || String(draft.keterangan || '').trim() ||
+    return Boolean(draft.tglDibutuhkan || draft.kodeGudangTujuan || String(draft.keterangan || '').trim() || String(draft.namaHeadFarm || '').trim() || String(draft.namaFarmManager || '').trim() ||
       String(draft.urgensi || 'REGULER') !== 'REGULER' ||
       (draft.items || []).some(item => item && [item.namaBarang, item.jumlah, item.satuan, item.kodeSupplier].some(value => String(value || '').trim())));
   }
@@ -495,6 +501,8 @@
     document.getElementById('urgensi').value = urgencyOptions.includes(draft.urgensi) ? draft.urgensi : 'REGULER';
     document.getElementById('tujuanPermintaan').value = draft.tujuanPermintaan === 'TEKNISI' ? 'TEKNISI' : 'PURCHASING';
     document.getElementById('keterangan').value = String(draft.keterangan || '').slice(0, 2000);
+    document.getElementById('namaHeadFarm').value = String(draft.namaHeadFarm || '').slice(0, 120);
+    document.getElementById('namaFarmManager').value = String(draft.namaFarmManager || '').slice(0, 120);
     const warehouse = document.getElementById('kodeGudangTujuan');
     const savedWarehouse = String(draft.kodeGudangTujuan || '');
     warehouse.value = requestWarehouseOptions.some(item => String(item.kodeGudang) === savedWarehouse) ? savedWarehouse : (sesiUser.isPicGudang && requestWarehouseOptions.length === 1 ? requestWarehouseOptions[0].kodeGudang : '');
@@ -871,6 +879,7 @@
       tujuanPermintaan: document.getElementById('tujuanPermintaan').value,
       tglPermintaan: document.getElementById('tglPermintaan').value, tglDibutuhkan: document.getElementById('tglDibutuhkan').value,
       urgensi: document.getElementById('urgensi').value, keterangan: document.getElementById('keterangan').value.trim(),
+      namaHeadFarm: document.getElementById('namaHeadFarm').value.trim(), namaFarmManager: document.getElementById('namaFarmManager').value.trim(),
       items: itemsArr
     };
     if (!idTiketEdit) {
@@ -909,9 +918,11 @@
         kodeTiket: item.kodeTiket, tglPermintaan: item.tglPermintaan, tglDibutuhkan: item.tglDibutuhkan,
         pemohon: item.pemohon, unitLokasi: item.unitLokasi, kodeGudang: item.kodeGudang || '', urgensi: item.urgensi,
         keterangan: item.keterangan, statusPermintaan: item.statusPermintaan, catatanAdmin: item.catatanAdmin,
+        namaHeadFarm: item.namaHeadFarm || '', namaFarmManager: item.namaFarmManager || '',
         tujuanPermintaan: item.tujuanPermintaan || 'PURCHASING', statusTeknisi: item.statusTeknisi || '',
         catatanTeknisi: item.catatanTeknisi || '', namaTeknisi: item.namaTeknisi || '', jabatanTeknisi: item.jabatanTeknisi || '', waktuAccTeknisi: item.waktuAccTeknisi || '',
-        dokumenPdf: item.dokumenPdf || '', canEdit: Boolean(item.canEdit), items: []
+        dokumenPdf: item.dokumenPdf || '', canEdit: Boolean(item.canEdit),
+        canUploadUnitDocument: Boolean(item.canUploadUnitDocument), items: []
       };
       map[item.kodeTiket].items.push(item);
     });
@@ -1295,7 +1306,7 @@
     const isTechTarget = String(t.tujuanPermintaan || 'PURCHASING').toUpperCase() === 'TEKNISI';
     const unitDocumentUrl = safePdfUrl(t.dokumenUnitUrl || (!t.dokumenTeknisiUrl ? t.dokumenPdf : ''));
     const technicianDocumentUrl = safePdfUrl(t.dokumenTeknisiUrl);
-    const canUploadUnitDocument = Boolean(t.canEdit && (isTechTarget ? st === 'PENDING_TEKNISI' : ["PENDING", "PENDING_PURCHASING", "REVISI"].includes(st)));
+    const canUploadUnitDocument = Boolean((t.canUploadUnitDocument || t.canEdit) && (isTechTarget ? st === 'PENDING_TEKNISI' : ["PENDING", "PENDING_PURCHASING", "REVISI"].includes(st)));
     const canUploadTechnicianDocument = isTechApprover() && isTechTarget && st === 'PENDING_PURCHASING' && String(t.statusTeknisi || '').toUpperCase() === 'ACC';
     const canDecideTech = isTechApprover() && isTechTarget && st === 'PENDING_TEKNISI' && Boolean(unitDocumentUrl);
     const canDecidePurchasing = canManagePurchasingRequests() && ["PENDING", "PENDING_PURCHASING"].includes(st) && (!isTechTarget || (String(t.statusTeknisi || '').toUpperCase() === 'ACC' && Boolean(technicianDocumentUrl)));
@@ -1587,7 +1598,7 @@
     if(!t) return;
     const isTechTarget = String(t.tujuanPermintaan || 'PURCHASING').toUpperCase() === 'TEKNISI';
     const techSigned = isTechTarget && String(t.statusTeknisi || '').toUpperCase() === 'ACC';
-    const techSignature = isTechTarget ? `<td class="sig-cell"><div class="sig-title">KEPALA TEKNISI</div>${techSigned ? `<div class="sig-status">ACC · ${escapeHtml(t.waktuAccTeknisi || '')}</div><div class="sig-line"></div><div class="sig-name">( M. Silvado )</div>` : `<div class="sig-line"></div><div class="sig-name">( ....................... )</div>`}</td>` : '';
+    const techSignature = isTechTarget ? `<td class="sig-cell"><div class="sig-title">KEPALA TEKNISI</div>${techSigned ? `<div class="sig-status">ACC · ${escapeHtml(t.waktuAccTeknisi || '')}</div>` : ''}<div class="sig-line"></div><div class="sig-name">( A Silvado )</div></td>` : '';
     let printWin = window.open('', '_blank');
     if (!printWin) return showToast('Izinkan pop-up untuk mencetak formulir permintaan.', 'error');
     printWin.document.write('<!DOCTYPE html><html lang="id"><meta charset="UTF-8"><title>Menyiapkan cetakan</title><body style="font:14px Arial;padding:32px;color:#334155">Menyiapkan formulir dan lampiran foto untuk dicetak…</body></html>');
@@ -1654,8 +1665,8 @@
         <table><thead><tr><th>KODE BARANG</th><th>NAMA BARANG</th><th>JUMLAH</th><th>SUPPLIER</th><th>KETERANGAN</th></tr></thead><tbody>${htmlItems}</tbody></table>
         <table class="sig-table"><tr>
           <td class="sig-cell"><div class="sig-title">PEMOHON</div><div class="sig-line"></div><div class="sig-name">(${escapeHtml(t.pemohon)})</div></td>
-          <td class="sig-cell"><div class="sig-title">HEAD FARM</div><div class="sig-line"></div><div class="sig-name">( ....................... )</div></td>
-          <td class="sig-cell"><div class="sig-title">FARM MANAGER</div><div class="sig-line"></div><div class="sig-name">( ....................... )</div></td>
+          <td class="sig-cell"><div class="sig-title">HEAD FARM</div><div class="sig-line"></div><div class="sig-name">(${escapeHtml(t.namaHeadFarm || '.......................')})</div></td>
+          <td class="sig-cell"><div class="sig-title">FARM MANAGER</div><div class="sig-line"></div><div class="sig-name">(${escapeHtml(t.namaFarmManager || '.......................')})</div></td>
           ${techSignature}
           <td class="sig-cell"><div class="sig-title">GENERAL MANAGER</div><div class="sig-line"></div><div class="sig-name">( Drh. Titin Idayati )</div></td>
         </tr></table>
@@ -1702,6 +1713,8 @@
     document.getElementById('formTitle').innerHTML = `<i class="fa-solid fa-pen-to-square"></i> Mode Revisi Tiket: <span style="color:#000;">${escapeHtml(kode)}</span>`;
     document.getElementById('tglDibutuhkan').value = t.tglDibutuhkan.split(' ')[0];
     document.getElementById('urgensi').value = t.urgensi;
+    document.getElementById('namaHeadFarm').value = t.namaHeadFarm || '';
+    document.getElementById('namaFarmManager').value = t.namaFarmManager || '';
     const requestTargetSelect = document.getElementById('tujuanPermintaan');
     requestTargetSelect.value = t.tujuanPermintaan === 'TEKNISI' ? 'TEKNISI' : 'PURCHASING';
     requestTargetSelect.disabled = true;
