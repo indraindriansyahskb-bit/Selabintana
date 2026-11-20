@@ -83,6 +83,19 @@
     .admin-form label { display:block; margin-bottom:5px; color:#52645a; font-size:10px; font-weight:700; }
     .admin-form input, .admin-form select { width:100%; min-height:40px; border:1px solid #d6dfd7; border-radius:8px; padding:9px 11px; color:var(--ink); background:#fff; font:13px "DM Sans",Arial,sans-serif; }
     .admin-form small { display:block; margin-top:5px; color:var(--muted); font-size:10px; line-height:1.45; }
+    .access-section { border:1px solid var(--line); border-radius:10px; padding:12px; background:#f9fbf8; }
+    .access-section h3 { margin:0 0 4px; color:var(--ink); font:700 12px "Manrope",sans-serif; }
+    .access-section > small { margin:0 0 9px; }
+    .access-options { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
+    .access-option { display:flex!important; align-items:flex-start; gap:8px; margin:0!important; padding:9px; border:1px solid var(--line); border-radius:8px; background:#fff; line-height:1.35; cursor:pointer; }
+    .access-option input { width:15px!important; min-height:15px!important; height:15px; flex:0 0 auto; margin:1px 0 0; accent-color:var(--green); }
+    .access-option span { color:var(--ink); font-size:10px; }
+    .warehouse-tools { display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin:0 0 8px; }
+    .warehouse-tools button { border:1px solid #cbd8cd; border-radius:7px; padding:6px 9px; background:#fff; color:var(--green); font:700 10px "DM Sans",Arial,sans-serif; cursor:pointer; }
+    .warehouse-list { max-height:180px; overflow:auto; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; padding:1px; }
+    .warehouse-list:empty::after { content:"Pilih gudang yang dapat diakses akun ini."; padding:8px; color:var(--muted); font-size:10px; }
+    .warehouse-group-title { grid-column:1/-1; margin:7px 0 0; color:#65766a; font-size:10px; font-weight:700; }
+    .access-disabled { opacity:.55; }
     .admin-form-actions { display:flex; justify-content:flex-end; gap:9px; padding-top:4px; }
     .admin-form-actions button { min-height:39px; border:1px solid #cbd8cd; border-radius:8px; padding:8px 13px; background:#fff; color:var(--green); font:700 11px "DM Sans",Arial,sans-serif; cursor:pointer; }
     .admin-form-actions button[type="submit"] { border-color:var(--green); background:var(--green); color:#fff; }
@@ -215,10 +228,16 @@
           <div><label for="userBaruJabatan">Jabatan</label><input id="userBaruJabatan" type="text" maxlength="120" placeholder="Opsional"></div>
         </div>
         <div class="admin-form-grid">
-          <div><label for="userBaruUnit">Unit / Farm</label><select id="userBaruUnit" required onchange="perbaruiCakupanUserBaru()"><option value="">Memuat unit…</option></select></div>
-          <div><label for="userBaruRole">Role akun</label><select id="userBaruRole" required onchange="perbaruiCakupanUserBaru()"><option value="STAFF_OPERASIONAL">Staff Operasional</option><option value="PIC_GUDANG">PIC Gudang</option><option value="ADMIN_DIVISI">Admin Divisi</option><option value="ADMIN_TEKNISI">Admin Teknisi</option><option value="ADMIN">Admin</option></select></div>
+          <div><label for="userBaruUnit">Unit / Farm</label><select id="userBaruUnit" required onchange="perbaruiCakupanUserBaru(event)"><option value="">Memuat unit…</option></select></div>
+          <div><label for="userBaruRole">Role akun</label><select id="userBaruRole" required onchange="perbaruiCakupanUserBaru(event)"><option value="STAFF_OPERASIONAL">Staff Operasional</option><option value="PIC_GUDANG">PIC Gudang</option><option value="ADMIN_DIVISI">Admin Divisi</option><option value="ADMIN_TEKNISI">Admin Teknisi</option><option value="ADMIN">Admin</option></select></div>
         </div>
-        <div><label for="userBaruScope">Cakupan akses</label><select id="userBaruScope" required></select><small id="userBaruScopeHint">Pilih akses sesuai tugas akun.</small></div>
+        <div><label for="userBaruScope">Cakupan akses awal</label><select id="userBaruScope" required onchange="perbaruiGudangChecklist()"></select><small id="userBaruScopeHint">Pilih akses dasar sesuai tugas akun.</small></div>
+        <section class="access-section" aria-labelledby="userModulesHeading"><h3 id="userModulesHeading">Modul yang dapat dibuka</h3><small>Modul menentukan halaman yang dapat dibuka. Persetujuan tetap ditentukan oleh role akun.</small><div class="access-options">
+          <label class="access-option"><input type="checkbox" name="userModules" value="portal"><span>Portal Permintaan</span></label>
+          <label class="access-option"><input type="checkbox" name="userModules" value="stock"><span>Manajemen Stok</span></label>
+          <label class="access-option"><input type="checkbox" name="userModules" value="repair"><span>Permintaan Perbaikan</span></label>
+        </div></section>
+        <section class="access-section" id="warehouseAccessSection" aria-labelledby="warehouseAccessHeading"><h3 id="warehouseAccessHeading">Gudang yang dapat diakses</h3><small>Pilih satu atau lebih gudang. Untuk Kepala Teknisi, gunakan pilihan gudang Teknik lintas farm.</small><div class="warehouse-tools"><button type="button" onclick="pilihGudangTeknik()">Pilih semua gudang Teknik</button><button type="button" onclick="bersihkanGudangChecklist()">Hapus pilihan</button></div><div class="warehouse-list" id="userWarehouseChecklist"></div></section>
         <p id="adminFormMessage" role="status" aria-live="polite" hidden></p>
         <div class="admin-form-actions">
           <button type="button" onclick="tutupModalTambahUser()">Batal</button>
@@ -235,6 +254,8 @@
     let adminUserUnits = [];
     let adminUserWarehouses = [];
     let userModalInvoker = null;
+    let moduleDefaultsInitialized = false;
+    const moduleByPage = {portal: 'portal.html', stock: 'stock.html', repair: 'perbaikan.html'};
 
     function readCentralSession() {
       const keys = [AUTH_SESSION_KEY, ...LEGACY_SESSION_KEYS];
@@ -256,6 +277,11 @@
     function returnTarget() {
       const target = new URLSearchParams(location.search).get('return');
       return target === 'portal.html' || target === 'stock.html' || target === 'perbaikan.html' ? target : '';
+    }
+
+    function getUserModules(user) {
+      if (user && user.customAccessConfigured) return Array.isArray(user.modulesAccess) ? user.modulesAccess : [];
+      return isPicGudangLegacy(user) ? ['stock'] : ['portal','stock','repair'];
     }
 
     async function postAuth(payload) {
@@ -302,15 +328,16 @@
       }
     }
 
-    function perbaruiCakupanUserBaru() {
+    function perbaruiCakupanUserBaru(event) {
       const role = document.getElementById('userBaruRole').value;
       document.getElementById('userBaruDivisi').required = role === 'ADMIN_DIVISI';
       const unitSelect = document.getElementById('userBaruUnit');
       const previousUnit = unitSelect.value;
       const portalOnlyRole = role === 'ADMIN_DIVISI';
-      unitSelect.innerHTML = portalOnlyRole ? '<option value="ALL">Semua unit / farm</option>' : '<option value="">-- Pilih Unit / Farm --</option>' + adminUserUnits.map(unit => `<option value="${escapeHtml(unit.kodeUnit)}">${escapeHtml(unit.namaUnit || unit.kodeUnit)}</option>`).join('');
-      unitSelect.disabled = portalOnlyRole;
+      unitSelect.innerHTML = portalOnlyRole ? '<option value="ALL">Semua unit / farm</option>' : role === 'ADMIN_TEKNISI' ? '<option value="TEKNISI">Gudang Teknik · Teknik Sukajaya</option>' : '<option value="">-- Pilih Unit / Farm --</option>' + adminUserUnits.map(unit => `<option value="${escapeHtml(unit.kodeUnit)}">${escapeHtml(unit.namaUnit || unit.kodeUnit)}</option>`).join('');
+      unitSelect.disabled = portalOnlyRole || role === 'ADMIN_TEKNISI';
       if (portalOnlyRole) unitSelect.value = 'ALL';
+      else if (role === 'ADMIN_TEKNISI') unitSelect.value = 'TEKNISI';
       else if (adminUserUnits.some(unit => String(unit.kodeUnit).toLowerCase() === String(previousUnit).toLowerCase())) unitSelect.value = previousUnit;
       const unit = unitSelect.value;
       const scope = document.getElementById('userBaruScope');
@@ -337,13 +364,72 @@
         scope.innerHTML = warehouses.length ? '<option value="">-- Pilih satu gudang --</option>' + warehouses.map(item => `<option value="${escapeHtml(item.kodeGudang)}">${escapeHtml(item.namaGudang)} (${escapeHtml(item.kodeGudang)})</option>`).join('') : '<option value="">Tidak ada gudang pada unit ini</option>';
         hint.textContent = 'PIC Gudang terikat pada tepat satu gudang di unit yang dipilih.';
       }
+      if (!moduleDefaultsInitialized || (event && event.target && event.target.id === 'userBaruRole')) {
+        const defaults = {
+          ADMIN: ['portal','stock','repair'],
+          ADMIN_TEKNISI: ['portal','stock','repair'],
+          ADMIN_DIVISI: ['portal','stock','repair'],
+          STAFF_OPERASIONAL: ['portal','stock','repair'],
+          PIC_GUDANG: ['stock']
+        }[role] || ['portal'];
+        document.querySelectorAll('input[name="userModules"]').forEach(input => { input.checked = defaults.indexOf(input.value) >= 0; });
+        moduleDefaultsInitialized = true;
+      }
+      document.querySelectorAll('input[name="userModules"]').forEach(input => {
+        const picRestricted = role === 'PIC_GUDANG' && input.value !== 'stock';
+        input.disabled = picRestricted;
+        input.closest('label').classList.toggle('access-disabled', picRestricted);
+      });
+      const warehouseSection = document.getElementById('warehouseAccessSection');
+      warehouseSection.classList.toggle('access-disabled', role === 'ADMIN');
+      perbaruiGudangChecklist();
     }
+
+    function perbaruiGudangChecklist() {
+      const role = document.getElementById('userBaruRole').value;
+      const unit = document.getElementById('userBaruUnit').value;
+      const baseScope = document.getElementById('userBaruScope').value;
+      const container = document.getElementById('userWarehouseChecklist');
+      const selected = new Set(Array.from(container.querySelectorAll('input:checked')).map(input => input.value));
+      const list = role === 'ADMIN' ? [] : adminUserWarehouses.filter(item => {
+        if (role === 'ADMIN_TEKNISI' || (role === 'STAFF_OPERASIONAL' && baseScope === 'ALL')) return true;
+        if (role === 'ADMIN_DIVISI') return true;
+        return String(item.kodeUnit).toLowerCase() === String(unit).toLowerCase();
+      });
+      const grouped = new Map();
+      list.forEach(item => { const key = String(item.kodeUnit || ''); if (!grouped.has(key)) grouped.set(key, []); grouped.get(key).push(item); });
+      container.innerHTML = Array.from(grouped.entries()).map(([unitCode, warehouses]) => {
+        const unitInfo = adminUserUnits.find(value => String(value.kodeUnit).toLowerCase() === unitCode.toLowerCase());
+        return `<div class="warehouse-group-title">${escapeHtml(unitInfo ? unitInfo.namaUnit : unitCode)}</div>` + warehouses.map(item => {
+          const value = JSON.stringify([String(item.kodeUnit), String(item.kodeGudang)]);
+          const matchesBaseScope = role === 'PIC_GUDANG' ? String(item.kodeGudang).toLowerCase() === String(baseScope).toLowerCase() : role === 'STAFF_OPERASIONAL' && baseScope === 'ALL' ? true : role === 'STAFF_OPERASIONAL' && baseScope === 'UNIT' ? String(item.kodeUnit).toLowerCase() === String(unit).toLowerCase() : role === 'ADMIN_DIVISI' ? true : false;
+          const checked = selected.has(value) || (selected.size === 0 && matchesBaseScope) || (role === 'ADMIN_TEKNISI' && selected.size === 0 && /teknik|teknisi/i.test(String(item.namaGudang || '') + ' ' + String(item.kodeGudang || '')));
+          return `<label class="access-option"><input type="checkbox" name="userWarehouses" value="${escapeHtml(value)}"${checked ? ' checked' : ''}><span>${escapeHtml(item.namaGudang || item.kodeGudang)}</span></label>`;
+        }).join('');
+      }).join('');
+      container.querySelectorAll('input[name="userWarehouses"]').forEach(input => input.addEventListener('change', () => {
+        if (role === 'PIC_GUDANG' && container.querySelectorAll('input:checked').length > 1) { input.checked = false; setAdminFormMessage('PIC Gudang hanya dapat diberi satu gudang.'); }
+        else setAdminFormMessage('');
+      }));
+    }
+
+    function pilihGudangTeknik() {
+      document.querySelectorAll('#userWarehouseChecklist input[name="userWarehouses"]').forEach(input => {
+        const label = input.closest('label').textContent || '';
+        input.checked = /teknik|teknisi/i.test(label);
+      });
+      if (!document.querySelector('#userWarehouseChecklist input:checked')) setAdminFormMessage('Tidak ditemukan gudang dengan nama Teknik/Teknisi. Pilih gudang secara manual.');
+      else setAdminFormMessage('');
+    }
+
+    function bersihkanGudangChecklist() { document.querySelectorAll('#userWarehouseChecklist input').forEach(input => { input.checked = false; }); }
 
     async function bukaModalTambahUser() {
       if (!isCurrentUserAdmin()) return;
       userModalInvoker = document.activeElement;
       const modal = document.getElementById('adminUserModal');
       document.getElementById('formTambahUser').reset();
+      moduleDefaultsInitialized = false;
       document.getElementById('userBaruRole').value = 'STAFF_OPERASIONAL';
       setAdminFormMessage('');
       perbaruiCakupanUserBaru();
@@ -365,6 +451,11 @@
       if (!isCurrentUserAdmin()) return setAdminFormMessage('Hanya admin yang dapat menambahkan akun.');
       const password = document.getElementById('userBaruPassword').value;
       if (password !== document.getElementById('userBaruPasswordKonfirmasi').value) return setAdminFormMessage('Konfirmasi password tidak cocok.');
+      const selectedModules = Array.from(document.querySelectorAll('input[name="userModules"]:checked')).map(input => input.value);
+      const selectedWarehouses = Array.from(document.querySelectorAll('#userWarehouseChecklist input[name="userWarehouses"]:checked'));
+      if (!selectedModules.length) return setAdminFormMessage('Pilih minimal satu modul.');
+      if (document.getElementById('userBaruRole').value !== 'ADMIN' && !selectedWarehouses.length) return setAdminFormMessage('Pilih minimal satu gudang.');
+      if (document.getElementById('userBaruRole').value === 'PIC_GUDANG' && selectedWarehouses.length !== 1) return setAdminFormMessage('PIC Gudang harus diberi tepat satu gudang.');
       const button = document.getElementById('btnBuatUser');
       button.disabled = true;
       button.textContent = 'Menyimpan akun…';
@@ -379,7 +470,9 @@
           jabatan: document.getElementById('userBaruJabatan').value.trim(),
           unitLokasi: document.getElementById('userBaruUnit').value,
           roleAccess: document.getElementById('userBaruRole').value,
-          scopeGudang: document.getElementById('userBaruScope').value
+          scopeGudang: document.getElementById('userBaruScope').value,
+          modulesAccess: selectedModules,
+          warehouseAccess: selectedWarehouses.map(input => JSON.parse(input.value))
         });
         if (result.status !== 'success') throw new Error(result.message || 'Gagal membuat akun.');
         const username = document.getElementById('userBaruUsername').value.trim();
@@ -403,7 +496,7 @@
 
     function displayModulePicker(user) {
       const target = returnTarget();
-      if (target) { location.replace(target); return; }
+      if (target && getUserModules(user).indexOf(Object.keys(moduleByPage).find(key => moduleByPage[key] === target)) >= 0) { location.replace(target); return; }
       document.getElementById('authPanel').hidden = true;
       document.getElementById('moduleSection').hidden = false;
       currentCentralUser = user;
@@ -413,13 +506,15 @@
       document.getElementById('logoutButton').hidden = false;
       document.getElementById('moduleWelcome').textContent = `Sesi aktif untuk ${user.nama || user.username}. Pilih modul operasional yang dibutuhkan.`;
       const isAdmin = Boolean(user.isAdmin || user.roleAccess === 'ADMIN');
-      const isPicGudang = Boolean(user.isPicGudang || user.roleAccess === 'PIC_GUDANG');
-      document.querySelector('.module-list a[href="portal.html"]').hidden = isPicGudang;
+      const modules = getUserModules(user);
+      document.querySelectorAll('.module-list a[href]').forEach(link => { const key = Object.keys(moduleByPage).find(module => moduleByPage[module] === link.getAttribute('href')); link.hidden = !key || modules.indexOf(key) < 0; });
       document.getElementById('adminUsersCard').hidden = !isAdmin;
       document.querySelector('.module-list').classList.toggle('admin-visible', isAdmin);
       document.getElementById('startLink').href = '#moduleSection';
       document.getElementById('startLinkText').textContent = 'Pilih modul';
     }
+
+    function isPicGudangLegacy(user) { return Boolean(user && (user.isPicGudang || user.roleAccess === 'PIC_GUDANG')); }
 
     async function restoreCentralSession() {
       const session = readCentralSession();
