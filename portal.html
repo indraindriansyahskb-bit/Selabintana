@@ -1091,7 +1091,7 @@
   function renderPaging() {
     const tbody = document.getElementById('bodyTabelRiwayat');
     const columns = canViewReceiptProgress() ? 9 : 8;
-    document.getElementById('historyTableHead').innerHTML = `<th>No. Tiket</th><th>Pemohon</th><th>Tgl Butuh</th><th>Total Item</th><th>Urgensi</th><th>Dokumen</th><th>Status ERP</th>${canViewReceiptProgress() ? '<th>Penerimaan Farm</th>' : ''}<th>Aksi</th>`;
+    document.getElementById('historyTableHead').innerHTML = `<th>No. Tiket</th><th>Pemohon</th><th>Tgl Butuh</th><th>Total Item</th><th>Urgensi</th><th>Dokumen</th><th>Status ERP</th>${canViewReceiptProgress() ? '<th>Penerimaan Farm / Gudang Teknisi</th>' : ''}<th>Aksi</th>`;
     if(historyTotalTickets === 0) {
       tbody.innerHTML = `<tr><td colspan="${columns}" style="text-align:center; padding:30px; color:#5e6e64;">${canReviewRequestQueue() ? 'Belum ada tiket yang sudah diputuskan pada cakupan ini.' : 'Data tiket kosong.'}</td></tr>`;
       document.getElementById('pageInfo').innerText = "Menampilkan 0 data";
@@ -1140,13 +1140,17 @@
 
   function ringkasanPenerimaanTiket(ticket) {
     const approvedItems = (ticket.items || []).filter(item => Number(item.jumlahDisetujui || 0) > 0);
-    if (!approvedItems.length) return '<span class="badge badge-upload-no">Tidak ada item ACC</span>';
+    const technicianReceivedItems = (ticket.items || []).filter(item => Number(item.jumlahDiterimaTeknisi || 0) > 0);
+    const technicianSummary = technicianReceivedItems.length
+      ? `<div style="margin-top:6px;padding-top:6px;border-top:1px solid #e2e8f0;color:#1d4ed8;"><b>Sudah diterima Admin Teknisi</b><br>${technicianReceivedItems.slice(0, 2).map(item => `${escapeHtml(item.namaBarang)}: ${formatNumber(item.jumlahDiterimaTeknisi)} ${escapeHtml(item.satuan)}`).join('<br>')}${technicianReceivedItems.length > 2 ? `<br>+${technicianReceivedItems.length - 2} barang lain` : ''}<br><small>Gudang Teknik Sukajaya · ${escapeHtml(technicianReceivedItems.map(item => item.tanggalPenerimaanTeknisiTerakhir || '').filter(Boolean).sort().slice(-1)[0] || 'tanggal belum tercatat')} · Follow-up ke Admin Teknisi</small></div>`
+      : '';
+    if (!approvedItems.length) return `<span class="badge badge-upload-no">Tidak ada item ACC</span>${technicianSummary}`;
     const complete = approvedItems.filter(item => item.statusPenerimaanGudang === 'DITERIMA LENGKAP').length;
     const partial = approvedItems.filter(item => item.statusPenerimaanGudang === 'DITERIMA SEBAGIAN').length;
     const waiting = approvedItems.filter(item => item.statusPenerimaanGudang === 'BELUM DITERIMA').length;
     const tone = waiting > 0 ? '#b45309' : (partial > 0 ? '#b45309' : '#047857');
     const label = complete === approvedItems.length ? 'Lengkap' : (complete + partial > 0 ? 'Sebagian diterima' : 'Belum diterima');
-    return `<span style="display:inline-block;color:${tone};font-weight:700;">${label}</span><br><small>${complete} lengkap · ${partial} sebagian · ${waiting} belum</small>`;
+    return `<span style="display:inline-block;color:${tone};font-weight:700;">Penerimaan farm: ${label}</span><br><small>${complete} lengkap · ${partial} sebagian · ${waiting} belum</small>${technicianSummary}`;
   }
 
   // ==========================================
@@ -1239,6 +1243,9 @@
               <th>Jumlah Diterima Farm</th>
               <th>Status Penerimaan Farm</th>
               <th>Penerimaan Farm Terakhir</th>
+              <th>Diterima Gudang Teknisi</th>
+              <th>Penerima Teknisi</th>
+              <th>Waktu Penerimaan Teknisi</th>
               <th>Status ERP</th>
               <th>Catatan Admin</th>
             </tr>
@@ -1274,6 +1281,9 @@
             <td>${exportText(it.jumlahDiterimaGudang || 0)}</td>
             <td>${exportText(it.statusPenerimaanGudang || 'BELUM DITERIMA')}</td>
             <td>${exportText(it.tanggalPenerimaanTerakhir || '-')}</td>
+            <td>${exportText(it.jumlahDiterimaTeknisi || 0)}</td>
+            <td>${exportText(it.penerimaTeknisi || '-')}</td>
+            <td>${exportText(it.tanggalPenerimaanTeknisiTerakhir || '-')}</td>
             <td>${exportText(t.statusPermintaan)}</td>
             <td>${exportText(t.catatanAdmin)}</td>
           </tr>
@@ -1333,7 +1343,7 @@
           const receiptStatus = String(it.statusPenerimaanGudang || 'BELUM DITERIMA');
           const receiptColor = receiptStatus === 'DITERIMA LENGKAP' ? '#047857' : (receiptStatus === 'DITERIMA SEBAGIAN' ? '#b45309' : (receiptStatus === 'BELUM DISETUJUI' ? '#64748b' : '#b91c1c'));
           const receiptLocation = [it.unitPenerimaan, it.gudangPenerimaan].filter(Boolean).join(' / ');
-          const technicianReceiptLine = Number(it.jumlahDiterimaTeknisi || 0) > 0 ? `<br><small>Masuk gudang Teknik Sukajaya: ${Number(it.jumlahDiterimaTeknisi)} ${escapeHtml(it.satuan)}</small>` : '';
+          const technicianReceiptLine = Number(it.jumlahDiterimaTeknisi || 0) > 0 ? `<br><div style="margin-top:5px;padding-top:5px;border-top:1px solid #e2e8f0;color:#1d4ed8;"><b>Sudah diterima Admin Teknisi:</b> ${formatNumber(it.jumlahDiterimaTeknisi)} ${escapeHtml(it.satuan)}<br><small>${escapeHtml(it.gudangPenerimaanTeknisi || 'Teknik Sukajaya')} · ${escapeHtml(it.tanggalPenerimaanTeknisiTerakhir || 'tanggal belum tercatat')}${it.penerimaTeknisi ? ' · akun ' + escapeHtml(it.penerimaTeknisi) : ''}<br>Admin farm dapat follow-up ke Admin Teknisi untuk pengiriman ke farm.</small></div>` : '';
           const receiptCells = canViewReceiptProgress()
             ? `<td>${Number(it.jumlahDiterimaGudang || 0)} ${escapeHtml(it.satuan)}</td><td><b style="color:${receiptColor};">${escapeHtml(receiptStatus)}</b></td><td>${escapeHtml(receiptLocation || '-')}<br><small>${escapeHtml(it.tanggalPenerimaanTerakhir || 'Belum ada penerimaan')}</small>${technicianReceiptLine}</td>`
             : `<td>${escapeHtml(it.statusItem || st)}</td>`;
