@@ -58,8 +58,9 @@
     .module-note { margin:6px 0 0; color:var(--muted); font-size:11px; }
     .module-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:15px; }
     .module { min-height:130px; display:flex; align-items:center; gap:16px; padding:21px; border:1px solid var(--line); border-radius:15px; background:#fff; text-decoration:none; transition:border-color .2s,box-shadow .2s,transform .2s; }
+    .module[hidden] { display:none!important; }
     .module.admin-module { width:100%; color:inherit; font:inherit; text-align:left; cursor:pointer; }
-    .module-list.admin-visible { grid-template-columns:repeat(3,minmax(0,1fr)); }
+    .module-list.admin-visible { grid-template-columns:repeat(2,minmax(0,1fr)); }
     .module:hover { transform:translateY(-2px); border-color:#bed0c1; box-shadow:0 10px 25px rgba(28,56,40,.07); }
     .module-icon { width:43px; height:43px; display:grid; place-items:center; flex:0 0 auto; border-radius:12px; color:var(--green); background:#eaf1e9; }
     .module-icon.stock { color:#836321; background:#f5f0df; }
@@ -177,6 +178,11 @@
             <span class="module-text"><h3>Manajemen Stok</h3><p>Kelola penerimaan, pemakaian, dan saldo gudang.</p></span>
             <span class="module-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
           </a>
+          <a class="module" href="perbaikan.html">
+            <span class="module-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M14 6.2a5 5 0 0 0-6.5 6.5L3.8 16.4a2 2 0 0 0 2.8 2.8l3.7-3.7A5 5 0 0 0 16.8 9l-3 3-2.8-2.8 3-3Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="m15.8 15.8 4.4 4.4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>
+            <span class="module-text"><h3>Permintaan Perbaikan</h3><p>Ajukan, setujui, dan pantau progres perbaikan aset.</p></span>
+            <span class="module-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </a>
           <button class="module admin-module" id="adminUsersCard" type="button" onclick="bukaModalTambahUser()" hidden>
             <span class="module-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M16 20v-1.5a4.5 4.5 0 0 0-4.5-4.5h-3A4.5 4.5 0 0 0 4 18.5V20m6-9a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm8-2v6m-3-3h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
             <span class="module-text"><h3>Manajemen Pengguna</h3><p>Tambah akun staff, PIC Gudang, atau admin.</p></span>
@@ -248,7 +254,7 @@
 
     function returnTarget() {
       const target = new URLSearchParams(location.search).get('return');
-      return target === 'portal.html' || target === 'stock.html' ? target : '';
+      return target === 'portal.html' || target === 'stock.html' || target === 'perbaikan.html' ? target : '';
     }
 
     async function postAuth(payload) {
@@ -395,10 +401,6 @@
     });
 
     function displayModulePicker(user) {
-      if (user.isPicGudang || user.roleAccess === 'PIC_GUDANG') {
-        location.replace('stock.html');
-        return;
-      }
       const target = returnTarget();
       if (target) { location.replace(target); return; }
       document.getElementById('authPanel').hidden = true;
@@ -408,8 +410,10 @@
       document.getElementById('userBadge').hidden = false;
       document.getElementById('userBadge').textContent = `${user.nama || user.username} • ${user.roleAccess || user.jabatan || 'Pengguna'}`;
       document.getElementById('logoutButton').hidden = false;
-      document.getElementById('moduleWelcome').textContent = `Sesi aktif untuk ${user.nama || user.username}. Pilih Portal Permintaan atau Manajemen Stok.`;
+      document.getElementById('moduleWelcome').textContent = `Sesi aktif untuk ${user.nama || user.username}. Pilih modul operasional yang dibutuhkan.`;
       const isAdmin = Boolean(user.isAdmin || user.roleAccess === 'ADMIN');
+      const isPicGudang = Boolean(user.isPicGudang || user.roleAccess === 'PIC_GUDANG');
+      document.querySelector('.module-list a[href="portal.html"]').hidden = isPicGudang;
       document.getElementById('adminUsersCard').hidden = !isAdmin;
       document.querySelector('.module-list').classList.toggle('admin-visible', isAdmin);
       document.getElementById('startLink').href = '#moduleSection';
