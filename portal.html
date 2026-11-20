@@ -213,7 +213,7 @@
           <div class="form-group"><label for="namaHeadFarm">Nama Head Farm</label><input type="text" id="namaHeadFarm" maxlength="120" placeholder="Nama penanda tangan (opsional)"><small>Dicetak di bawah kolom tanda tangan Head Farm.</small></div>
           <div class="form-group"><label for="namaFarmManager">Nama Farm Manager</label><input type="text" id="namaFarmManager" maxlength="120" placeholder="Nama penanda tangan (opsional)"><small>Dicetak di bawah kolom tanda tangan Farm Manager.</small></div>
         </div>
-        <div class="form-group"><label for="tujuanPermintaan">Tujuan proses permintaan</label><select id="tujuanPermintaan" required onchange="scheduleRequestDraftSave()"><option value="PURCHASING">Purchasing</option><option value="TEKNISI">Teknisi (perlu ACC Kepala Teknisi, lalu Purchasing)</option></select><small style="display:block;margin-top:5px;color:var(--erp-text-muted);">Permintaan Teknisi akan melalui persetujuan teknisi terlebih dahulu, kemudian tetap diteruskan ke Purchasing.</small></div>
+        <div class="form-group"><label for="tujuanPermintaan">Tujuan proses permintaan</label><select id="tujuanPermintaan" required onchange="scheduleRequestDraftSave()"><option value="TEKNISI" selected>Teknisi terlebih dahulu, lalu Purchasing</option><option value="PURCHASING">Purchasing langsung</option></select><small style="display:block;margin-top:5px;color:var(--erp-text-muted);">Alur teknisi dipilih sebagai default: teknisi meninjau permintaan, Purchasing menyetujui pembelian, lalu barang dicatat masuk ke gudang Teknik Sukajaya sebelum dikirim ke farm.</small></div>
         <div style="font-size:13px; font-weight:700; color:var(--erp-primary); margin: 24px 0 12px 0; padding-bottom:8px; border-bottom:1px solid var(--erp-border-light);"><i class="fa-solid fa-boxes-stacked"></i> Rincian Item Barang</div>
         
         <div id="containerItems"></div>
@@ -413,7 +413,7 @@
   function queueWaitingLabel() { return isTechApprover() ? 'teknisi' : (isDivisionAdmin() ? 'keputusan' : 'Purchasing'); }
   function canManagePurchasingRequests() { return Boolean(sesiUser.isAdmin || String(sesiUser.roleAccess || '').toUpperCase() === 'ADMIN_DIVISI'); }
   function canReviewRequestQueue() { return isTechApprover() || canManagePurchasingRequests(); }
-  function canViewReceiptProgress() { return canReviewRequestQueue(); }
+  function canViewReceiptProgress() { return !sesiUser.isPicGudang && String(sesiUser.roleAccess || '').toUpperCase() !== 'PIC_GUDANG'; }
   function isPortalApprovalOnly() { return isTechApprover() || String(sesiUser.roleAccess || '').toUpperCase() === 'ADMIN_DIVISI'; }
 
   function inlineArg(value) {
@@ -501,7 +501,7 @@
     document.getElementById('tglDibutuhkan').value = /^\d{4}-\d{2}-\d{2}$/.test(String(draft.tglDibutuhkan || '')) ? draft.tglDibutuhkan : '';
     const urgencyOptions = ['REGULER', 'URGENT', 'TOP URGENT'];
     document.getElementById('urgensi').value = urgencyOptions.includes(draft.urgensi) ? draft.urgensi : 'REGULER';
-    document.getElementById('tujuanPermintaan').value = draft.tujuanPermintaan === 'TEKNISI' ? 'TEKNISI' : 'PURCHASING';
+    document.getElementById('tujuanPermintaan').value = draft.tujuanPermintaan === 'PURCHASING' ? 'PURCHASING' : 'TEKNISI';
     document.getElementById('keterangan').value = String(draft.keterangan || '').slice(0, 2000);
     document.getElementById('namaHeadFarm').value = String(draft.namaHeadFarm || '').slice(0, 120);
     document.getElementById('namaFarmManager').value = String(draft.namaFarmManager || '').slice(0, 120);
@@ -1090,7 +1090,7 @@
   function renderPaging() {
     const tbody = document.getElementById('bodyTabelRiwayat');
     const columns = canViewReceiptProgress() ? 9 : 8;
-    document.getElementById('historyTableHead').innerHTML = `<th>No. Tiket</th><th>Pemohon</th><th>Tgl Butuh</th><th>Total Item</th><th>Urgensi</th><th>Dokumen</th><th>Status ERP</th>${canViewReceiptProgress() ? '<th>Penerimaan Gudang</th>' : ''}<th>Aksi</th>`;
+    document.getElementById('historyTableHead').innerHTML = `<th>No. Tiket</th><th>Pemohon</th><th>Tgl Butuh</th><th>Total Item</th><th>Urgensi</th><th>Dokumen</th><th>Status ERP</th>${canViewReceiptProgress() ? '<th>Penerimaan Farm</th>' : ''}<th>Aksi</th>`;
     if(historyTotalTickets === 0) {
       tbody.innerHTML = `<tr><td colspan="${columns}" style="text-align:center; padding:30px; color:#5e6e64;">${canReviewRequestQueue() ? 'Belum ada tiket yang sudah diputuskan pada cakupan ini.' : 'Data tiket kosong.'}</td></tr>`;
       document.getElementById('pageInfo').innerText = "Menampilkan 0 data";
@@ -1235,9 +1235,9 @@
               <th>Jumlah</th>
               <th>Satuan</th>
               <th>Jumlah Disetujui</th>
-              <th>Jumlah Diterima Gudang</th>
-              <th>Status Penerimaan</th>
-              <th>Penerimaan Terakhir</th>
+              <th>Jumlah Diterima Farm</th>
+              <th>Status Penerimaan Farm</th>
+              <th>Penerimaan Farm Terakhir</th>
               <th>Status ERP</th>
               <th>Catatan Admin</th>
             </tr>
@@ -1327,18 +1327,19 @@
         <div><div style="font-size:11px; color:#5e6e64;">Tujuan</div><div style="font-weight:700;">${isTechTarget ? 'Teknisi' : 'Purchasing'}</div></div>
       </div>
       <div class="erp-table-responsive" style="margin-bottom:15px;"><table class="erp-table">
-        <thead><tr><th>Nama Barang</th><th>Diminta</th><th>Disetujui</th><th>${canManagePurchasingRequests() ? 'Catatan Pemenuhan' : 'Terpenuhi'}</th>${canViewReceiptProgress() ? '<th>Diterima Stok</th><th>Status Penerimaan</th><th>Penerimaan Terakhir</th>' : '<th>Status Item</th>'}<th>Kategori</th></tr></thead><tbody>`;
+        <thead><tr><th>Nama Barang</th><th>Diminta</th><th>Disetujui</th><th>${canManagePurchasingRequests() ? 'Catatan Pemenuhan' : 'Terpenuhi'}</th>${canViewReceiptProgress() ? '<th>Diterima Farm</th><th>Status Penerimaan Farm</th><th>Penerimaan Farm Terakhir</th>' : '<th>Status Item</th>'}<th>Kategori</th></tr></thead><tbody>`;
         t.items.forEach(it => {
           const receiptStatus = String(it.statusPenerimaanGudang || 'BELUM DITERIMA');
           const receiptColor = receiptStatus === 'DITERIMA LENGKAP' ? '#047857' : (receiptStatus === 'DITERIMA SEBAGIAN' ? '#b45309' : (receiptStatus === 'BELUM DISETUJUI' ? '#64748b' : '#b91c1c'));
           const receiptLocation = [it.unitPenerimaan, it.gudangPenerimaan].filter(Boolean).join(' / ');
+          const technicianReceiptLine = Number(it.jumlahDiterimaTeknisi || 0) > 0 ? `<br><small>Masuk gudang Teknik Sukajaya: ${Number(it.jumlahDiterimaTeknisi)} ${escapeHtml(it.satuan)}</small>` : '';
           const receiptCells = canViewReceiptProgress()
-            ? `<td>${Number(it.jumlahDiterimaGudang || 0)} ${escapeHtml(it.satuan)}</td><td><b style="color:${receiptColor};">${escapeHtml(receiptStatus)}</b></td><td>${escapeHtml(receiptLocation || '-')}<br><small>${escapeHtml(it.tanggalPenerimaanTerakhir || 'Belum ada penerimaan')}</small></td>`
+            ? `<td>${Number(it.jumlahDiterimaGudang || 0)} ${escapeHtml(it.satuan)}</td><td><b style="color:${receiptColor};">${escapeHtml(receiptStatus)}</b></td><td>${escapeHtml(receiptLocation || '-')}<br><small>${escapeHtml(it.tanggalPenerimaanTerakhir || 'Belum ada penerimaan')}</small>${technicianReceiptLine}</td>`
             : `<td>${escapeHtml(it.statusItem || st)}</td>`;
           html += `<tr><td><b>${escapeHtml(it.namaBarang)}</b></td><td>${escapeHtml(it.jumlah)} ${escapeHtml(it.satuan)}</td><td>${Number(it.jumlahDisetujui || 0)} ${escapeHtml(it.satuan)}</td><td>${Number(it.jumlahTerpenuhi || 0)} ${escapeHtml(it.satuan)}</td>${receiptCells}<td>${escapeHtml(it.kategori)}</td></tr>`;
         });
     html += `</tbody></table></div>
-      ${canViewReceiptProgress() ? '<small style="display:block;margin:-7px 0 12px;color:#64748b;">Penerimaan dihitung dari transaksi stok yang berhasil dan tertaut ke tiket. Catatan pemenuhan administratif tidak dianggap sebagai barang diterima.</small>' : ''}
+      ${canViewReceiptProgress() ? '<small style="display:block;margin:-7px 0 12px;color:#64748b;">Penerimaan farm dihitung saat PIC mengonfirmasi barang pada mutasi yang tertaut ke tiket. Penerimaan gudang teknisi ditampilkan terpisah dan belum dianggap diterima farm.</small>' : ''}
       <div style="background:#fff8e6; padding:10px; border-left:3px solid #f59e0b; font-size:12px; margin-bottom:10px;"><b>Ket. Pemohon:</b> ${escapeHtml(t.keterangan||'-')}</div>
       <div style="background:#e6f0eb; padding:10px; border-left:3px solid #10b981; font-size:12px; margin-bottom:10px;"><b>Catatan Purchasing / Status:</b> ${escapeHtml(t.catatanAdmin||'-')}</div>
       ${isTechTarget ? `<div style="background:#eff6ff;padding:10px;border-left:3px solid #2563eb;font-size:12px;margin-bottom:15px;"><b>Status Teknisi:</b> ${escapeHtml(t.statusTeknisi || 'Menunggu keputusan')} · ${escapeHtml(t.namaTeknisi || 'Belum diputuskan')} ${t.waktuAccTeknisi ? '· ' + escapeHtml(t.waktuAccTeknisi) : ''}<br><b>Catatan:</b> ${escapeHtml(t.catatanTeknisi || '-')}</div>` : ''}`;
