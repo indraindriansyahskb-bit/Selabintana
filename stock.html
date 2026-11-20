@@ -818,6 +818,11 @@
       <button type="button" aria-label="Tutup form mutasi" onclick="tutupModal('modalTransfer')" style="background:none; border:none; cursor:pointer; font-size:16px;"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
     </div>
     <form id="formTransferStok" class="modal-body">
+      <div id="trTicketWrap" class="form-group" style="display:none;">
+        <label for="trTicketItem">Tiket / item permintaan farm</label>
+        <select id="trTicketItem" onchange="pilihTiketMutasiTeknisi()"><option value="">Memuat tiket yang siap dikirim…</option></select>
+        <small id="trTicketHint" aria-live="polite" style="display:block;margin-top:6px;color:var(--erp-text-muted);"></small>
+      </div>
         <div class="form-group"><label for="trBarangAsal">Pilih Barang Asal</label><select id="trBarangAsal" onchange="updateSelectedStockHint('trBarangAsal', 'trSaldoTersedia'); updateTransferTargetUnitOptions()" required></select><small id="trSaldoTersedia" aria-live="polite" style="display:block;margin-top:6px;color:var(--erp-text-muted);"></small></div>
       <div class="form-row">
         <div class="form-group"><label for="trUnitTujuan">Unit Farm Tujuan</label><select id="trUnitTujuan" onchange="updateSubGudangPilih('trUnitTujuan', 'trGudangTujuan')" required></select></div>
@@ -907,7 +912,7 @@
   const LEGACY_SESSION_KEYS = ['portal_user_session', 'stok_app_user_session'];
 
   let sesiUser = {}; let masterUnits = []; let allUnits = []; let masterGudang = []; let rawJurnalData = []; let displayedJournalRows = []; let rawStokList = [];
-  let rawStockSnapshot = []; let appliedStockSnapshotFilters = null; let stockItemHistoryLoading = false; let loadedStockItemHistory = null; let loadedStockItemHistoryFilters = null; let transferRows = []; let ticketReceiptOptions = []; let stockTransactionIds = Object.create(null); let allowedGudang = [];
+  let rawStockSnapshot = []; let appliedStockSnapshotFilters = null; let stockItemHistoryLoading = false; let loadedStockItemHistory = null; let loadedStockItemHistoryFilters = null; let transferRows = []; let ticketReceiptOptions = []; let technicianTransferOptions = []; let stockTransactionIds = Object.create(null); let allowedGudang = [];
   let jurnalLoaded = false; let stockAuditLoaded = false; let correctionHistoryLoaded = false;
   let deletableTransactionRows = []; let deleteCandidatesLoaded = false; let deletedHistoryLoaded = false;
   let openingStockRowCounter = 0;
@@ -2074,6 +2079,81 @@
     else preview.textContent = `${delta > 0 ? 'Masuk' : 'Keluar'} ${formatNumber(Math.abs(delta))} ${unitLabel || ''} · saldo ${formatNumber(before)} → ${formatNumber(target)}.`;
   }
 
+  async function muatTiketMutasiTeknisi() {
+    const select = document.getElementById('trTicketItem');
+    if (!select || !sesiUser.token) return;
+    select.innerHTML = '<option value="">Memuat permintaan yang siap dikirim…</option>';
+    try {
+      const res = await postPayload({action: 'getApprovedTicketReceipts', useCase: 'TRANSFER', token: sesiUser.token});
+      const json = await res.json();
+      if (cekSesiBerakhir(json)) return;
+      if (json.status !== 'success') throw new Error(json.message || 'Gagal memuat tiket pengiriman.');
+      technicianTransferOptions = json.data || [];
+      select.innerHTML = technicianTransferOptions.length
+        ? '<option value="">-- Pilih tiket/item tujuan --</option>' + technicianTransferOptions.map(item => {
+          const value = escapeHtml(JSON.stringify({ticket: String(item.kodeTiket), noItem: Number(item.noItem)}));
+          return `<option value="${value}">${escapeHtml(item.kodeTiket)} · Item ${Number(item.noItem)} · ${escapeHtml(item.namaBarang)} · kirim ${formatNumber(item.sisaPengiriman)} ${escapeHtml(item.satuan)} ke ${escapeHtml(item.kodeUnitTujuan)}</option>`;
+        }).join('')
+        : '<option value="">Tidak ada item disetujui dengan stok teknisi siap kirim</option>';
+      document.getElementById('trTicketHint').textContent = technicianTransferOptions.length ? 'Pilih stok yang tersedia di Teknik Sukajaya. Penerimaan farm akan tercatat otomatis pada tiket dan nomor item yang dipilih.' : 'Tiket perlu disetujui Purchasing dan stok barang harus tersedia di gudang Teknik Sukajaya.';
+    } catch (error) {
+      select.innerHTML = '<option value="">Tiket pengiriman tidak dapat dimuat</option>';
+      document.getElementById('trTicketHint').textContent = error.message || 'Gagal memuat tiket.';
+    }
+  }
+
+  function pilihTiketMutasiTeknisi() {
+    const select = document.getElementById('trTicketItem');
+    let key;
+    try { key = JSON.parse(select.value || '{}'); } catch (error) { key = {}; }
+    const item = technicianTransferOptions.find(row => String(row.kodeTiket) === String(key.ticket) && Number(row.noItem) === Number(key.noItem));
+    const hint = document.getElementById('trTicketHint');
+    const sourceSelect = document.getElementById('trBarangAsal');
+    const unitSelect = document.getElementById('trUnitTujuan');
+    const warehouseSelect = document.getElementById('trGudangTujuan');
+    const quantity = document.getElementById('trJumlah');
+    if (!item) {
+      hint.textContent = '';
+      quantity.removeAttribute('max');
+      return;
+    }
+    const sourceItems = rawStokList.filter(stock =>
+      String(stock.kodeUnit).toLowerCase() === 'teknisi' &&
+      String(stock.kodeGudang).toLowerCase() === 'teknik sukajaya' &&
+      String(stock.namaBarang).trim().toLowerCase() === String(item.namaBarang).trim().toLowerCase() &&
+      String(stock.satuan).trim().toLowerCase() === String(item.satuan).trim().toLowerCase()
+    );
+    sourceSelect.innerHTML = sourceItems.length ? '<option value="">-- Pilih stok barang di Teknik Sukajaya --</option>' + sourceItems.map(stock => {
+      const value = escapeHtml(JSON.stringify({kodeBarang: String(stock.kodeBarang), kodeUnit: String(stock.kodeUnit), kodeGudang: String(stock.kodeGudang)}));
+      return `<option value="${value}">${escapeHtml(stock.namaBarang)} · tersedia ${formatNumber(stock.sisaStok)} ${escapeHtml(stock.satuan)}</option>`;
+    }).join('') : '<option value="">Stok barang belum tersedia di Teknik Sukajaya</option>';
+    if (sourceItems.length === 1) sourceSelect.value = JSON.stringify({kodeBarang: String(sourceItems[0].kodeBarang), kodeUnit: String(sourceItems[0].kodeUnit), kodeGudang: String(sourceItems[0].kodeGudang)});
+    updateSelectedStockHint('trBarangAsal', 'trSaldoTersedia');
+    applyTechnicianTransferDestination(item);
+    quantity.value = '';
+    hint.textContent = `Tiket ${item.kodeTiket} · item ${item.noItem} · sisa disetujui ${formatNumber(item.sisaPengiriman)} ${item.satuan} · tersedia di gudang teknisi ${formatNumber(item.stokTeknisiTersedia)} ${item.satuan}.`;
+  }
+
+  function applyTechnicianTransferDestination(item) {
+    const unitSelect = document.getElementById('trUnitTujuan');
+    const warehouseSelect = document.getElementById('trGudangTujuan');
+    if (!item || !unitSelect || !warehouseSelect) return;
+    const target = allUnits.find(unit => String(unit.kodeUnit).toLowerCase() === String(item.kodeUnitTujuan).toLowerCase());
+    unitSelect.innerHTML = `<option value="${escapeHtml(item.kodeUnitTujuan)}">${escapeHtml(target ? target.namaUnit : item.kodeUnitTujuan)}</option>`;
+    unitSelect.value = item.kodeUnitTujuan;
+    unitSelect.disabled = true;
+    updateSubGudangPilih('trUnitTujuan', 'trGudangTujuan');
+    warehouseSelect.innerHTML = `<option value="${escapeHtml(item.kodeGudangTujuan)}">${escapeHtml(item.kodeGudangTujuan)}</option>`;
+    warehouseSelect.value = item.kodeGudangTujuan;
+    warehouseSelect.disabled = true;
+    const quantity = document.getElementById('trJumlah');
+    let selectedSource = {};
+    try { selectedSource = JSON.parse(document.getElementById('trBarangAsal').value || '{}'); } catch (error) {}
+    const stock = rawStokList.find(row => String(row.kodeBarang) === String(selectedSource.kodeBarang) && String(row.kodeUnit) === String(selectedSource.kodeUnit) && String(row.kodeGudang) === String(selectedSource.kodeGudang));
+    const maxTransfer = Math.min(Number(item.sisaPengiriman || 0), Number(item.stokTeknisiTersedia || 0), stock ? Number(stock.sisaStok || 0) : Number(item.stokTeknisiTersedia || 0));
+    quantity.max = String(maxTransfer);
+  }
+
   function updateTransferTargetUnitOptions() {
     const unitSelect = document.getElementById('trUnitTujuan');
     if (!unitSelect) return;
@@ -2084,6 +2164,12 @@
     unitSelect.innerHTML = '<option value="">-- Pilih Unit Farm Tujuan --</option>' + targetList.map(unit => `<option value="${escapeHtml(unit.kodeUnit)}">${escapeHtml(unit.namaUnit)}</option>`).join('');
     if (targetList.some(unit => String(unit.kodeUnit) === current)) unitSelect.value = current;
     updateSubGudangPilih('trUnitTujuan', 'trGudangTujuan');
+    if (String(sesiUser.roleAccess || '').toUpperCase() === 'ADMIN_TEKNISI' && document.getElementById('trTicketItem').value) {
+      let key = {};
+      try { key = JSON.parse(document.getElementById('trTicketItem').value || '{}'); } catch (error) {}
+      const linkedItem = technicianTransferOptions.find(row => String(row.kodeTiket) === String(key.ticket) && Number(row.noItem) === Number(key.noItem));
+      applyTechnicianTransferDestination(linkedItem);
+    }
   }
 
   async function muatMasterStokBarang() {
@@ -2653,7 +2739,7 @@
 
   function renderTransferTable(rows, includeActions) {
     if (!rows.length) return '<p style="padding:15px;color:var(--erp-text-muted);">Tidak ada mutasi untuk ditampilkan.</p>';
-    let html = '<table class="erp-table"><thead><tr><th>Diajukan</th><th>Barang</th><th>Dari</th><th>Tujuan</th><th>Jumlah</th><th>Status</th><th>Aksi</th></tr></thead><tbody>';
+    let html = '<table class="erp-table"><thead><tr><th>Diajukan</th><th>Barang</th><th>Dari</th><th>Tujuan</th><th>Permintaan</th><th>Jumlah</th><th>Status</th><th>Aksi</th></tr></thead><tbody>';
     rows.forEach(t => {
       let badge = '<span class="badge badge-warning">Menunggu Admin</span>';
       if (t.status === 'ACC_ADMIN') badge = '<span class="badge badge-info">Dalam Perjalanan</span>';
@@ -2662,7 +2748,8 @@
       let actions = `<button type="button" class="btn btn-outline btn-sm" onclick="cetakFormMutasi(${inlineArg(t.idTransfer)})"><i class="fa-solid fa-print"></i> Cetak</button>`;
       if (includeActions && t.status === 'PENDING_ADMIN' && sesiUser.isAdmin) actions += ` <button class="btn btn-success btn-sm" onclick="prosesAccAdmin(${inlineArg(t.idTransfer)},'ACC')">Setujui</button> <button class="btn btn-outline btn-sm" onclick="prosesAccAdmin(${inlineArg(t.idTransfer)},'TOLAK')">Tolak</button>`;
       else if (includeActions && t.status === 'ACC_ADMIN' && clientCanAccessWarehouse(t.unitTujuan, t.gudangTujuan)) actions += ` <button class="btn btn-primary btn-sm" onclick="konfirmasiTerimaTransfer(${inlineArg(t.idTransfer)})">Konfirmasi Terima</button>`;
-      html += `<tr><td><small class="mono">${escapeHtml(t.tgl)}</small><br><small>${escapeHtml(t.idTransfer)}</small></td><td><b>${escapeHtml(t.namaBarang)}</b><br><small>${escapeHtml(t.kodeBarang)}</small></td><td>${escapeHtml(t.unitAsal)}<br><small>${escapeHtml(t.gudangAsal)}</small></td><td><b>${escapeHtml(t.unitTujuan)}</b><br><small>${escapeHtml(t.gudangTujuan)}</small></td><td class="mono"><b>${escapeHtml(t.jumlah)} ${escapeHtml(t.satuan)}</b></td><td>${badge}</td><td>${actions}</td></tr>`;
+      const requestReference = t.kodeTiket ? `<b>${escapeHtml(t.kodeTiket)}</b><br><small>Item ${Number(t.noItem || 0)}</small>` : '<span style="color:var(--erp-text-muted);">Mutasi umum</span>';
+      html += `<tr><td><small class="mono">${escapeHtml(t.tgl)}</small><br><small>${escapeHtml(t.idTransfer)}</small></td><td><b>${escapeHtml(t.namaBarang)}</b><br><small>${escapeHtml(t.kodeBarang)}</small></td><td>${escapeHtml(t.unitAsal)}<br><small>${escapeHtml(t.gudangAsal)}</small></td><td><b>${escapeHtml(t.unitTujuan)}</b><br><small>${escapeHtml(t.gudangTujuan)}</small></td><td>${requestReference}</td><td class="mono"><b>${escapeHtml(t.jumlah)} ${escapeHtml(t.satuan)}</b></td><td>${badge}</td><td>${actions}</td></tr>`;
     });
     return html + '</tbody></table>';
   }
@@ -2672,7 +2759,7 @@
     document.getElementById('containerPendingTransfer').innerHTML = renderTransferTable(queue, true);
     const statusFilter = document.getElementById('filterTransferStatus').value;
     const query = document.getElementById('filterTransferSearch').value.trim().toLowerCase();
-    const history = transferRows.filter(t => (!statusFilter || t.status === statusFilter) && (!query || [t.idTransfer,t.namaBarang,t.kodeBarang,t.unitAsal,t.unitTujuan,t.gudangAsal,t.gudangTujuan].some(v => String(v || '').toLowerCase().includes(query))));
+    const history = transferRows.filter(t => (!statusFilter || t.status === statusFilter) && (!query || [t.idTransfer,t.namaBarang,t.kodeBarang,t.unitAsal,t.unitTujuan,t.gudangAsal,t.gudangTujuan,t.kodeTiket,t.noItem].some(v => String(v || '').toLowerCase().includes(query))));
     document.getElementById('containerTabelHistory').innerHTML = renderTransferTable(history, false);
   }
 
@@ -2686,7 +2773,7 @@
       idTransfer: row.idTransfer || '-', waktu: row.waktu || row.tgl || new Date().toLocaleString('id-ID', {timeZone: 'Asia/Jakarta'}),
       status: row.status || '-', sumber: 'Mutasi antar gudang',
       asal: `${row.unitAsal || '-'} / ${row.gudangAsal || '-'}`, tujuan: `${row.unitTujuan || '-'} / ${row.gudangTujuan || '-'}`,
-      pelaku: row.pelaku || sesiUser.nama || sesiUser.username || '-', catatan: row.catatan || `Referensi transfer: ${row.idTransfer || '-'}`,
+      pelaku: row.pelaku || sesiUser.nama || sesiUser.username || '-', catatan: row.catatan || (row.kodeTiket ? `Permintaan ${row.kodeTiket} · item ${row.noItem || '-'} · transfer ${row.idTransfer || '-'}` : `Referensi transfer: ${row.idTransfer || '-'}`),
       items: [{idTransaksi: row.idTransaksi || row.idTransfer || '-', kodeBarang: row.kodeBarang || '-', namaBarang: row.namaBarang || '-', kategori: row.kategori || '-', tipeMutasi: direction, jumlah: row.jumlah, satuan: row.satuan || 'pcs', batch: row.batch || '', tanggalKadaluarsa: row.tanggalKadaluarsa || '', saldoSebelum: row.saldoSebelum, saldoSesudah: row.saldoSesudah}]
     };
   }
@@ -2728,7 +2815,8 @@
       document.getElementById('modalTransferReceipt').style.display = 'flex';
       return;
     }
-    if(!confirm("Apakah barang mutasi telah fisik diterima secara akurat?")) return;
+    const receiptPrompt = transfer && transfer.kodeTiket ? `Konfirmasi penerimaan ${transfer.jumlah} ${transfer.satuan} untuk tiket ${transfer.kodeTiket} item ${transfer.noItem} di farm tujuan?` : "Apakah barang mutasi telah fisik diterima secara akurat?";
+    if(!confirm(receiptPrompt)) return;
     const payload = { action: "konfirmasiTerimaTransfer", idTransfer: idTransfer, idTransaksi: `MUT-${idTransfer}-TERIMA` };
     await kirimAksiStok(payload, async function(result, submittedPayload) {
       await Promise.all([muatPendingTransfers(), muatJurnalTransaksiBarang(), muatMasterStokBarang()]);
@@ -2968,7 +3056,15 @@
   });
 
   function bukaModalTransferDirect() { 
+    const isTechnician = String(sesiUser.roleAccess || '').toUpperCase() === 'ADMIN_TEKNISI';
+    document.getElementById('trTicketWrap').style.display = isTechnician ? 'block' : 'none';
+    document.getElementById('trTicketItem').required = isTechnician;
+    document.getElementById('trTicketItem').value = '';
+    document.getElementById('trTicketHint').textContent = '';
+    document.getElementById('trUnitTujuan').disabled = false;
+    document.getElementById('trGudangTujuan').disabled = false;
     updateTransferTargetUnitOptions();
+    if (isTechnician) muatTiketMutasiTeknisi();
     document.getElementById('modalTransfer').style.display = 'flex'; 
   }
 
@@ -2976,11 +3072,15 @@
     e.preventDefault();
     let selection;
     try { selection = JSON.parse(document.getElementById('trBarangAsal').value); } catch (error) { return showToast('Pilih barang dan gudang asal.', 'error'); }
+    let transferTicket = {};
+    try { transferTicket = JSON.parse(document.getElementById('trTicketItem').value || '{}'); } catch (error) {}
     const payload = {
       action: "ajukanTransferAntarUnit",
       kodeBarangAsal: selection.kodeBarang,
       kodeUnitAsal: selection.kodeUnit,
       kodeGudangAsal: selection.kodeGudang,
+      kodeTiket: String(sesiUser.roleAccess || '').toUpperCase() === 'ADMIN_TEKNISI' ? transferTicket.ticket : '',
+      noItem: String(sesiUser.roleAccess || '').toUpperCase() === 'ADMIN_TEKNISI' ? Number(transferTicket.noItem || 0) : 0,
       unitTujuan: document.getElementById('trUnitTujuan').value,
       gudangTujuan: document.getElementById('trGudangTujuan').value,
       jumlahTransfer: document.getElementById('trJumlah').value
@@ -2989,7 +3089,7 @@
     await kirimAksiStok(payload, async function(result, submittedPayload) {
       tutupModal('modalTransfer');
       await Promise.all([muatPendingTransfers(), muatJurnalTransaksiBarang()]);
-      const transferDocument = {idTransfer: result.idTransfer, idTransaksi: submittedPayload.idTransaksi, tgl: new Date().toLocaleString('id-ID', {timeZone: 'Asia/Jakarta'}), namaBarang: transferItem && transferItem.namaBarang, kodeBarang: submittedPayload.kodeBarangAsal, jumlah: submittedPayload.jumlahTransfer, satuan: transferItem && transferItem.satuan, unitAsal: submittedPayload.kodeUnitAsal, gudangAsal: submittedPayload.kodeGudangAsal, unitTujuan: submittedPayload.unitTujuan, gudangTujuan: submittedPayload.gudangTujuan, status: 'PENDING_ADMIN'};
+      const transferDocument = {idTransfer: result.idTransfer, idTransaksi: submittedPayload.idTransaksi, tgl: new Date().toLocaleString('id-ID', {timeZone: 'Asia/Jakarta'}), namaBarang: transferItem && transferItem.namaBarang, kodeBarang: submittedPayload.kodeBarangAsal, jumlah: submittedPayload.jumlahTransfer, satuan: transferItem && transferItem.satuan, unitAsal: submittedPayload.kodeUnitAsal, gudangAsal: submittedPayload.kodeGudangAsal, unitTujuan: submittedPayload.unitTujuan, gudangTujuan: submittedPayload.gudangTujuan, kodeTiket: submittedPayload.kodeTiket, noItem: submittedPayload.noItem, status: 'PENDING_ADMIN'};
       if (!result.duplicate) tampilkanBuktiTransaksi(bentukVoucherMutasi(transferDocument));
     }, 'formTransferStok');
   });
