@@ -1032,6 +1032,7 @@
       }
       sesiUser = Object.assign({}, saved, result.userData, {token: saved.token, expiresAt: saved.expiresAt});
       sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(sesiUser));
+      if (sesiUser.customAccessConfigured && (!Array.isArray(sesiUser.modulesAccess) || sesiUser.modulesAccess.indexOf('stock') < 0)) { location.replace('index.html'); return; }
       document.getElementById('sessionGate').style.display = 'none';
       tampilkanDashboard();
     } catch (error) {
@@ -1157,7 +1158,8 @@
     const trUnitTujuan = document.getElementById('trUnitTujuan');
     const koreksiUnit = document.getElementById('koreksiUnit');
 
-    if (sesiUser.canViewAllLocations || sesiUser.isAdmin) {
+    const canSelectAcrossUnits = sesiUser.canViewAllLocations || sesiUser.isAdmin || (sesiUser.customAccessConfigured && masterUnits.length > 1);
+    if (canSelectAcrossUnits) {
       filterUnit.innerHTML = '<option value="">-- Semua Unit --</option>' + masterUnits.map(u => `<option value="${escapeHtml(u.kodeUnit)}">${escapeHtml(u.namaUnit)}</option>`).join('');
       if(penUnit) penUnit.innerHTML = '<option value="">-- Pilih Unit --</option>' + masterUnits.map(u => `<option value="${escapeHtml(u.kodeUnit)}">${escapeHtml(u.namaUnit)}</option>`).join('');
     } else {
@@ -1179,7 +1181,7 @@
 
   function populateStockViewFilters() {
     const unitSelect = document.getElementById('stockViewUnit');
-    const canViewAll = sesiUser.canViewAllLocations || sesiUser.isAdmin;
+    const canViewAll = sesiUser.canViewAllLocations || sesiUser.isAdmin || (sesiUser.customAccessConfigured && masterUnits.length > 1);
     const units = canViewAll ? allUnits : masterUnits;
     unitSelect.innerHTML = (canViewAll ? '<option value="">Semua Unit / Farm</option>' : '') + units.map(u => `<option value="${escapeHtml(u.kodeUnit)}">${escapeHtml(u.namaUnit)}</option>`).join('');
     if (!canViewAll && units.length) unitSelect.value = units[0].kodeUnit;
@@ -1195,7 +1197,7 @@
   function populateStockItemHistoryUnits() {
     const unitSelect = document.getElementById('stockItemHistoryUnit');
     if (!unitSelect) return;
-    const all = sesiUser.isAdmin;
+    const all = sesiUser.isAdmin || (sesiUser.customAccessConfigured && masterUnits.length > 1);
     const availableUnits = all ? (allUnits.length ? allUnits : masterUnits) : (masterUnits.length ? masterUnits : [{kodeUnit: sesiUser.unitLokasi, namaUnit: sesiUser.unitLokasi}]);
     if (all) {
       unitSelect.innerHTML = '<option value="">-- Pilih Unit / Farm --</option>' + availableUnits.map(unit => `<option value="${escapeHtml(unit.kodeUnit)}">${escapeHtml(unit.namaUnit)}</option>`).join('');
@@ -1215,7 +1217,7 @@
     const warehouseSelect = document.getElementById('stockItemHistoryWarehouse');
     const list = allowedGudang.filter(warehouse =>
       String(warehouse.kodeUnit).toLowerCase() === String(unitCode || '').toLowerCase() &&
-      (sesiUser.isAdmin || String(warehouse.kodeUnit).toLowerCase() === String(sesiUser.unitLokasi || '').toLowerCase()) &&
+      (sesiUser.customAccessConfigured ? clientCanAccessWarehouse(warehouse.kodeUnit, warehouse.kodeGudang) : (sesiUser.isAdmin || String(warehouse.kodeUnit).toLowerCase() === String(sesiUser.unitLokasi || '').toLowerCase())) &&
       (!sesiUser.isPicGudang || String(warehouse.kodeGudang).toLowerCase() === String(sesiUser.scopeGudang || '').toLowerCase())
     );
     warehouseSelect.innerHTML = '<option value="">-- Pilih Gudang --</option>' + list.map(warehouse => `<option value="${escapeHtml(warehouse.kodeGudang)}">${escapeHtml(warehouse.namaGudang)} (${escapeHtml(warehouse.kodeGudang)})</option>`).join('');
@@ -1248,6 +1250,7 @@
 
   function clientCanAccessWarehouse(kodeUnit, kodeGudang) {
     if (sesiUser.isAdmin || sesiUser.canViewAllLocations) return true;
+    if (sesiUser.customAccessConfigured) return Array.isArray(sesiUser.warehouseAccess) && sesiUser.warehouseAccess.some(pair => String(pair.kodeUnit || '').toLowerCase() === String(kodeUnit || '').toLowerCase() && String(pair.kodeGudang || '').toLowerCase() === String(kodeGudang || '').toLowerCase());
     if (String(kodeUnit || '').toLowerCase() !== String(sesiUser.unitLokasi || '').toLowerCase()) return false;
     return sesiUser.scopeGudang === 'UNIT' || String(kodeGudang || '').toLowerCase() === String(sesiUser.scopeGudang || '').toLowerCase();
   }
