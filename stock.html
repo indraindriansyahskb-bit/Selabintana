@@ -1023,10 +1023,6 @@
         redirectToCentralLogin();
         return;
       }
-      if (String(result.userData.roleAccess || '').toUpperCase() === 'ADMIN_TEKNISI') {
-        location.replace('portal.html');
-        return;
-      }
       sesiUser = Object.assign({}, saved, result.userData, {token: saved.token, expiresAt: saved.expiresAt});
       sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(sesiUser));
       document.getElementById('sessionGate').style.display = 'none';
