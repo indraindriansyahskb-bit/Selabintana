@@ -300,7 +300,7 @@
       document.getElementById('userBaruDivisi').required = role === 'ADMIN_DIVISI';
       const unitSelect = document.getElementById('userBaruUnit');
       const previousUnit = unitSelect.value;
-      const portalOnlyRole = ['ADMIN_TEKNISI', 'ADMIN_DIVISI'].includes(role);
+      const portalOnlyRole = role === 'ADMIN_DIVISI';
       unitSelect.innerHTML = portalOnlyRole ? '<option value="ALL">Semua unit / farm</option>' : '<option value="">-- Pilih Unit / Farm --</option>' + adminUserUnits.map(unit => `<option value="${escapeHtml(unit.kodeUnit)}">${escapeHtml(unit.namaUnit || unit.kodeUnit)}</option>`).join('');
       unitSelect.disabled = portalOnlyRole;
       if (portalOnlyRole) unitSelect.value = 'ALL';
@@ -313,8 +313,8 @@
         scope.innerHTML = '<option value="ALL">Semua unit / gudang</option>';
         hint.textContent = 'Admin dapat mengakses seluruh unit dan gudang.';
       } else if (role === 'ADMIN_TEKNISI') {
-        scope.innerHTML = '<option value="PORTAL_TEKNISI">Antrean teknisi semua unit</option>';
-        hint.textContent = 'Admin Teknisi hanya dapat meninjau permintaan bertujuan Teknisi dan memberikan persetujuan Kepala Teknisi.';
+        scope.innerHTML = '<option value="Teknik Sukajaya">Teknik Sukajaya</option>';
+        hint.textContent = 'Admin Teknisi mengelola stok pada satu gudang khusus: Teknik Sukajaya.';
         if (!document.getElementById('userBaruDivisi').value.trim()) document.getElementById('userBaruDivisi').value = 'Teknik';
         if (!document.getElementById('userBaruJabatan').value.trim()) document.getElementById('userBaruJabatan').value = 'Kepala Teknisi';
       } else if (role === 'ADMIN_DIVISI') {
@@ -397,10 +397,6 @@
     function displayModulePicker(user) {
       if (user.isPicGudang || user.roleAccess === 'PIC_GUDANG') {
         location.replace('stock.html');
-        return;
-      }
-      if (String(user.roleAccess || '').toUpperCase() === 'ADMIN_TEKNISI') {
-        location.replace('portal.html');
         return;
       }
       const target = returnTarget();
