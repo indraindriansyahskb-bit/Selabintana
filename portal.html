@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Portal ERP - CV. SELABINTANA</title>
+  <link rel="icon" type="image/png" href="logofav.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
@@ -24,7 +25,6 @@
     .erp-brand { font-size: 18px; font-weight: 700; color: #ffffff; display: flex; align-items: center; gap: 12px; letter-spacing: 0.5px; }
     .erp-brand img { height: 38px; object-fit: contain; background: #fff; padding: 2px; border-radius: 4px; }
     
-    .erp-container { max-width: 1200px; margin: 24px auto; padding: 0 20px; }
     .erp-user-badge { display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); padding: 6px 16px; border-radius: 20px; }
     .erp-avatar { width: 30px; height: 30px; background: var(--erp-accent-yellow); color: var(--erp-topbar-bg); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px; }
 
@@ -168,7 +168,7 @@
 <!-- SCREEN 2: DASHBOARD -->
 <div id="mainPanel" class="erp-app" style="display:none;">
   <aside class="erp-sidebar">
-    <div class="erp-brand"><img src="logo.png" alt=""><span>CV. SELABINTANA</span></div>
+    <div class="erp-brand"><img src="logo.png" alt="Logo CV. Selabintana"><span>CV. SELABINTANA</span></div>
     <nav aria-label="Navigasi Portal Permintaan">
       <ul class="erp-menu">
         <li class="erp-menu-label">Portal Permintaan</li>
@@ -1063,26 +1063,10 @@
       }
     }
   }
-  function updateKPI(data) {
-    let acc = 0, reject = 0, pending = 0;
-    data.forEach(t => {
-      let st = (t.statusPermintaan || "").toUpperCase();
-      if(["ACC", "APPROVED", "ACC_SEBAGIAN", "DIPROSES", "SEBAGIAN_TERPENUHI", "SELESAI"].includes(st)) acc++;
-      else if(["DITOLAK", "REJECTED", "REVISI", "DIBATALKAN"].includes(st)) reject++;
-      else if(["PENDING", "PENDING_TEKNISI", "PENDING_PURCHASING"].includes(st)) pending++;
-    });
-    document.getElementById('kpiTotal').innerText = data.length; 
-    document.getElementById('kpiPending').innerText = pending;
-    document.getElementById('kpiAcc').innerText = acc; 
-    document.getElementById('kpiReject').innerText = reject;
-  }
-
   function applyFilters() {
     clearTimeout(historyFilterTimer);
     historyFilterTimer = setTimeout(() => muatRiwayatPermintaan(1), 350);
   }
-
-  function filterTabelTiket() { applyFilters(); }
 
   function gantiHalaman(step) {
     const nextPage = Math.max(1, Math.min(historyTotalPages, currentPage + step));
