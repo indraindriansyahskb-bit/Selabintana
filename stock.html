@@ -703,8 +703,8 @@
         </select>
       </div>
       <div id="penTicketWrap" class="form-group" style="display:none;">
-        <label for="penTicketItem">Pilih tiket dan item yang disetujui</label>
-        <select id="penTicketItem" onchange="pilihTiketPenerimaan()"><option value="">Memuat tiket yang masih terbuka…</option></select>
+        <label for="penTicketItem">Pilih permintaan portal</label>
+        <select id="penTicketItem" onchange="pilihTiketPenerimaan()"><option value="">Memuat daftar permintaan…</option></select>
         <small id="penTicketRemaining" aria-live="polite" style="display:block;margin-top:6px;color:var(--erp-text-muted);"></small>
       </div>
       <div class="form-row">
@@ -724,6 +724,9 @@
           <option value="VITAMIN">VITAMIN</option><option value="KIMIA">KIMIA</option><option value="PERALATAN">PERALATAN</option><option value="LAINNYA">LAINNYA</option>
         </select><button id="btnTambahKategoriPenerimaan" type="button" class="btn btn-outline btn-sm" onclick="tambahKategoriStok()" title="Tambah kategori baru">+ Kategori</button>
       </div></div>
+      <div id="penExtraItemsWrap" style="display:none;margin:10px 0;"></div>
+      <button id="btnTambahItemPenerimaan" type="button" class="btn btn-outline btn-sm" onclick="tambahBarisPenerimaan()" style="margin-bottom:8px;"><i class="fa-solid fa-plus"></i> Tambah barang</button>
+      <div id="penTicketItemsWrap" style="display:none;margin:10px 0;"></div>
       <div class="form-group" id="penSupplierWrap"><label for="penSupplier">Supplier (opsional)</label><input type="text" id="penSupplier" maxlength="200" placeholder="Nama supplier"></div>
       <div class="form-group"><label for="penBatch">Nomor batch (opsional)</label><input type="text" id="penBatch" maxlength="120" placeholder="Nomor batch"></div>
       <div class="form-group" id="penExpiryRow" style="display:none;"><label for="penKadaluarsa">Tanggal kedaluwarsa</label><input type="date" id="penKadaluarsa"><small id="ovkReceiptHint" style="display:block;margin-top:5px;color:var(--erp-text-muted);">Wajib di gudang OVK.</small></div>
@@ -2859,16 +2862,16 @@
     if (!select || !sesiUser.token) return;
     select.innerHTML = '<option value="">Memuat tiket…</option>';
     try {
-      const res = await postPayload({action: 'getApprovedTicketReceipts', token: sesiUser.token});
+      const res = await postPayload({action: 'getApprovedTicketReceipts', useCase: 'BATCH_RECEIPT', token: sesiUser.token});
       const json = await res.json();
       if (cekSesiBerakhir(json)) return;
       if (json.status !== 'success') throw new Error(json.message || 'Gagal memuat tiket portal.');
       ticketReceiptOptions = json.data || [];
-      select.innerHTML = ticketReceiptOptions.length ? '<option value="">-- Pilih item tiket yang disetujui --</option>' + ticketReceiptOptions.map(item => {
-        const value = escapeHtml(JSON.stringify({ticket: String(item.kodeTiket), noItem: Number(item.noItem)}));
-        return `<option value="${value}">${escapeHtml(item.kodeTiket)} · ${escapeHtml(item.kodeGudang || 'Gudang belum ditentukan')} · Item ${escapeHtml(item.noItem)} · ${escapeHtml(item.namaBarang)} · Sisa ${formatNumber(item.sisaDisetujui)} ${escapeHtml(item.satuan)}</option>`;
-      }).join('') : '<option value="">Tidak ada item tiket disetujui dengan sisa penerimaan</option>';
-      document.getElementById('penTicketRemaining').textContent = ticketReceiptOptions.length ? '' : 'Semua item tiket sudah terpenuhi atau belum disetujui.';
+      const tickets = [...new Map(ticketReceiptOptions.map(item => [String(item.kodeTiket), item])).values()];
+      select.innerHTML = tickets.length ? '<option value="">-- Pilih permintaan --</option>' + tickets.map(item =>
+        `<option value="${escapeHtml(item.kodeTiket)}">${escapeHtml(item.kodeTiket)} · ${escapeHtml(item.kodeUnitTujuan || item.kodeUnit)} · ${escapeHtml(item.kodeGudangTujuan || item.kodeGudang)} · ${escapeHtml(item.pemohon || '')}</option>`
+      ).join('') : '<option value="">Tidak ada permintaan yang dapat diterima</option>';
+      document.getElementById('penTicketRemaining').textContent = tickets.length ? 'Setelah permintaan dipilih, semua barang yang disetujui akan ditampilkan. Isi jumlah hanya pada barang yang diterima.' : 'Tidak ada item permintaan yang masih dapat diterima.';
       toggleReceiptSource();
     } catch (error) {
       select.innerHTML = '<option value="">Tiket tidak dapat dimuat</option>';
@@ -2883,16 +2886,32 @@
     ticketSelect.required = linked;
     const name = document.getElementById('penNamaBarang');
     const unitLabel = document.getElementById('penSatuan');
+    const quantity = document.getElementById('penJumlah');
     const category = document.getElementById('penKategori');
     const addCategoryButton = document.getElementById('btnTambahKategoriPenerimaan');
     const supplier = document.getElementById('penSupplier');
+    const quantityRow = document.getElementById('penJumlah').closest('.form-row');
+    const categoryRow = document.getElementById('penKategori').closest('.form-group');
+    const ticketItemsWrap = document.getElementById('penTicketItemsWrap');
+    const extraItemsWrap = document.getElementById('penExtraItemsWrap');
     document.getElementById('penSupplierWrap').style.display = linked ? 'none' : 'block';
+    document.getElementById('penItemFields').style.display = linked ? 'none' : 'block';
+    quantityRow.style.display = linked ? 'none' : 'grid';
+    categoryRow.style.display = linked ? 'none' : 'block';
+    ticketItemsWrap.style.display = linked ? 'block' : 'none';
+    extraItemsWrap.style.display = linked ? 'none' : (extraItemsWrap.childElementCount ? 'block' : 'none');
+    document.getElementById('btnTambahItemPenerimaan').style.display = linked ? 'none' : 'inline-flex';
     const unit = document.getElementById('penUnit');
+    const warehouse = document.getElementById('penGudang');
     name.readOnly = linked;
     unitLabel.readOnly = linked;
+    name.required = !linked;
+    unitLabel.required = !linked;
+    quantity.required = !linked;
     category.disabled = linked;
     addCategoryButton.disabled = linked;
     unit.disabled = linked || !(sesiUser.canViewAllLocations || sesiUser.isAdmin);
+    warehouse.disabled = linked;
     document.getElementById('penItemHint').textContent = linked
       ? 'Nama barang, satuan, dan kategori mengikuti persetujuan tiket portal.'
       : 'Gunakan nama dan satuan barang sesuai dokumen penerimaan.';
@@ -2905,6 +2924,8 @@
       unitLabel.value = '';
       category.value = 'LAINNYA';
       supplier.value = '';
+      ticketItemsWrap.innerHTML = '';
+      extraItemsWrap.innerHTML = '';
     } else if (ticketSelect.value) pilihTiketPenerimaan();
   }
 
@@ -2914,27 +2935,29 @@
   }
 
   function pilihTiketPenerimaan() {
-    const selectValue = document.getElementById('penTicketItem').value;
+    const selectedTicket = document.getElementById('penTicketItem').value;
     const hint = document.getElementById('penTicketRemaining');
     const unit = document.getElementById('penUnit');
-    if (!selectValue) { hint.textContent = ''; return; }
-    let selected;
-    try { selected = JSON.parse(selectValue); } catch (error) { hint.textContent = 'Pilihan tiket tidak valid.'; return; }
-    const item = ticketReceiptOptions.find(row => String(row.kodeTiket) === String(selected.ticket) && Number(row.noItem) === Number(selected.noItem));
-    if (!item) { hint.textContent = 'Item tiket sudah tidak tersedia. Muat ulang daftar tiket.'; return; }
-    document.getElementById('penNamaBarang').value = item.namaBarang || '';
-    document.getElementById('penSatuan').value = item.satuan || 'pcs';
-    const ticketCategory = String(item.kategori || 'LAINNYA').trim().toUpperCase();
-    masterBarangCategories = gabungkanKategoriStok(masterBarangCategories, [ticketCategory]);
-    perbaruiDropdownKategoriStok();
-    document.getElementById('penKategori').value = ticketCategory;
+    const rows = ticketReceiptOptions.filter(row => String(row.kodeTiket) === String(selectedTicket));
+    if (!selectedTicket || !rows.length) { hint.textContent = ''; document.getElementById('penTicketItemsWrap').innerHTML = ''; return; }
+    const item = rows[0];
     unit.value = item.kodeUnit;
     updateSubGudangPilih('penUnit', 'penGudang');
     document.getElementById('penGudang').value = item.kodeGudang || (['ALL', 'UNIT'].includes(String(sesiUser.scopeGudang || '').toUpperCase()) ? '' : sesiUser.scopeGudang);
     updateReceiptOvkFields();
-    document.getElementById('penJumlah').max = String(item.sisaDisetujui);
-    document.getElementById('penJumlah').value = '';
-    hint.textContent = `Tiket ${item.kodeTiket} · disetujui ${formatNumber(item.jumlahDisetujui)} ${item.satuan}, sudah diterima ${formatNumber(item.jumlahTerpenuhi)} ${item.satuan}, sisa ${formatNumber(item.sisaDisetujui)} ${item.satuan}.`;
+    const receivedField = String(sesiUser.roleAccess || '').toUpperCase() === 'ADMIN_TEKNISI' ? 'jumlahDiterimaTeknisi' : 'jumlahTerpenuhi';
+    document.getElementById('penTicketItemsWrap').innerHTML = `<div class="erp-table-responsive"><table class="erp-table"><thead><tr><th>Barang permintaan</th><th>Disetujui</th><th>Sudah diterima</th><th>Sisa</th><th>Jumlah diterima sekarang</th></tr></thead><tbody>${rows.map(row => {
+      const remaining = Math.max(0, Number(row.sisaDisetujui || 0));
+      return `<tr><td><b>${escapeHtml(row.namaBarang)}</b><br><small>Item ${Number(row.noItem)} · ${escapeHtml(row.kategori || 'LAINNYA')}</small></td><td>${formatNumber(row.jumlahDisetujui)} ${escapeHtml(row.satuan)}</td><td>${formatNumber(row[receivedField] || 0)} ${escapeHtml(row.satuan)}</td><td>${formatNumber(remaining)} ${escapeHtml(row.satuan)}</td><td><input type="number" class="pen-ticket-qty" data-no-item="${Number(row.noItem)}" min="0" max="${remaining}" step="any" placeholder="0" ${remaining <= 0 ? 'disabled' : ''} style="max-width:150px;"></td></tr>`;
+    }).join('')}</tbody></table></div>`;
+    hint.textContent = `Permintaan ${item.kodeTiket} · ${rows.length} barang ditampilkan. Isi jumlah pada barang yang benar-benar diterima; barang lain biarkan 0.`;
+  }
+
+  function tambahBarisPenerimaan() {
+    const wrap = document.getElementById('penExtraItemsWrap');
+    const rowId = `penExtra_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
+    wrap.style.display = 'block';
+    wrap.insertAdjacentHTML('beforeend', `<div id="${rowId}" class="pen-extra-row" style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:8px;align-items:end;margin:8px 0;padding:10px;background:#f8fafc;border:1px solid var(--erp-border-light);border-radius:7px;"><div class="form-group"><label>Nama barang</label><input class="pen-extra-name" maxlength="200" placeholder="Nama barang"></div><div class="form-group"><label>Jumlah</label><input class="pen-extra-qty" type="number" min="0.001" step="any" placeholder="0"></div><div class="form-group"><label>Satuan</label><input class="pen-extra-unit" maxlength="32" placeholder="pcs"></div><div class="form-group"><label>Kategori</label><select class="pen-extra-category">${opsiKategoriStok('LAINNYA')}</select></div><button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('${rowId}').remove()" aria-label="Hapus barang tambahan"><i class="fa-solid fa-trash"></i></button></div>`);
   }
 
   async function bukaModalPenerimaan() {
@@ -2955,19 +2978,20 @@
       sumberPenerimaan: document.getElementById('penSumber').value,
       kodeUnit: document.getElementById('penUnit').value,
       kodeGudang: document.getElementById('penGudang').value,
-      namaBarang: document.getElementById('penNamaBarang').value.trim(),
-      jumlah: document.getElementById('penJumlah').value,
-      satuan: document.getElementById('penSatuan').value.trim(),
-      kategori: document.getElementById('penKategori').value,
       supplier: document.getElementById('penSupplier').value.trim(),
       batch: document.getElementById('penBatch').value.trim(),
       tanggalKadaluarsa: document.getElementById('penKadaluarsa').value
     };
     if (payload.sumberPenerimaan === 'PERMINTAAN_ACC') {
-      let selected;
-      try { selected = JSON.parse(document.getElementById('penTicketItem').value); } catch (error) { return showToast('Pilih item tiket yang akan diterima.', 'error'); }
-      payload.kodeTiket = selected.ticket;
-      payload.noItem = selected.noItem;
+      payload.kodeTiket = document.getElementById('penTicketItem').value;
+      if (!payload.kodeTiket) return showToast('Pilih permintaan portal yang akan diterima.', 'error');
+      payload.items = Array.from(document.querySelectorAll('.pen-ticket-qty')).map(input => ({noItem: Number(input.dataset.noItem), jumlah: Number(input.value || 0)})).filter(item => item.jumlah > 0);
+      if (!payload.items.length) return showToast('Isi jumlah untuk minimal satu barang yang benar-benar diterima.', 'error');
+    } else {
+      payload.items = [{namaBarang: document.getElementById('penNamaBarang').value.trim(), jumlah: Number(document.getElementById('penJumlah').value), satuan: document.getElementById('penSatuan').value.trim(), kategori: document.getElementById('penKategori').value}];
+      document.querySelectorAll('.pen-extra-row').forEach(row => payload.items.push({namaBarang: row.querySelector('.pen-extra-name').value.trim(), jumlah: Number(row.querySelector('.pen-extra-qty').value || 0), satuan: row.querySelector('.pen-extra-unit').value.trim(), kategori: row.querySelector('.pen-extra-category').value}));
+      payload.items = payload.items.filter(item => item.jumlah > 0);
+      if (!payload.items.length) return showToast('Isi jumlah untuk minimal satu barang yang diterima.', 'error');
     }
     await kirimAksiStok(payload, async function(result, submittedPayload) {
       document.getElementById('formPenerimaan').reset();
@@ -2978,10 +3002,10 @@
       if (!result.duplicate) tampilkanBuktiTransaksi({
         judul: 'Bukti Penerimaan Barang', idTransaksi: result.idTransaksi || submittedPayload.idTransaksi,
         waktu: new Date().toLocaleString('id-ID', {timeZone: 'Asia/Jakarta'}), status: 'Tercatat',
-        sumber: submittedPayload.sumberPenerimaan === 'PERMINTAAN_ACC' ? `Tiket Portal ${submittedPayload.kodeTiket} · item ${submittedPayload.noItem}` : `Supplier: ${submittedPayload.supplier || '-'}`,
-        kodeUnit: submittedPayload.kodeUnit, kodeGudang: submittedPayload.kodeGudang, pelaku: sesiUser.nama || sesiUser.username,
-        catatan: submittedPayload.sumberPenerimaan === 'PERMINTAAN_ACC' ? 'Penerimaan untuk pemenuhan tiket portal.' : 'Penerimaan langsung / pembelian supplier.',
-        items: [{idTransaksi: result.idTransaksi || submittedPayload.idTransaksi, kodeBarang: result.kodeBarang, namaBarang: submittedPayload.namaBarang, kategori: submittedPayload.kategori, tipeMutasi: 'MASUK', jumlah: submittedPayload.jumlah, satuan: submittedPayload.satuan, batch: submittedPayload.batch, tanggalKadaluarsa: submittedPayload.tanggalKadaluarsa, saldoSebelum: result.saldoSebelum, saldoSesudah: result.saldoSesudah}]
+        sumber: submittedPayload.sumberPenerimaan === 'PERMINTAAN_ACC' ? `Tiket Portal ${submittedPayload.kodeTiket}` : `Supplier: ${submittedPayload.supplier || '-'}`,
+        kodeUnit: submittedPayload.kodeUnit || (result.items && result.items[0] && result.items[0].kodeUnit), kodeGudang: submittedPayload.kodeGudang || (result.items && result.items[0] && result.items[0].kodeGudang), pelaku: sesiUser.nama || sesiUser.username,
+        catatan: submittedPayload.sumberPenerimaan === 'PERMINTAAN_ACC' ? 'Penerimaan beberapa barang untuk pemenuhan tiket portal.' : 'Penerimaan beberapa barang dari supplier.',
+        items: result.items || []
       });
     }, 'formPenerimaan');
   });
