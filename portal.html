@@ -682,7 +682,7 @@
   async function tampilkanDashboard() {
     document.getElementById('mainPanel').style.display = 'flex';
     const role = String(sesiUser.roleAccess || '').toUpperCase();
-    document.getElementById('stockModuleLink').hidden = ['ADMIN_TEKNISI', 'PIC_GUDANG'].includes(role);
+    document.getElementById('stockModuleLink').hidden = role === 'PIC_GUDANG';
     document.getElementById('menuQueueItem').hidden = !canReviewRequestQueue();
     document.getElementById('menuRequestBtn').parentElement.hidden = isPortalApprovalOnly();
     document.getElementById('userInfoHeader').innerHTML = `
