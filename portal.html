@@ -618,6 +618,7 @@
       }
       sesiUser = Object.assign({}, saved, result.userData, {token: saved.token, expiresAt: saved.expiresAt});
       sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(sesiUser));
+      if (sesiUser.customAccessConfigured && (!Array.isArray(sesiUser.modulesAccess) || sesiUser.modulesAccess.indexOf('portal') < 0)) { location.replace('index.html'); return; }
       if (sesiUser.isPicGudang || sesiUser.roleAccess === 'PIC_GUDANG') {
         location.replace('stock.html');
         return;
@@ -683,7 +684,9 @@
   async function tampilkanDashboard() {
     document.getElementById('mainPanel').style.display = 'flex';
     const role = String(sesiUser.roleAccess || '').toUpperCase();
-    document.getElementById('stockModuleLink').hidden = role === 'PIC_GUDANG';
+    const activeModules = sesiUser.customAccessConfigured ? (Array.isArray(sesiUser.modulesAccess) ? sesiUser.modulesAccess : []) : (role === 'PIC_GUDANG' ? ['stock'] : ['portal','stock','repair']);
+    document.getElementById('stockModuleLink').hidden = activeModules.indexOf('stock') < 0;
+    document.querySelector('.erp-menu-item[href="perbaikan.html"]').parentElement.hidden = activeModules.indexOf('repair') < 0;
     document.getElementById('menuQueueItem').hidden = !canReviewRequestQueue();
     document.getElementById('menuRequestBtn').parentElement.hidden = isPortalApprovalOnly();
     document.getElementById('userInfoHeader').innerHTML = `
