@@ -123,9 +123,14 @@
     .erp-topbar { min-height:65px; display:flex; align-items:center; justify-content:space-between; gap:14px; padding:8px 22px; color:#fff; background:var(--erp-topbar-bg); border-bottom:2px solid var(--erp-accent-yellow); position:sticky; top:0; z-index:20; box-shadow:0 4px 10px rgba(0,0,0,.05); }
     .erp-page-title { display:flex; align-items:center; gap:9px; font-size:14px; font-weight:700; white-space:nowrap; }
     .erp-topbar-actions { display:flex; align-items:center; justify-content:flex-end; gap:8px; min-width:0; }
+    .module-shortcuts { display:flex; align-items:center; gap:5px; }
+    .module-shortcuts a { display:inline-flex; align-items:center; gap:5px; padding:6px 8px; border:1px solid #386641; border-radius:7px; color:#fff; background:transparent; font-size:10px; font-weight:700; text-decoration:none; white-space:nowrap; }
+    .module-shortcuts a:hover, .module-shortcuts a[aria-current="page"] { color:#fff; background:#234b32; }
+    .module-shortcuts a[hidden] { display:none!important; }
     .erp-topbar .topbar-action { padding:6px 9px; color:#fff; border-color:#386641; background:transparent; white-space:nowrap; }
     .erp-topbar .topbar-action:hover { color:#fff; background:#234b32; }
     .erp-topbar .topbar-logout { margin-left:4px; }
+    .erp-menu li[hidden], .erp-menu-item[hidden] { display:none!important; }
     .erp-content { width:100%; max-width:1440px; min-width:0; flex:1; margin:0 auto; padding:24px; }
     .portal-view[hidden] { display:none!important; }
     .erp-menu-item:focus-visible, .erp-topbar .btn:focus-visible { outline:3px solid var(--erp-accent-yellow); outline-offset:2px; }
@@ -140,11 +145,14 @@
       .erp-topbar { position:relative; min-height:58px; flex-wrap:wrap; gap:7px; padding:8px 12px; }
       .erp-page-title { font-size:12px; }
       .erp-topbar-actions { gap:5px; }
+      .module-shortcuts a span { display:none; }
       .erp-topbar .topbar-action { padding:6px 7px; font-size:10px; }
       .erp-content { padding:12px; }
     }
     @media (max-width:420px) {
       .erp-topbar-actions { flex:1 1 100%; justify-content:flex-end; }
+      .module-shortcuts { margin-right:auto; }
+      .module-shortcuts a span { display:none; }
       .erp-user-badge { margin-right:auto; }
     }
   </style>
@@ -185,7 +193,12 @@
       <div class="erp-page-title"><i class="fa-solid fa-file-signature" aria-hidden="true"></i><span id="portalPageTitle">Buat Permintaan</span></div>
       <div class="erp-topbar-actions">
         <div id="userInfoHeader" class="erp-user-badge"></div>
-        <a id="stockModuleLink" href="stock.html" class="btn btn-outline topbar-action" hidden style="text-decoration:none;"><i class="fa-solid fa-warehouse" aria-hidden="true"></i><span>Manajemen Stok</span></a>
+        <nav class="module-shortcuts" aria-label="Pintasan modul">
+          <a id="modulePortalLink" href="portal.html" aria-current="page" aria-label="Permintaan Barang" title="Permintaan Barang"><i class="fa-solid fa-boxes-stacked" aria-hidden="true"></i><span>Barang</span></a>
+          <a id="moduleStockLink" href="stock.html" aria-label="Manajemen Stok" title="Manajemen Stok"><i class="fa-solid fa-warehouse" aria-hidden="true"></i><span>Stok</span></a>
+          <a id="moduleRepairLink" href="perbaikan.html" aria-label="Permintaan Perbaikan" title="Permintaan Perbaikan"><i class="fa-solid fa-screwdriver-wrench" aria-hidden="true"></i><span>Perbaikan</span></a>
+          <a href="index.html" aria-label="Beranda" title="Kembali ke menu awal setelah login"><i class="fa-solid fa-house" aria-hidden="true"></i><span>Beranda</span></a>
+        </nav>
         <button type="button" onclick="bukaModalGantiPassword()" class="btn btn-outline topbar-action" title="Ganti password"><i class="fa-solid fa-key" aria-hidden="true"></i><span>Password</span></button>
         <button type="button" onclick="logoutSesi()" class="btn btn-outline topbar-action topbar-logout"><i class="fa-solid fa-power-off" aria-hidden="true"></i><span>Keluar</span></button>
       </div>
@@ -685,7 +698,9 @@
     document.getElementById('mainPanel').style.display = 'flex';
     const role = String(sesiUser.roleAccess || '').toUpperCase();
     const activeModules = sesiUser.customAccessConfigured ? (Array.isArray(sesiUser.modulesAccess) ? sesiUser.modulesAccess : []) : (role === 'PIC_GUDANG' ? ['stock'] : ['portal','stock','repair']);
-    document.getElementById('stockModuleLink').hidden = activeModules.indexOf('stock') < 0;
+    document.getElementById('moduleStockLink').hidden = activeModules.indexOf('stock') < 0;
+    document.getElementById('modulePortalLink').hidden = activeModules.indexOf('portal') < 0;
+    document.getElementById('moduleRepairLink').hidden = activeModules.indexOf('repair') < 0;
     document.querySelector('.erp-menu-item[href="perbaikan.html"]').parentElement.hidden = activeModules.indexOf('repair') < 0;
     document.getElementById('menuQueueItem').hidden = !canReviewRequestQueue();
     document.getElementById('menuRequestBtn').parentElement.hidden = isPortalApprovalOnly();
