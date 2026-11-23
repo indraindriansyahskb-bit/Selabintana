@@ -134,6 +134,7 @@
     .stock-entry-table input, .stock-entry-table select { width: 100%; min-width: 105px; box-sizing: border-box; }
     .stock-entry-table td:first-child, .stock-entry-table td:last-child { min-width: 52px; text-align: center; }
     .stock-entry-table button { white-space: nowrap; }
+    .select-type-search { width:100%; margin:0 0 6px; box-sizing:border-box; }
     .print-voucher-content { background: #fff; color: #17211a; padding: 28px; font-size: 12px; }
     .print-voucher-content h1 { font-size: 20px; margin: 4px 0; color: #1b3a26; }
     .print-voucher-content h2 { font-size: 15px; margin: 18px 0 10px; }
@@ -943,6 +944,42 @@
 
   function escapeHtml(value) {
     return String(value == null ? '' : value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  }
+
+  function aktifkanPencarianSelectBarang() {
+    const ids = ['penTicketItem', 'stockItemHistoryItem', 'koreksiBarang', 'pemBarangPilih', 'pemakaianBulkBarang', 'trTicketItem', 'trBarangAsal'];
+    ids.forEach(id => {
+      const select = document.getElementById(id);
+      if (!select || select.dataset.searchable === 'true') return;
+      select.dataset.searchable = 'true';
+      const input = document.createElement('input');
+      input.type = 'search';
+      input.className = 'form-control select-type-search';
+      input.autocomplete = 'off';
+      input.spellcheck = false;
+      input.placeholder = 'Ketik nama barang atau gudang untuk mencari…';
+      input.setAttribute('aria-label', `Cari ${select.labels && select.labels[0] ? select.labels[0].textContent.trim().toLowerCase() : 'barang'}`);
+      select.parentNode.insertBefore(input, select);
+
+      const clearFilter = () => {
+        Array.from(select.options).forEach(option => { option.hidden = false; });
+        input.value = '';
+      };
+      input.addEventListener('input', () => {
+        const query = input.value.trim().toLocaleLowerCase('id-ID');
+        Array.from(select.options).forEach(option => {
+          option.hidden = Boolean(query && option.value && !option.textContent.toLocaleLowerCase('id-ID').includes(query));
+        });
+      });
+      select.addEventListener('change', clearFilter);
+      if (select.form) select.form.addEventListener('reset', clearFilter);
+      const observer = new MutationObserver(() => {
+        clearFilter();
+        input.disabled = select.disabled;
+      });
+      observer.observe(select, {childList: true, subtree: true, attributes: true, attributeFilter: ['disabled']});
+      input.disabled = select.disabled;
+    });
   }
   function formatNumber(value) {
     const number = Number(value);
@@ -3349,6 +3386,8 @@
       });
     }, 'formKoreksiStok');
   });
+
+  aktifkanPencarianSelectBarang();
 
   function tutupModal(id) { document.getElementById(id).style.display = 'none'; }
 </script>
