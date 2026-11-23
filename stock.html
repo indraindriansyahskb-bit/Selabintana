@@ -59,6 +59,10 @@
     .erp-topbar { height: 65px; background: #ffffff; border-bottom: 2px solid var(--erp-accent-yellow); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; position: sticky; top: 0; z-index: 10; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
     .erp-breadcrumb { font-size: 14px; font-weight: 700; color: var(--erp-primary); display: flex; align-items: center; gap: 8px; }
     .erp-topbar-actions { display: flex; align-items: center; gap: 15px; }
+    .module-shortcuts { display:flex; align-items:center; gap:5px; }
+    .module-shortcuts a { display:inline-flex; align-items:center; gap:5px; padding:6px 8px; border:1px solid var(--erp-border); border-radius:7px; color:var(--erp-primary); background:#fff; font-size:10px; font-weight:700; text-decoration:none; white-space:nowrap; }
+    .module-shortcuts a:hover, .module-shortcuts a[aria-current="page"] { background:#edf4ef; }
+    .module-shortcuts a[hidden] { display:none!important; }
     .erp-user-profile { display: flex; align-items: center; gap: 10px; background: #f6f9f7; border: 1px solid var(--erp-border-light); padding: 6px 14px; border-radius: 20px; }
     .erp-avatar { width: 30px; height: 30px; background: var(--erp-accent-yellow); color: var(--erp-topbar-bg); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px; }
 
@@ -184,6 +188,8 @@
       .erp-topbar { min-height: 58px; height: auto; padding: 8px 12px; gap: 8px; }
       .erp-breadcrumb { font-size: 12px; }
       .erp-topbar-actions { gap: 6px; }
+      .module-shortcuts { margin-right:auto; }
+      .module-shortcuts a span { display:none; }
       .mobile-connection-status { display: inline-flex; }
       .erp-user-profile { padding: 4px 8px; gap: 6px; max-width: 190px; }
       .erp-content { padding: 12px; overflow: visible; }
@@ -322,7 +328,12 @@
       <div class="erp-topbar-actions">
         <div class="mobile-connection-status" id="connectionStatusMobile" role="status" aria-live="polite"><span aria-hidden="true" style="width:8px;height:8px;background:var(--erp-warning);border-radius:50%;display:inline-block;"></span><span>Menunggu koneksi</span></div>
         <div class="erp-user-profile" id="userProfileTag"></div>
-        <a href="index.html" class="btn btn-outline" aria-label="Kembali ke menu modul" style="padding:6px 10px;text-decoration:none;">Menu</a>
+        <nav class="module-shortcuts" aria-label="Pintasan modul">
+          <a id="modulePortalLink" href="portal.html" aria-label="Permintaan Barang" title="Permintaan Barang"><i class="fa-solid fa-boxes-stacked" aria-hidden="true"></i><span>Barang</span></a>
+          <a id="moduleStockLink" href="stock.html" aria-current="page" aria-label="Manajemen Stok" title="Manajemen Stok"><i class="fa-solid fa-warehouse" aria-hidden="true"></i><span>Stok</span></a>
+          <a id="moduleRepairLink" href="perbaikan.html" aria-label="Permintaan Perbaikan" title="Permintaan Perbaikan"><i class="fa-solid fa-screwdriver-wrench" aria-hidden="true"></i><span>Perbaikan</span></a>
+          <a href="index.html" aria-label="Beranda" title="Kembali ke menu awal setelah login"><i class="fa-solid fa-house" aria-hidden="true"></i><span>Beranda</span></a>
+        </nav>
         <button type="button" onclick="bukaModalGantiPassword()" class="btn btn-outline btn-password" title="Ganti password" aria-label="Ganti password" style="padding:6px 10px;"><i class="fa-solid fa-key"></i><span>Password</span></button>
         <button onclick="logoutSesi()" class="btn btn-outline" style="padding: 6px 12px; color: var(--erp-danger);">
           <i class="fa-solid fa-power-off"></i> Keluar
@@ -1052,6 +1063,11 @@
     koreksiMenu.hidden = !sesiUser.isAdmin;
     document.getElementById('hapusTransaksiMenuItem').hidden = !sesiUser.isAdmin;
     document.querySelector('.erp-menu').classList.toggle('has-admin-menu', Boolean(sesiUser.isAdmin));
+    const roleName = String(sesiUser.roleAccess || '').toUpperCase();
+    const activeModules = sesiUser.customAccessConfigured ? (Array.isArray(sesiUser.modulesAccess) ? sesiUser.modulesAccess : []) : (roleName === 'PIC_GUDANG' ? ['stock'] : ['portal','stock','repair']);
+    document.getElementById('modulePortalLink').hidden = activeModules.indexOf('portal') < 0;
+    document.getElementById('moduleStockLink').hidden = activeModules.indexOf('stock') < 0;
+    document.getElementById('moduleRepairLink').hidden = activeModules.indexOf('repair') < 0;
     
     let initial = (sesiUser.nama || "U").substring(0,2).toUpperCase();
     document.getElementById('userProfileTag').innerHTML = `
