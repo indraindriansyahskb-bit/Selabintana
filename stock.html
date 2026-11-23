@@ -1077,8 +1077,29 @@
   function inlineArg(value) {
     return escapeHtml(JSON.stringify(String(value == null ? '' : value)).replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026'));
   }
-  function postPayload(payload) {
-    return fetch(GAS_URL, {method: 'POST', headers: {'Content-Type': 'text/plain;charset=utf-8'}, body: JSON.stringify(payload)});
+  let activeTransactionRequests = 0, transactionRequestFailed = false, transactionProgressTimer = 0;
+  function isTransactionAction(action) { return Boolean(action) && !/^(get|validate|login|logout|check|list|load|search|refresh|verify|export|download)/i.test(String(action)); }
+  function renderTransactionProgress(state = 'busy') {
+    let node = document.getElementById('transactionProgress');
+    if (!node) { node = document.createElement('div'); node.id = 'transactionProgress'; node.setAttribute('role', 'status'); node.setAttribute('aria-live', 'polite'); node.style.cssText = 'position:fixed;z-index:10000;left:50%;bottom:22px;transform:translateX(-50%);display:none;align-items:center;gap:10px;padding:12px 16px;border-radius:10px;background:#173d28;color:white;box-shadow:0 8px 24px rgba(0,0,0,.22);font:600 13px system-ui,sans-serif;max-width:calc(100vw - 24px);'; document.body.appendChild(node); }
+    clearTimeout(transactionProgressTimer);
+    node.style.display = 'flex';
+    node.style.background = state === 'error' ? '#9f2525' : state === 'done' ? '#087a55' : '#173d28';
+    node.innerHTML = state === 'busy' ? '<i class="fa-solid fa-circle-notch fa-spin" aria-hidden="true"></i><span>Transaksi sedang diproses… Mohon tunggu.</span>' : state === 'done' ? '<i class="fa-solid fa-circle-check" aria-hidden="true"></i><span>Transaksi selesai diproses.</span>' : '<i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i><span>Transaksi gagal diproses. Periksa pesan error.</span>';
+    if (state !== 'busy') transactionProgressTimer = setTimeout(() => { node.style.display = 'none'; }, state === 'error' ? 1800 : 1100);
+  }
+  function startTransactionProgress() { if (!activeTransactionRequests) transactionRequestFailed = false; activeTransactionRequests++; renderTransactionProgress(); }
+  function finishTransactionProgress(success) { transactionRequestFailed = transactionRequestFailed || !success; activeTransactionRequests = Math.max(0, activeTransactionRequests - 1); if (!activeTransactionRequests) renderTransactionProgress(transactionRequestFailed ? 'error' : 'done'); }
+  async function postPayload(payload) {
+    const tracked = isTransactionAction(payload && payload.action);
+    if (tracked) startTransactionProgress();
+    try {
+      const response = await fetch(GAS_URL, {method: 'POST', headers: {'Content-Type': 'text/plain;charset=utf-8'}, body: JSON.stringify(payload)});
+      if (!tracked) return response;
+      const parseJson = response.json.bind(response);
+      response.json = async function() { try { const result = await parseJson(); finishTransactionProgress(result && result.status === 'success'); return result; } catch (error) { finishTransactionProgress(false); throw error; } };
+      return response;
+    } catch (error) { if (tracked) finishTransactionProgress(false); throw error; }
   }
   function readSharedSession() {
     for (const key of [AUTH_SESSION_KEY, ...LEGACY_SESSION_KEYS]) {
