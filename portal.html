@@ -60,6 +60,8 @@
     .btn-outline { background: white; border: 1px solid var(--erp-border); color: var(--erp-text-main); }
     .btn-outline:hover { background: #f0f4f2; border-color: var(--erp-primary); color: var(--erp-primary); }
     .btn-sm { padding: 5px 10px; font-size: 11px; }
+    .history-row-actions { display:flex; gap:5px; flex-wrap:wrap; align-items:center; }
+    .history-row-actions .btn { padding:5px 8px; }
 
     .erp-table-responsive { overflow-x: auto; border-radius: 6px; border: 1px solid var(--erp-border-light); }
     .erp-table { width: 100%; border-collapse: collapse; font-size: 12px; background: white; text-align: left; }
@@ -555,8 +557,29 @@
     showToast('Draft permintaan dihapus dan form dikosongkan.');
   }
 
-  function postPayload(payload) {
-    return fetch(GAS_URL, { method: 'POST', headers: {'Content-Type': 'text/plain;charset=utf-8'}, body: JSON.stringify(payload) });
+  let activeTransactionRequests = 0, transactionRequestFailed = false, transactionProgressTimer = 0;
+  function isTransactionAction(action) { return Boolean(action) && !/^(get|validate|login|logout|check|list|load|search|refresh|verify|export|download)/i.test(String(action)); }
+  function renderTransactionProgress(state = 'busy') {
+    let node = document.getElementById('transactionProgress');
+    if (!node) { node = document.createElement('div'); node.id = 'transactionProgress'; node.setAttribute('role', 'status'); node.setAttribute('aria-live', 'polite'); node.style.cssText = 'position:fixed;z-index:10000;left:50%;bottom:22px;transform:translateX(-50%);display:none;align-items:center;gap:10px;padding:12px 16px;border-radius:10px;background:#173d28;color:white;box-shadow:0 8px 24px rgba(0,0,0,.22);font:600 13px system-ui,sans-serif;max-width:calc(100vw - 24px);'; document.body.appendChild(node); }
+    clearTimeout(transactionProgressTimer);
+    node.style.display = 'flex';
+    node.style.background = state === 'error' ? '#9f2525' : state === 'done' ? '#087a55' : '#173d28';
+    node.innerHTML = state === 'busy' ? '<i class="fa-solid fa-circle-notch fa-spin" aria-hidden="true"></i><span>Transaksi sedang diproses… Mohon tunggu.</span>' : state === 'done' ? '<i class="fa-solid fa-circle-check" aria-hidden="true"></i><span>Transaksi selesai diproses.</span>' : '<i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i><span>Transaksi gagal diproses. Periksa pesan error.</span>';
+    if (state !== 'busy') transactionProgressTimer = setTimeout(() => { node.style.display = 'none'; }, state === 'error' ? 1800 : 1100);
+  }
+  function startTransactionProgress() { if (!activeTransactionRequests) transactionRequestFailed = false; activeTransactionRequests++; renderTransactionProgress(); }
+  function finishTransactionProgress(success) { transactionRequestFailed = transactionRequestFailed || !success; activeTransactionRequests = Math.max(0, activeTransactionRequests - 1); if (!activeTransactionRequests) renderTransactionProgress(transactionRequestFailed ? 'error' : 'done'); }
+  async function postPayload(payload) {
+    const tracked = isTransactionAction(payload && payload.action);
+    if (tracked) startTransactionProgress();
+    try {
+      const response = await fetch(GAS_URL, { method: 'POST', headers: {'Content-Type': 'text/plain;charset=utf-8'}, body: JSON.stringify(payload) });
+      if (!tracked) return response;
+      const parseJson = response.json.bind(response);
+      response.json = async function() { try { const result = await parseJson(); finishTransactionProgress(result && result.status === 'success'); return result; } catch (error) { finishTransactionProgress(false); throw error; } };
+      return response;
+    } catch (error) { if (tracked) finishTransactionProgress(false); throw error; }
   }
 
   function showToast(message, type = 'success') {
@@ -1119,6 +1142,12 @@
       
       let badgeDoc = t.dokumenPdf ? `<span class="badge badge-upload-yes"><i class="fa-solid fa-check"></i> Uploaded</span>` : `<span class="badge badge-upload-no"><i class="fa-solid fa-clock"></i> Belum</span>`;
       const receiptSummary = canViewReceiptProgress() ? `<td>${ringkasanPenerimaanTiket(t)}</td>` : '';
+      const statusEditable = ["PENDING", "PENDING_TEKNISI", "PENDING_PURCHASING", "REVISI"].includes(st);
+      const canManagePending = Boolean(t.canEdit && statusEditable);
+      const canRevisePending = canManagePending && !(t.tujuanPermintaan === 'TEKNISI' && String(t.statusTeknisi || '').toUpperCase() === 'ACC');
+      const pendingActions = canManagePending
+        ? `${canRevisePending ? `<button class="btn btn-warning btn-sm" onclick="persiapkanEdit(${inlineArg(t.kodeTiket)})" title="Revisi permintaan"><i class="fa-solid fa-pen"></i><span class="action-label"> Edit</span></button>` : ''} <button class="btn btn-danger btn-sm" onclick="hapusTiket(${inlineArg(t.kodeTiket)})" title="Batalkan permintaan"><i class="fa-solid fa-trash"></i><span class="action-label"> Hapus</span></button>`
+        : '';
 
       html += `<tr>
         <td><span class="mono" style="color:var(--erp-primary); font-weight:700;">${escapeHtml(t.kodeTiket)}</span></td>
@@ -1130,7 +1159,7 @@
         <td>${badge}<br><small style="color:var(--erp-text-muted);">Tujuan: ${t.tujuanPermintaan === 'TEKNISI' ? 'Teknisi' : 'Purchasing'}</small></td>
         ${receiptSummary}
         <td>
-          <button class="btn btn-outline btn-sm" onclick="bukaDetailTiket(${inlineArg(t.kodeTiket)})"><i class="fa-solid fa-eye"></i> Detail</button>
+          <div class="history-row-actions"><button class="btn btn-outline btn-sm" onclick="bukaDetailTiket(${inlineArg(t.kodeTiket)})"><i class="fa-solid fa-eye"></i> Detail</button>${pendingActions}</div>
         </td>
       </tr>`;
     });
@@ -1187,7 +1216,9 @@
         if (!exportMap[item.kodeTiket]) exportMap[item.kodeTiket] = {
           kodeTiket: item.kodeTiket, tglPermintaan: item.tglPermintaan, tglDibutuhkan: item.tglDibutuhkan,
           pemohon: item.pemohon, unitLokasi: item.unitLokasi, kodeGudang: item.kodeGudang || '', urgensi: item.urgensi,
-          keterangan: item.keterangan, statusPermintaan: item.statusPermintaan, catatanAdmin: item.catatanAdmin, items: []
+          keterangan: item.keterangan, statusPermintaan: item.statusPermintaan, catatanAdmin: item.catatanAdmin,
+          tujuanPermintaan: item.tujuanPermintaan || 'PURCHASING', statusTeknisi: item.statusTeknisi || '',
+          namaTeknisi: item.namaTeknisi || '', waktuAccTeknisi: item.waktuAccTeknisi || '', items: []
         };
         exportMap[item.kodeTiket].items.push(item);
       });
@@ -1327,6 +1358,7 @@
     document.getElementById('mdlTitle').innerText = `Detail Tiket : ${t.kodeTiket}`;
     let st = (t.statusPermintaan || "").toUpperCase();
     let canEdit = t.canEdit && ["PENDING", "PENDING_TEKNISI", "PENDING_PURCHASING", "REVISI"].includes(st);
+    let canRevise = canEdit && !(t.tujuanPermintaan === 'TEKNISI' && String(t.statusTeknisi || '').toUpperCase() === 'ACC');
     let canFulfill = sesiUser.isAdmin && ["ACC", "ACC_SEBAGIAN", "DIPROSES", "SEBAGIAN_TERPENUHI"].includes(st);
     let canUpload = t.canEdit;
     const isTechTarget = String(t.tujuanPermintaan || 'PURCHASING').toUpperCase() === 'TEKNISI';
@@ -1450,8 +1482,9 @@
     
     let footerHtml = `<button class="btn btn-outline" onclick="cetakStruk(${inlineArg(t.kodeTiket)})"><i class="fa-solid fa-print"></i> Cetak Bukti PDF</button>`;
     if(canEdit) {
-      footerHtml += `<button class="btn btn-warning" onclick="persiapkanEdit(${inlineArg(t.kodeTiket)})"><i class="fa-solid fa-pen"></i> Revisi/Edit</button>
-                     <button class="btn btn-danger" onclick="hapusTiket(${inlineArg(t.kodeTiket)})"><i class="fa-solid fa-trash"></i> Batalkan</button>`;
+      if (canRevise) footerHtml += `<button class="btn btn-warning" onclick="persiapkanEdit(${inlineArg(t.kodeTiket)})"><i class="fa-solid fa-pen"></i> Revisi/Edit</button>`;
+      else if (t.tujuanPermintaan === 'TEKNISI' && String(t.statusTeknisi || '').toUpperCase() === 'ACC') footerHtml += `<span style="font-size:11px;color:#64748b;align-self:center;">Sudah ACC Teknisi; rincian terkunci menunggu Admin.</span>`;
+      footerHtml += `<button class="btn btn-danger" onclick="hapusTiket(${inlineArg(t.kodeTiket)})"><i class="fa-solid fa-trash"></i> Batalkan</button>`;
     } else {
       footerHtml += `<span style="font-size:11px; color:#b91c1c; font-weight:600; align-self:center; margin-left:10px;">Status: ${escapeHtml(st)}</span>`;
     }
