@@ -126,8 +126,14 @@
     .modal-content { background: white; width: 100%; max-width: 525px; border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); overflow: hidden; }
     .modal-header { padding: 18px 24px; background: #f6f9f7; border-bottom: 1px solid var(--erp-border-light); display: flex; justify-content: space-between; align-items: center; }
     .modal-body { padding: 24px; }
-    .opening-stock-row { border: 1px solid var(--erp-border-light); border-radius: 8px; padding: 14px; margin: 10px 0; background: #fff; }
-    .opening-stock-row-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+    .stock-entry-table { min-width: 650px; }
+    .stock-entry-table--bulk { min-width: 1180px; }
+    .stock-entry-table th, .stock-entry-table td { vertical-align: top; }
+    .stock-entry-table td { min-width: 115px; }
+    .stock-entry-table td:nth-child(2) { min-width: 210px; }
+    .stock-entry-table input, .stock-entry-table select { width: 100%; min-width: 105px; box-sizing: border-box; }
+    .stock-entry-table td:first-child, .stock-entry-table td:last-child { min-width: 52px; text-align: center; }
+    .stock-entry-table button { white-space: nowrap; }
     .print-voucher-content { background: #fff; color: #17211a; padding: 28px; font-size: 12px; }
     .print-voucher-content h1 { font-size: 20px; margin: 4px 0; color: #1b3a26; }
     .print-voucher-content h2 { font-size: 15px; margin: 18px 0 10px; }
@@ -585,15 +591,15 @@
                 <div class="form-group" id="koreksiBarangWrap"><label for="koreksiBarang">Barang pada lokasi ini</label><select id="koreksiBarang" onchange="updatePreviewKoreksi()" required><option value="">-- Pilih barang --</option></select></div>
               </div>
               <div id="koreksiBarangBaruFields" style="display:none;">
-                <div class="form-group"><label for="koreksiNamaBarang">Nama barang baru</label><input type="text" id="koreksiNamaBarang" maxlength="200" placeholder="Nama barang" autocomplete="off"></div>
-                <div class="form-row">
-                  <div class="form-group"><label for="koreksiKategori">Kategori</label><select id="koreksiKategori"><option>PAKAN</option><option>OBAT</option><option>VAKSIN</option><option>VITAMIN</option><option>KIMIA</option><option>PERALATAN</option><option>LAINNYA</option></select></div>
-                  <div class="form-group"><label for="koreksiSatuan">Satuan</label><input type="text" id="koreksiSatuan" maxlength="32" placeholder="kg, zak, botol, pcs"></div>
-                </div>
+                <div class="erp-table-responsive"><table class="erp-table stock-entry-table"><thead><tr><th>Nama barang</th><th>Kategori</th><th>Satuan</th></tr></thead><tbody><tr>
+                  <td><input type="text" id="koreksiNamaBarang" list="stockMasterBarangList" maxlength="200" placeholder="Cari atau ketik nama barang" autocomplete="off" oninput="autofillCorrectionItemFromName()"></td>
+                  <td><select id="koreksiKategori"><option>LAINNYA</option></select><button type="button" class="btn btn-outline btn-sm" style="margin-top:5px" onclick="tambahKategoriStok(document.getElementById('koreksiKategori'),this)">+ Kategori</button></td>
+                  <td><select id="koreksiSatuan"><option value="">Pilih satuan</option></select></td>
+                </tr></tbody></table></div>
               </div>
               <div class="form-row" id="koreksiBatchExpiryRow" style="display:none;">
                 <div class="form-group"><label for="koreksiBatch">Nomor batch (opsional)</label><input type="text" id="koreksiBatch" maxlength="120" placeholder="Nomor batch"></div>
-                <div class="form-group"><label for="koreksiKadaluarsa">Tanggal kedaluwarsa</label><input type="date" id="koreksiKadaluarsa"></div>
+                <div class="form-group"><label for="koreksiKadaluarsa">Tanggal kedaluwarsa (opsional)</label><input type="date" id="koreksiKadaluarsa"></div>
               </div>
               <div class="form-group" id="koreksiSaldoAwalTanggalWrap" style="display:none;"><label for="koreksiSaldoAwalTanggal">Tanggal pertama saldo awal</label><input type="date" id="koreksiSaldoAwalTanggal"><small style="display:block;margin-top:5px;color:var(--erp-text-muted);">Tanggal efektif awal barang tercatat pada gudang.</small></div>
               <div class="form-row">
@@ -615,10 +621,10 @@
                   <b>Daftar barang saldo awal</b>
                   <button type="button" class="btn btn-outline btn-sm" onclick="tambahBarisSaldoAwal()"><i class="fa-solid fa-plus"></i> Tambah Barang</button>
                 </div>
-                <small id="saldoAwalExpiryHint" style="display:block;margin:0 0 10px;color:var(--erp-text-muted);">Pilih gudang untuk melihat aturan kedaluwarsa.</small>
-                <div id="saldoAwalRows"></div>
+                <small id="saldoAwalExpiryHint" style="display:block;margin:0 0 10px;color:var(--erp-text-muted);">Tanggal kedaluwarsa opsional dan boleh dikosongkan.</small>
+                <div class="erp-table-responsive"><table class="erp-table stock-entry-table stock-entry-table--bulk"><thead><tr><th>No.</th><th>Nama barang</th><th>Kategori</th><th>Satuan</th><th>Jumlah saldo awal</th><th>Batch (opsional)</th><th>Kedaluwarsa (opsional)</th><th>Aksi</th></tr></thead><tbody id="saldoAwalRows"></tbody></table></div>
                 <div class="form-group" style="margin-top:14px;"><label for="saldoAwalAlasan">Alasan / tanggal saldo awal</label><textarea id="saldoAwalAlasan" minlength="5" maxlength="500" rows="3" required placeholder="Contoh: saldo awal per 1 Januari 2026 berdasarkan stock opname ..." style="width:100%;padding:9px 12px;border:1px solid var(--erp-border);border-radius:6px;font:inherit;resize:vertical;"></textarea></div>
-                <small style="display:block;margin:-4px 0 12px;color:var(--erp-text-muted);">Maksimal 50 barang per gudang dalam sekali simpan. Barang yang sudah memiliki saldo di gudang ini harus dikoreksi melalui form satu barang. Untuk gudang OVK, tanggal kedaluwarsa setiap barang wajib diisi.</small>
+                <small style="display:block;margin:-4px 0 12px;color:var(--erp-text-muted);">Maksimal 50 barang per gudang dalam sekali simpan. Barang yang sudah memiliki saldo di gudang ini harus dikoreksi melalui form satu barang. Tanggal kedaluwarsa opsional.</small>
                 <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Simpan Saldo Awal</button>
               </form>
             </div>
@@ -758,7 +764,7 @@
     <div class="modal-body">
       <div class="erp-filter-bar" style="margin:0 0 14px;padding:0;border:0;background:transparent;">
         <button type="button" id="modePemakaianSatuBtn" class="btn btn-primary" onclick="switchPemakaianMode('single')">Satu transaksi</button>
-        <button type="button" id="modePemakaianPakanBtn" class="btn btn-outline" onclick="switchPemakaianMode('feed')"><i class="fa-solid fa-layer-group"></i> Pemakaian pakan harian multipel</button>
+        <button type="button" id="modePemakaianPakanBtn" class="btn btn-outline" onclick="switchPemakaianMode('feed')"><i class="fa-solid fa-layer-group"></i> Pemakaian pakan / OVK multipel</button>
       </div>
       <div id="singlePemakaianPanel">
       <form id="formPemakaian">
@@ -775,14 +781,14 @@
       <div id="bulkFeedPanel" hidden>
         <form id="formPemakaianPakanBulk">
           <div class="form-row">
-            <div class="form-group"><label for="pemakaianPakanTanggal">Tanggal pemakaian</label><input type="date" id="pemakaianPakanTanggal" required><small style="display:block;margin-top:5px;color:var(--erp-text-muted);">Masukkan pemakaian harian untuk tanggal ini.</small></div>
+            <div class="form-group"><label for="pemakaianPakanTanggal">Tanggal pemakaian</label><input type="date" id="pemakaianPakanTanggal" required><small style="display:block;margin-top:5px;color:var(--erp-text-muted);">Masukkan pemakaian untuk tanggal ini.</small></div>
             <div class="form-group"><label for="pemakaianPakanCatatan">Catatan umum (opsional)</label><input type="text" id="pemakaianPakanCatatan" maxlength="500" placeholder="Contoh: pembagian pakan harian"></div>
           </div>
           <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:8px 0 10px;">
-            <b>Daftar kandang dan jenis pakan</b>
+            <b>Daftar kandang / peruntukan dan barang</b>
             <button type="button" class="btn btn-outline btn-sm" onclick="tambahBarisPemakaianPakan()"><i class="fa-solid fa-plus"></i> Tambah baris</button>
           </div>
-          <small style="display:block;margin-bottom:10px;color:var(--erp-text-muted);">Tambahkan satu baris untuk setiap kombinasi kandang dan pakan. Stok untuk barang yang sama akan divalidasi sebagai satu total.</small>
+          <small style="display:block;margin-bottom:10px;color:var(--erp-text-muted);">Tambahkan satu baris untuk setiap kombinasi kandang / peruntukan dan barang. Pilihan mencakup gudang pakan serta gudang OVK. Stok barang yang sama divalidasi sebagai satu total.</small>
           <div id="pemakaianPakanRows"></div>
           <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:15px;">
             <button type="button" onclick="tutupModal('modalPemakaian')" class="btn btn-outline">Batal</button>
@@ -1346,7 +1352,11 @@
   }
 
   function daftarOpsiStokPakan() {
-    return rawStokList.filter(item => String(item.kategori || '').trim().toUpperCase() === 'PAKAN' && Number(item.sisaStok || 0) > 0 && clientCanAccessWarehouse(item.kodeUnit, item.kodeGudang));
+    return rawStokList.filter(item => {
+      const isFeed = String(item.kategori || '').trim().toUpperCase() === 'PAKAN';
+      const isOvk = isOvkWarehouseClient(item.kodeGudang, item.kodeUnit);
+      return (isFeed || isOvk) && Number(item.sisaStok || 0) > 0 && clientCanAccessWarehouse(item.kodeUnit, item.kodeGudang);
+    });
   }
 
   function tambahBarisPemakaianPakan() {
@@ -1357,11 +1367,11 @@
     const row = document.createElement('div');
     row.className = 'bulk-feed-row';
     row.style.cssText = 'gap:8px;align-items:end;padding:10px;margin-bottom:8px;border:1px solid var(--erp-border);border-radius:8px;background:#fff;';
-    row.innerHTML = `<div class="form-group" style="margin:0;"><label for="feedItem_${rowId}">Jenis pakan / gudang</label><select id="feedItem_${rowId}" class="bulk-feed-item" onchange="updateBulkFeedRowHint(this)" required><option value="">-- Pilih pakan --</option>${options.map(item => {
+    row.innerHTML = `<div class="form-group" style="margin:0;"><label for="feedItem_${rowId}">Barang / gudang</label><select id="feedItem_${rowId}" class="bulk-feed-item" onchange="updateBulkFeedRowHint(this)" required><option value="">-- Pilih barang pakan / OVK --</option>${options.map(item => {
       const value = JSON.stringify({kodeBarang: item.kodeBarang, kodeUnit: item.kodeUnit, kodeGudang: item.kodeGudang});
       return `<option value="${escapeHtml(value)}">${escapeHtml(item.namaBarang)} · ${escapeHtml(item.kodeUnit)}/${escapeHtml(item.kodeGudang)} · sisa ${formatNumber(item.sisaStok)} ${escapeHtml(item.satuan)}</option>`;
     }).join('')}</select><small class="bulk-feed-hint" style="display:block;min-height:15px;margin-top:4px;color:var(--erp-text-muted);"></small></div>
-      <div class="form-group" style="margin:0;"><label for="feedCage_${rowId}">Kandang</label><input id="feedCage_${rowId}" class="bulk-feed-cage" type="text" maxlength="120" list="listKandangPemakaian" placeholder="Contoh: BD01" required></div>
+      <div class="form-group" style="margin:0;"><label for="feedCage_${rowId}">Kandang / peruntukan</label><input id="feedCage_${rowId}" class="bulk-feed-cage" type="text" maxlength="120" list="listKandangPemakaian" placeholder="Contoh: BD01" required></div>
       <div class="form-group" style="margin:0;"><label for="feedQty_${rowId}">Jumlah</label><input id="feedQty_${rowId}" class="bulk-feed-quantity" type="number" min="0.001" max="1000000000" step="any" required></div>
       <button type="button" class="btn btn-outline btn-sm" style="color:var(--erp-danger);margin-bottom:1px;" aria-label="Hapus baris pemakaian pakan" onclick="this.closest('.bulk-feed-row').remove()"><i class="fa-solid fa-trash"></i></button>`;
     container.appendChild(row);
@@ -1885,6 +1895,9 @@
     return gabungkanKategoriStok(masterBarangCategories, [selected]).map(category => `<option value="${escapeHtml(category)}"${category === selected ? ' selected' : ''}>${escapeHtml(category)}</option>`).join('');
   }
 
+  function gabungkanSatuanStok(...groups) { const seen = new Set(), result = []; groups.flat().forEach(value => { const unit = String(value || '').trim(); const key = unit.toLowerCase(); if (unit && !seen.has(key)) { seen.add(key); result.push(unit); } }); return result; }
+  function opsiSatuanStok(selectedValue) { const common = ['pcs','kg','g','gr','mg','liter','ml','botol','zak','karung','sak','dus','box','pack','butir','ekor','lembar','roll']; const selected = String(selectedValue || '').trim(); const units = gabungkanSatuanStok(common, masterBarangData.map(item => item.satuan), [selected]); return '<option value="">Pilih satuan</option>' + units.map(unit => `<option value="${escapeHtml(unit)}"${unit.toLowerCase() === selected.toLowerCase() ? ' selected' : ''}>${escapeHtml(unit)}</option>`).join(''); }
+  function perbaruiDropdownSatuanStok() { ['koreksiSatuan'].forEach(id => { const select = document.getElementById(id); if (!select) return; const selected = select.value; select.innerHTML = opsiSatuanStok(selected); select.value = selected; }); document.querySelectorAll('#saldoAwalRows [data-field="unit"]').forEach(select => { const selected = select.value; select.innerHTML = opsiSatuanStok(selected); select.value = selected; }); }
   function perbaruiDropdownKategoriStok() {
     ['penKategori', 'koreksiKategori'].forEach(id => {
       const select = document.getElementById(id);
@@ -1913,7 +1926,10 @@
       const names = [...new Set(masterBarangData.map(item => String(item.namaBarang || '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b));
       document.getElementById('stockMasterBarangList').innerHTML = names.map(name => `<option value="${escapeHtml(name)}"></option>`).join('');
       perbaruiDropdownKategoriStok();
+      perbaruiDropdownSatuanStok();
       masterCategoriesLoaded = true;
+      autofillCorrectionItemFromName();
+      document.querySelectorAll('#saldoAwalRows [data-field="name"]').forEach(autofillOpeningItemFromName);
       autofillReceiptCategoryFromName();
       if (document.getElementById('penSumber').value === 'PERMINTAAN_ACC' && document.getElementById('penTicketItem').value) pilihTiketPenerimaan();
     } catch (error) { showToast(error.message || 'Daftar kategori barang gagal dimuat.', 'error'); }
@@ -1931,14 +1947,15 @@
     document.getElementById('penKategori').value = category;
   }
 
-  async function tambahKategoriStok() {
+  async function tambahKategoriStok(targetSelect = document.getElementById('penKategori'), triggerButton = null) {
     if (!sesiUser.isAdmin && !['STAFF_OPERASIONAL', 'PIC_GUDANG'].includes(String(sesiUser.roleAccess || '').toUpperCase())) return showToast('Akun ini tidak diizinkan menambahkan kategori barang.', 'error');
+    if (typeof targetSelect === 'string') targetSelect = document.getElementById(targetSelect);
     const entered = prompt('Nama kategori baru (maksimal 80 karakter):', '');
     if (entered === null) return;
     const kategori = entered.trim().replace(/\s+/g, ' ').toUpperCase();
     if (!kategori) return showToast('Nama kategori wajib diisi.', 'error');
-    const button = document.getElementById('btnTambahKategoriPenerimaan');
-    button.disabled = true;
+    const button = triggerButton || (targetSelect && targetSelect.id === 'penKategori' ? document.getElementById('btnTambahKategoriPenerimaan') : targetSelect && targetSelect.closest('td') && targetSelect.closest('td').querySelector('[data-add-category]'));
+    if (button) button.disabled = true;
     try {
       const response = await postPayload({action: 'addItemCategory', token: sesiUser.token, kategori});
       const result = await response.json();
@@ -1946,11 +1963,23 @@
       if (result.status !== 'success') throw new Error(result.message || 'Kategori tidak dapat ditambahkan.');
       masterBarangCategories = gabungkanKategoriStok(result.categories || [], masterBarangCategories);
       perbaruiDropdownKategoriStok();
-      document.getElementById('penKategori').value = result.kategori || kategori;
+      if (targetSelect) targetSelect.value = result.kategori || kategori;
       showToast(result.alreadyExists ? 'Kategori sudah ada dan dipilih.' : result.message || 'Kategori berhasil ditambahkan.');
     } catch (error) { showToast(error.message || 'Kategori tidak dapat ditambahkan.', 'error'); }
-    finally { button.disabled = false; }
+    finally { if (button) button.disabled = false; }
   }
+
+  function autofillRegisteredItem(name, categorySelect, unitSelect) {
+    const key = String(name || '').trim().toLowerCase();
+    if (!key || !masterBarangData.length) return;
+    const item = masterBarangData.find(row => String(row.namaBarang || '').trim().toLowerCase() === key);
+    if (!item) return;
+    const category = String(item.kategori || '').trim().toUpperCase();
+    if (category) { masterBarangCategories = gabungkanKategoriStok(masterBarangCategories, [category]); perbaruiDropdownKategoriStok(); if (categorySelect) categorySelect.value = category; }
+    if (unitSelect && item.satuan) { unitSelect.innerHTML = opsiSatuanStok(item.satuan); unitSelect.value = item.satuan; }
+  }
+  function autofillCorrectionItemFromName() { autofillRegisteredItem(document.getElementById('koreksiNamaBarang').value, document.getElementById('koreksiKategori'), document.getElementById('koreksiSatuan')); updatePreviewKoreksi(); }
+  function autofillOpeningItemFromName(input) { const row = input.closest('.opening-stock-row'); if (!row) return; autofillRegisteredItem(input.value, row.querySelector('[data-field="category"]'), row.querySelector('[data-field="unit"]')); }
 
   function ubahLokasiKoreksi() {
     updateSubGudangPilih('koreksiUnit', 'koreksiGudang');
@@ -1980,13 +2009,9 @@
   }
 
   function updateBulkOpeningExpiryRequirements() {
-    const isOvk = isOvkWarehouseClient(document.getElementById('saldoAwalGudang').value, document.getElementById('saldoAwalUnit').value);
-    document.querySelectorAll('#saldoAwalRows [data-field="expiry"]').forEach(input => {
-      input.required = isOvk;
-      input.min = todayJakarta();
-    });
+    document.querySelectorAll('#saldoAwalRows [data-field="expiry"]').forEach(input => { input.required = false; input.removeAttribute('min'); });
     const hint = document.getElementById('saldoAwalExpiryHint');
-    if (hint) hint.textContent = isOvk ? 'Gudang OVK: kedaluwarsa wajib dan tidak boleh lewat.' : 'Batch opsional; tanggal kedaluwarsa dapat dicatat bila tersedia.';
+    if (hint) hint.textContent = 'Tanggal kedaluwarsa opsional dan boleh dikosongkan.';
   }
 
   function tambahBarisSaldoAwal() {
@@ -1994,20 +2019,9 @@
     const currentRows = container.querySelectorAll('.opening-stock-row').length;
     if (currentRows >= 50) return showToast('Maksimal 50 barang dalam satu proses.', 'error');
     const index = ++openingStockRowCounter;
-    const row = document.createElement('div');
+    const row = document.createElement('tr');
     row.className = 'opening-stock-row';
-    row.innerHTML = `
-      <div class="opening-stock-row-header"><b>Barang <span class="opening-stock-row-number">${currentRows + 1}</span></b><button type="button" class="btn btn-outline btn-sm" aria-label="Hapus baris barang" onclick="hapusBarisSaldoAwal(this)"><i class="fa-solid fa-xmark"></i> Hapus</button></div>
-      <div class="form-row">
-        <div class="form-group"><label>Nama barang</label><input type="text" data-field="name" maxlength="200" required placeholder="Nama barang"></div>
-        <div class="form-group"><label>Kategori</label><select data-field="category" required>${opsiKategoriStok('PAKAN')}</select></div>
-        <div class="form-group"><label>Satuan</label><input type="text" data-field="unit" maxlength="32" required placeholder="kg, zak, botol, pcs"></div>
-        <div class="form-group"><label>Jumlah saldo awal</label><input type="number" data-field="quantity" min="0.001" max="1000000000" step="any" inputmode="decimal" required placeholder="0"></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>Nomor batch (opsional)</label><input type="text" data-field="batch" maxlength="120" placeholder="Nomor batch"></div>
-        <div class="form-group"><label>Tanggal kedaluwarsa</label><input type="date" data-field="expiry" min="${todayJakarta()}"></div>
-      </div>`;
+    row.innerHTML = `<td><span class="opening-stock-row-number">${currentRows + 1}</span></td><td><input type="text" data-field="name" list="stockMasterBarangList" maxlength="200" required placeholder="Cari atau ketik barang" oninput="autofillOpeningItemFromName(this)"></td><td><select data-field="category" required>${opsiKategoriStok('PAKAN')}</select><button type="button" class="btn btn-outline btn-sm" data-add-category style="margin-top:5px" onclick="tambahKategoriStok(this.closest('tr').querySelector('[data-field=category]'),this)">+ Kategori</button></td><td><select data-field="unit" required>${opsiSatuanStok('')}</select></td><td><input type="number" data-field="quantity" min="0.001" max="1000000000" step="any" inputmode="decimal" required placeholder="0"></td><td><input type="text" data-field="batch" maxlength="120" placeholder="Batch"></td><td><input type="date" data-field="expiry"></td><td><button type="button" class="btn btn-outline btn-sm" aria-label="Hapus baris barang" onclick="hapusBarisSaldoAwal(this)"><i class="fa-solid fa-xmark"></i> Hapus</button></td>`;
     row.dataset.rowKey = String(index);
     container.appendChild(row);
     updateBulkOpeningRowNumbers();
@@ -2074,14 +2088,11 @@
         item = rawStokList.find(row => String(row.kodeBarang) === String(selected.kodeBarang) && String(row.kodeUnit).toLowerCase() === unit.toLowerCase() && String(row.kodeGudang).toLowerCase() === warehouse.toLowerCase());
       } catch (error) {}
     }
-    const isOvk = isOvkWarehouseClient(warehouse, unit);
-    const currentForCorrection = isNew ? 0 : Number(item && item.sisaStok || 0);
-    const correctionPositive = isNew || (targetField.value !== '' && Number(targetField.value) > currentForCorrection);
     const correctionExpiryRow = document.getElementById('koreksiBatchExpiryRow');
     const correctionExpiryInput = document.getElementById('koreksiKadaluarsa');
-    correctionExpiryRow.style.display = isOvk ? 'flex' : 'none';
-    correctionExpiryInput.required = isOvk && correctionPositive;
-    correctionExpiryInput.min = todayJakarta();
+    correctionExpiryRow.style.display = 'flex';
+    correctionExpiryInput.required = false;
+    correctionExpiryInput.removeAttribute('min');
     if (!unit || !warehouse || (!isNew && !item)) {
       preview.textContent = 'Pilih unit, gudang, dan barang untuk melihat selisih.';
       return;
@@ -3087,11 +3098,11 @@
       if (loadedStockItemHistoryFilters) refreshTasks.push(muatRiwayatBarangStock());
       await Promise.all(refreshTasks);
       if (!result.duplicate) tampilkanBuktiTransaksi({
-        judul: 'Bukti Pemakaian Pakan Harian', idTransaksi: result.idTransaksi || submittedPayload.idTransaksi,
+        judul: 'Bukti Pemakaian Barang Multipel', idTransaksi: result.idTransaksi || submittedPayload.idTransaksi,
         waktu: new Date(`${submittedPayload.tanggalPemakaian}T12:00:00+07:00`).toLocaleString('id-ID', {timeZone: 'Asia/Jakarta'}),
-        status: 'Tercatat', sumber: 'Pemakaian pakan beberapa kandang',
+        status: 'Tercatat', sumber: 'Pemakaian barang di gudang pakan / OVK',
         kodeUnit: result.kodeUnit || '-', kodeGudang: result.kodeGudang || 'Lihat rincian per baris',
-        pelaku: sesiUser.nama || sesiUser.username, catatan: submittedPayload.keterangan || 'Pemakaian harian pakan',
+        pelaku: sesiUser.nama || sesiUser.username, catatan: submittedPayload.keterangan || 'Pemakaian harian barang',
         items: (result.items || []).map(item => Object.assign({}, item, {tipeMutasi: 'KELUAR'}))
       });
     }, 'formPemakaianPakanBulk');
@@ -3155,8 +3166,11 @@
   });
 
   document.getElementById('koreksiSaldoFisik').addEventListener('input', updatePreviewKoreksi);
-  document.getElementById('koreksiNamaBarang').addEventListener('input', updatePreviewKoreksi);
-  document.getElementById('koreksiSatuan').addEventListener('input', updatePreviewKoreksi);
+  document.getElementById('koreksiNamaBarang').addEventListener('input', function() {
+    if (!masterCategoriesLoaded) muatMasterBarangKategori();
+    autofillCorrectionItemFromName();
+  });
+  document.getElementById('koreksiSatuan').addEventListener('change', updatePreviewKoreksi);
   document.getElementById('formSaldoAwalBulk').addEventListener('submit', async function(event) {
     event.preventDefault();
     if (!sesiUser.isAdmin) return showToast('Saldo awal beberapa barang hanya dapat dimasukkan admin.', 'error');
