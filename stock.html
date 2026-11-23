@@ -134,7 +134,14 @@
     .stock-entry-table input, .stock-entry-table select { width: 100%; min-width: 105px; box-sizing: border-box; }
     .stock-entry-table td:first-child, .stock-entry-table td:last-child { min-width: 52px; text-align: center; }
     .stock-entry-table button { white-space: nowrap; }
-    .select-type-search { width:100%; margin:0 0 6px; box-sizing:border-box; }
+    .select-search-control { position:relative; width:100%; }
+    .select-search-control input { width:100%; box-sizing:border-box; }
+    .select-search-options { position:absolute; z-index:30; top:calc(100% + 3px); left:0; right:0; max-height:230px; overflow:auto; padding:4px; border:1px solid var(--erp-border); border-radius:7px; background:#fff; box-shadow:0 8px 20px rgba(15,35,22,.16); }
+    .select-search-options[hidden] { display:none!important; }
+    .select-search-option { display:block; width:100%; padding:8px 10px; border:0; border-radius:4px; background:#fff; color:var(--erp-text); text-align:left; font:inherit; cursor:pointer; }
+    .select-search-option:hover, .select-search-option.is-active { background:#edf4ef; color:var(--erp-primary); }
+    .select-search-empty { padding:9px 10px; color:var(--erp-text-muted); font-size:12px; }
+    .select-type-search-native { position:absolute!important; width:1px!important; height:1px!important; padding:0!important; margin:-1px!important; overflow:hidden!important; clip:rect(0,0,0,0)!important; white-space:nowrap!important; border:0!important; }
     .print-voucher-content { background: #fff; color: #17211a; padding: 28px; font-size: 12px; }
     .print-voucher-content h1 { font-size: 20px; margin: 4px 0; color: #1b3a26; }
     .print-voucher-content h2 { font-size: 15px; margin: 18px 0 10px; }
@@ -946,39 +953,116 @@
     return String(value == null ? '' : value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   }
 
+  let searchableSelectCounter = 0;
+
+  function sinkronkanKontrolPencarian(select, requiredValue) {
+    if (!select || !select._searchableControl) return;
+    const control = select._searchableControl;
+    if (requiredValue !== undefined) select._searchableRequired = Boolean(requiredValue);
+    control.input.disabled = select.disabled;
+    control.input.required = Boolean(select._searchableRequired && !select.disabled);
+    select.required = false;
+    const selected = select.options[select.selectedIndex];
+    if (document.activeElement !== control.input) control.input.value = selected && selected.value ? selected.textContent.trim() : '';
+    control.input.setCustomValidity('');
+  }
+
   function aktifkanPencarianSelectBarang() {
     const ids = ['penTicketItem', 'stockItemHistoryItem', 'koreksiBarang', 'pemBarangPilih', 'pemakaianBulkBarang', 'trTicketItem', 'trBarangAsal'];
     ids.forEach(id => {
       const select = document.getElementById(id);
       if (!select || select.dataset.searchable === 'true') return;
       select.dataset.searchable = 'true';
+      select._searchableRequired = select.required;
+      select.required = false;
+      select.classList.add('select-type-search-native');
+      select.tabIndex = -1;
+      select.setAttribute('aria-hidden', 'true');
+      const wrapper = document.createElement('div');
+      wrapper.className = 'select-search-control';
       const input = document.createElement('input');
-      input.type = 'search';
-      input.className = 'form-control select-type-search';
+      input.type = 'text';
+      input.className = 'form-control';
       input.autocomplete = 'off';
       input.spellcheck = false;
       input.placeholder = 'Ketik nama barang atau gudang untuk mencari…';
       input.setAttribute('aria-label', `Cari ${select.labels && select.labels[0] ? select.labels[0].textContent.trim().toLowerCase() : 'barang'}`);
-      select.parentNode.insertBefore(input, select);
+      input.setAttribute('role', 'combobox');
+      input.setAttribute('aria-autocomplete', 'list');
+      input.setAttribute('aria-expanded', 'false');
+      const options = document.createElement('div');
+      options.className = 'select-search-options';
+      options.id = `searchOptions_${++searchableSelectCounter}`;
+      options.setAttribute('role', 'listbox');
+      options.hidden = true;
+      input.setAttribute('aria-controls', options.id);
+      wrapper.append(input, options);
+      select.parentNode.insertBefore(wrapper, select);
+      input.id = `searchInput_${searchableSelectCounter}`;
+      if (select.labels) Array.from(select.labels).forEach(label => { if (label.htmlFor === select.id) label.htmlFor = input.id; });
+      const control = {input, options, activeIndex: -1};
+      select._searchableControl = control;
 
-      const clearFilter = () => {
-        Array.from(select.options).forEach(option => { option.hidden = false; });
-        input.value = '';
-      };
-      input.addEventListener('input', () => {
+      const getMatches = () => {
         const query = input.value.trim().toLocaleLowerCase('id-ID');
-        Array.from(select.options).forEach(option => {
-          option.hidden = Boolean(query && option.value && !option.textContent.toLocaleLowerCase('id-ID').includes(query));
-        });
+        return Array.from(select.options).filter(option => option.value && option.textContent.toLocaleLowerCase('id-ID').includes(query));
+      };
+      const closeOptions = () => { options.hidden = true; input.setAttribute('aria-expanded', 'false'); control.activeIndex = -1; };
+      const chooseOption = option => {
+        if (!option) return;
+        select.value = option.value;
+        input.value = option.textContent.trim();
+        input.setCustomValidity('');
+        closeOptions();
+        select.dispatchEvent(new Event('change', {bubbles:true}));
+      };
+      const renderOptions = () => {
+        const matches = getMatches();
+        options.innerHTML = matches.length ? matches.map((option, index) => `<button type="button" class="select-search-option${index === control.activeIndex ? ' is-active' : ''}" role="option" aria-selected="${option.value === select.value}" data-index="${index}">${escapeHtml(option.textContent.trim())}</button>`).join('') : '<div class="select-search-empty">Barang tidak ditemukan.</div>';
+        options.hidden = false;
+        input.setAttribute('aria-expanded', 'true');
+        control.activeIndex = matches.length ? Math.min(Math.max(control.activeIndex, 0), matches.length - 1) : -1;
+      };
+      options.addEventListener('mousedown', event => event.preventDefault());
+      options.addEventListener('click', event => {
+        const button = event.target.closest('.select-search-option');
+        if (button) chooseOption(getMatches()[Number(button.dataset.index)]);
       });
-      select.addEventListener('change', clearFilter);
-      if (select.form) select.form.addEventListener('reset', clearFilter);
+      input.addEventListener('input', () => {
+        input.setCustomValidity('Pilih barang dari daftar hasil pencarian.');
+        control.activeIndex = 0;
+        renderOptions();
+      });
+      input.addEventListener('focus', () => {
+        const selected = select.options[select.selectedIndex];
+        if (selected && selected.value && input.value === selected.textContent.trim()) input.value = '';
+        input.setCustomValidity('');
+        control.activeIndex = 0;
+        renderOptions();
+      });
+      input.addEventListener('keydown', event => {
+        const matches = getMatches();
+        if (event.key === 'Escape') { closeOptions(); sinkronkanKontrolPencarian(select); return; }
+        if (event.key === 'ArrowDown' && matches.length) { event.preventDefault(); control.activeIndex = Math.min(control.activeIndex + 1, matches.length - 1); }
+        else if (event.key === 'ArrowUp' && matches.length) { event.preventDefault(); control.activeIndex = Math.max(control.activeIndex - 1, 0); }
+        else if (event.key === 'Enter' && !options.hidden) { event.preventDefault(); chooseOption(matches[control.activeIndex] || matches[0]); return; }
+        else return;
+        options.querySelectorAll('.select-search-option').forEach((button, index) => button.classList.toggle('is-active', index === control.activeIndex));
+        const active = options.querySelectorAll('.select-search-option')[control.activeIndex];
+        if (active) active.scrollIntoView({block:'nearest'});
+      });
+      input.addEventListener('blur', () => setTimeout(() => {
+        closeOptions();
+        if (!input.value.trim()) sinkronkanKontrolPencarian(select);
+      }, 120));
+      select.addEventListener('change', () => sinkronkanKontrolPencarian(select));
+      if (select.form) select.form.addEventListener('reset', () => setTimeout(() => sinkronkanKontrolPencarian(select), 0));
       const observer = new MutationObserver(() => {
-        clearFilter();
-        input.disabled = select.disabled;
+        sinkronkanKontrolPencarian(select);
+        if (!options.hidden && document.activeElement === input) renderOptions();
       });
       observer.observe(select, {childList: true, subtree: true, attributes: true, attributeFilter: ['disabled']});
-      input.disabled = select.disabled;
+      sinkronkanKontrolPencarian(select);
     });
   }
   function formatNumber(value) {
@@ -2155,6 +2239,7 @@
     document.getElementById('koreksiBarangWrap').style.display = isNew ? 'none' : 'block';
     document.getElementById('koreksiBarangBaruFields').style.display = isNew ? 'block' : 'none';
     itemSelect.required = !isNew;
+    sinkronkanKontrolPencarian(itemSelect, !isNew);
     document.getElementById('koreksiNamaBarang').required = isNew;
     document.getElementById('koreksiSatuan').required = isNew;
     document.getElementById('koreksiSaldoFisik').min = isNew ? '0.001' : '0';
@@ -3021,6 +3106,7 @@
     document.getElementById('penTicketWrap').style.display = linked ? 'block' : 'none';
     const ticketSelect = document.getElementById('penTicketItem');
     ticketSelect.required = linked;
+    sinkronkanKontrolPencarian(ticketSelect, linked);
     const name = document.getElementById('penNamaBarang');
     const unitLabel = document.getElementById('penSatuan');
     const quantity = document.getElementById('penJumlah');
@@ -3227,6 +3313,7 @@
     const isTechnician = String(sesiUser.roleAccess || '').toUpperCase() === 'ADMIN_TEKNISI';
     document.getElementById('trTicketWrap').style.display = isTechnician ? 'block' : 'none';
     document.getElementById('trTicketItem').required = isTechnician;
+    sinkronkanKontrolPencarian(document.getElementById('trTicketItem'), isTechnician);
     document.getElementById('trTicketItem').value = '';
     document.getElementById('trTicketHint').textContent = '';
     document.getElementById('trUnitTujuan').disabled = false;
