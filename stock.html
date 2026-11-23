@@ -784,11 +784,15 @@
             <div class="form-group"><label for="pemakaianPakanTanggal">Tanggal pemakaian</label><input type="date" id="pemakaianPakanTanggal" required><small style="display:block;margin-top:5px;color:var(--erp-text-muted);">Masukkan pemakaian untuk tanggal ini.</small></div>
             <div class="form-group"><label for="pemakaianPakanCatatan">Catatan umum (opsional)</label><input type="text" id="pemakaianPakanCatatan" maxlength="500" placeholder="Contoh: pembagian pakan harian"></div>
           </div>
-          <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:8px 0 10px;">
-            <b>Daftar kandang / peruntukan dan barang</b>
-            <button type="button" class="btn btn-outline btn-sm" onclick="tambahBarisPemakaianPakan()"><i class="fa-solid fa-plus"></i> Tambah baris</button>
+          <div class="form-row">
+            <div class="form-group"><label for="pemakaianBulkGudang">Pilih gudang terlebih dahulu</label><select id="pemakaianBulkGudang" onchange="ubahGudangPemakaianBulk()" required><option value="">-- Pilih gudang pakan / OVK --</option></select></div>
+            <div class="form-group"><label for="pemakaianBulkBarang">Pilih satu barang untuk beberapa kandang</label><select id="pemakaianBulkBarang" onchange="ubahBarangPemakaianBulk()" required disabled><option value="">-- Pilih gudang dahulu --</option></select><small id="pemakaianBulkStokHint" style="display:block;margin-top:5px;color:var(--erp-text-muted);">Pilih gudang untuk melihat barang yang tersedia.</small></div>
           </div>
-          <small style="display:block;margin-bottom:10px;color:var(--erp-text-muted);">Tambahkan satu baris untuk setiap kombinasi kandang / peruntukan dan barang. Pilihan mencakup gudang pakan serta gudang OVK. Stok barang yang sama divalidasi sebagai satu total.</small>
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:8px 0 10px;">
+            <b>Daftar kandang / peruntukan untuk barang terpilih</b>
+            <button id="tambahBarisPemakaianBulkBtn" type="button" class="btn btn-outline btn-sm" onclick="tambahBarisPemakaianPakan()" disabled><i class="fa-solid fa-plus"></i> Tambah kandang</button>
+          </div>
+          <small style="display:block;margin-bottom:10px;color:var(--erp-text-muted);">Pilih gudang, lalu pilih satu barang. Tambahkan baris untuk setiap kandang; total pemakaian barang tersebut tidak boleh melebihi stok tersedia.</small>
           <div id="pemakaianPakanRows"></div>
           <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:15px;">
             <button type="button" onclick="tutupModal('modalPemakaian')" class="btn btn-outline">Batal</button>
@@ -803,26 +807,24 @@
 <style>
   #pemakaianPakanRows .bulk-feed-row {
     display: grid;
-    grid-template-columns: minmax(0, 2fr) minmax(0, 1.2fr) minmax(0, .8fr) 38px;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, .8fr) 38px;
     gap: 8px;
     align-items: end;
     box-sizing: border-box;
   }
   #pemakaianPakanRows .bulk-feed-row > .form-group,
-  #pemakaianPakanRows .bulk-feed-row select,
   #pemakaianPakanRows .bulk-feed-row input { min-width: 0; width: 100%; box-sizing: border-box; }
   #pemakaianPakanRows .bulk-feed-row > button { min-width: 0; padding-left: 8px; padding-right: 8px; }
 
   @media (max-width: 720px) {
     #pemakaianPakanRows .bulk-feed-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 38px; }
-    #pemakaianPakanRows .bulk-feed-row > .form-group:first-child { grid-column: 1 / -1; }
-    #pemakaianPakanRows .bulk-feed-row > .form-group:nth-child(2) { grid-column: 1; }
-    #pemakaianPakanRows .bulk-feed-row > .form-group:nth-child(3) { grid-column: 2; }
+    #pemakaianPakanRows .bulk-feed-row > .form-group:first-child { grid-column: 1; }
+    #pemakaianPakanRows .bulk-feed-row > .form-group:nth-child(2) { grid-column: 2; }
     #pemakaianPakanRows .bulk-feed-row > button { grid-column: 3; justify-self: stretch; }
   }
   @media (max-width: 420px) {
     #pemakaianPakanRows .bulk-feed-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
-    #pemakaianPakanRows .bulk-feed-row > .form-group:first-child { grid-column: 1 / -1; }
+    #pemakaianPakanRows .bulk-feed-row > .form-group:first-child { grid-column: 1; }
     #pemakaianPakanRows .bulk-feed-row > .form-group:nth-child(2) { grid-column: 1; }
     #pemakaianPakanRows .bulk-feed-row > .form-group:nth-child(3) { grid-column: 2; }
     #pemakaianPakanRows .bulk-feed-row > button { grid-column: 1 / -1; justify-self: end; }
@@ -1347,7 +1349,7 @@
       const date = document.getElementById('pemakaianPakanTanggal');
       date.max = todayJakarta();
       if (!date.value) date.value = todayJakarta();
-      if (!document.querySelector('#pemakaianPakanRows .bulk-feed-row')) tambahBarisPemakaianPakan();
+      populateGudangPemakaianBulk();
     }
   }
 
@@ -1359,32 +1361,101 @@
     });
   }
 
+  function populateGudangPemakaianBulk() {
+    const select = document.getElementById('pemakaianBulkGudang');
+    if (!select) return;
+    const currentValue = select.value;
+    const options = new Map();
+    daftarOpsiStokPakan().forEach(item => {
+      const key = JSON.stringify({kodeUnit: String(item.kodeUnit), kodeGudang: String(item.kodeGudang)});
+      if (options.has(key)) return;
+      const warehouse = masterGudang.find(row => String(row.kodeUnit).toLowerCase() === String(item.kodeUnit).toLowerCase() && String(row.kodeGudang).toLowerCase() === String(item.kodeGudang).toLowerCase());
+      options.set(key, {kodeUnit: item.kodeUnit, kodeGudang: item.kodeGudang, namaGudang: warehouse && warehouse.namaGudang || item.kodeGudang});
+    });
+    select.innerHTML = '<option value="">-- Pilih gudang pakan / OVK --</option>' + [...options.entries()].map(([value, item]) => `<option value="${escapeHtml(value)}">${escapeHtml(item.namaGudang)} · ${escapeHtml(item.kodeUnit)} / ${escapeHtml(item.kodeGudang)}</option>`).join('');
+    if (options.has(currentValue)) select.value = currentValue;
+    if (select.value) populateBarangPemakaianBulk();
+  }
+
+  function ubahGudangPemakaianBulk() {
+    const itemSelect = document.getElementById('pemakaianBulkBarang');
+    const rows = document.getElementById('pemakaianPakanRows');
+    itemSelect.value = '';
+    rows.innerHTML = '';
+    pemakaianPakanRowCounter = 0;
+    itemSelect.disabled = !document.getElementById('pemakaianBulkGudang').value;
+    document.getElementById('tambahBarisPemakaianBulkBtn').disabled = true;
+    populateBarangPemakaianBulk();
+  }
+
+  function populateBarangPemakaianBulk() {
+    const warehouseSelect = document.getElementById('pemakaianBulkGudang');
+    const itemSelect = document.getElementById('pemakaianBulkBarang');
+    if (!warehouseSelect || !itemSelect) return;
+    const previousItem = itemSelect.value;
+    let selectedWarehouse = {};
+    try { selectedWarehouse = JSON.parse(warehouseSelect.value || '{}'); } catch (error) {}
+    if (!selectedWarehouse.kodeUnit || !selectedWarehouse.kodeGudang) {
+      itemSelect.innerHTML = '<option value="">-- Pilih gudang dahulu --</option>';
+      itemSelect.disabled = true;
+      document.getElementById('pemakaianBulkStokHint').textContent = 'Pilih gudang untuk melihat barang yang tersedia.';
+      return;
+    }
+    const options = daftarOpsiStokPakan().filter(item => String(item.kodeUnit).toLowerCase() === String(selectedWarehouse.kodeUnit).toLowerCase() && String(item.kodeGudang).toLowerCase() === String(selectedWarehouse.kodeGudang).toLowerCase());
+    itemSelect.innerHTML = '<option value="">-- Pilih barang --</option>' + options.map(item => {
+      const value = JSON.stringify({kodeBarang: item.kodeBarang, kodeUnit: item.kodeUnit, kodeGudang: item.kodeGudang});
+      return `<option value="${escapeHtml(value)}">${escapeHtml(item.namaBarang)} · sisa ${formatNumber(item.sisaStok)} ${escapeHtml(item.satuan)}</option>`;
+    }).join('');
+    itemSelect.disabled = false;
+    itemSelect.value = options.some(item => JSON.stringify({kodeBarang: item.kodeBarang, kodeUnit: item.kodeUnit, kodeGudang: item.kodeGudang}) === previousItem) ? previousItem : '';
+    const hint = document.getElementById('pemakaianBulkStokHint');
+    hint.style.color = 'var(--erp-text-muted)';
+    if (itemSelect.value) perbaruiTotalPemakaianBulk();
+    else hint.textContent = options.length ? 'Pilih satu barang untuk membagi pemakaian ke beberapa kandang.' : 'Tidak ada barang pakan / OVK dengan stok tersedia di gudang ini.';
+  }
+
+  function ubahBarangPemakaianBulk() {
+    const selected = ambilBarangPemakaianBulk();
+    const addButton = document.getElementById('tambahBarisPemakaianBulkBtn');
+    addButton.disabled = !selected;
+    document.getElementById('pemakaianPakanRows').innerHTML = '';
+    pemakaianPakanRowCounter = 0;
+    if (!selected) {
+      document.getElementById('pemakaianBulkStokHint').textContent = 'Pilih barang untuk mulai membagi pemakaian per kandang.';
+      return;
+    }
+    const item = rawStokList.find(stock => String(stock.kodeBarang) === String(selected.kodeBarang) && String(stock.kodeUnit) === String(selected.kodeUnit) && String(stock.kodeGudang) === String(selected.kodeGudang));
+    document.getElementById('pemakaianBulkStokHint').textContent = item ? `Stok tersedia: ${formatNumber(item.sisaStok)} ${item.satuan}. Total seluruh kandang harus sama dengan atau kurang dari stok ini.` : 'Stok tidak tersedia; muat ulang data.';
+    tambahBarisPemakaianPakan();
+  }
+
+  function ambilBarangPemakaianBulk() {
+    try { return JSON.parse(document.getElementById('pemakaianBulkBarang').value || ''); } catch (error) { return null; }
+  }
+
   function tambahBarisPemakaianPakan() {
     const container = document.getElementById('pemakaianPakanRows');
+    if (!ambilBarangPemakaianBulk()) return showToast('Pilih gudang dan satu barang terlebih dahulu.', 'error');
     if (container.querySelectorAll('.bulk-feed-row').length >= 100) return showToast('Maksimal 100 baris pemakaian dalam satu formulir.', 'error');
     const rowId = ++pemakaianPakanRowCounter;
-    const options = daftarOpsiStokPakan();
     const row = document.createElement('div');
     row.className = 'bulk-feed-row';
     row.style.cssText = 'gap:8px;align-items:end;padding:10px;margin-bottom:8px;border:1px solid var(--erp-border);border-radius:8px;background:#fff;';
-    row.innerHTML = `<div class="form-group" style="margin:0;"><label for="feedItem_${rowId}">Barang / gudang</label><select id="feedItem_${rowId}" class="bulk-feed-item" onchange="updateBulkFeedRowHint(this)" required><option value="">-- Pilih barang pakan / OVK --</option>${options.map(item => {
-      const value = JSON.stringify({kodeBarang: item.kodeBarang, kodeUnit: item.kodeUnit, kodeGudang: item.kodeGudang});
-      return `<option value="${escapeHtml(value)}">${escapeHtml(item.namaBarang)} · ${escapeHtml(item.kodeUnit)}/${escapeHtml(item.kodeGudang)} · sisa ${formatNumber(item.sisaStok)} ${escapeHtml(item.satuan)}</option>`;
-    }).join('')}</select><small class="bulk-feed-hint" style="display:block;min-height:15px;margin-top:4px;color:var(--erp-text-muted);"></small></div>
-      <div class="form-group" style="margin:0;"><label for="feedCage_${rowId}">Kandang / peruntukan</label><input id="feedCage_${rowId}" class="bulk-feed-cage" type="text" maxlength="120" list="listKandangPemakaian" placeholder="Contoh: BD01" required></div>
+    row.innerHTML = `<div class="form-group" style="margin:0;"><label for="feedCage_${rowId}">Kandang / peruntukan ${rowId}</label><input id="feedCage_${rowId}" class="bulk-feed-cage" type="text" maxlength="120" list="listKandangPemakaian" placeholder="Contoh: BD01" required></div>
       <div class="form-group" style="margin:0;"><label for="feedQty_${rowId}">Jumlah</label><input id="feedQty_${rowId}" class="bulk-feed-quantity" type="number" min="0.001" max="1000000000" step="any" required></div>
-      <button type="button" class="btn btn-outline btn-sm" style="color:var(--erp-danger);margin-bottom:1px;" aria-label="Hapus baris pemakaian pakan" onclick="this.closest('.bulk-feed-row').remove()"><i class="fa-solid fa-trash"></i></button>`;
+      <button type="button" class="btn btn-outline btn-sm" style="color:var(--erp-danger);margin-bottom:1px;" aria-label="Hapus baris kandang" onclick="this.closest('.bulk-feed-row').remove();perbaruiTotalPemakaianBulk()"><i class="fa-solid fa-trash"></i></button>`;
     container.appendChild(row);
+    row.querySelector('.bulk-feed-quantity').addEventListener('input', perbaruiTotalPemakaianBulk);
   }
 
-  function updateBulkFeedRowHint(select) {
-    const row = select.closest('.bulk-feed-row');
-    const hint = row && row.querySelector('.bulk-feed-hint');
-    if (!hint) return;
-    let selection;
-    try { selection = JSON.parse(select.value); } catch (error) { hint.textContent = ''; return; }
-    const item = rawStokList.find(stock => String(stock.kodeBarang) === String(selection.kodeBarang) && String(stock.kodeUnit) === String(selection.kodeUnit) && String(stock.kodeGudang) === String(selection.kodeGudang));
-    hint.textContent = item ? `Tersedia ${formatNumber(item.sisaStok)} ${item.satuan}` : 'Stok tidak tersedia; muat ulang data.';
+  function perbaruiTotalPemakaianBulk() {
+    const selection = ambilBarangPemakaianBulk();
+    const item = selection && rawStokList.find(stock => String(stock.kodeBarang) === String(selection.kodeBarang) && String(stock.kodeUnit) === String(selection.kodeUnit) && String(stock.kodeGudang) === String(selection.kodeGudang));
+    const total = [...document.querySelectorAll('#pemakaianPakanRows .bulk-feed-quantity')].reduce((sum, input) => sum + (Number(input.value) || 0), 0);
+    const hint = document.getElementById('pemakaianBulkStokHint');
+    if (!item) return;
+    hint.textContent = `Total dialokasikan ${formatNumber(total)} ${item.satuan} dari ${formatNumber(item.sisaStok)} ${item.satuan} tersedia.`;
+    hint.style.color = total > Number(item.sisaStok) ? 'var(--erp-danger)' : 'var(--erp-text-muted)';
   }
 
   function renderPemakaianPerKandang(rows) {
@@ -3076,12 +3147,15 @@
   document.getElementById('formPemakaianPakanBulk').addEventListener('submit', async function(event) {
     event.preventDefault();
     if (!this.reportValidity()) return;
+    const selectedItem = ambilBarangPemakaianBulk();
+    if (!selectedItem) return showToast('Pilih gudang dan satu barang terlebih dahulu.', 'error');
     const lines = Array.from(document.querySelectorAll('#pemakaianPakanRows .bulk-feed-row')).map(row => {
-      let selection = {};
-      try { selection = JSON.parse(row.querySelector('.bulk-feed-item').value || '{}'); } catch (error) {}
-      return Object.assign(selection, {lokasiKandang: row.querySelector('.bulk-feed-cage').value.trim(), jumlah: row.querySelector('.bulk-feed-quantity').value});
+      return Object.assign({}, selectedItem, {lokasiKandang: row.querySelector('.bulk-feed-cage').value.trim(), jumlah: row.querySelector('.bulk-feed-quantity').value});
     });
-    if (!lines.length) return showToast('Tambahkan minimal satu kombinasi kandang dan pakan.', 'error');
+    if (!lines.length) return showToast('Tambahkan minimal satu kandang atau peruntukan.', 'error');
+    const selectedStock = rawStokList.find(item => String(item.kodeBarang) === String(selectedItem.kodeBarang) && String(item.kodeUnit) === String(selectedItem.kodeUnit) && String(item.kodeGudang) === String(selectedItem.kodeGudang));
+    const totalUsage = lines.reduce((total, item) => total + Number(item.jumlah || 0), 0);
+    if (!selectedStock || totalUsage > Number(selectedStock.sisaStok || 0)) return showToast('Total pemakaian melebihi stok barang yang tersedia.', 'error');
     const payload = {
       action: 'prosesPemakaianBarangBulk',
       tanggalPemakaian: document.getElementById('pemakaianPakanTanggal').value,
@@ -3093,6 +3167,10 @@
       document.getElementById('formPemakaianPakanBulk').reset();
       document.getElementById('pemakaianPakanRows').innerHTML = '';
       pemakaianPakanRowCounter = 0;
+      document.getElementById('pemakaianBulkBarang').disabled = true;
+      document.getElementById('tambahBarisPemakaianBulkBtn').disabled = true;
+      document.getElementById('pemakaianBulkStokHint').textContent = 'Pilih gudang untuk melihat barang yang tersedia.';
+      document.getElementById('pemakaianBulkStokHint').style.color = 'var(--erp-text-muted)';
       const refreshTasks = [muatJurnalTransaksiBarang(), muatMasterStokBarang()];
       if (appliedStockSnapshotFilters) refreshTasks.push(muatStockSnapshot());
       if (loadedStockItemHistoryFilters) refreshTasks.push(muatRiwayatBarangStock());
