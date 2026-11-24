@@ -1145,9 +1145,11 @@
       const statusEditable = ["PENDING", "PENDING_TEKNISI", "PENDING_PURCHASING", "REVISI"].includes(st);
       const canManagePending = Boolean(t.canEdit && statusEditable);
       const canRevisePending = canManagePending && !(t.tujuanPermintaan === 'TEKNISI' && String(t.statusTeknisi || '').toUpperCase() === 'ACC');
+      const canCancelTicket = (sesiUser.isAdmin && st !== 'DIBATALKAN') || canManagePending;
       const pendingActions = canManagePending
-        ? `${canRevisePending ? `<button class="btn btn-warning btn-sm" onclick="persiapkanEdit(${inlineArg(t.kodeTiket)})" title="Revisi permintaan"><i class="fa-solid fa-pen"></i><span class="action-label"> Edit</span></button>` : ''} <button class="btn btn-danger btn-sm" onclick="hapusTiket(${inlineArg(t.kodeTiket)})" title="Batalkan permintaan"><i class="fa-solid fa-trash"></i><span class="action-label"> Hapus</span></button>`
+        ? `${canRevisePending ? `<button class="btn btn-warning btn-sm" onclick="persiapkanEdit(${inlineArg(t.kodeTiket)})" title="Revisi permintaan"><i class="fa-solid fa-pen"></i><span class="action-label"> Edit</span></button>` : ''}`
         : '';
+      const cancelAction = canCancelTicket ? ` <button class="btn btn-danger btn-sm" onclick="hapusTiket(${inlineArg(t.kodeTiket)})" title="Batalkan permintaan"><i class="fa-solid fa-ban"></i><span class="action-label"> Batalkan</span></button>` : '';
 
       html += `<tr>
         <td><span class="mono" style="color:var(--erp-primary); font-weight:700;">${escapeHtml(t.kodeTiket)}</span></td>
@@ -1159,7 +1161,7 @@
         <td>${badge}<br><small style="color:var(--erp-text-muted);">Tujuan: ${t.tujuanPermintaan === 'TEKNISI' ? 'Teknisi' : 'Purchasing'}</small></td>
         ${receiptSummary}
         <td>
-          <div class="history-row-actions"><button class="btn btn-outline btn-sm" onclick="bukaDetailTiket(${inlineArg(t.kodeTiket)})"><i class="fa-solid fa-eye"></i> Detail</button>${pendingActions}</div>
+          <div class="history-row-actions"><button class="btn btn-outline btn-sm" onclick="bukaDetailTiket(${inlineArg(t.kodeTiket)})"><i class="fa-solid fa-eye"></i> Detail</button>${pendingActions}${cancelAction}</div>
         </td>
       </tr>`;
     });
@@ -1484,8 +1486,11 @@
     if(canEdit) {
       if (canRevise) footerHtml += `<button class="btn btn-warning" onclick="persiapkanEdit(${inlineArg(t.kodeTiket)})"><i class="fa-solid fa-pen"></i> Revisi/Edit</button>`;
       else if (t.tujuanPermintaan === 'TEKNISI' && String(t.statusTeknisi || '').toUpperCase() === 'ACC') footerHtml += `<span style="font-size:11px;color:#64748b;align-self:center;">Sudah ACC Teknisi; rincian terkunci menunggu Admin.</span>`;
-      footerHtml += `<button class="btn btn-danger" onclick="hapusTiket(${inlineArg(t.kodeTiket)})"><i class="fa-solid fa-trash"></i> Batalkan</button>`;
-    } else {
+    }
+    const canAdminCancelTicket = Boolean(sesiUser.isAdmin && st !== 'DIBATALKAN');
+    const canOwnerCancelPending = Boolean(canEdit && ["PENDING", "PENDING_TEKNISI", "PENDING_PURCHASING", "REVISI"].includes(st));
+    if (canAdminCancelTicket || canOwnerCancelPending) footerHtml += `<button class="btn btn-danger" onclick="hapusTiket(${inlineArg(t.kodeTiket)})"><i class="fa-solid fa-ban"></i> Batalkan Permintaan</button>`;
+    if (!canEdit && !canAdminCancelTicket) {
       footerHtml += `<span style="font-size:11px; color:#b91c1c; font-weight:600; align-self:center; margin-left:10px;">Status: ${escapeHtml(st)}</span>`;
     }
 
@@ -1754,10 +1759,17 @@
   }
 
   async function hapusTiket(kode) {
-    if(!confirm(`Yakin ingin MEMBATALKAN tiket ${kode}?`)) return;
+    let alasan = '';
+    if (sesiUser.isAdmin) {
+      alasan = prompt(`Alasan pembatalan tiket ${kode} (minimal 5 karakter):`, '');
+      if (alasan === null) return;
+      alasan = alasan.trim();
+      if (alasan.length < 5) return showToast('Alasan pembatalan minimal 5 karakter.', 'error');
+    }
+    if(!confirm(`Yakin ingin MEMBATALKAN tiket ${kode}?${sesiUser.isAdmin ? '\n\nPembatalan admin hanya dapat dilakukan sebelum pemenuhan, penerimaan, atau mutasi barang dimulai.' : ''}`)) return;
     tutupModal();
     try {
-      const res = await postPayload({ action: "hapusPermintaan", token: sesiUser.token, kodeTiket: kode });
+      const res = await postPayload({ action: "hapusPermintaan", token: sesiUser.token, kodeTiket: kode, alasan });
       const json = await res.json();
       if (cekSesiBerakhir(json)) return;
       if(json.status === "success") {
