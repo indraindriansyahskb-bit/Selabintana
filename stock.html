@@ -661,11 +661,12 @@
           </div>
           <div class="erp-card-body">
             <div style="background:#fff8e6;border:1px solid #f6d98a;border-radius:8px;padding:12px 14px;margin-bottom:16px;color:#78520a;">
-              Penghapusan membatalkan saldo dengan mutasi pembalik, sementara jejak transaksi dan alasan tetap tersimpan. Transaksi tiket portal dan mutasi antar-gudang dibatalkan melalui alur asalnya.
+              Penghapusan membatalkan saldo dengan mutasi pembalik, sementara jejak transaksi dan alasan tetap tersimpan. Penerimaan tiket portal ikut memperbarui progres tiket; mutasi antar-gudang dibatalkan melalui alur asalnya.
             </div>
             <div class="erp-filter-bar">
               <div class="erp-filter-group"><label for="deleteTxnStart">Dari tanggal</label><input type="date" id="deleteTxnStart" onchange="invalidateDeleteCandidates()"></div>
               <div class="erp-filter-group"><label for="deleteTxnEnd">Sampai tanggal</label><input type="date" id="deleteTxnEnd" onchange="invalidateDeleteCandidates()"></div>
+              <div class="erp-filter-group"><label for="deleteTxnAction">Jenis transaksi</label><select id="deleteTxnAction" onchange="invalidateDeleteCandidates()"><option value="PENERIMAAN">Penerimaan barang masuk</option><option value="">Semua transaksi yang bisa dibatalkan</option><option value="PEMAKAIAN">Pemakaian barang keluar</option><option value="KOREKSI_STOK">Koreksi stok / saldo awal</option></select></div>
               <div class="erp-filter-group" style="flex:2;min-width:220px;"><label for="deleteTxnSearch">Cari ID / barang / pelaku / lokasi</label><input type="search" id="deleteTxnSearch" oninput="invalidateDeleteCandidates()" placeholder="Masukkan kata kunci"></div>
               <button type="button" class="btn btn-primary" onclick="muatTransactionsForDeletion(true)"><i class="fa-solid fa-magnifying-glass"></i> Cari Transaksi</button>
             </div>
@@ -2886,11 +2887,12 @@
     const start = document.getElementById('deleteTxnStart').value;
     const end = document.getElementById('deleteTxnEnd').value;
     const q = document.getElementById('deleteTxnSearch').value.trim();
+    const actionFilter = document.getElementById('deleteTxnAction').value;
     const container = document.getElementById('deleteTxnResults');
-    if (!start && !end && !q) { showToast('Isi minimal satu filter transaksi sebelum mencari.', 'error'); return false; }
+    if (!start && !end && !q && !actionFilter) { showToast('Isi minimal satu filter transaksi sebelum mencari.', 'error'); return false; }
     container.innerHTML = '<p style="padding:18px;text-align:center;color:var(--erp-text-muted);"><i class="fa-solid fa-spinner fa-spin"></i> Mencari transaksi…</p>';
     try {
-      const res = await postPayload({action: 'getTransactionsForDeletion', token: sesiUser.token, tglAwal: start, tglAkhir: end, q});
+      const res = await postPayload({action: 'getTransactionsForDeletion', token: sesiUser.token, tglAwal: start, tglAkhir: end, q, aksiFilter: actionFilter});
       const json = await res.json();
       if (cekSesiBerakhir(json)) return false;
       if (json.status !== 'success') throw new Error(json.message || 'Gagal mencari transaksi.');
@@ -2905,7 +2907,7 @@
   }
   function renderTransactionsForDeletion(rows) {
     const container = document.getElementById('deleteTxnResults');
-    if (!rows.length) { container.innerHTML = '<p style="padding:18px;text-align:center;color:var(--erp-text-muted);">Tidak ada transaksi mandiri yang memenuhi filter. Tiket portal dan mutasi antargudang dikecualikan.</p>'; return; }
+    if (!rows.length) { container.innerHTML = '<p style="padding:18px;text-align:center;color:var(--erp-text-muted);">Tidak ada transaksi yang memenuhi filter. Periksa kembali tanggal atau kata kunci.</p>'; return; }
     let html = '<table class="erp-table"><thead><tr><th>Waktu / ID Transaksi</th><th>Barang</th><th>Jenis</th><th>Jumlah</th><th>Lokasi</th><th>Pelaku / Catatan</th><th>Aksi</th></tr></thead><tbody>';
     html += rows.map(row => `<tr><td><small class="mono">${escapeHtml(row.waktu)}</small><br><small>${escapeHtml(row.idTransaksi)}</small></td><td><b>${escapeHtml(row.namaBarang)}</b><br><small class="mono">${escapeHtml(row.kodeBarang)} · ${escapeHtml(row.kategori)}</small></td><td><span class="badge ${row.tipeMutasi === 'MASUK' ? 'badge-success' : 'badge-danger'}">${escapeHtml(row.aksi)} / ${escapeHtml(row.tipeMutasi)}</span></td><td class="mono"><b>${formatNumber(row.jumlah)} ${escapeHtml(row.satuan)}</b></td><td>${escapeHtml(row.kodeUnit)}<br><small>${escapeHtml(row.kodeGudang)}</small></td><td>${escapeHtml(row.pelaku)}<br><small>${escapeHtml(row.keterangan)}</small></td><td><button type="button" class="btn btn-outline btn-sm" style="color:var(--erp-danger);" onclick="bukaModalHapusTransaksi(${inlineArg(row.idTransaksi)})"><i class="fa-solid fa-trash-can"></i> Hapus</button></td></tr>`).join('');
     container.innerHTML = html + '</tbody></table>';
