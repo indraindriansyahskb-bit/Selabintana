@@ -225,12 +225,12 @@
             <select id="urgensi"><option value="REGULER">REGULER</option><option value="URGENT">URGENT (Prioritas)</option><option value="TOP URGENT">TOP URGENT (Kritis)</option></select>
           </div>
         </div>
-        <div class="form-group"><label for="kodeGudangTujuan">Farm / Gudang Tujuan</label><select id="kodeGudangTujuan" required><option value="">Memuat daftar gudang…</option></select><small style="display:block;margin-top:5px;color:var(--erp-text-muted);">Permintaan akan diteruskan kepada PIC gudang yang dipilih.</small></div>
+        <div class="form-group"><label for="kodeGudangTujuan">Farm / Gudang Tujuan</label><select id="kodeGudangTujuan" required><option value="">Memuat daftar gudang…</option></select><small style="display:block;margin-top:5px;color:var(--erp-text-muted);">Gudang otomatis mengikuti farm/unit pada cakupan akun Anda.</small></div>
         <div class="row-group">
           <div class="form-group"><label for="namaHeadFarm">Nama Head Farm</label><input type="text" id="namaHeadFarm" maxlength="120" placeholder="Nama penanda tangan (opsional)"><small>Dicetak di bawah kolom tanda tangan Head Farm.</small></div>
           <div class="form-group"><label for="namaFarmManager">Nama Farm Manager</label><input type="text" id="namaFarmManager" maxlength="120" placeholder="Nama penanda tangan (opsional)"><small>Dicetak di bawah kolom tanda tangan Farm Manager.</small></div>
         </div>
-        <div class="form-group"><label for="tujuanPermintaan">Tujuan proses permintaan</label><select id="tujuanPermintaan" required onchange="scheduleRequestDraftSave()"><option value="TEKNISI" selected>Teknisi </option><option value="PURCHASING">ADMIN HO</option></select><small style="display:block;margin-top:5px;color:var(--erp-text-muted);">Alur teknisi dipilih sebagai default: teknisi meninjau permintaan, Purchasing menyetujui pembelian, lalu barang dicatat masuk ke gudang Teknik Sukajaya sebelum dikirim ke farm.</small></div>
+        <div class="form-group"><label for="tujuanPermintaan">Tujuan proses permintaan</label><select id="tujuanPermintaan" required onchange="scheduleRequestDraftSave()"><option value="TEKNISI" selected>Teknisi terlebih dahulu, lalu Purchasing</option><option value="PURCHASING">Purchasing langsung</option></select><small style="display:block;margin-top:5px;color:var(--erp-text-muted);">Alur teknisi dipilih sebagai default: teknisi meninjau permintaan, Purchasing menyetujui pembelian, lalu barang dicatat masuk ke gudang Teknik Sukajaya sebelum dikirim ke farm.</small></div>
         <div style="font-size:13px; font-weight:700; color:var(--erp-primary); margin: 24px 0 12px 0; padding-bottom:8px; border-bottom:1px solid var(--erp-border-light);"><i class="fa-solid fa-boxes-stacked"></i> Rincian Item Barang</div>
         
         <div id="containerItems"></div>
@@ -524,7 +524,8 @@
     document.getElementById('namaFarmManager').value = String(draft.namaFarmManager || '').slice(0, 120);
     const warehouse = document.getElementById('kodeGudangTujuan');
     const savedWarehouse = String(draft.kodeGudangTujuan || '');
-    warehouse.value = requestWarehouseOptions.some(item => String(item.kodeGudang) === savedWarehouse) ? savedWarehouse : (sesiUser.isPicGudang && requestWarehouseOptions.length === 1 ? requestWarehouseOptions[0].kodeGudang : '');
+    const accountWarehouse = resolveAccountRequestWarehouse();
+    warehouse.value = accountWarehouse || (requestWarehouseOptions.some(item => String(item.kodeGudang) === savedWarehouse) ? savedWarehouse : '');
 
     const savedItems = Array.isArray(draft.items) ? draft.items.slice(0, 100) : [];
     document.getElementById('containerItems').innerHTML = '';
@@ -548,6 +549,7 @@
     const key = requestDraftStorageKey();
     if (key) sessionStorage.removeItem(key);
     document.getElementById('formPermintaan').reset();
+    document.getElementById('kodeGudangTujuan').disabled = false;
     document.getElementById('tglPermintaan').value = todayJakarta();
     document.getElementById('tglDibutuhkan').min = todayJakarta();
     document.getElementById('containerItems').innerHTML = '';
@@ -865,15 +867,39 @@
       if (cekSesiBerakhir(json)) return;
       if (json.status !== 'success') throw new Error(json.message || 'Gagal memuat daftar gudang.');
       requestWarehouseOptions = json.gudangDiizinkan || [];
-      select.innerHTML = requestWarehouseOptions.length
-        ? '<option value="">-- Pilih farm / gudang --</option>' + requestWarehouseOptions.map(item => `<option value="${escapeHtml(item.kodeGudang)}" data-unit="${escapeHtml(item.kodeUnit)}">${escapeHtml(item.namaUnit || item.kodeUnit)} · ${escapeHtml(item.namaGudang)} (${escapeHtml(item.kodeGudang)})</option>`).join('')
+      const resolvedWarehouse = resolveAccountRequestWarehouse();
+      const selectableWarehouses = resolvedWarehouse ? requestWarehouseOptions.filter(item => String(item.kodeGudang) === resolvedWarehouse) : requestWarehouseOptions;
+      select.innerHTML = selectableWarehouses.length
+        ? (resolvedWarehouse ? '' : '<option value="">-- Pilih farm / gudang --</option>') + selectableWarehouses.map(item => `<option value="${escapeHtml(item.kodeGudang)}" data-unit="${escapeHtml(item.kodeUnit)}">${escapeHtml(item.namaUnit || item.kodeUnit)} · ${escapeHtml(item.namaGudang)} (${escapeHtml(item.kodeGudang)})</option>`).join('')
         : '<option value="">Tidak ada gudang pada cakupan akun</option>';
-      if (selectedWarehouse && requestWarehouseOptions.some(item => String(item.kodeGudang).toLowerCase() === String(selectedWarehouse).toLowerCase())) select.value = selectedWarehouse;
-      else if (sesiUser.isPicGudang && requestWarehouseOptions.length === 1) select.value = requestWarehouseOptions[0].kodeGudang;
+      const accountWarehouse = resolveAccountRequestWarehouse();
+      const preferredWarehouse = accountWarehouse || (selectedWarehouse && requestWarehouseOptions.some(item => String(item.kodeGudang).toLowerCase() === String(selectedWarehouse).toLowerCase()) ? selectedWarehouse : '');
+      if (preferredWarehouse) select.value = preferredWarehouse;
+      select.disabled = Boolean(accountWarehouse && !idTiketEdit);
     } catch (error) {
       select.innerHTML = '<option value="">Daftar gudang tidak dapat dimuat</option>';
       showToast(error.message || 'Gagal memuat daftar gudang.', 'error');
     }
+  }
+
+  function resolveAccountRequestWarehouse() {
+    if (!Array.isArray(requestWarehouseOptions) || !requestWarehouseOptions.length) return '';
+    const user = sesiUser || {}, scope = String(user.scopeGudang || '').trim();
+    const unit = String(user.unitLokasi || '').trim();
+    const warehouse = String(user.kodeGudang || user.gudang || (user.scopeGudang && !['ALL','UNIT'].includes(String(user.scopeGudang).toUpperCase()) ? user.scopeGudang : '')).trim();
+    let candidates = requestWarehouseOptions;
+    if (warehouse && !['ALL', 'UNIT'].includes(warehouse.toUpperCase())) {
+      const exact = candidates.filter(item => String(item.kodeGudang || '').toLowerCase() === warehouse.toLowerCase());
+      if (exact.length === 1) return exact[0].kodeGudang;
+    }
+    if (scope && !['ALL', 'UNIT'].includes(scope.toUpperCase())) {
+      const exact = candidates.filter(item => String(item.kodeGudang || '').toLowerCase() === scope.toLowerCase() || String(item.namaGudang || '').toLowerCase() === scope.toLowerCase());
+      if (exact.length === 1) return exact[0].kodeGudang;
+      candidates = candidates.filter(item => String(item.kodeUnit || '').toLowerCase() === scope.toLowerCase() || String(item.namaUnit || '').toLowerCase() === scope.toLowerCase());
+    } else if (unit) {
+      candidates = candidates.filter(item => String(item.kodeUnit || '').toLowerCase() === unit.toLowerCase() || String(item.namaUnit || '').toLowerCase() === unit.toLowerCase());
+    }
+    return candidates.length === 1 ? candidates[0].kodeGudang : '';
   }
 
   function getRequestWarehouseUnit() {
@@ -1480,11 +1506,11 @@
       <div style="font-weight:700;color:var(--erp-primary);margin-bottom:8px;"><i class="fa-solid fa-images"></i> Halaman 2 — Foto barang (opsional)</div>
       <small style="display:block;color:#64748b;margin-bottom:10px;">Lampiran foto tersimpan per item dan tidak mengubah format formulir permintaan utama. Format JPEG, PNG, atau WEBP; maksimal 5 MB per foto.</small>
       ${t.items.map(it => {
-        const imageUrl = safeImageUrl(it.fotoBarangUrl);
-        return `<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:9px 0;border-top:1px solid #e2e8f0;">
-          <div style="min-width:160px;flex:1;"><b>Item ${Number(it.noItem)} · ${escapeHtml(it.namaBarang)}</b><br><small>${escapeHtml(it.kodeBarang || '')}</small></div>
-          ${imageUrl ? `<a href="${escapeHtml(imageUrl)}" target="_blank" rel="noopener noreferrer"><img src="${escapeHtml(imageUrl)}" alt="Foto ${escapeHtml(it.namaBarang)}" style="width:64px;height:64px;object-fit:cover;border-radius:6px;border:1px solid #cbd5e1;"></a>` : '<span class="badge badge-upload-no">Belum ada foto</span>'}
-          ${canUpload ? `<input type="file" id="fotoBarang_${Number(it.noItem)}" accept="image/jpeg,image/png,image/webp" style="max-width:220px;font-size:11px;"><button type="button" class="btn btn-outline btn-sm" onclick="uploadFotoBarang(${inlineArg(t.kodeTiket)},${Number(it.noItem)})"><i class="fa-solid fa-upload"></i> ${imageUrl ? 'Ganti foto' : 'Unggah foto'}</button>` : ''}
+        const photos = Array.isArray(it.fotoBarang) ? it.fotoBarang : (it.fotoBarangUrl ? [{url:it.fotoBarangUrl}] : []);
+        return `<div style="padding:10px 0;border-top:1px solid #e2e8f0;">
+          <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:8px;"><div style="min-width:160px;flex:1;"><b>Item ${Number(it.noItem)} · ${escapeHtml(it.namaBarang)}</b><br><small>${escapeHtml(it.kodeBarang || '')}</small></div><span class="badge ${photos.length?'badge-upload-ok':'badge-upload-no'}">${photos.length} foto</span>
+          ${canUpload ? `<input type="file" id="fotoBarang_${Number(it.noItem)}" accept="image/jpeg,image/png,image/webp" multiple style="max-width:260px;font-size:11px;"><button type="button" class="btn btn-outline btn-sm" onclick="uploadFotoBarang(${inlineArg(t.kodeTiket)},${Number(it.noItem)})"><i class="fa-solid fa-upload"></i> Tambah foto</button>` : ''}</div>
+          ${photos.length ? `<div style="display:flex;gap:8px;flex-wrap:wrap;">${photos.map((photo,index)=>{const url=safeImageUrl(photo.url||photo);return url?`<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" title="Foto ${index+1}"><img src="${escapeHtml(url)}" alt="Foto ${index+1} ${escapeHtml(it.namaBarang)}" style="width:72px;height:72px;object-fit:cover;border-radius:6px;border:1px solid #cbd5e1;"></a>`:''}).join('')}</div>`:''}
         </div>`;
       }).join('')}
     </div>`;
@@ -1673,29 +1699,30 @@
 
   async function uploadFotoBarang(kodeTiket, noItem) {
     const input = document.getElementById(`fotoBarang_${Number(noItem)}`);
-    const file = input && input.files && input.files[0];
-    if (!file) return showToast('Pilih foto barang terlebih dahulu.', 'error');
-    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) return showToast('Pilih gambar JPEG, PNG, atau WEBP.', 'error');
-    if (file.size > 5 * 1024 * 1024) return showToast('Ukuran foto maksimal 5 MB.', 'error');
+    const files = Array.from(input && input.files || []);
+    if (!files.length) return showToast('Pilih satu atau beberapa foto barang terlebih dahulu.', 'error');
+    if (files.length > 5) return showToast('Maksimal 5 foto dalam satu kali unggah.', 'error');
+    if (files.some(file => !['image/jpeg', 'image/png', 'image/webp'].includes(file.type))) return showToast('Semua foto harus JPEG, PNG, atau WEBP.', 'error');
+    if (files.some(file => file.size > 5 * 1024 * 1024)) return showToast('Ukuran maksimal 5 MB per foto.', 'error');
+    const button = input.parentElement.querySelector('button[onclick*="uploadFotoBarang"]');
+    if (button) { button.disabled = true; button.dataset.originalText = button.innerHTML; button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mengunggah…'; }
     try {
-      const fileData = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(String(reader.result || '').split(',')[1] || '');
-        reader.onerror = () => reject(new Error('Foto gagal dibaca.'));
-        reader.readAsDataURL(file);
-      });
-      const result = await (await postPayload({action: 'uploadFotoBarang', token: sesiUser.token, kodeTiket, noItem, fileName: file.name, fileData})).json();
-      if (cekSesiBerakhir(result)) return;
-      if (result.status !== 'success') throw new Error(result.message || 'Foto gagal diunggah.');
-      [groupedTickets, adminQueueTickets].forEach(list => list.forEach(ticket => {
-        if (ticket.kodeTiket === kodeTiket) {
-          const item = ticket.items.find(row => Number(row.noItem) === Number(noItem));
-          if (item) item.fotoBarangUrl = result.fileUrl;
-        }
-      }));
-      showToast(result.message || 'Foto barang berhasil diunggah.');
+      for (let index = 0; index < files.length; index++) {
+        const file = files[index];
+        const fileData = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(String(reader.result || '').split(',')[1] || '');
+          reader.onerror = () => reject(new Error(`Foto ${index+1} gagal dibaca.`));
+          reader.readAsDataURL(file);
+        });
+        const result = await (await postPayload({action:'uploadFotoBarang',token:sesiUser.token,kodeTiket,noItem,fileName:file.name,fileData})).json();
+        if (cekSesiBerakhir(result)) return;
+        if (result.status !== 'success') throw new Error(result.message || `Foto ${index+1} gagal diunggah.`);
+      }
+      showToast(`${files.length} foto barang berhasil diunggah.`);
       await bukaDetailTiket(kodeTiket);
     } catch (error) { showToast(error.message || 'Foto gagal diunggah.', 'error'); }
+    finally { if (button) { button.disabled=false; button.innerHTML=button.dataset.originalText||'<i class="fa-solid fa-upload"></i> Tambah foto'; } }
   }
 
   async function cetakStruk(kode) {
@@ -1708,25 +1735,28 @@
     if (!printWin) return showToast('Izinkan pop-up untuk mencetak formulir permintaan.', 'error');
     printWin.document.write('<!DOCTYPE html><html lang="id"><meta charset="UTF-8"><title>Menyiapkan cetakan</title><body style="font:14px Arial;padding:32px;color:#334155">Menyiapkan formulir dan lampiran foto untuk dicetak…</body></html>');
     printWin.document.close();
-    const photoItems = t.items.filter(item => item.fotoBarangUrl);
+    const photoItems = t.items.filter(item => (Array.isArray(item.fotoBarang) && item.fotoBarang.length) || item.fotoBarangUrl);
     const photoResults = await Promise.all(photoItems.map(async item => {
       try {
-        const response = await postPayload({action: 'getRequestPhotoForPrint', token: sesiUser.token, kodeTiket: t.kodeTiket, noItem: Number(item.noItem)});
-        const result = await response.json();
-        if (cekSesiBerakhir(result)) throw new Error('Sesi akun telah berakhir.');
-        if (result.status !== 'success' || !['image/jpeg', 'image/png', 'image/webp'].includes(result.mimeType) || !result.imageData) throw new Error(result.message || 'Foto tidak dapat dibaca dari penyimpanan.');
-        return {item, src: `data:${result.mimeType};base64,${result.imageData}`};
+        const storedPhotos = Array.isArray(item.fotoBarang) && item.fotoBarang.length ? item.fotoBarang : [null];
+        return await Promise.all(storedPhotos.map(async photo => {
+          const response = await postPayload({action:'getRequestPhotoForPrint',token:sesiUser.token,kodeTiket:t.kodeTiket,noItem:Number(item.noItem),photoId:photo&&photo.photoId||''});
+          const result = await response.json();
+          if (cekSesiBerakhir(result)) throw new Error('Sesi akun telah berakhir.');
+          if (result.status !== 'success' || !['image/jpeg','image/png','image/webp'].includes(result.mimeType) || !result.imageData) throw new Error(result.message || 'Foto tidak dapat dibaca dari penyimpanan.');
+          return {item,src:`data:${result.mimeType};base64,${result.imageData}`,photoName:photo&&photo.namaFile||''};
+        }));
       } catch (error) { return {item, error: error.message || 'Foto gagal dimuat.'}; }
     }));
-    const failedPhotos = photoResults.filter(result => result.error);
+    const failedPhotos = photoResults.filter(result => result.error).flatMap(result => result.error);
     if (failedPhotos.length) {
       showToast(`${failedPhotos.length} foto gagal dimuat. Formulir tidak dicetak agar lampiran tidak terlewat.`, 'error');
       printWin.document.open();
-      printWin.document.write(`<!DOCTYPE html><html lang="id"><meta charset="UTF-8"><title>Lampiran gagal dimuat</title><body style="font:14px Arial;padding:32px;color:#7f1d1d"><h2>Foto belum siap dicetak</h2><p>Periksa koneksi lalu coba cetak kembali. Foto yang gagal:</p><ul>${failedPhotos.map(result => `<li>${escapeHtml(result.item.namaBarang)} (item ${Number(result.item.noItem)}) — ${escapeHtml(result.error)}</li>`).join('')}</ul></body></html>`);
+      printWin.document.write(`<!DOCTYPE html><html lang="id"><meta charset="UTF-8"><title>Lampiran gagal dimuat</title><body style="font:14px Arial;padding:32px;color:#7f1d1d"><h2>Foto belum siap dicetak</h2><p>Periksa koneksi lalu coba cetak kembali. Foto yang gagal:</p><ul>${failedPhotos.map(error => `<li>${escapeHtml(error)}</li>`).join('')}</ul></body></html>`);
       printWin.document.close();
       return;
     }
-    const printPhotos = photoResults.map(({item, src}) => `<figure><img src="${src}" alt="Foto ${escapeHtml(item.namaBarang)}"><figcaption>Item ${Number(item.noItem)} · ${escapeHtml(item.namaBarang)} · ${escapeHtml(item.kodeBarang || '')}</figcaption></figure>`).join('');
+    const printPhotos = photoResults.flat().map(({item,src,photoName}) => `<figure><img src="${src}" alt="Foto ${escapeHtml(item.namaBarang)}"><figcaption>Item ${Number(item.noItem)} · ${escapeHtml(item.namaBarang)}${photoName?` · ${escapeHtml(photoName)}`:''} · ${escapeHtml(item.kodeBarang || '')}</figcaption></figure>`).join('');
     let htmlItems = t.items.map((it) => `
       <tr>
         <td style="padding: 8px 10px; border-bottom: 1px solid #cbd5e1; font-family: monospace; font-size: 11px;">${escapeHtml(it.kodeSupplier || '-')}</td>
@@ -1831,6 +1861,7 @@
     requestTargetSelect.value = t.tujuanPermintaan === 'TEKNISI' ? 'TEKNISI' : 'PURCHASING';
     requestTargetSelect.disabled = true;
     document.getElementById('keterangan').value = t.keterangan;
+    document.getElementById('kodeGudangTujuan').disabled = false;
     document.getElementById('kodeGudangTujuan').value = t.kodeGudang || '';
     if (t.kodeGudang && !document.getElementById('kodeGudangTujuan').value) muatGudangTujuanPermintaan(t.kodeGudang);
     document.getElementById('containerItems').innerHTML = ""; itemCounter = 0;
