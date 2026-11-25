@@ -1240,7 +1240,9 @@
   }
 
   function switchTab(tab) {
-    if (tab === 'koreksi' && !sesiUser.isAdmin) return showToast('Menu ini hanya tersedia untuk admin.', 'error');
+    const roleName = String(sesiUser.roleAccess || '').toUpperCase();
+    const temporaryOpeningStaff = roleName === 'STAFF_OPERASIONAL' && todayJakarta() <= '2026-11-30';
+    if (tab === 'koreksi' && !(sesiUser.isAdmin || temporaryOpeningStaff)) return showToast('Menu ini hanya tersedia untuk admin.', 'error');
     const tabs = {stok: ['tabStokBtn','tabStokView','Jurnal Stok & Mutasi'], transaksi: ['tabTransaksiBtn','tabTransaksiView','Pusat Transaksi Gudang'], history: ['tabHistoryBtn','tabHistoryView','Riwayat Mutasi'], audit: ['tabAuditBtn','tabAuditView','Jejak Audit Stok'], lihatStok: ['tabLihatStokBtn','tabLihatStokView','Lihat Saldo Stok'], historyBarang: ['tabHistoryBarangBtn','tabHistoryBarangView','History Stok per Barang'], koreksi: ['tabKoreksiBtn','tabKoreksiView','Koreksi Stok'], kandang: ['tabPemakaianKandangBtn','tabPemakaianKandangView','Pemakaian per Kandang']};
     if (!tabs[tab]) return;
     Object.keys(tabs).forEach(key => {
@@ -1252,7 +1254,7 @@
       button.tabIndex = tab === key ? 0 : -1;
       panel.style.display = tab === key ? 'block' : 'none';
     });
-    document.getElementById('currentPageTitle').textContent = tabs[tab][2];
+    document.getElementById('currentPageTitle').textContent = tab === 'koreksi' && temporaryOpeningStaff ? 'Masukan Saldo Awal' : tabs[tab][2];
     if (tab === 'history') muatPendingTransfers();
     if (tab === 'koreksi') muatMasterBarangKategori();
     if (tab === 'transaksi') muatTiketPenerimaan();
