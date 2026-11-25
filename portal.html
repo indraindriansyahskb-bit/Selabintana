@@ -1510,7 +1510,7 @@
         return `<div style="padding:10px 0;border-top:1px solid #e2e8f0;">
           <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:8px;"><div style="min-width:160px;flex:1;"><b>Item ${Number(it.noItem)} · ${escapeHtml(it.namaBarang)}</b><br><small>${escapeHtml(it.kodeBarang || '')}</small></div><span class="badge ${photos.length?'badge-upload-ok':'badge-upload-no'}">${photos.length} foto</span>
           ${canUpload ? `<input type="file" id="fotoBarang_${Number(it.noItem)}" accept="image/jpeg,image/png,image/webp" multiple style="max-width:260px;font-size:11px;"><button type="button" class="btn btn-outline btn-sm" onclick="uploadFotoBarang(${inlineArg(t.kodeTiket)},${Number(it.noItem)})"><i class="fa-solid fa-upload"></i> Tambah foto</button>` : ''}</div>
-          ${photos.length ? `<div style="display:flex;gap:8px;flex-wrap:wrap;">${photos.map((photo,index)=>{const url=safeImageUrl(photo.url||photo);return url?`<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" title="Foto ${index+1}"><img src="${escapeHtml(url)}" alt="Foto ${index+1} ${escapeHtml(it.namaBarang)}" style="width:72px;height:72px;object-fit:cover;border-radius:6px;border:1px solid #cbd5e1;"></a>`:''}).join('')}</div>`:''}
+          ${photos.length ? `<div style="display:flex;gap:8px;flex-wrap:wrap;">${photos.map((photo,index)=>{const url=safeImageUrl(photo.url||photo);return url?`<div style="position:relative"><a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" title="Lihat foto ${index+1}"><img src="${escapeHtml(url)}" alt="Foto ${index+1} ${escapeHtml(it.namaBarang)}" style="width:78px;height:78px;object-fit:cover;border-radius:6px;border:1px solid #cbd5e1;"></a>${canUpload&&photo.photoId?`<button type="button" title="Hapus foto ${index+1}" onclick="hapusFotoBarang(${inlineArg(t.kodeTiket)},${Number(it.noItem)},${inlineArg(photo.photoId)})" style="position:absolute;right:-5px;top:-5px;width:23px;height:23px;border:0;border-radius:50%;background:#dc2626;color:white;cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>`:''}</div>`:''}).join('')}</div>`:''}
         </div>`;
       }).join('')}
     </div>`;
@@ -1701,7 +1701,9 @@
     const input = document.getElementById(`fotoBarang_${Number(noItem)}`);
     const files = Array.from(input && input.files || []);
     if (!files.length) return showToast('Pilih satu atau beberapa foto barang terlebih dahulu.', 'error');
-    if (files.length > 5) return showToast('Maksimal 5 foto dalam satu kali unggah.', 'error');
+    const item = (groupedTickets.find(ticket=>ticket.kodeTiket===kodeTiket)||adminQueueTickets.find(ticket=>ticket.kodeTiket===kodeTiket)||{}).items?.find(row=>Number(row.noItem)===Number(noItem));
+    const existingCount = Array.isArray(item&&item.fotoBarang) ? item.fotoBarang.length : (item&&item.fotoBarangUrl?1:0);
+    if (existingCount + files.length > 5) return showToast(`Lampiran item maksimal 5 foto. Saat ini sudah ada ${existingCount} foto.`, 'error');
     if (files.some(file => !['image/jpeg', 'image/png', 'image/webp'].includes(file.type))) return showToast('Semua foto harus JPEG, PNG, atau WEBP.', 'error');
     if (files.some(file => file.size > 5 * 1024 * 1024)) return showToast('Ukuran maksimal 5 MB per foto.', 'error');
     const button = input.parentElement.querySelector('button[onclick*="uploadFotoBarang"]');
@@ -1723,6 +1725,20 @@
       await bukaDetailTiket(kodeTiket);
     } catch (error) { showToast(error.message || 'Foto gagal diunggah.', 'error'); }
     finally { if (button) { button.disabled=false; button.innerHTML=button.dataset.originalText||'<i class="fa-solid fa-upload"></i> Tambah foto'; } }
+  }
+
+  async function hapusFotoBarang(kodeTiket, noItem, photoId) {
+    if (!confirm('Hapus foto ini dari lampiran item? Foto lain tetap tersimpan.')) return;
+    const removeButton = document.querySelector(`button[onclick*="${photoId}"]`);
+    if (removeButton) { removeButton.disabled=true; removeButton.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i>'; }
+    try {
+      const result = await (await postPayload({action:'hapusFotoBarang',token:sesiUser.token,kodeTiket,noItem,photoId})).json();
+      if (cekSesiBerakhir(result)) return;
+      if (result.status !== 'success') throw new Error(result.message || 'Foto gagal dihapus.');
+      showToast(result.message || 'Foto berhasil dihapus.');
+      await bukaDetailTiket(kodeTiket);
+    } catch (error) { showToast(error.message || 'Foto gagal dihapus.', 'error'); }
+    finally { if (removeButton) { removeButton.disabled=false; removeButton.innerHTML='<i class="fa-solid fa-xmark"></i>'; } }
   }
 
   async function cetakStruk(kode) {
