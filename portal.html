@@ -424,7 +424,7 @@
     } catch (e) { return ''; }
   }
 
-  function isTechApprover() { return String(sesiUser.roleAccess || '').toUpperCase() === 'ADMIN_TEKNISI'; }
+  function isTechApprover() { return Boolean(sesiUser.isAdminTeknisi) || String(sesiUser.roleAccess || '').toUpperCase() === 'ADMIN_TEKNISI'; }
   function isDivisionAdmin() { return String(sesiUser.roleAccess || '').toUpperCase() === 'ADMIN_DIVISI'; }
   function queueWaitingLabel() { return isTechApprover() ? 'teknisi' : (isDivisionAdmin() ? 'keputusan' : 'Purchasing'); }
   function canManagePurchasingRequests() { return Boolean(sesiUser.isAdmin || String(sesiUser.roleAccess || '').toUpperCase() === 'ADMIN_DIVISI'); }
@@ -1361,8 +1361,9 @@
     let st = (t.statusPermintaan || "").toUpperCase();
     let canEdit = t.canEdit && ["PENDING", "PENDING_TEKNISI", "PENDING_PURCHASING", "REVISI"].includes(st);
     let canRevise = canEdit && !(t.tujuanPermintaan === 'TEKNISI' && String(t.statusTeknisi || '').toUpperCase() === 'ACC');
-    let canFulfill = sesiUser.isAdmin && ["ACC", "ACC_SEBAGIAN", "DIPROSES", "SEBAGIAN_TERPENUHI"].includes(st);
     const isTechTarget = String(t.tujuanPermintaan || 'PURCHASING').toUpperCase() === 'TEKNISI';
+    const canFulfillFromTechStock = isTechApprover() && isTechTarget && ["ACC", "ACC_SEBAGIAN", "DIPROSES", "SEBAGIAN_TERPENUHI"].includes(st);
+    let canFulfill = (sesiUser.isAdmin && ["ACC", "ACC_SEBAGIAN", "DIPROSES", "SEBAGIAN_TERPENUHI"].includes(st)) || canFulfillFromTechStock;
     const approvalItem = (t.items || []).find(item => Number(item.noItem) === 1) || t.items[0] || {};
     const canCancelAdminApproval = canManagePurchasingRequests() && ["ACC", "ACC_SEBAGIAN", "DIPROSES"].includes(st) && String(approvalItem.usernameAdminAcc || '').toLowerCase() === String(sesiUser.username || '').toLowerCase();
     const canCancelTechnicianApproval = isTechApprover() && isTechTarget && st === 'PENDING_PURCHASING' && String(approvalItem.statusTeknisi || '').toUpperCase() === 'ACC' && String(approvalItem.usernameTeknisi || '').toLowerCase() === String(sesiUser.username || '').toLowerCase();
@@ -1443,11 +1444,14 @@
 
     if (canFulfill) {
       html += `<div style="background:#f0fdf4; border:1px solid #bbf7d0; padding:15px; border-radius:8px; margin-bottom:15px;">
-        <div style="font-weight:700; color:#166534; margin-bottom:10px;"><i class="fa-solid fa-box-open"></i> Catat Pemenuhan</div>
-        <table class="erp-table"><thead><tr><th>Barang</th><th>Sisa Disetujui</th><th>Tambah Terpenuhi</th><th>Catatan</th><th></th></tr></thead><tbody>
+        <div style="font-weight:700; color:#166534; margin-bottom:6px;"><i class="fa-solid fa-box-open"></i> ${canFulfillFromTechStock ? 'Penuhi dari Gudang Teknik Sukajaya' : 'Catat Pemenuhan'}</div>
+        <div style="font-size:12px;color:#52665a;margin-bottom:10px;">${canFulfillFromTechStock ? 'Jumlah yang dicatat akan langsung mengurangi stok gudang teknisi. Nama barang dan satuan harus sesuai.' : 'Catat jumlah barang yang sudah dipenuhi untuk tiket ini.'}</div>
+        <table class="erp-table"><thead><tr><th>Barang</th>${canFulfillFromTechStock ? '<th>Stok Teknik</th>' : ''}<th>Sisa Disetujui</th><th>${canFulfillFromTechStock ? 'Ambil dari Stok' : 'Tambah Terpenuhi'}</th><th>Catatan</th><th></th></tr></thead><tbody>
           ${t.items.map(it => {
             const remaining = Math.max(0, Number(it.jumlahDisetujui || 0) - Number(it.jumlahTerpenuhi || 0));
-            return `<tr><td>${escapeHtml(it.namaBarang)}</td><td>${remaining} ${escapeHtml(it.satuan)}</td><td><input type="number" id="fulfillQty_${Number(it.noItem)}" min="0.001" max="${remaining}" step="any" style="max-width:120px;" ${remaining <= 0 ? 'disabled' : ''}></td><td><input type="text" id="fulfillNote_${Number(it.noItem)}" maxlength="500" placeholder="Opsional" style="max-width:150px;" ${remaining <= 0 ? 'disabled' : ''}></td><td><button class="btn btn-success btn-sm" onclick="catatPemenuhanItem(${inlineArg(t.kodeTiket)},${Number(it.noItem)})" ${remaining <= 0 ? 'disabled' : ''}>Simpan</button></td></tr>`;
+            const availableStock = Number(it.stokTeknisiTersedia || 0);
+            const maxQuantity = canFulfillFromTechStock ? Math.min(remaining, availableStock) : remaining;
+            return `<tr><td>${escapeHtml(it.namaBarang)}<br><small>${escapeHtml(it.satuan)}</small></td>${canFulfillFromTechStock ? `<td>${formatPortalQuantity(availableStock)} ${escapeHtml(it.satuan)}</td>` : ''}<td>${formatPortalQuantity(remaining)} ${escapeHtml(it.satuan)}</td><td><input type="number" id="fulfillQty_${Number(it.noItem)}" min="0.001" max="${maxQuantity}" step="any" style="max-width:120px;" ${maxQuantity <= 0 ? 'disabled' : ''}></td><td><input type="text" id="fulfillNote_${Number(it.noItem)}" maxlength="500" placeholder="Opsional" style="max-width:150px;" ${maxQuantity <= 0 ? 'disabled' : ''}></td><td><button class="btn btn-success btn-sm" onclick="catatPemenuhanItem(${inlineArg(t.kodeTiket)},${Number(it.noItem)})" ${maxQuantity <= 0 ? 'disabled' : ''}>${canFulfillFromTechStock ? 'Ambil & Simpan' : 'Simpan'}</button></td></tr>`;
           }).join('')}
         </tbody></table>
       </div>`;
@@ -1614,8 +1618,11 @@
     const noteInput = document.getElementById(`fulfillNote_${noItem}`);
     const quantity = Number(quantityInput && quantityInput.value);
     if (!Number.isFinite(quantity) || quantity <= 0) return showToast('Masukkan jumlah pemenuhan lebih dari 0.', 'error');
+    const triggerButton = document.activeElement && document.activeElement.closest('button');
+    if (triggerButton && triggerButton.disabled) return;
+    if (triggerButton) { triggerButton.disabled = true; triggerButton.dataset.originalText = triggerButton.innerHTML; triggerButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memproses'; }
     try {
-      const res = await postPayload({action: 'catatPemenuhanItem', token: sesiUser.token, kodeTiket: kodeTiket, noItem: noItem, jumlah: quantity, catatan: noteInput ? noteInput.value.trim() : ''});
+      const res = await postPayload({action: 'catatPemenuhanItem', token: sesiUser.token, kodeTiket: kodeTiket, noItem: noItem, jumlah: quantity, catatan: noteInput ? noteInput.value.trim() : '', idTransaksi: `FUL-${crypto.randomUUID()}`});
       const json = await res.json();
       if (cekSesiBerakhir(json)) return;
       if (json.status === 'success') {
@@ -1624,6 +1631,7 @@
         await bukaDetailTiket(kodeTiket);
       } else showToast(json.message, 'error');
     } catch (e) { showToast('Gagal mencatat pemenuhan.', 'error'); }
+    finally { if (triggerButton) { triggerButton.disabled = false; triggerButton.innerHTML = triggerButton.dataset.originalText || 'Simpan'; } }
   }
 
   async function uploadDokumenPdf(kodeTiket, documentStage) {
