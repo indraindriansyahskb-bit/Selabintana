@@ -150,9 +150,9 @@
     <main>
       <section class="hero" aria-labelledby="welcome-title">
         <div class="hero-copy">
-          <div class="eyebrow">Selamat Bekerja!</div>
-          <h1 id="welcome-title">Kita Berangkat Bersama, Kita Berhasil Bersama.</h1>
-          <p class="intro">Setiap pekerjaan yang kita lakukan punya arti. Terima kasih sudah menjadi bagian dari perjalanan dan keberhasilan perusahaan.</p>
+          <div class="eyebrow">Operasional farm</div>
+          <h1 id="welcome-title">Semua kebutuhan farm, satu tempat.</h1>
+          <p class="intro">Ajukan kebutuhan barang dan kelola persediaan farm melalui portal internal.</p>
           <a class="start-link" id="startLink" href="#authPanel"><span id="startLinkText">Masuk untuk melanjutkan</span>
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </a>
@@ -195,6 +195,11 @@
           <a class="module" href="perbaikan.html">
             <span class="module-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M14 6.2a5 5 0 0 0-6.5 6.5L3.8 16.4a2 2 0 0 0 2.8 2.8l3.7-3.7A5 5 0 0 0 16.8 9l-3 3-2.8-2.8 3-3Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="m15.8 15.8 4.4 4.4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>
             <span class="module-text"><h3>Permintaan Perbaikan</h3><p>Ajukan, setujui, dan pantau progres perbaikan aset.</p></span>
+            <span class="module-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </a>
+          <a class="module" id="adminTransactionsCard" href="admin-transaksi.html" hidden>
+            <span class="module-icon stock" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M5 4h14v16H5zM8 8h8M8 12h5M8 16h3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="m15 15 2 2 4-5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span class="module-text"><h3>Pembatalan Transaksi</h3><p>Kelola pembatalan tiket barang, perbaikan, dan transaksi stok.</p></span>
             <span class="module-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
           </a>
           <button class="module admin-module" id="adminUsersCard" type="button" onclick="bukaModalTambahUser()" hidden>
@@ -507,8 +512,9 @@
       document.getElementById('moduleWelcome').textContent = `Sesi aktif untuk ${user.nama || user.username}. Pilih modul operasional yang dibutuhkan.`;
       const isAdmin = Boolean(user.isAdmin || user.roleAccess === 'ADMIN');
       const modules = getUserModules(user);
-      document.querySelectorAll('.module-list a[href]').forEach(link => { const key = Object.keys(moduleByPage).find(module => moduleByPage[module] === link.getAttribute('href')); link.hidden = !key || modules.indexOf(key) < 0; });
+      document.querySelectorAll('.module-list a[href]:not(#adminTransactionsCard)').forEach(link => { const key = Object.keys(moduleByPage).find(module => moduleByPage[module] === link.getAttribute('href')); link.hidden = !key || modules.indexOf(key) < 0; });
       document.getElementById('adminUsersCard').hidden = !isAdmin;
+      document.getElementById('adminTransactionsCard').hidden = !isAdmin;
       document.querySelector('.module-list').classList.toggle('admin-visible', isAdmin);
       document.getElementById('startLink').href = '#moduleSection';
       document.getElementById('startLinkText').textContent = 'Pilih modul';
