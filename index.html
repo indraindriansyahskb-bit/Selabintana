@@ -197,6 +197,11 @@
             <span class="module-text"><h3>Permintaan Perbaikan</h3><p>Ajukan, setujui, dan pantau progres perbaikan aset.</p></span>
             <span class="module-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
           </a>
+          <a class="module" href="proposal.html">
+            <span class="module-icon stock" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M6 3.8h8l4 4V20H6V3.8Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M14 4v4h4M9 12h6m-6 3.5h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>
+            <span class="module-text"><h3>Proposal Permintaan</h3><p>Ajukan proposal barang, sipil, atau ekspedisi ke ADMIN.</p></span>
+            <span class="module-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </a>
           <a class="module" id="adminTransactionsCard" href="admin-transaksi.html" hidden>
             <span class="module-icon stock" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M5 4h14v16H5zM8 8h8M8 12h5M8 16h3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="m15 15 2 2 4-5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
             <span class="module-text"><h3>Pembatalan Transaksi</h3><p>Kelola pembatalan tiket barang, perbaikan, dan transaksi stok.</p></span>
@@ -241,6 +246,7 @@
           <label class="access-option"><input type="checkbox" name="userModules" value="portal"><span>Portal Permintaan</span></label>
           <label class="access-option"><input type="checkbox" name="userModules" value="stock"><span>Manajemen Stok</span></label>
           <label class="access-option"><input type="checkbox" name="userModules" value="repair"><span>Permintaan Perbaikan</span></label>
+          <label class="access-option"><input type="checkbox" name="userModules" value="proposal"><span>Proposal Permintaan</span></label>
         </div></section>
         <section class="access-section" id="warehouseAccessSection" aria-labelledby="warehouseAccessHeading"><h3 id="warehouseAccessHeading">Gudang yang dapat diakses</h3><small>Pilih satu atau lebih gudang. Untuk Kepala Teknisi, gunakan pilihan gudang Teknik lintas farm.</small><div class="warehouse-tools"><button type="button" onclick="pilihGudangTeknik()">Pilih semua gudang Teknik</button><button type="button" onclick="bersihkanGudangChecklist()">Hapus pilihan</button></div><div class="warehouse-list" id="userWarehouseChecklist"></div></section>
         <p id="adminFormMessage" role="status" aria-live="polite" hidden></p>
@@ -260,7 +266,7 @@
     let adminUserWarehouses = [];
     let userModalInvoker = null;
     let moduleDefaultsInitialized = false;
-    const moduleByPage = {portal: 'portal.html', stock: 'stock.html', repair: 'perbaikan.html'};
+    const moduleByPage = {portal: 'portal.html', stock: 'stock.html', repair: 'perbaikan.html', proposal: 'proposal.html'};
 
     function readCentralSession() {
       const keys = [AUTH_SESSION_KEY, ...LEGACY_SESSION_KEYS];
@@ -281,12 +287,12 @@
 
     function returnTarget() {
       const target = new URLSearchParams(location.search).get('return');
-      return target === 'portal.html' || target === 'stock.html' || target === 'perbaikan.html' ? target : '';
+      return target === 'portal.html' || target === 'stock.html' || target === 'perbaikan.html' || target === 'proposal.html' ? target : '';
     }
 
     function getUserModules(user) {
       if (user && user.customAccessConfigured) return Array.isArray(user.modulesAccess) ? user.modulesAccess : [];
-      return isPicGudangLegacy(user) ? ['stock'] : ['portal','stock','repair'];
+      return isPicGudangLegacy(user) ? ['stock'] : ['portal','stock','repair','proposal'];
     }
 
     async function postAuth(payload) {
@@ -371,10 +377,10 @@
       }
       if (!moduleDefaultsInitialized || (event && event.target && event.target.id === 'userBaruRole')) {
         const defaults = {
-          ADMIN: ['portal','stock','repair'],
-          ADMIN_TEKNISI: ['portal','stock','repair'],
-          ADMIN_DIVISI: ['portal','stock','repair'],
-          STAFF_OPERASIONAL: ['portal','stock','repair'],
+          ADMIN: ['portal','stock','repair','proposal'],
+          ADMIN_TEKNISI: ['portal','stock','repair','proposal'],
+          ADMIN_DIVISI: ['portal','stock','repair','proposal'],
+          STAFF_OPERASIONAL: ['portal','stock','repair','proposal'],
           PIC_GUDANG: ['stock']
         }[role] || ['portal'];
         document.querySelectorAll('input[name="userModules"]').forEach(input => { input.checked = defaults.indexOf(input.value) >= 0; });
@@ -512,6 +518,7 @@
       document.getElementById('moduleWelcome').textContent = `Sesi aktif untuk ${user.nama || user.username}. Pilih modul operasional yang dibutuhkan.`;
       const isAdmin = Boolean(user.isAdmin || user.roleAccess === 'ADMIN');
       const modules = getUserModules(user);
+      if (modules.indexOf('repair') >= 0 && modules.indexOf('proposal') < 0) modules.push('proposal');
       document.querySelectorAll('.module-list a[href]:not(#adminTransactionsCard)').forEach(link => { const key = Object.keys(moduleByPage).find(module => moduleByPage[module] === link.getAttribute('href')); link.hidden = !key || modules.indexOf(key) < 0; });
       document.getElementById('adminUsersCard').hidden = !isAdmin;
       document.getElementById('adminTransactionsCard').hidden = !isAdmin;
