@@ -871,12 +871,12 @@
       <button type="button" aria-label="Tutup pembatalan transaksi" onclick="tutupModal('modalHapusTransaksi')" style="background:none;border:none;cursor:pointer;font-size:16px;"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <form id="formHapusTransaksi" class="modal-body">
-      <input type="hidden" id="hapusTransaksiIdSumber">
+      <input type="hidden" id="hapusTransaksiIdSumber"><input type="hidden" id="hapusTransaksiIdsSumber">
       <div id="hapusTransaksiDetail" style="background:#f6f9f7;border:1px solid var(--erp-border-light);border-radius:8px;padding:12px;margin-bottom:14px;"></div>
       <div class="form-group"><label for="hapusTransaksiAlasan">Alasan penghapusan (wajib)</label><textarea id="hapusTransaksiAlasan" minlength="10" maxlength="500" rows="4" required placeholder="Jelaskan kesalahan input dan alasan transaksi dibatalkan." style="width:100%;padding:9px 12px;border:1px solid var(--erp-border);border-radius:6px;font:inherit;resize:vertical;"></textarea><small style="display:block;margin-top:5px;color:var(--erp-text-muted);">10–500 karakter. Alasan dan nama admin disimpan dalam riwayat penghapusan.</small></div>
       <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px;">
         <button type="button" onclick="tutupModal('modalHapusTransaksi')" class="btn btn-outline">Batal</button>
-        <button id="btnKonfirmasiHapusTransaksi" type="submit" class="btn btn-danger"><i class="fa-solid fa-trash-can"></i> Hapus dan Catat Alasan</button>
+        <button id="btnKonfirmasiHapusTransaksi" type="submit" class="btn btn-danger"><i class="fa-solid fa-trash-can"></i> Batalkan dan Catat Alasan</button>
       </div>
     </form>
   </div>
@@ -2863,17 +2863,32 @@
   function renderTransactionsForDeletion(rows) {
     const container = document.getElementById('deleteTxnResults');
     if (!rows.length) { container.innerHTML = '<p style="padding:18px;text-align:center;color:var(--erp-text-muted);">Tidak ada transaksi yang memenuhi filter. Periksa kembali tanggal atau kata kunci.</p>'; return; }
-    let html = '<table class="erp-table"><thead><tr><th>Waktu / ID Transaksi</th><th>Barang</th><th>Jenis</th><th>Jumlah</th><th>Lokasi</th><th>Pelaku / Catatan</th><th>Aksi</th></tr></thead><tbody>';
-    html += rows.map(row => `<tr><td><small class="mono">${escapeHtml(row.waktu)}</small><br><small>${escapeHtml(row.idTransaksi)}</small></td><td><b>${escapeHtml(row.namaBarang)}</b><br><small class="mono">${escapeHtml(row.kodeBarang)} · ${escapeHtml(row.kategori)}</small></td><td><span class="badge ${row.tipeMutasi === 'MASUK' ? 'badge-success' : 'badge-danger'}">${escapeHtml(row.aksi)} / ${escapeHtml(row.tipeMutasi)}</span></td><td class="mono"><b>${formatNumber(row.jumlah)} ${escapeHtml(row.satuan)}</b></td><td>${escapeHtml(row.kodeUnit)}<br><small>${escapeHtml(row.kodeGudang)}</small></td><td>${escapeHtml(row.pelaku)}<br><small>${escapeHtml(row.keterangan)}</small></td><td><button type="button" class="btn btn-outline btn-sm" style="color:var(--erp-danger);" onclick="bukaModalHapusTransaksi(${inlineArg(row.idTransaksi)})"><i class="fa-solid fa-trash-can"></i> Hapus</button></td></tr>`).join('');
+    let html = '<table class="erp-table"><thead><tr><th>Waktu / ID Transaksi</th><th>Barang</th><th>Jenis</th><th>Jumlah</th><th>Unit / Gudang</th><th>Pelaku / Keterangan</th><th>Aksi</th></tr></thead><tbody>';
+    html += rows.map(row => {
+      const childIds = Array.isArray(row.childTransactionIds) ? row.childTransactionIds : [];
+      const isGrouped = childIds.length > 1;
+      const locations = (row.lokasiKandangList || []).filter(Boolean);
+      const detail = isGrouped
+        ? `<b>${childIds.length} baris kandang/peruntukan</b>${locations.length ? `<br><small>${escapeHtml(locations.join(', '))}</small>` : ''}`
+        : escapeHtml(row.lokasiKandang || row.keterangan || '-');
+      const qtyText = `${formatNumber(row.jumlah)} ${escapeHtml(row.satuan || 'pcs')}${isGrouped ? `<br><small>${childIds.length} baris dalam 1 transaksi</small>` : ''}`;
+      return `<tr><td><small class="mono">${escapeHtml(row.waktu)}</small><br><small>${escapeHtml(row.idTransaksi)}</small></td><td><b>${escapeHtml(row.namaBarang)}</b><br><small class="mono">${escapeHtml(row.kodeBarang)} · ${escapeHtml(row.kategori)}</small></td><td><span class="badge ${row.tipeMutasi === 'MASUK' ? 'badge-success' : 'badge-danger'}">${escapeHtml(row.aksi)} / ${escapeHtml(row.tipeMutasi)}</span></td><td class="mono"><b>${qtyText}</b></td><td>${escapeHtml(row.kodeUnit)}<br><small>${escapeHtml(row.kodeGudang)}</small></td><td>${escapeHtml(row.pelaku)}<br><small>${detail}</small></td><td><button type="button" class="btn btn-outline btn-sm" style="color:var(--erp-danger);" onclick="bukaModalHapusTransaksi(${inlineArg(row.idTransaksi)})"><i class="fa-solid fa-trash-can"></i> ${isGrouped ? 'Batalkan semua' : 'Hapus'}</button></td></tr>`;
+    }).join('');
     container.innerHTML = html + '</tbody></table>';
   }
   function bukaModalHapusTransaksi(transactionId) {
     if (!sesiUser.isAdmin) return showToast('Hanya admin yang dapat membatalkan transaksi.', 'error');
     const row = deletableTransactionRows.find(item => String(item.idTransaksi) === String(transactionId));
     if (!row) return showToast('Transaksi tidak lagi tersedia. Cari ulang sebelum menghapus.', 'error');
+    const childIds = Array.isArray(row.childTransactionIds) ? row.childTransactionIds : [];
+    const isGrouped = childIds.length > 1;
     document.getElementById('formHapusTransaksi').reset();
-    document.getElementById('hapusTransaksiIdSumber').value = row.idTransaksi;
-    document.getElementById('hapusTransaksiDetail').innerHTML = `<b>${escapeHtml(row.namaBarang)}</b> · ${escapeHtml(row.kodeBarang)}<br>${escapeHtml(row.tipeMutasi)} ${formatNumber(row.jumlah)} ${escapeHtml(row.satuan)} · ${escapeHtml(row.kodeUnit)} / ${escapeHtml(row.kodeGudang)}<br><small>${escapeHtml(row.waktu)} · ID ${escapeHtml(row.idTransaksi)}</small>`;
+    document.getElementById('hapusTransaksiIdSumber').value = isGrouped ? '' : row.idTransaksi;
+    document.getElementById('hapusTransaksiIdsSumber').value = isGrouped ? JSON.stringify(childIds) : '';
+    const locationText = (row.lokasiKandangList || []).filter(Boolean).join(', ');
+    document.getElementById('hapusTransaksiDetail').innerHTML = isGrouped
+      ? `<b>${escapeHtml(row.namaBarang)}</b> · ${escapeHtml(row.kodeBarang)}<br>${escapeHtml(row.aksi)} · Total ${formatNumber(row.jumlah)} ${escapeHtml(row.satuan)}<br>${escapeHtml(row.kodeUnit)} / ${escapeHtml(row.kodeGudang)}<br><b>${childIds.length} baris kandang/peruntukan</b>${locationText ? `<br><small>${escapeHtml(locationText)}</small>` : ''}<br><small>${escapeHtml(row.waktu)} · ID transaksi ${escapeHtml(row.idTransaksi)}</small><p style="margin:8px 0 0;color:var(--erp-danger);">Semua baris dalam transaksi ini akan dibatalkan sekaligus.</p>`
+      : `<b>${escapeHtml(row.namaBarang)}</b> · ${escapeHtml(row.kodeBarang)}<br>${escapeHtml(row.tipeMutasi)} ${formatNumber(row.jumlah)} ${escapeHtml(row.satuan)} · ${escapeHtml(row.kodeUnit)} / ${escapeHtml(row.kodeGudang)}<br><small>${escapeHtml(row.waktu)} · ID ${escapeHtml(row.idTransaksi)}</small>`;
     document.getElementById('modalHapusTransaksi').style.display = 'flex';
     document.getElementById('hapusTransaksiAlasan').focus();
   }
@@ -2882,7 +2897,11 @@
     if (!sesiUser.isAdmin) return showToast('Hanya admin yang dapat membatalkan transaksi.', 'error');
     const reason = document.getElementById('hapusTransaksiAlasan').value.trim();
     if (reason.length < 10 || reason.length > 500) return showToast('Alasan harus 10–500 karakter.', 'error');
+    const childIdsRaw = document.getElementById('hapusTransaksiIdsSumber').value;
+    let sourceIds = [];
+    try { sourceIds = childIdsRaw ? JSON.parse(childIdsRaw) : []; } catch (_) { return showToast('Daftar baris transaksi tidak valid. Cari ulang transaksi.', 'error'); }
     const payload = {action: 'hapusTransaksiStok', idTransaksiSumber: document.getElementById('hapusTransaksiIdSumber').value, alasan: reason};
+    if (sourceIds.length) payload.idTransaksiSumberList = sourceIds;
     await kirimAksiStok(payload, async function() {
       tutupModal('modalHapusTransaksi');
       document.getElementById('formHapusTransaksi').reset();
@@ -3454,5 +3473,3 @@
 
 </body>
 </html>
-
-
