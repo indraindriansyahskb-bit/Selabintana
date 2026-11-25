@@ -314,11 +314,6 @@
           <i class="fa-solid fa-scale-balanced"></i><span>Koreksi Stok</span>
         </button>
       </li>
-      <li id="hapusTransaksiMenuItem" hidden>
-        <button type="button" role="tab" aria-selected="false" aria-controls="tabHapusTransaksiView" class="erp-menu-item" id="tabHapusTransaksiBtn" onclick="switchTab('hapusTransaksi')">
-          <i class="fa-solid fa-trash-can"></i><span>Hapus Transaksi</span>
-        </button>
-      </li>
     </ul></nav>
 
     <div class="erp-sidebar-footer">
@@ -345,7 +340,7 @@
         <nav class="module-shortcuts" aria-label="Pintasan modul">
           <a id="modulePortalLink" href="portal.html" aria-label="Permintaan Barang" title="Permintaan Barang"><i class="fa-solid fa-boxes-stacked" aria-hidden="true"></i><span>Barang</span></a>
           <a id="moduleStockLink" href="stock.html" aria-current="page" aria-label="Manajemen Stok" title="Manajemen Stok"><i class="fa-solid fa-warehouse" aria-hidden="true"></i><span>Stok</span></a>
-          <a id="moduleRepairLink" href="perbaikan.html" aria-label="Permintaan Perbaikan" title="Permintaan Perbaikan"><i class="fa-solid fa-screwdriver-wrench" aria-hidden="true"></i><span>Perbaikan</span></a>
+          <a id="moduleRepairLink" href="perbaikan.html" aria-label="Permintaan Perbaikan" title="Permintaan Perbaikan"><i class="fa-solid fa-screwdriver-wrench" aria-hidden="true"></i><span>Perbaikan</span></a><a id="moduleProposalLink" href="proposal.html" aria-label="Proposal Permintaan" title="Proposal Permintaan"><i class="fa-solid fa-file-signature" aria-hidden="true"></i><span>Proposal</span></a>
           <a href="index.html" aria-label="Beranda" title="Kembali ke menu awal setelah login"><i class="fa-solid fa-house" aria-hidden="true"></i><span>Beranda</span></a>
         </nav>
         <button type="button" onclick="bukaModalGantiPassword()" class="btn btn-outline btn-password" title="Ganti password" aria-label="Ganti password" style="padding:6px 10px;"><i class="fa-solid fa-key"></i><span>Password</span></button>
@@ -649,41 +644,6 @@
               <button type="button" class="btn btn-primary" onclick="muatRiwayatKoreksiStok(true)"><i class="fa-solid fa-magnifying-glass"></i> Cari Riwayat</button>
             </div>
             <div id="containerKoreksiHistory" class="erp-table-responsive" aria-live="polite"><p style="padding:16px;color:var(--erp-text-muted);">Isi filter lalu pilih Cari Riwayat.</p></div>
-          </div>
-        </div>
-      </div>
-
-      <div id="tabHapusTransaksiView" role="tabpanel" aria-labelledby="tabHapusTransaksiBtn" style="display:none;">
-        <div class="erp-card">
-          <div class="erp-card-header">
-            <div class="erp-card-title"><i class="fa-solid fa-trash-can"></i> Cari Transaksi untuk Dihapus</div>
-            <span class="badge badge-warning">Khusus Admin</span>
-          </div>
-          <div class="erp-card-body">
-            <div style="background:#fff8e6;border:1px solid #f6d98a;border-radius:8px;padding:12px 14px;margin-bottom:16px;color:#78520a;">
-              Penghapusan membatalkan saldo dengan mutasi pembalik, sementara jejak transaksi dan alasan tetap tersimpan. Penerimaan tiket portal ikut memperbarui progres tiket; mutasi antar-gudang dibatalkan melalui alur asalnya.
-            </div>
-            <div class="erp-filter-bar">
-              <div class="erp-filter-group"><label for="deleteTxnStart">Dari tanggal</label><input type="date" id="deleteTxnStart" onchange="invalidateDeleteCandidates()"></div>
-              <div class="erp-filter-group"><label for="deleteTxnEnd">Sampai tanggal</label><input type="date" id="deleteTxnEnd" onchange="invalidateDeleteCandidates()"></div>
-              <div class="erp-filter-group"><label for="deleteTxnAction">Jenis transaksi</label><select id="deleteTxnAction" onchange="invalidateDeleteCandidates()"><option value="PENERIMAAN">Penerimaan barang masuk</option><option value="">Semua transaksi yang bisa dibatalkan</option><option value="PEMAKAIAN">Pemakaian barang keluar</option><option value="KOREKSI_STOK">Koreksi stok / saldo awal</option></select></div>
-              <div class="erp-filter-group" style="flex:2;min-width:220px;"><label for="deleteTxnSearch">Cari ID / barang / pelaku / lokasi</label><input type="search" id="deleteTxnSearch" oninput="invalidateDeleteCandidates()" placeholder="Masukkan kata kunci"></div>
-              <button type="button" class="btn btn-primary" onclick="muatTransactionsForDeletion(true)"><i class="fa-solid fa-magnifying-glass"></i> Cari Transaksi</button>
-            </div>
-            <div id="deleteTxnResults" class="erp-table-responsive" aria-live="polite"><p style="padding:18px;text-align:center;color:var(--erp-text-muted);">Isi minimal satu filter lalu pilih Cari Transaksi.</p></div>
-          </div>
-        </div>
-        <div class="erp-card" style="margin-top:16px;">
-          <div class="erp-card-header"><div class="erp-card-title"><i class="fa-solid fa-clipboard-list"></i> Riwayat Transaksi Dihapus</div></div>
-          <div class="erp-card-body">
-            <div class="erp-filter-bar">
-              <div class="erp-filter-group"><label for="deletedHistoryStart">Dihapus dari tanggal</label><input type="date" id="deletedHistoryStart" onchange="invalidateDeletedHistory()"></div>
-              <div class="erp-filter-group"><label for="deletedHistoryEnd">Sampai tanggal</label><input type="date" id="deletedHistoryEnd" onchange="invalidateDeletedHistory()"></div>
-              <div class="erp-filter-group" style="flex:2;min-width:220px;"><label for="deletedHistorySearch">Cari ID / barang / pelaku / admin / alasan</label><input type="search" id="deletedHistorySearch" oninput="invalidateDeletedHistory()" placeholder="Masukkan kata kunci"></div>
-              <button type="button" class="btn btn-primary" onclick="muatDeletedTransactions(true)"><i class="fa-solid fa-magnifying-glass"></i> Cari Riwayat</button>
-            </div>
-            <div id="deletedHistorySummary" aria-live="polite" style="margin-bottom:12px;"></div>
-            <div id="deletedHistoryResults" class="erp-table-responsive" aria-live="polite"><p style="padding:18px;text-align:center;color:var(--erp-text-muted);">Isi minimal satu filter lalu pilih Cari Riwayat.</p></div>
           </div>
         </div>
       </div>
@@ -1212,13 +1172,13 @@
     if (singleOpeningDate) { singleOpeningDate.max = todayJakarta(); if (!singleOpeningDate.value) singleOpeningDate.value = todayJakarta(); }
     const koreksiMenu = document.getElementById('koreksiStokMenuItem');
     koreksiMenu.hidden = !sesiUser.isAdmin;
-    document.getElementById('hapusTransaksiMenuItem').hidden = !sesiUser.isAdmin;
     document.querySelector('.erp-menu').classList.toggle('has-admin-menu', Boolean(sesiUser.isAdmin));
     const roleName = String(sesiUser.roleAccess || '').toUpperCase();
-    const activeModules = sesiUser.customAccessConfigured ? (Array.isArray(sesiUser.modulesAccess) ? sesiUser.modulesAccess : []) : (roleName === 'PIC_GUDANG' ? ['stock'] : ['portal','stock','repair']);
+    const activeModules = sesiUser.customAccessConfigured ? (Array.isArray(sesiUser.modulesAccess) ? sesiUser.modulesAccess : []) : (roleName === 'PIC_GUDANG' ? ['stock'] : ['portal','stock','repair','proposal']);
     document.getElementById('modulePortalLink').hidden = activeModules.indexOf('portal') < 0;
     document.getElementById('moduleStockLink').hidden = activeModules.indexOf('stock') < 0;
     document.getElementById('moduleRepairLink').hidden = activeModules.indexOf('repair') < 0;
+    document.getElementById('moduleProposalLink').hidden = activeModules.indexOf('proposal') < 0 && activeModules.indexOf('repair') < 0;
     
     let initial = (sesiUser.nama || "U").substring(0,2).toUpperCase();
     document.getElementById('userProfileTag').innerHTML = `
@@ -1267,8 +1227,8 @@
   }
 
   function switchTab(tab) {
-    if ((tab === 'koreksi' || tab === 'hapusTransaksi') && !sesiUser.isAdmin) return showToast('Menu ini hanya tersedia untuk admin.', 'error');
-    const tabs = {stok: ['tabStokBtn','tabStokView','Jurnal Stok & Mutasi'], transaksi: ['tabTransaksiBtn','tabTransaksiView','Pusat Transaksi Gudang'], history: ['tabHistoryBtn','tabHistoryView','Riwayat Mutasi'], audit: ['tabAuditBtn','tabAuditView','Jejak Audit Stok'], lihatStok: ['tabLihatStokBtn','tabLihatStokView','Lihat Saldo Stok'], historyBarang: ['tabHistoryBarangBtn','tabHistoryBarangView','History Stok per Barang'], koreksi: ['tabKoreksiBtn','tabKoreksiView','Koreksi Stok'], hapusTransaksi: ['tabHapusTransaksiBtn','tabHapusTransaksiView','Hapus Transaksi'], kandang: ['tabPemakaianKandangBtn','tabPemakaianKandangView','Pemakaian per Kandang']};
+    if (tab === 'koreksi' && !sesiUser.isAdmin) return showToast('Menu ini hanya tersedia untuk admin.', 'error');
+    const tabs = {stok: ['tabStokBtn','tabStokView','Jurnal Stok & Mutasi'], transaksi: ['tabTransaksiBtn','tabTransaksiView','Pusat Transaksi Gudang'], history: ['tabHistoryBtn','tabHistoryView','Riwayat Mutasi'], audit: ['tabAuditBtn','tabAuditView','Jejak Audit Stok'], lihatStok: ['tabLihatStokBtn','tabLihatStokView','Lihat Saldo Stok'], historyBarang: ['tabHistoryBarangBtn','tabHistoryBarangView','History Stok per Barang'], koreksi: ['tabKoreksiBtn','tabKoreksiView','Koreksi Stok'], kandang: ['tabPemakaianKandangBtn','tabPemakaianKandangView','Pemakaian per Kandang']};
     if (!tabs[tab]) return;
     Object.keys(tabs).forEach(key => {
       const [buttonId, panelId] = tabs[key];
@@ -2876,11 +2836,6 @@
     }
   }
 
-  function invalidateDeleteCandidates() {
-    deleteCandidatesLoaded = false;
-    deletableTransactionRows = [];
-    document.getElementById('deleteTxnResults').innerHTML = '<p style="padding:18px;text-align:center;color:var(--erp-text-muted);">Filter berubah. Pilih Cari Transaksi untuk memuat hasil baru.</p>';
-  }
   async function muatTransactionsForDeletion(force = false) {
     if (!sesiUser.isAdmin) return false;
     if (!force && !deleteCandidatesLoaded) return false;
@@ -2942,11 +2897,6 @@
     }, 'formHapusTransaksi');
   });
 
-  function invalidateDeletedHistory() {
-    deletedHistoryLoaded = false;
-    document.getElementById('deletedHistorySummary').innerHTML = '';
-    document.getElementById('deletedHistoryResults').innerHTML = '<p style="padding:18px;text-align:center;color:var(--erp-text-muted);">Filter berubah. Pilih Cari Riwayat untuk memuat hasil baru.</p>';
-  }
   async function muatDeletedTransactions(force = false) {
     if (!sesiUser.isAdmin) return false;
     if (!force && !deletedHistoryLoaded) return false;
