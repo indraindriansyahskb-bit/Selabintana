@@ -186,6 +186,7 @@
         <li id="menuQueueItem" hidden><button type="button" id="menuQueueBtn" class="erp-menu-item" aria-controls="portalQueueView" onclick="switchPortalView('queue')"><i class="fa-solid fa-inbox" aria-hidden="true"></i><span>Daftar Permintaan Barang</span></button></li>
         <li><button type="button" id="menuHistoryBtn" class="erp-menu-item" aria-controls="portalHistoryView" onclick="switchPortalView('history')"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i><span>History Permintaan</span></button></li>
         <li><a class="erp-menu-item" href="perbaikan.html" style="text-decoration:none;"><i class="fa-solid fa-screwdriver-wrench" aria-hidden="true"></i><span>Permintaan Perbaikan</span></a></li>
+        <li><a class="erp-menu-item" href="proposal.html" style="text-decoration:none;"><i class="fa-solid fa-file-signature" aria-hidden="true"></i><span>Proposal Permintaan</span></a></li>
       </ul>
     </nav>
     <div class="erp-sidebar-footer"><small>PORTAL INTERNAL</small><div>CV. Selabintana</div></div>
@@ -198,7 +199,7 @@
         <nav class="module-shortcuts" aria-label="Pintasan modul">
           <a id="modulePortalLink" href="portal.html" aria-current="page" aria-label="Permintaan Barang" title="Permintaan Barang"><i class="fa-solid fa-boxes-stacked" aria-hidden="true"></i><span>Barang</span></a>
           <a id="moduleStockLink" href="stock.html" aria-label="Manajemen Stok" title="Manajemen Stok"><i class="fa-solid fa-warehouse" aria-hidden="true"></i><span>Stok</span></a>
-          <a id="moduleRepairLink" href="perbaikan.html" aria-label="Permintaan Perbaikan" title="Permintaan Perbaikan"><i class="fa-solid fa-screwdriver-wrench" aria-hidden="true"></i><span>Perbaikan</span></a>
+          <a id="moduleRepairLink" href="perbaikan.html" aria-label="Permintaan Perbaikan" title="Permintaan Perbaikan"><i class="fa-solid fa-screwdriver-wrench" aria-hidden="true"></i><span>Perbaikan</span></a><a id="moduleProposalLink" href="proposal.html" aria-label="Proposal Permintaan" title="Proposal Permintaan"><i class="fa-solid fa-file-signature" aria-hidden="true"></i><span>Proposal</span></a>
           <a href="index.html" aria-label="Beranda" title="Kembali ke menu awal setelah login"><i class="fa-solid fa-house" aria-hidden="true"></i><span>Beranda</span></a>
         </nav>
         <button type="button" onclick="bukaModalGantiPassword()" class="btn btn-outline topbar-action" title="Ganti password"><i class="fa-solid fa-key" aria-hidden="true"></i><span>Password</span></button>
@@ -720,11 +721,13 @@
   async function tampilkanDashboard() {
     document.getElementById('mainPanel').style.display = 'flex';
     const role = String(sesiUser.roleAccess || '').toUpperCase();
-    const activeModules = sesiUser.customAccessConfigured ? (Array.isArray(sesiUser.modulesAccess) ? sesiUser.modulesAccess : []) : (role === 'PIC_GUDANG' ? ['stock'] : ['portal','stock','repair']);
+    const activeModules = sesiUser.customAccessConfigured ? (Array.isArray(sesiUser.modulesAccess) ? sesiUser.modulesAccess : []) : (role === 'PIC_GUDANG' ? ['stock'] : ['portal','stock','repair','proposal']);
     document.getElementById('moduleStockLink').hidden = activeModules.indexOf('stock') < 0;
     document.getElementById('modulePortalLink').hidden = activeModules.indexOf('portal') < 0;
     document.getElementById('moduleRepairLink').hidden = activeModules.indexOf('repair') < 0;
+    document.getElementById('moduleProposalLink').hidden = activeModules.indexOf('proposal') < 0 && activeModules.indexOf('repair') < 0;
     document.querySelector('.erp-menu-item[href="perbaikan.html"]').parentElement.hidden = activeModules.indexOf('repair') < 0;
+    document.querySelector('.erp-menu-item[href="proposal.html"]').parentElement.hidden = activeModules.indexOf('proposal') < 0 && activeModules.indexOf('repair') < 0;
     document.getElementById('menuQueueItem').hidden = !canReviewRequestQueue();
     document.getElementById('menuRequestBtn').parentElement.hidden = isPortalApprovalOnly();
     document.getElementById('userInfoHeader').innerHTML = `
