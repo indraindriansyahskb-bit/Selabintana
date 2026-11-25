@@ -1362,8 +1362,11 @@
     let canEdit = t.canEdit && ["PENDING", "PENDING_TEKNISI", "PENDING_PURCHASING", "REVISI"].includes(st);
     let canRevise = canEdit && !(t.tujuanPermintaan === 'TEKNISI' && String(t.statusTeknisi || '').toUpperCase() === 'ACC');
     let canFulfill = sesiUser.isAdmin && ["ACC", "ACC_SEBAGIAN", "DIPROSES", "SEBAGIAN_TERPENUHI"].includes(st);
-    let canUpload = t.canEdit;
     const isTechTarget = String(t.tujuanPermintaan || 'PURCHASING').toUpperCase() === 'TEKNISI';
+    const approvalItem = (t.items || []).find(item => Number(item.noItem) === 1) || t.items[0] || {};
+    const canCancelAdminApproval = canManagePurchasingRequests() && ["ACC", "ACC_SEBAGIAN", "DIPROSES"].includes(st) && String(approvalItem.usernameAdminAcc || '').toLowerCase() === String(sesiUser.username || '').toLowerCase();
+    const canCancelTechnicianApproval = isTechApprover() && isTechTarget && st === 'PENDING_PURCHASING' && String(approvalItem.statusTeknisi || '').toUpperCase() === 'ACC' && String(approvalItem.usernameTeknisi || '').toLowerCase() === String(sesiUser.username || '').toLowerCase();
+    let canUpload = t.canEdit;
     const unitDocumentUrl = safePdfUrl(t.dokumenUnitUrl || (!t.dokumenTeknisiUrl ? t.dokumenPdf : ''));
     const technicianDocumentUrl = safePdfUrl(t.dokumenTeknisiUrl);
     const canUploadUnitDocument = Boolean((t.canUploadUnitDocument || t.canEdit) && (isTechTarget ? st === 'PENDING_TEKNISI' : ["PENDING", "PENDING_PURCHASING", "REVISI"].includes(st)));
@@ -1490,6 +1493,8 @@
     const canAdminCancelTicket = Boolean(sesiUser.isAdmin && st !== 'DIBATALKAN');
     const canOwnerCancelPending = Boolean(canEdit && ["PENDING", "PENDING_TEKNISI", "PENDING_PURCHASING", "REVISI"].includes(st));
     if (canAdminCancelTicket || canOwnerCancelPending) footerHtml += `<button class="btn btn-danger" onclick="hapusTiket(${inlineArg(t.kodeTiket)})"><i class="fa-solid fa-ban"></i> Batalkan Permintaan</button>`;
+    if (canCancelAdminApproval) footerHtml += `<button class="btn btn-warning" onclick="batalkanAccPermintaanBarang(${inlineArg(t.kodeTiket)},'ADMIN')"><i class="fa-solid fa-rotate-left"></i> Batal ACC ADMIN</button>`;
+    if (canCancelTechnicianApproval) footerHtml += `<button class="btn btn-warning" onclick="batalkanAccPermintaanBarang(${inlineArg(t.kodeTiket)},'TEKNISI')"><i class="fa-solid fa-rotate-left"></i> Batal ACC Teknisi</button>`;
     if (!canEdit && !canAdminCancelTicket) {
       footerHtml += `<span style="font-size:11px; color:#b91c1c; font-weight:600; align-self:center; margin-left:10px;">Status: ${escapeHtml(st)}</span>`;
     }
@@ -1545,6 +1550,24 @@
       }
       else { showToast(json.message, "error"); }
     } catch(err) { showToast("Gagal terhubung ke server.", "error"); }
+  }
+
+  async function batalkanAccPermintaanBarang(kodeTiket, tahap) {
+    const alasan = prompt(`Alasan Batal ACC ${tahap} untuk tiket ${kodeTiket} (minimal 5 karakter):`, '');
+    if (alasan === null) return;
+    if (alasan.trim().length < 5) return showToast('Alasan pembatalan ACC minimal 5 karakter.', 'error');
+    const payload = tahap === 'ADMIN'
+      ? {action: 'adminKonfirmasi', token: sesiUser.token, kodeTiket, statusPermintaan: 'BATAL_ACC', catatanAdmin: alasan.trim()}
+      : {action: 'teknisiKonfirmasi', token: sesiUser.token, kodeTiket, statusPermintaan: 'BATAL_ACC', catatanTeknisi: alasan.trim()};
+    try {
+      const result = await (await postPayload(payload)).json();
+      if (cekSesiBerakhir(result)) return;
+      if (result.status !== 'success') throw new Error(result.message || 'ACC tidak dapat dibatalkan.');
+      showToast(result.message, 'success');
+      tutupModal();
+      if (canReviewRequestQueue()) { adminQueueLoaded = false; if (!document.getElementById('portalQueueView').hidden) await muatDaftarPermintaanAdmin(1); }
+      if (historyLoaded) await muatRiwayatPermintaan(1);
+    } catch (error) { showToast(error.message || 'ACC tidak dapat dibatalkan.', 'error'); }
   }
 
   async function simpanKonfirmasiTeknisi(kodeTiket) {
