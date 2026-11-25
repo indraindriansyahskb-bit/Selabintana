@@ -1775,32 +1775,32 @@
     const printPhotos = photoResults.flat().map(({item,src,photoName}) => `<figure><img src="${src}" alt="Foto ${escapeHtml(item.namaBarang)}"><figcaption>Item ${Number(item.noItem)} · ${escapeHtml(item.namaBarang)}${photoName?` · ${escapeHtml(photoName)}`:''} · ${escapeHtml(item.kodeBarang || '')}</figcaption></figure>`).join('');
     let htmlItems = t.items.map((it) => `
       <tr>
-        <td style="padding: 8px 10px; border-bottom: 1px solid #cbd5e1; font-family: monospace; font-size: 11px;">${escapeHtml(it.kodeSupplier || '-')}</td>
-        <td style="padding: 8px 10px; border-bottom: 1px solid #cbd5e1; font-weight: 700; font-size: 11px;">${escapeHtml(it.namaBarang)}</td>
-        <td style="padding: 8px 10px; border-bottom: 1px solid #cbd5e1; font-size: 11px;">${escapeHtml(it.jumlah)} ${escapeHtml(it.satuan)}</td>
-        <td style="padding: 8px 10px; border-bottom: 1px solid #cbd5e1; font-size: 11px;">${escapeHtml(it.supplier || '-')}</td>
-        <td style="padding: 8px 10px; border-bottom: 1px solid #cbd5e1; font-size: 11px;">${escapeHtml(t.keterangan || '-')}</td>
+        <td style="padding: 8px 10px; border-bottom: 1px solid #cbd5e1; font-family: monospace; font-size: 12px;">${escapeHtml(it.kodeSupplier || '-')}</td>
+        <td style="padding: 8px 10px; border-bottom: 1px solid #cbd5e1; font-weight: 700; font-size: 12px;">${escapeHtml(it.namaBarang)}</td>
+        <td style="padding: 8px 10px; border-bottom: 1px solid #cbd5e1; font-size: 12px;">${escapeHtml(it.jumlah)} ${escapeHtml(it.satuan)}</td>
+        <td style="padding: 8px 10px; border-bottom: 1px solid #cbd5e1; font-size: 12px;">${escapeHtml(it.supplier || '-')}</td>
+        <td style="padding: 8px 10px; border-bottom: 1px solid #cbd5e1; font-size: 12px;">${escapeHtml(t.keterangan || '-')}</td>
       </tr>
     `).join('');
     
     let printHTML = `<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Cetak Form - ${escapeHtml(t.kodeTiket)}</title>
       <style>.header-container { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #0f172a; padding-bottom: 8px; margin-bottom: 15px; }
-      .company-title { font-size: 20px; font-weight: 800; color: #0f172a; } .form-subtitle { font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase; margin-top: 3px; }
-      .ticket-code { font-size: 14px; font-weight: 700; color: #047857; text-align: right; font-family: monospace; } .ticket-date { font-size: 10px; color: #64748b; text-align: right; margin-top: 2px; }
+      .company-title { font-size: 20px; font-weight: 800; color: #0f172a; } .form-subtitle { font-size: 12px; font-weight: 700; color: #475569; text-transform: uppercase; margin-top: 3px; }
+      .ticket-code { font-size: 14px; font-weight: 700; color: #047857; text-align: right; font-family: monospace; } .ticket-date { font-size: 11px; color: #64748b; text-align: right; margin-top: 2px; }
       .info-box { border: 1px solid #cbd5e1; border-radius: 6px; padding: 12px 16px; margin-bottom: 20px; background: #ffffff; display: flex; justify-content: space-between; }
       .info-col { width: 48%; } .info-row { display: flex; margin-bottom: 6px; } .info-label { width: 110px; font-weight: 600; color: #475569; } .info-val { flex: 1; font-weight: 600; color: #0f172a; }
-      table { width: 100%; border-collapse: collapse; margin-bottom: 30px; } th { background: #f8fafc; color: #1e293b; font-weight: 700; text-transform: uppercase; font-size: 10px; padding: 8px 10px; border-top: 1px solid #cbd5e1; border-bottom: 2px solid #0f172a; text-align: left; }
-      .sig-table { width: 100%; border-collapse: collapse; margin-top: 40px; page-break-inside: avoid; } .sig-cell { width: ${isTechTarget ? '20%' : '25%'}; text-align: center; vertical-align: top; padding: 0 8px; }
+      table { width: 100%; border-collapse: collapse; margin-bottom: 30px; } th { background: #f8fafc; color: #1e293b; font-weight: 700; text-transform: uppercase; font-size: 11px; padding: 9px 10px; border-top: 1px solid #cbd5e1; border-bottom: 2px solid #0f172a; text-align: left; }
+      .sig-table { width: 100%; border-collapse: collapse; margin-top: 48px; page-break-inside: avoid; } .sig-cell { width: ${isTechTarget ? '20%' : '25%'}; text-align: center; vertical-align: top; padding: 0 8px; }
       @page { size: A4 landscape; margin: 12mm; }
       * { box-sizing: border-box; }
       html, body { min-height: 0; }
-      body { font-family: Arial, sans-serif; color: #0f172a; font-size: 12px; margin: 0; padding: 0; line-height: 1.4; background: #eef2ef; }
+      body { font-family: Arial, sans-serif; color: #0f172a; font-size: 13px; margin: 0; padding: 0; line-height: 1.45; background: #eef2ef; }
       .print-page { width: 273mm; min-height: 186mm; margin: 14px auto; padding: 12mm; background: #fff; box-shadow: 0 2px 14px #0002; }
-      .sig-title { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #334155; margin-bottom: 68px; }
+      .sig-title { font-size: 11px; font-weight: 700; text-transform: uppercase; color: #334155; margin-bottom: 82px; }
       .sig-line { border-bottom: 1px dashed #475569; margin-bottom: 5px; width: 85%; margin-left: auto; margin-right: auto; }
-      .sig-name { font-size: 11px; font-weight: 700; color: #0f172a; }
-      .sig-status {font-size:9px;color:#475569;margin-top:3px}
-      .photo-page{page-break-before:always;break-before:page}.photo-page h2{font-size:15px;border-bottom:1px solid #cbd5e1;padding-bottom:8px;margin-top:0}.photo-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.photo-grid figure{margin:0;page-break-inside:avoid;break-inside:avoid}.photo-grid img{display:block;width:100%;height:60mm;object-fit:contain;border:1px solid #cbd5e1}.photo-grid figcaption{font-size:10px;margin-top:5px;color:#334155}
+      .sig-name { font-size: 12px; font-weight: 700; color: #0f172a; }
+      .sig-status {font-size:10px;color:#475569;margin-top:3px}
+      .photo-page{page-break-before:always;break-before:page}.photo-page h2{font-size:15px;border-bottom:1px solid #cbd5e1;padding-bottom:8px;margin-top:0}.photo-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.photo-grid figure{margin:0;page-break-inside:avoid;break-inside:avoid}.photo-grid img{display:block;width:100%;height:60mm;object-fit:contain;border:1px solid #cbd5e1}.photo-grid figcaption{font-size:11px;margin-top:5px;color:#334155}
       @media screen { .print-page { max-width: calc(100% - 32px); } }
       @media print {
         html, body { width: 100%; height: auto; background: #fff; }
