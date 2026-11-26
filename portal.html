@@ -225,7 +225,7 @@
             <select id="urgensi"><option value="REGULER">REGULER</option><option value="URGENT">URGENT (Prioritas)</option><option value="TOP URGENT">TOP URGENT (Kritis)</option></select>
           </div>
         </div>
-        <div class="form-group"><label for="kodeGudangTujuan">Farm / Gudang Tujuan</label><select id="kodeGudangTujuan" required><option value="">Memuat daftar gudang…</option></select><small style="display:block;margin-top:5px;color:var(--erp-text-muted);">Gudang otomatis mengikuti farm/unit pada cakupan akun Anda.</small></div>
+        <div class="form-group"><label for="requestFarmUnit">Unit / Farm Pemohon</label><input type="text" id="requestFarmUnit" readonly aria-readonly="true" placeholder="Mengikuti unit/farm pada akun"><input type="hidden" id="kodeGudangTujuan" value=""><small style="display:block;margin-top:5px;color:var(--erp-text-muted);">Unit/farm diambil otomatis dari akun. Gudang tujuan ditentukan saat barang diterima.</small></div>
         <div class="row-group">
           <div class="form-group"><label for="namaHeadFarm">Nama Head Farm</label><input type="text" id="namaHeadFarm" maxlength="120" placeholder="Nama penanda tangan (opsional)"><small>Dicetak di bawah kolom tanda tangan Head Farm.</small></div>
           <div class="form-group"><label for="namaFarmManager">Nama Farm Manager</label><input type="text" id="namaFarmManager" maxlength="120" placeholder="Nama penanda tangan (opsional)"><small>Dicetak di bawah kolom tanda tangan Farm Manager.</small></div>
@@ -400,7 +400,7 @@
   let draftSaveTimer = null;
   let restoringRequestDraft = false;
   let activeTicketDetail = null;
-  let requestWarehouseOptions = [];
+  let editingRequestUnit = '';
 
 
 
@@ -522,10 +522,8 @@
     document.getElementById('keterangan').value = String(draft.keterangan || '').slice(0, 2000);
     document.getElementById('namaHeadFarm').value = String(draft.namaHeadFarm || '').slice(0, 120);
     document.getElementById('namaFarmManager').value = String(draft.namaFarmManager || '').slice(0, 120);
-    const warehouse = document.getElementById('kodeGudangTujuan');
-    const savedWarehouse = String(draft.kodeGudangTujuan || '');
-    const accountWarehouse = resolveAccountRequestWarehouse();
-    warehouse.value = accountWarehouse || (requestWarehouseOptions.some(item => String(item.kodeGudang) === savedWarehouse) ? savedWarehouse : '');
+    document.getElementById('kodeGudangTujuan').value = '';
+    updateRequestFarmUnitDisplay();
 
     const savedItems = Array.isArray(draft.items) ? draft.items.slice(0, 100) : [];
     document.getElementById('containerItems').innerHTML = '';
@@ -549,13 +547,13 @@
     const key = requestDraftStorageKey();
     if (key) sessionStorage.removeItem(key);
     document.getElementById('formPermintaan').reset();
-    document.getElementById('kodeGudangTujuan').disabled = false;
     document.getElementById('tglPermintaan').value = todayJakarta();
     document.getElementById('tglDibutuhkan').min = todayJakarta();
     document.getElementById('containerItems').innerHTML = '';
     itemCounter = 0;
     tambahItemForm();
-    if (sesiUser.isPicGudang) muatGudangTujuanPermintaan(sesiUser.scopeGudang);
+    editingRequestUnit = '';
+    updateRequestFarmUnitDisplay();
     document.getElementById('requestDraftStatus').hidden = true;
     showToast('Draft permintaan dihapus dan form dikosongkan.');
   }
@@ -742,7 +740,7 @@
     itemCounter = 0;
     switchPortalView(canReviewRequestQueue() ? 'queue' : 'request');
     if (!isPortalApprovalOnly()) {
-      await muatGudangTujuanPermintaan();
+      updateRequestFarmUnitDisplay();
       if (!restoreRequestDraft()) tambahItemForm();
     }
   }
@@ -858,54 +856,20 @@
     } catch (error) { showToast(error.message || 'Kategori tidak dapat ditambahkan.', 'error'); }
     finally { button.disabled = false; }
   }
-  async function muatGudangTujuanPermintaan(selectedWarehouse) {
-    const select = document.getElementById('kodeGudangTujuan');
-    if (!select || !sesiUser.token) return;
-    try {
-      const res = await postPayload({action: 'getUnitsAndGudang', token: sesiUser.token});
-      const json = await res.json();
-      if (cekSesiBerakhir(json)) return;
-      if (json.status !== 'success') throw new Error(json.message || 'Gagal memuat daftar gudang.');
-      requestWarehouseOptions = json.gudangDiizinkan || [];
-      const resolvedWarehouse = resolveAccountRequestWarehouse();
-      const selectableWarehouses = resolvedWarehouse ? requestWarehouseOptions.filter(item => String(item.kodeGudang) === resolvedWarehouse) : requestWarehouseOptions;
-      select.innerHTML = selectableWarehouses.length
-        ? (resolvedWarehouse ? '' : '<option value="">-- Pilih farm / gudang --</option>') + selectableWarehouses.map(item => `<option value="${escapeHtml(item.kodeGudang)}" data-unit="${escapeHtml(item.kodeUnit)}">${escapeHtml(item.namaUnit || item.kodeUnit)} · ${escapeHtml(item.namaGudang)} (${escapeHtml(item.kodeGudang)})</option>`).join('')
-        : '<option value="">Tidak ada gudang pada cakupan akun</option>';
-      const accountWarehouse = resolveAccountRequestWarehouse();
-      const preferredWarehouse = accountWarehouse || (selectedWarehouse && requestWarehouseOptions.some(item => String(item.kodeGudang).toLowerCase() === String(selectedWarehouse).toLowerCase()) ? selectedWarehouse : '');
-      if (preferredWarehouse) select.value = preferredWarehouse;
-      select.disabled = Boolean(accountWarehouse && !idTiketEdit);
-    } catch (error) {
-      select.innerHTML = '<option value="">Daftar gudang tidak dapat dimuat</option>';
-      showToast(error.message || 'Gagal memuat daftar gudang.', 'error');
-    }
-  }
-
-  function resolveAccountRequestWarehouse() {
-    if (!Array.isArray(requestWarehouseOptions) || !requestWarehouseOptions.length) return '';
-    const user = sesiUser || {}, scope = String(user.scopeGudang || '').trim();
-    const unit = String(user.unitLokasi || '').trim();
-    const warehouse = String(user.kodeGudang || user.gudang || (user.scopeGudang && !['ALL','UNIT'].includes(String(user.scopeGudang).toUpperCase()) ? user.scopeGudang : '')).trim();
-    let candidates = requestWarehouseOptions;
-    if (warehouse && !['ALL', 'UNIT'].includes(warehouse.toUpperCase())) {
-      const exact = candidates.filter(item => String(item.kodeGudang || '').toLowerCase() === warehouse.toLowerCase());
-      if (exact.length === 1) return exact[0].kodeGudang;
-    }
-    if (scope && !['ALL', 'UNIT'].includes(scope.toUpperCase())) {
-      const exact = candidates.filter(item => String(item.kodeGudang || '').toLowerCase() === scope.toLowerCase() || String(item.namaGudang || '').toLowerCase() === scope.toLowerCase());
-      if (exact.length === 1) return exact[0].kodeGudang;
-      candidates = candidates.filter(item => String(item.kodeUnit || '').toLowerCase() === scope.toLowerCase() || String(item.namaUnit || '').toLowerCase() === scope.toLowerCase());
-    } else if (unit) {
-      candidates = candidates.filter(item => String(item.kodeUnit || '').toLowerCase() === unit.toLowerCase() || String(item.namaUnit || '').toLowerCase() === unit.toLowerCase());
-    }
-    return candidates.length === 1 ? candidates[0].kodeGudang : '';
-  }
-
   function getRequestWarehouseUnit() {
-    const select = document.getElementById('kodeGudangTujuan');
-    const option = select && select.options[select.selectedIndex];
-    return option ? String(option.dataset.unit || '') : '';
+    if (editingRequestUnit) return editingRequestUnit;
+    const user = sesiUser || {};
+    const assignedUnit = String(user.unitLokasi || '').trim();
+    if (assignedUnit && !['ALL', 'UNIT'].includes(assignedUnit.toUpperCase())) return assignedUnit;
+    const warehouseUnits = [...new Set((Array.isArray(user.warehouseAccess) ? user.warehouseAccess : []).map(pair => String(pair.kodeUnit || '').trim()).filter(Boolean))];
+    return warehouseUnits.length === 1 ? warehouseUnits[0] : '';
+  }
+
+  function updateRequestFarmUnitDisplay() {
+    const unit = getRequestWarehouseUnit();
+    document.getElementById('requestFarmUnit').value = unit || 'Unit/farm belum terdaftar pada akun';
+    document.getElementById('kodeGudangTujuan').value = '';
+    return Boolean(unit);
   }
 
   function tambahItemForm(data = null) {
@@ -936,6 +900,8 @@
     e.preventDefault();
     const btn = document.getElementById('btnSubmit');
     btn.disabled = true; btn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Memproses...";
+    const requestUnit = getRequestWarehouseUnit();
+    if (!requestUnit) { showToast('Akun belum terdaftar pada unit/farm. Hubungi ADMIN untuk melengkapi data akun.', 'error'); btn.disabled = false; btn.innerHTML = idTiketEdit ? '<i class="fa-solid fa-save"></i> Simpan Revisi Tiket' : '<i class="fa-solid fa-paper-plane"></i> Submit Tiket Ke Sistem'; return; }
 
     let itemsArr = [];
     document.querySelectorAll('.item-box').forEach(box => {
@@ -947,8 +913,8 @@
       action: idTiketEdit ? "editPermintaan" : "submitPermintaan",
       token: sesiUser.token,
       kodeTiketEdit: idTiketEdit,
-      pemohon: sesiUser.nama, divisi: sesiUser.divisi, unitLokasi: getRequestWarehouseUnit(),
-      kodeGudangTujuan: document.getElementById('kodeGudangTujuan').value,
+      pemohon: sesiUser.nama, divisi: sesiUser.divisi, unitLokasi: requestUnit,
+      kodeGudangTujuan: '',
       tujuanPermintaan: document.getElementById('tujuanPermintaan').value,
       tglPermintaan: document.getElementById('tglPermintaan').value, tglDibutuhkan: document.getElementById('tglDibutuhkan').value,
       urgensi: document.getElementById('urgensi').value, keterangan: document.getElementById('keterangan').value.trim(),
@@ -1884,13 +1850,13 @@
     document.getElementById('urgensi').value = t.urgensi;
     document.getElementById('namaHeadFarm').value = t.namaHeadFarm || '';
     document.getElementById('namaFarmManager').value = t.namaFarmManager || '';
+    editingRequestUnit = String(t.unitLokasi || '').trim();
+    updateRequestFarmUnitDisplay();
     const requestTargetSelect = document.getElementById('tujuanPermintaan');
     requestTargetSelect.value = t.tujuanPermintaan === 'TEKNISI' ? 'TEKNISI' : 'PURCHASING';
     requestTargetSelect.disabled = true;
     document.getElementById('keterangan').value = t.keterangan;
-    document.getElementById('kodeGudangTujuan').disabled = false;
-    document.getElementById('kodeGudangTujuan').value = t.kodeGudang || '';
-    if (t.kodeGudang && !document.getElementById('kodeGudangTujuan').value) muatGudangTujuanPermintaan(t.kodeGudang);
+    document.getElementById('kodeGudangTujuan').value = '';
     document.getElementById('containerItems').innerHTML = ""; itemCounter = 0;
     t.items.forEach(it => tambahItemForm(it));
     document.getElementById('btnSubmit').innerHTML = `<i class="fa-solid fa-save"></i> Simpan Revisi Tiket`;
@@ -1904,7 +1870,8 @@
     document.getElementById('formTitle').innerHTML = `<i class="fa-solid fa-file-signature"></i> Buat Tiket Permintaan Baru`;
     document.getElementById('formPermintaan').reset();
     document.getElementById('tujuanPermintaan').disabled = false;
-    if (sesiUser.isPicGudang) muatGudangTujuanPermintaan(sesiUser.scopeGudang);
+    editingRequestUnit = '';
+    updateRequestFarmUnitDisplay();
     document.getElementById('containerItems').innerHTML = ""; itemCounter = 0; tambahItemForm();
     document.getElementById('btnSubmit').innerHTML = `<i class="fa-solid fa-paper-plane"></i> Submit Tiket Ke Sistem`;
     document.getElementById('btnBatalEdit').style.display = 'none';
