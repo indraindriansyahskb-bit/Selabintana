@@ -314,6 +314,11 @@
           <i class="fa-solid fa-scale-balanced"></i><span>Koreksi Stok</span>
         </button>
       </li>
+      <li id="masterBarangMenuItem" hidden>
+        <button type="button" role="tab" aria-selected="false" aria-controls="tabMasterBarangView" class="erp-menu-item" id="tabMasterBarangBtn" onclick="switchTab('masterBarang')">
+          <i class="fa-solid fa-boxes-stacked"></i><span>Master Barang</span>
+        </button>
+      </li>
     </ul></nav>
 
     <div class="erp-sidebar-footer">
@@ -352,6 +357,19 @@
 
     <!-- CONTENT BODY -->
     <div class="erp-content">
+
+      <div id="tabMasterBarangView" role="tabpanel" aria-labelledby="tabMasterBarangBtn" style="display:none;">
+        <div class="erp-card">
+          <div class="erp-card-header">
+            <div><div class="erp-card-title"><i class="fa-solid fa-boxes-stacked"></i> Master Barang</div><small class="form-hint">Perubahan berlaku pada data master. Riwayat transaksi lama tetap menyimpan nama dan satuan saat transaksi dibuat.</small></div>
+            <button type="button" class="btn btn-outline" onclick="muatTabelMasterBarang()"><i class="fa-solid fa-rotate"></i> Muat Ulang</button>
+          </div>
+          <div class="erp-card-body">
+            <div class="erp-filter-bar"><div class="erp-filter-group"><label for="masterBarangSearch">Cari barang</label><input id="masterBarangSearch" type="search" placeholder="Nama, kode, kategori, satuan" oninput="renderTabelMasterBarang()"></div></div>
+            <div id="masterBarangTable" class="erp-table-responsive" aria-live="polite"><p style="padding:18px;color:var(--erp-text-muted);">Memuat master barang…</p></div>
+          </div>
+        </div>
+      </div>
       
       <!-- TAB 1: JURNAL RINCIAN TRANSAKSI STOK -->
       <div id="tabStokView" role="tabpanel" aria-labelledby="tabStokBtn">
@@ -896,6 +914,21 @@
   </div>
 </div>
 
+<div id="modalMasterBarang" class="modal" role="dialog" aria-modal="true" aria-labelledby="masterBarangModalTitle">
+  <div class="modal-content">
+    <div class="modal-header"><h3 id="masterBarangModalTitle" style="font-size:14px;font-weight:700;color:var(--erp-primary);"><i class="fa-solid fa-pen-to-square"></i> Edit Master Barang</h3><button type="button" aria-label="Tutup" onclick="tutupModal('modalMasterBarang')" style="background:none;border:0;cursor:pointer;font-size:16px;"><i class="fa-solid fa-xmark"></i></button></div>
+    <form id="formMasterBarang" class="modal-body" onsubmit="simpanEditMasterBarang(event)">
+      <input type="hidden" id="masterBarangCode">
+      <div class="form-group"><label for="masterBarangName">Nama barang</label><input id="masterBarangName" type="text" maxlength="200" required></div>
+      <div class="form-group"><label for="masterBarangCategory">Kategori</label><select id="masterBarangCategory" required></select></div>
+      <div class="form-group"><label for="masterBarangUnit">Satuan</label><input id="masterBarangUnit" type="text" maxlength="32" required></div>
+      <div class="form-group"><label for="masterBarangSupplier">Supplier</label><input id="masterBarangSupplier" type="text" maxlength="200"></div>
+      <p class="form-hint">Kode barang tidak dapat diubah. Satuan hanya dapat diubah sebelum barang memiliki riwayat transaksi.</p>
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px;"><button type="button" class="btn btn-outline" onclick="tutupModal('modalMasterBarang')">Batal</button><button type="submit" id="masterBarangSaveButton" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan</button></div>
+    </form>
+  </div>
+</div>
+
 <script>
   const GAS_URL = "https://script.google.com/macros/s/AKfycbx_tuIlCd-_n3PMtmv-_hPP4QrbGfPVYzk4tN33WinGtA8fyhe19uwXg6oS7v9jnm9yZw/exec";
   const AUTH_SESSION_KEY = 'selabintana_app_session';
@@ -1174,6 +1207,7 @@
     const roleName = String(sesiUser.roleAccess || '').toUpperCase();
     const temporaryOpeningStaff = roleName === 'STAFF_OPERASIONAL' && todayJakarta() <= '2026-11-30';
     koreksiMenu.hidden = !(sesiUser.isAdmin || temporaryOpeningStaff);
+    document.getElementById('masterBarangMenuItem').hidden = !sesiUser.isAdmin;
     if (temporaryOpeningStaff) {
       document.querySelector('#koreksiStokMenuItem span').textContent = 'Saldo Awal (Sementara)';
       document.getElementById('correctionCardTitle').innerHTML = '<i class="fa-solid fa-boxes-stacked"></i> Masukan Saldo Awal';
@@ -1243,7 +1277,8 @@
     const roleName = String(sesiUser.roleAccess || '').toUpperCase();
     const temporaryOpeningStaff = roleName === 'STAFF_OPERASIONAL' && todayJakarta() <= '2026-11-30';
     if (tab === 'koreksi' && !(sesiUser.isAdmin || temporaryOpeningStaff)) return showToast('Menu ini hanya tersedia untuk admin.', 'error');
-    const tabs = {stok: ['tabStokBtn','tabStokView','Jurnal Stok & Mutasi'], transaksi: ['tabTransaksiBtn','tabTransaksiView','Pusat Transaksi Gudang'], history: ['tabHistoryBtn','tabHistoryView','Riwayat Mutasi'], audit: ['tabAuditBtn','tabAuditView','Jejak Audit Stok'], lihatStok: ['tabLihatStokBtn','tabLihatStokView','Lihat Saldo Stok'], historyBarang: ['tabHistoryBarangBtn','tabHistoryBarangView','History Stok per Barang'], koreksi: ['tabKoreksiBtn','tabKoreksiView','Koreksi Stok'], kandang: ['tabPemakaianKandangBtn','tabPemakaianKandangView','Pemakaian per Kandang']};
+    if (tab === 'masterBarang' && !sesiUser.isAdmin) return showToast('Menu ini hanya tersedia untuk ADMIN.', 'error');
+    const tabs = {stok: ['tabStokBtn','tabStokView','Jurnal Stok & Mutasi'], transaksi: ['tabTransaksiBtn','tabTransaksiView','Pusat Transaksi Gudang'], history: ['tabHistoryBtn','tabHistoryView','Riwayat Mutasi'], audit: ['tabAuditBtn','tabAuditView','Jejak Audit Stok'], lihatStok: ['tabLihatStokBtn','tabLihatStokView','Lihat Saldo Stok'], historyBarang: ['tabHistoryBarangBtn','tabHistoryBarangView','History Stok per Barang'], koreksi: ['tabKoreksiBtn','tabKoreksiView','Koreksi Stok'], kandang: ['tabPemakaianKandangBtn','tabPemakaianKandangView','Pemakaian per Kandang'], masterBarang: ['tabMasterBarangBtn','tabMasterBarangView','Master Barang']};
     if (!tabs[tab]) return;
     Object.keys(tabs).forEach(key => {
       const [buttonId, panelId] = tabs[key];
@@ -1259,6 +1294,7 @@
     if (tab === 'koreksi') muatMasterBarangKategori();
     if (tab === 'transaksi') muatTiketPenerimaan();
     if (tab === 'historyBarang') { populateStockItemHistoryUnits(); populateStockItemHistoryItems(); }
+    if (tab === 'masterBarang') muatTabelMasterBarang();
   }
 
   document.querySelector('[role="tablist"]').addEventListener('keydown', function(event) {
@@ -2126,6 +2162,66 @@
       if (document.getElementById('penSumber').value === 'PERMINTAAN_ACC' && document.getElementById('penTicketItem').value) pilihTiketPenerimaan();
     } catch (error) { showToast(error.message || 'Daftar kategori barang gagal dimuat.', 'error'); }
     finally { masterCategoriesLoading = false; }
+  }
+
+  async function muatTabelMasterBarang() {
+    const target = document.getElementById('masterBarangTable');
+    target.innerHTML = '<p style="padding:18px;color:var(--erp-text-muted);">Memuat master barang…</p>';
+    try {
+      const response = await postPayload({action: 'getMasterBarang', token: sesiUser.token});
+      const result = await response.json();
+      if (cekSesiBerakhir(result)) return;
+      if (result.status !== 'success') throw new Error(result.message || 'Master barang gagal dimuat.');
+      masterBarangData = Array.isArray(result.data) ? result.data : [];
+      masterBarangCategories = gabungkanKategoriStok(result.categories || [], masterBarangData.map(item => item.kategori));
+      masterCategoriesLoaded = true;
+      renderTabelMasterBarang();
+    } catch (error) {
+      target.innerHTML = `<p style="padding:18px;color:var(--erp-danger);">${escapeHtml(error.message || 'Master barang gagal dimuat.')}</p>`;
+    }
+  }
+
+  function renderTabelMasterBarang() {
+    const target = document.getElementById('masterBarangTable');
+    if (!target) return;
+    const query = String(document.getElementById('masterBarangSearch').value || '').trim().toLowerCase();
+    const rows = masterBarangData.map((item, index) => ({item, index})).filter(({item}) => !query || [item.kodeBarang, item.namaBarang, item.kategori, item.satuan, item.supplier].some(value => String(value || '').toLowerCase().includes(query)));
+    if (!rows.length) { target.innerHTML = '<p style="padding:18px;color:var(--erp-text-muted);">Tidak ada barang yang cocok.</p>'; return; }
+    target.innerHTML = `<table class="erp-table"><thead><tr><th>Kode</th><th>Nama barang</th><th>Kategori</th><th>Satuan</th><th>Supplier</th><th>Aksi</th></tr></thead><tbody>${rows.map(({item,index}) => `<tr><td class="mono">${escapeHtml(item.kodeBarang || '-')}</td><td><b>${escapeHtml(item.namaBarang || '-')}</b></td><td>${escapeHtml(item.kategori || '-')}</td><td>${escapeHtml(item.satuan || '-')}</td><td>${escapeHtml(item.supplier || '-')}</td><td><button type="button" class="btn btn-outline btn-sm" onclick="bukaEditMasterBarang(${index})"><i class="fa-solid fa-pen"></i> Edit</button></td></tr>`).join('')}</tbody></table>`;
+  }
+
+  function bukaEditMasterBarang(index) {
+    if (!sesiUser.isAdmin) return showToast('Menu ini hanya tersedia untuk ADMIN.', 'error');
+    const item = masterBarangData[Number(index)];
+    if (!item) return showToast('Data master barang tidak ditemukan.', 'error');
+    document.getElementById('masterBarangCode').value = item.kodeBarang || '';
+    document.getElementById('masterBarangName').value = item.namaBarang || '';
+    document.getElementById('masterBarangUnit').value = item.satuan || 'pcs';
+    document.getElementById('masterBarangSupplier').value = item.supplier === '-' ? '' : (item.supplier || '');
+    const category = String(item.kategori || 'LAINNYA').toUpperCase();
+    const categories = gabungkanKategoriStok(masterBarangCategories, [category]);
+    document.getElementById('masterBarangCategory').innerHTML = categories.map(value => `<option value="${escapeHtml(value)}"${value === category ? ' selected' : ''}>${escapeHtml(value)}</option>`).join('');
+    document.getElementById('modalMasterBarang').style.display = 'flex';
+    document.getElementById('masterBarangName').focus();
+  }
+
+  async function simpanEditMasterBarang(event) {
+    event.preventDefault();
+    if (!sesiUser.isAdmin) return showToast('Hanya ADMIN yang dapat mengubah master barang.', 'error');
+    const button = document.getElementById('masterBarangSaveButton');
+    const payload = {action: 'updateMasterBarang', token: sesiUser.token, kodeBarang: document.getElementById('masterBarangCode').value, namaBarang: document.getElementById('masterBarangName').value.trim(), kategori: document.getElementById('masterBarangCategory').value, satuan: document.getElementById('masterBarangUnit').value.trim(), supplier: document.getElementById('masterBarangSupplier').value.trim()};
+    button.disabled = true;
+    try {
+      const response = await postPayload(payload);
+      const result = await response.json();
+      if (cekSesiBerakhir(result)) return;
+      if (result.status !== 'success') throw new Error(result.message || 'Perubahan master barang gagal disimpan.');
+      tutupModal('modalMasterBarang');
+      masterCategoriesLoaded = false;
+      await Promise.all([muatTabelMasterBarang(), muatMasterStokBarang()]);
+      showToast(result.message || 'Master barang berhasil diperbarui.');
+    } catch (error) { showToast(error.message || 'Perubahan master barang gagal disimpan.', 'error'); }
+    finally { button.disabled = false; }
   }
 
   function autofillReceiptCategoryFromName() {
