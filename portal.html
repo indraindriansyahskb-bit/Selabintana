@@ -790,7 +790,7 @@
       if (json.status === 'success') {
         masterBarangData = Array.isArray(json.data) ? json.data : [];
         masterBarangCategories = gabungkanKategoriPermintaan(json.categories || [], masterBarangData.map(item => item.kategori));
-        const uniqueNames = [...new Set(masterBarangData.map(item => item.namaBarang))].sort();
+        const uniqueNames = [...new Set(masterBarangData.filter(item => String(item.statusBarang || 'AKTIF').toUpperCase() === 'AKTIF').map(item => item.namaBarang))].sort();
         document.getElementById('masterBarangList').innerHTML = uniqueNames.map(name => `<option value="${escapeHtml(name)}"></option>`).join('');
         perbaruiDropdownKategoriPermintaan();
         masterBarangLoaded = true;
@@ -829,7 +829,7 @@
 
   function autofillRequestItemCategory(input) {
     if (!input || !masterBarangData.length) return;
-    const match = masterBarangData.find(item => String(item.namaBarang || '').trim().toLowerCase() === String(input.value || '').trim().toLowerCase());
+    const match = masterBarangData.find(item => String(item.statusBarang || 'AKTIF').toUpperCase() === 'AKTIF' && String(item.namaBarang || '').trim().toLowerCase() === String(input.value || '').trim().toLowerCase());
     if (!match || !match.kategori) return;
     const select = input.closest('.item-box').querySelector('.it-kategori');
     const category = String(match.kategori).trim().toUpperCase();
