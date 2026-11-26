@@ -230,7 +230,7 @@
           <div class="form-group"><label for="namaHeadFarm">Nama Head Farm</label><input type="text" id="namaHeadFarm" maxlength="120" placeholder="Nama penanda tangan (opsional)"><small>Dicetak di bawah kolom tanda tangan Head Farm.</small></div>
           <div class="form-group"><label for="namaFarmManager">Nama Farm Manager</label><input type="text" id="namaFarmManager" maxlength="120" placeholder="Nama penanda tangan (opsional)"><small>Dicetak di bawah kolom tanda tangan Farm Manager.</small></div>
         </div>
-        <div class="form-group"><label for="tujuanPermintaan">Tujuan proses permintaan</label><select id="tujuanPermintaan" required onchange="scheduleRequestDraftSave()"><option value="TEKNISI" selected>Teknisi terlebih dahulu, lalu Purchasing</option><option value="PURCHASING">Purchasing langsung</option></select><small style="display:block;margin-top:5px;color:var(--erp-text-muted);">Alur teknisi dipilih sebagai default: teknisi meninjau permintaan, Purchasing menyetujui pembelian, lalu barang dicatat masuk ke gudang Teknik Sukajaya sebelum dikirim ke farm.</small></div>
+        <div class="form-group"><label for="tujuanPermintaan">Tujuan proses permintaan</label><select id="tujuanPermintaan" required onchange="scheduleRequestDraftSave()"><option value="TEKNISI" selected>Admin Teknisi terlebih dahulu, lalu ADMIN</option><option value="PURCHASING">ADMIN langsung</option></select><small style="display:block;margin-top:5px;color:var(--erp-text-muted);">Jika ditujukan ke Admin Teknisi, permintaan ditinjau teknisi terlebih dahulu lalu diteruskan ke ADMIN untuk keputusan pembelian.</small></div>
         <div style="font-size:13px; font-weight:700; color:var(--erp-primary); margin: 24px 0 12px 0; padding-bottom:8px; border-bottom:1px solid var(--erp-border-light);"><i class="fa-solid fa-boxes-stacked"></i> Rincian Item Barang</div>
         
         <div id="containerItems"></div>
@@ -302,7 +302,7 @@
         <div class="form-group" style="margin-bottom:0; flex:1; min-width:140px;">
           <label>Status</label>
           <select id="filterStatus" onchange="applyFilters()" style="padding:6px 10px; font-size:11px;">
-            <option value="">Semua Status</option><option value="PENDING">Pending</option><option value="PENDING_TEKNISI">Menunggu Teknisi</option><option value="PENDING_PURCHASING">Menunggu Purchasing</option><option value="REVISI">Revisi</option>
+            <option value="">Semua Status</option><option value="PENDING">Menunggu ADMIN</option><option value="PENDING_TEKNISI">Menunggu Admin Teknisi</option><option value="PENDING_PURCHASING">Menunggu ADMIN</option><option value="REVISI">Perlu Revisi</option>
             <option value="APPROVED">Disetujui / Diproses</option><option value="ACC_SEBAGIAN">Disetujui Sebagian</option><option value="SEBAGIAN">Sebagian Terpenuhi</option>
             <option value="SELESAI">Selesai</option><option value="DITOLAK">Ditolak</option><option value="DIBATALKAN">Dibatalkan</option>
           </select>
@@ -427,7 +427,7 @@
 
   function isTechApprover() { return Boolean(sesiUser.isAdminTeknisi) || String(sesiUser.roleAccess || '').toUpperCase() === 'ADMIN_TEKNISI'; }
   function isDivisionAdmin() { return String(sesiUser.roleAccess || '').toUpperCase() === 'ADMIN_DIVISI'; }
-  function queueWaitingLabel() { return isTechApprover() ? 'teknisi' : (isDivisionAdmin() ? 'keputusan' : 'Purchasing'); }
+  function queueWaitingLabel() { return isTechApprover() ? 'Admin Teknisi' : (isDivisionAdmin() ? 'keputusan ADMIN' : 'ADMIN'); }
   function canManagePurchasingRequests() { return Boolean(sesiUser.isAdmin || String(sesiUser.roleAccess || '').toUpperCase() === 'ADMIN_DIVISI'); }
   function canReviewRequestQueue() { return isTechApprover() || canManagePurchasingRequests(); }
   function canViewReceiptProgress() { return !sesiUser.isPicGudang && String(sesiUser.roleAccess || '').toUpperCase() !== 'PIC_GUDANG'; }
@@ -1143,6 +1143,17 @@
     if (nextPage !== currentPage) muatRiwayatPermintaan(nextPage);
   }
 
+  function labelStatusPermintaan(ticket) {
+    const status = String(ticket.statusPermintaan || '').toUpperCase();
+    const teknisi = String(ticket.tujuanPermintaan || '').toUpperCase() === 'TEKNISI';
+    if (status === 'PENDING_TEKNISI') return ticket.dokumenUnitUrl || ticket.dokumenPdf ? 'Menunggu ACC Admin Teknisi' : 'Menunggu dokumen pemohon';
+    if (status === 'PENDING_PURCHASING') return teknisi && !ticket.dokumenTeknisiUrl ? 'Menunggu dokumen Kepala Teknisi' : 'Menunggu ACC ADMIN';
+    if (status === 'PENDING') return ticket.dokumenUnitUrl || ticket.dokumenPdf ? 'Menunggu ACC ADMIN' : 'Menunggu dokumen pemohon';
+    if (status === 'REVISI') return String(ticket.statusTeknisi || '').toUpperCase() === 'REVISI_ADMIN' ? 'Perlu revisi ADMIN' : teknisi ? 'Perlu revisi Admin Teknisi' : 'Perlu revisi ADMIN';
+    const labels = {ACC:'Disetujui',ACC_SEBAGIAN:'Disetujui sebagian · pemenuhan berjalan',DIPROSES:'Disetujui · pemenuhan berjalan',SEBAGIAN_TERPENUHI:'Sebagian diterima farm',SELESAI:'Selesai diterima',DITOLAK:'Ditolak',DIBATALKAN:'Dibatalkan'};
+    return labels[status] || status.replace(/_/g, ' ');
+  }
+
   function renderPaging() {
     const tbody = document.getElementById('bodyTabelRiwayat');
     const columns = canViewReceiptProgress() ? 9 : 8;
@@ -1160,7 +1171,7 @@
     let html = "";
     pageData.forEach(t => {
       let st = (t.statusPermintaan || "").toUpperCase();
-      let badge = `<span class="badge badge-pending">${escapeHtml(st.startsWith('PENDING_') ? st.replace(/_/g, ' ') : 'PENDING')}</span>`;
+      let badge = `<span class="badge badge-pending">${escapeHtml(labelStatusPermintaan(t))}</span>`;
       if(["ACC", "APPROVED", "DIPROSES"].includes(st)) badge = `<span class="badge badge-acc">DIPROSES</span>`;
       else if(st==="ACC_SEBAGIAN") badge = `<span class="badge badge-revisi">ACC SEBAGIAN</span>`;
       else if(st==="SEBAGIAN_TERPENUHI") badge = `<span class="badge badge-revisi">SEBAGIAN TERPENUHI</span>`;
@@ -1187,7 +1198,7 @@
         <td><b>${t.items.length} Barang</b></td>
         <td><small style="color:${String(t.urgensi).includes('URGENT')?'red':''}; font-weight:600;">${escapeHtml(t.urgensi)}</small></td>
         <td>${badgeDoc}</td>
-        <td>${badge}<br><small style="color:var(--erp-text-muted);">Tujuan: ${t.tujuanPermintaan === 'TEKNISI' ? 'Teknisi' : 'Purchasing'}</small></td>
+        <td>${badge}<br><small style="color:var(--erp-text-muted);">Tujuan: ${t.tujuanPermintaan === 'TEKNISI' ? 'Admin Teknisi → ADMIN' : 'ADMIN'}</small></td>
         ${receiptSummary}
         <td>
           <div class="history-row-actions"><button class="btn btn-outline btn-sm" onclick="bukaDetailTiket(${inlineArg(t.kodeTiket)})"><i class="fa-solid fa-eye"></i> Detail</button>${pendingActions}${cancelAction}</div>
@@ -1410,7 +1421,7 @@
         <div><div style="font-size:11px; color:#5e6e64;">Farm / Gudang</div><div style="font-weight:700;">${escapeHtml(t.unitLokasi)}${t.kodeGudang ? ' / ' + escapeHtml(t.kodeGudang) : ''}</div></div>
         <div><div style="font-size:11px; color:#5e6e64;">Tgl Dibutuhkan</div><div style="font-weight:700; color:var(--erp-primary);">${escapeHtml(t.tglDibutuhkan)}</div></div>
         <div><div style="font-size:11px; color:#5e6e64;">Urgensi</div><div style="font-weight:700;">${escapeHtml(t.urgensi)}</div></div>
-        <div><div style="font-size:11px; color:#5e6e64;">Tujuan</div><div style="font-weight:700;">${isTechTarget ? 'Teknisi' : 'Purchasing'}</div></div>
+        <div><div style="font-size:11px; color:#5e6e64;">Tujuan</div><div style="font-weight:700;">${isTechTarget ? 'Admin Teknisi → ADMIN' : 'ADMIN'}</div></div>
       </div>
       <div class="erp-table-responsive" style="margin-bottom:15px;"><table class="erp-table">
         <thead><tr><th>Nama Barang</th><th>Diminta</th><th>Disetujui</th><th>${canManagePurchasingRequests() ? 'Catatan Pemenuhan' : 'Terpenuhi'}</th>${canViewReceiptProgress() ? '<th>Diterima Farm</th><th>Status Penerimaan Farm</th><th>Penerimaan Farm Terakhir</th>' : '<th>Status Item</th>'}<th>Kategori</th></tr></thead><tbody>`;
@@ -1427,7 +1438,7 @@
     html += `</tbody></table></div>
       ${canViewReceiptProgress() ? '<small style="display:block;margin:-7px 0 12px;color:#64748b;">Penerimaan farm dihitung saat PIC mengonfirmasi barang pada mutasi yang tertaut ke tiket. Penerimaan gudang teknisi ditampilkan terpisah dan belum dianggap diterima farm.</small>' : ''}
       <div style="background:#fff8e6; padding:10px; border-left:3px solid #f59e0b; font-size:12px; margin-bottom:10px;"><b>Ket. Pemohon:</b> ${escapeHtml(t.keterangan||'-')}</div>
-      <div style="background:#e6f0eb; padding:10px; border-left:3px solid #10b981; font-size:12px; margin-bottom:10px;"><b>Catatan Purchasing / Status:</b> ${escapeHtml(t.catatanAdmin||'-')}</div>
+      <div style="background:#e6f0eb; padding:10px; border-left:3px solid #10b981; font-size:12px; margin-bottom:10px;"><b>Catatan ADMIN / Status:</b> ${escapeHtml(t.catatanAdmin||'-')}</div>
       ${isTechTarget ? `<div style="background:#eff6ff;padding:10px;border-left:3px solid #2563eb;font-size:12px;margin-bottom:15px;"><b>Status Teknisi:</b> ${escapeHtml(t.statusTeknisi || 'Menunggu keputusan')} · ${escapeHtml(t.namaTeknisi || 'Belum diputuskan')} ${t.waktuAccTeknisi ? '· ' + escapeHtml(t.waktuAccTeknisi) : ''}<br><b>Catatan:</b> ${escapeHtml(t.catatanTeknisi || '-')}</div>` : ''}`;
 
     if (canDecideTech) {
@@ -1444,7 +1455,7 @@
     if (canDecidePurchasing) {
       html += `
         <div style="background:#f1f5f9; border:1px solid #cbd5e1; padding:15px; border-radius:8px; margin-bottom:15px;">
-          <div style="font-weight:700; color:#0f172a; margin-bottom:10px;"><i class="fa-solid fa-user-shield"></i> Panel Konfirmasi Admin</div>
+          <div style="font-weight:700; color:#0f172a; margin-bottom:10px;"><i class="fa-solid fa-user-shield"></i> Keputusan ADMIN</div>
           <div class="row-group">
             <div class="form-group">
               <label>Pilih Status Keputusan</label>
@@ -1465,7 +1476,7 @@
             <label>Catatan / Alasan Detail untuk Pemohon</label>
             <textarea id="adminCatatanInput" maxlength="500" rows="2" placeholder="Tuliskan alasan penolakan, instruksi revisi, dll...">${escapeHtml(t.catatanAdmin !== '-' ? t.catatanAdmin : '')}</textarea>
           </div>
-          <button class="btn btn-primary btn-sm" onclick="simpanKonfirmasiAdmin(${inlineArg(t.kodeTiket)})"><i class="fa-solid fa-check-double"></i> Simpan Konfirmasi Admin</button>
+          <button class="btn btn-primary btn-sm" onclick="simpanKonfirmasiAdmin(${inlineArg(t.kodeTiket)})"><i class="fa-solid fa-check-double"></i> Simpan Keputusan ADMIN</button>
         </div>`;
     } else if (canManagePurchasingRequests() && isTechTarget && st === 'PENDING_PURCHASING' && String(t.statusTeknisi || '').toUpperCase() === 'ACC' && !technicianDocumentUrl) {
       html += `<div style="background:#fff8e6;border:1px solid #fcd34d;padding:12px;border-radius:8px;margin-bottom:15px;color:#854d0e;"><b>Menunggu scan bertanda tangan Kepala Teknisi.</b> Admin All dapat memberi keputusan setelah Admin Teknisi mengunggah dokumen tahap teknisi.</div>`;
@@ -1559,7 +1570,7 @@
   function tutupModal() { activeTicketDetail = null; document.getElementById('modalDetailTiket').style.display = 'none'; }
 
   async function simpanKonfirmasiAdmin(kodeTiket) {
-    if (!canManagePurchasingRequests()) return showToast('Akun tidak memiliki akses persetujuan Purchasing.', 'error');
+    if (!canManagePurchasingRequests()) return showToast('Akun tidak memiliki akses persetujuan ADMIN.', 'error');
     const statusVal = document.getElementById('adminStatusDecision').value;
     const catatanVal = document.getElementById('adminCatatanInput').value.trim() || "-";
 
