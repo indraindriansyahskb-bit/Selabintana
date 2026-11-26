@@ -669,7 +669,7 @@
       <div id="tabPemakaianKandangView" role="tabpanel" aria-labelledby="tabPemakaianKandangBtn" style="display:none;">
         <div class="erp-card">
           <div class="erp-card-header">
-            <div class="erp-card-title"><i class="fa-solid fa-house-chimney-window"></i> Ringkasan Pemakaian per Kandang</div>
+            <div class="erp-card-title"><i class="fa-solid fa-house-chimney-window"></i> Ringkasan Pemakaian per Lokasi</div>
             <span class="badge badge-info" id="kandangUsageCount">0 kombinasi</span>
           </div>
           <div class="erp-card-body">
@@ -678,10 +678,10 @@
               <div class="erp-filter-group"><label for="kandangUsageEnd">Sampai tanggal</label><input type="date" id="kandangUsageEnd"></div>
               <div class="erp-filter-group"><label for="kandangUsageUnit">Unit / Farm</label><select id="kandangUsageUnit" onchange="updateKandangUsageWarehouseFilter()"></select></div>
               <div class="erp-filter-group"><label for="kandangUsageWarehouse">Gudang</label><select id="kandangUsageWarehouse"><option value="">Semua Gudang</option></select></div>
-              <div class="erp-filter-group"><label for="kandangUsageCage">Kandang / lokasi</label><select id="kandangUsageCage"><option value="">Semua Kandang</option></select></div>
+              <div class="erp-filter-group"><label for="kandangUsageCage">Lokasi / peruntukan</label><select id="kandangUsageCage"><option value="">Semua Lokasi</option></select></div>
               <button type="button" class="btn btn-primary" onclick="muatPemakaianPerKandang()"><i class="fa-solid fa-magnifying-glass"></i> Tampilkan</button>
             </div>
-            <p class="form-hint" style="margin:0 0 12px;color:var(--erp-text-muted);font-size:11px;">Daftar kandang diambil otomatis dari transaksi pemakaian. Nama kandang baru yang dicatat pada form pemakaian akan muncul setelah transaksi tersimpan.</p>
+            <p class="form-hint" style="margin:0 0 12px;color:var(--erp-text-muted);font-size:11px;">Lokasi diambil dari transaksi pemakaian. Kandang, Gudang Telur, dan peruntukan lain yang diketik pada formulir akan muncul setelah tersimpan.</p>
             <div id="containerPemakaianKandang" class="erp-table-responsive" aria-live="polite"><p style="padding:20px;text-align:center;color:var(--erp-text-muted);">Pilih filter lalu tampilkan ringkasan.</p></div>
           </div>
         </div>
@@ -756,7 +756,7 @@
       <div id="singlePemakaianPanel">
       <form id="formPemakaian">
       <div class="form-group"><label for="pemBarangPilih">Pilih Barang Dari Gudang</label><select id="pemBarangPilih" onchange="updateSelectedStockHint('pemBarangPilih', 'pemSaldoTersedia')" required></select><small id="pemSaldoTersedia" aria-live="polite" style="display:block;margin-top:6px;color:var(--erp-text-muted);"></small></div>
-      <div class="form-group"><label for="pemLokasiKandang">Kandang / Peruntukan</label><input type="text" id="pemLokasiKandang" maxlength="120" list="listKandangPemakaian" placeholder="Pilih data lama atau ketik kandang baru" autocomplete="off" required><datalist id="listKandangPemakaian"></datalist><small style="display:block;margin-top:5px;color:var(--erp-text-muted);">Pilihan diambil dari riwayat pemakaian dan tetap dapat ditambah.</small></div>
+      <div class="form-group"><label for="pemLokasiKandang">Lokasi / Peruntukan Pemakaian</label><input type="text" id="pemLokasiKandang" maxlength="120" list="listKandangPemakaian" placeholder="Contoh: Kandang BD01 atau Gudang Telur" autocomplete="off" required><datalist id="listKandangPemakaian"></datalist><small style="display:block;margin-top:5px;color:var(--erp-text-muted);">Isi kandang, Gudang Telur, atau lokasi pemakaian lain. Lokasi baru dapat diketik langsung.</small></div>
       <div class="form-group"><label for="pemJumlah">Jumlah Pemakaian</label><input type="number" id="pemJumlah" min="0.001" max="1000000000" step="any" aria-describedby="pemSaldoTersedia" required></div>
       <div class="form-group"><label for="pemKet">Keterangan Tambahan</label><input type="text" id="pemKet" maxlength="500"></div>
       <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:15px;">
@@ -773,13 +773,13 @@
           </div>
           <div class="form-row">
             <div class="form-group"><label for="pemakaianBulkGudang">Pilih gudang terlebih dahulu</label><select id="pemakaianBulkGudang" onchange="ubahGudangPemakaianBulk()" required><option value="">-- Pilih gudang pakan / OVK --</option></select></div>
-            <div class="form-group"><label for="pemakaianBulkBarang">Pilih satu barang untuk beberapa kandang</label><select id="pemakaianBulkBarang" onchange="ubahBarangPemakaianBulk()" required disabled><option value="">-- Pilih gudang dahulu --</option></select><small id="pemakaianBulkStokHint" style="display:block;margin-top:5px;color:var(--erp-text-muted);">Pilih gudang untuk melihat barang yang tersedia.</small></div>
+          <div class="form-group"><label for="pemakaianBulkBarang">Pilih satu barang untuk beberapa lokasi</label><select id="pemakaianBulkBarang" onchange="ubahBarangPemakaianBulk()" required disabled><option value="">-- Pilih gudang dahulu --</option></select><small id="pemakaianBulkStokHint" style="display:block;margin-top:5px;color:var(--erp-text-muted);">Pilih gudang untuk melihat barang yang tersedia.</small></div>
           </div>
           <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:8px 0 10px;">
-            <b>Daftar kandang / peruntukan untuk barang terpilih</b>
-            <button id="tambahBarisPemakaianBulkBtn" type="button" class="btn btn-outline btn-sm" onclick="tambahBarisPemakaianPakan()" disabled><i class="fa-solid fa-plus"></i> Tambah kandang</button>
+            <b>Daftar lokasi / peruntukan untuk barang terpilih</b>
+            <button id="tambahBarisPemakaianBulkBtn" type="button" class="btn btn-outline btn-sm" onclick="tambahBarisPemakaianPakan()" disabled><i class="fa-solid fa-plus"></i> Tambah lokasi</button>
           </div>
-          <small style="display:block;margin-bottom:10px;color:var(--erp-text-muted);">Pilih gudang, lalu pilih satu barang. Tambahkan baris untuk setiap kandang; total pemakaian barang tersebut tidak boleh melebihi stok tersedia.</small>
+          <small style="display:block;margin-bottom:10px;color:var(--erp-text-muted);">Pilih gudang, lalu pilih satu barang. Tambahkan baris untuk setiap lokasi pemakaian; total barang tidak boleh melebihi stok tersedia.</small>
           <div id="pemakaianPakanRows"></div>
           <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:15px;">
             <button type="button" onclick="tutupModal('modalPemakaian')" class="btn btn-outline">Batal</button>
@@ -1278,7 +1278,7 @@
     const temporaryOpeningStaff = roleName === 'STAFF_OPERASIONAL' && todayJakarta() <= '2026-11-30';
     if (tab === 'koreksi' && !(sesiUser.isAdmin || temporaryOpeningStaff)) return showToast('Menu ini hanya tersedia untuk admin.', 'error');
     if (tab === 'masterBarang' && !sesiUser.isAdmin) return showToast('Menu ini hanya tersedia untuk ADMIN.', 'error');
-    const tabs = {stok: ['tabStokBtn','tabStokView','Jurnal Stok & Mutasi'], transaksi: ['tabTransaksiBtn','tabTransaksiView','Pusat Transaksi Gudang'], history: ['tabHistoryBtn','tabHistoryView','Riwayat Mutasi'], audit: ['tabAuditBtn','tabAuditView','Jejak Audit Stok'], lihatStok: ['tabLihatStokBtn','tabLihatStokView','Lihat Saldo Stok'], historyBarang: ['tabHistoryBarangBtn','tabHistoryBarangView','History Stok per Barang'], koreksi: ['tabKoreksiBtn','tabKoreksiView','Koreksi Stok'], kandang: ['tabPemakaianKandangBtn','tabPemakaianKandangView','Pemakaian per Kandang'], masterBarang: ['tabMasterBarangBtn','tabMasterBarangView','Master Barang']};
+    const tabs = {stok: ['tabStokBtn','tabStokView','Jurnal Stok & Mutasi'], transaksi: ['tabTransaksiBtn','tabTransaksiView','Pusat Transaksi Gudang'], history: ['tabHistoryBtn','tabHistoryView','Riwayat Mutasi'], audit: ['tabAuditBtn','tabAuditView','Jejak Audit Stok'], lihatStok: ['tabLihatStokBtn','tabLihatStokView','Lihat Saldo Stok'], historyBarang: ['tabHistoryBarangBtn','tabHistoryBarangView','History Stok per Barang'], koreksi: ['tabKoreksiBtn','tabKoreksiView','Koreksi Stok'], kandang: ['tabPemakaianKandangBtn','tabPemakaianKandangView','Pemakaian per Lokasi'], masterBarang: ['tabMasterBarangBtn','tabMasterBarangView','Master Barang']};
     if (!tabs[tab]) return;
     Object.keys(tabs).forEach(key => {
       const [buttonId, panelId] = tabs[key];
@@ -1457,7 +1457,7 @@
 
   async function muatPemakaianPerKandang() {
     const container = document.getElementById('containerPemakaianKandang');
-    container.innerHTML = '<p style="padding:20px;text-align:center;color:var(--erp-text-muted);"><i class="fa-solid fa-spinner fa-spin"></i> Menghitung pemakaian per kandang…</p>';
+    container.innerHTML = '<p style="padding:20px;text-align:center;color:var(--erp-text-muted);"><i class="fa-solid fa-spinner fa-spin"></i> Menghitung pemakaian per lokasi…</p>';
     const selectedCage = document.getElementById('kandangUsageCage').value;
     let warehouseFilter = {};
     try { warehouseFilter = JSON.parse(document.getElementById('kandangUsageWarehouse').value || '{}'); } catch (error) {}
@@ -1473,15 +1473,15 @@
       });
       const json = await res.json();
       if (cekSesiBerakhir(json)) return;
-      if (json.status !== 'success') throw new Error(json.message || 'Gagal memuat pemakaian per kandang.');
+      if (json.status !== 'success') throw new Error(json.message || 'Gagal memuat pemakaian per lokasi.');
       const cages = json.kandangOptions || [];
       const cageSelect = document.getElementById('kandangUsageCage');
-      cageSelect.innerHTML = '<option value="">Semua Kandang</option>' + cages.map(cage => `<option value="${escapeHtml(cage)}">${escapeHtml(cage)}</option>`).join('');
+      cageSelect.innerHTML = '<option value="">Semua Lokasi</option>' + cages.map(cage => `<option value="${escapeHtml(cage)}">${escapeHtml(cage)}</option>`).join('');
       if (cages.some(cage => String(cage).toLowerCase() === selectedCage.toLowerCase())) cageSelect.value = selectedCage;
       document.getElementById('listKandangPemakaian').innerHTML = cages.map(cage => `<option value="${escapeHtml(cage)}"></option>`).join('');
       renderPemakaianPerKandang(json.data || []);
     } catch (error) {
-      container.innerHTML = `<p style="padding:20px;text-align:center;color:var(--erp-danger);">${escapeHtml(error.message || 'Gagal memuat pemakaian per kandang.')}</p>`;
+      container.innerHTML = `<p style="padding:20px;text-align:center;color:var(--erp-danger);">${escapeHtml(error.message || 'Gagal memuat pemakaian per lokasi.')}</p>`;
       document.getElementById('kandangUsageCount').textContent = 'Data gagal dimuat';
     }
   }
@@ -1569,7 +1569,7 @@
     const hint = document.getElementById('pemakaianBulkStokHint');
     hint.style.color = 'var(--erp-text-muted)';
     if (itemSelect.value) perbaruiTotalPemakaianBulk();
-    else hint.textContent = options.length ? 'Pilih satu barang untuk membagi pemakaian ke beberapa kandang.' : 'Tidak ada barang pakan / OVK dengan stok tersedia di gudang ini.';
+    else hint.textContent = options.length ? 'Pilih satu barang untuk membagi pemakaian ke beberapa lokasi.' : 'Tidak ada barang pakan / OVK dengan stok tersedia di gudang ini.';
   }
 
   function ubahBarangPemakaianBulk() {
@@ -1599,9 +1599,9 @@
     const row = document.createElement('div');
     row.className = 'bulk-feed-row';
     row.style.cssText = 'gap:8px;align-items:end;padding:10px;margin-bottom:8px;border:1px solid var(--erp-border);border-radius:8px;background:#fff;';
-    row.innerHTML = `<div class="form-group" style="margin:0;"><label for="feedCage_${rowId}">Kandang / peruntukan ${rowId}</label><input id="feedCage_${rowId}" class="bulk-feed-cage" type="text" maxlength="120" list="listKandangPemakaian" placeholder="Contoh: BD01" required></div>
+    row.innerHTML = `<div class="form-group" style="margin:0;"><label for="feedCage_${rowId}">Lokasi / peruntukan ${rowId}</label><input id="feedCage_${rowId}" class="bulk-feed-cage" type="text" maxlength="120" list="listKandangPemakaian" placeholder="Kandang BD01 atau Gudang Telur" required></div>
       <div class="form-group" style="margin:0;"><label for="feedQty_${rowId}">Jumlah</label><input id="feedQty_${rowId}" class="bulk-feed-quantity" type="number" min="0.001" max="1000000000" step="any" required></div>
-      <button type="button" class="btn btn-outline btn-sm" style="color:var(--erp-danger);margin-bottom:1px;" aria-label="Hapus baris kandang" onclick="this.closest('.bulk-feed-row').remove();perbaruiTotalPemakaianBulk()"><i class="fa-solid fa-trash"></i></button>`;
+      <button type="button" class="btn btn-outline btn-sm" style="color:var(--erp-danger);margin-bottom:1px;" aria-label="Hapus baris lokasi" onclick="this.closest('.bulk-feed-row').remove();perbaruiTotalPemakaianBulk()"><i class="fa-solid fa-trash"></i></button>`;
     container.appendChild(row);
     row.querySelector('.bulk-feed-quantity').addEventListener('input', perbaruiTotalPemakaianBulk);
   }
@@ -1618,12 +1618,12 @@
 
   function renderPemakaianPerKandang(rows) {
     const container = document.getElementById('containerPemakaianKandang');
-    document.getElementById('kandangUsageCount').textContent = `${rows.length} kombinasi barang/kandang`;
+    document.getElementById('kandangUsageCount').textContent = `${rows.length} kombinasi barang/lokasi`;
     if (!rows.length) {
-      container.innerHTML = '<p style="padding:20px;text-align:center;color:var(--erp-text-muted);">Belum ada pemakaian kandang pada filter ini.</p>';
+      container.innerHTML = '<p style="padding:20px;text-align:center;color:var(--erp-text-muted);">Belum ada pemakaian pada lokasi yang dipilih.</p>';
       return;
     }
-    let html = '<table class="erp-table"><thead><tr><th>Kandang / Peruntukan</th><th>Barang</th><th>Unit / Gudang</th><th>Total Pemakaian</th><th>Transaksi</th><th>Pemakaian Terakhir</th></tr></thead><tbody>';
+    let html = '<table class="erp-table"><thead><tr><th>Lokasi / Peruntukan</th><th>Barang</th><th>Unit / Gudang</th><th>Total Pemakaian</th><th>Transaksi</th><th>Pemakaian Terakhir</th></tr></thead><tbody>';
     html += rows.map(row => `<tr><td><b>${escapeHtml(row.kandang)}</b></td><td>${escapeHtml(row.namaBarang)}<br><small class="mono">${escapeHtml(row.kodeBarang)}</small></td><td>${escapeHtml(row.kodeUnit)}<br><small>${escapeHtml(row.kodeGudang)}</small></td><td class="mono"><b>${formatNumber(row.jumlahPemakaian)} ${escapeHtml(row.satuan)}</b></td><td>${formatNumber(row.jumlahTransaksi)}</td><td>${escapeHtml(row.pemakaianTerakhir || '-')}</td></tr>`).join('');
     container.innerHTML = html + '</tbody></table>';
   }
@@ -2479,7 +2479,7 @@
     updateSelectedStockHint('trBarangAsal', 'trSaldoTersedia');
     applyTechnicianTransferDestination(item);
     quantity.value = '';
-    hint.textContent = `Tiket ${item.kodeTiket} · item ${item.noItem} · sisa disetujui ${formatNumber(item.sisaPengiriman)} ${item.satuan} · tersedia di gudang teknisi ${formatNumber(item.stokTeknisiTersedia)} ${item.satuan}.`;
+    hint.textContent = `Tiket ${item.kodeTiket} · item ${item.noItem} · sisa disetujui ${formatNumber(item.sisaPengiriman)} ${item.satuan} · tersedia di gudang teknisi ${formatNumber(item.stokTeknisiTersedia)} ${item.satuan}.${item.kodeGudangTujuan ? '' : ' Pilih gudang farm tujuan sebelum mengirim.'}`;
   }
 
   function applyTechnicianTransferDestination(item) {
@@ -2491,9 +2491,14 @@
     unitSelect.value = item.kodeUnitTujuan;
     unitSelect.disabled = true;
     updateSubGudangPilih('trUnitTujuan', 'trGudangTujuan');
-    warehouseSelect.innerHTML = `<option value="${escapeHtml(item.kodeGudangTujuan)}">${escapeHtml(item.kodeGudangTujuan)}</option>`;
-    warehouseSelect.value = item.kodeGudangTujuan;
-    warehouseSelect.disabled = true;
+    if (item.kodeGudangTujuan) {
+      warehouseSelect.innerHTML = `<option value="${escapeHtml(item.kodeGudangTujuan)}">${escapeHtml(item.kodeGudangTujuan)}</option>`;
+      warehouseSelect.value = item.kodeGudangTujuan;
+      warehouseSelect.disabled = true;
+    } else {
+      warehouseSelect.value = '';
+      warehouseSelect.disabled = false;
+    }
     const quantity = document.getElementById('trJumlah');
     let selectedSource = {};
     try { selectedSource = JSON.parse(document.getElementById('trBarangAsal').value || '{}'); } catch (error) {}
@@ -2624,7 +2629,7 @@
     displayedJournalRows = data.slice();
 
     let html = `<table class="erp-table"><thead><tr>
-      <th>No</th><th>Waktu Transaksi</th><th>Kode</th><th>Nama Barang</th><th>Jenis</th><th>Masuk</th><th>Keluar</th><th>Running Stok</th><th>Satuan</th><th>Unit / Gudang</th><th>Batch</th><th>Kedaluwarsa</th><th>Kandang / Peruntukan</th><th>Keterangan Detail</th><th>Formulir</th>
+      <th>No</th><th>Waktu Transaksi</th><th>Kode</th><th>Nama Barang</th><th>Jenis</th><th>Masuk</th><th>Keluar</th><th>Running Stok</th><th>Satuan</th><th>Unit / Gudang</th><th>Batch</th><th>Kedaluwarsa</th><th>Lokasi / Peruntukan</th><th>Keterangan Detail</th><th>Formulir</th>
     </tr></thead><tbody>`;
 
     data.forEach((item, idx) => {
@@ -2689,7 +2694,7 @@
       <section class="voucher-meta">${meta}</section>
       ${data.catatan ? `<p style="margin:10px 0;"><b>Keterangan:</b> ${escapeHtml(data.catatan)}</p>` : ''}
       <h2>Rincian Barang</h2>
-      <table><thead><tr><th>No</th><th>Kode</th><th>Nama / Kategori</th><th>Unit / Gudang</th><th>Jenis</th><th>Jumlah</th><th>Batch</th><th>Kedaluwarsa</th><th>Kandang / Peruntukan</th><th>Saldo Sebelum → Sesudah</th><th>ID Transaksi</th></tr></thead><tbody>${itemRows || '<tr><td colspan="11">Tidak ada rincian barang.</td></tr>'}</tbody></table>
+      <table><thead><tr><th>No</th><th>Kode</th><th>Nama / Kategori</th><th>Unit / Gudang</th><th>Jenis</th><th>Jumlah</th><th>Batch</th><th>Kedaluwarsa</th><th>Lokasi / Peruntukan</th><th>Saldo Sebelum → Sesudah</th><th>ID Transaksi</th></tr></thead><tbody>${itemRows || '<tr><td colspan="11">Tidak ada rincian barang.</td></tr>'}</tbody></table>
       <div class="voucher-signatures">
         <div class="voucher-signature">Diserahkan / dikeluarkan</div>
         <div class="voucher-signature">Diterima / digunakan</div>
@@ -2720,7 +2725,7 @@
     if (/^Pembatalan transaksi/i.test(note)) title = 'Bukti Pembatalan Transaksi Stok';
     else if (/^Mutasi Masuk Dari/i.test(note)) { title = 'Bukti Penerimaan Mutasi'; source = 'Mutasi antar gudang'; }
     else if (/^Mutasi Keluar Ke/i.test(note)) { title = 'Bukti Pengeluaran Mutasi'; source = 'Mutasi antar gudang'; }
-    else if (/^Pemakaian untuk/i.test(note)) { title = 'Bukti Pemakaian Barang'; source = 'Pemakaian kandang / operasional'; }
+    else if (/^Pemakaian untuk/i.test(note)) { title = 'Bukti Pemakaian Barang'; source = 'Pemakaian operasional'; }
     else source = type === 'MASUK' ? 'Penerimaan langsung / stok' : 'Pengeluaran stok';
     const qty = Number(item.jumlah || 0);
     const previous = type === 'MASUK' ? Number(item.saldoSetelah || 0) - qty : Number(item.saldoSetelah || 0) + qty;
@@ -2756,7 +2761,7 @@
     if (!filteredData.length) return showToast("Tidak ada rincian transaksi untuk diekspor!", "error");
     try { await ensureXlsxLibrary(); } catch (error) { return showToast(error.message || 'Pustaka Excel gagal dimuat.', 'error'); }
 
-    const columns = ['No', 'Waktu Transaksi', 'Kode Barang', 'Nama Barang', 'Kategori', 'Jenis Transaksi', 'Masuk', 'Keluar', 'Running Stok', 'Satuan', 'Lokasi Unit', 'Gudang', 'Batch', 'Tanggal Kedaluwarsa', 'Kandang / Peruntukan', 'Keterangan Detail'];
+    const columns = ['No', 'Waktu Transaksi', 'Kode Barang', 'Nama Barang', 'Kategori', 'Jenis Transaksi', 'Masuk', 'Keluar', 'Running Stok', 'Satuan', 'Lokasi Unit', 'Gudang', 'Batch', 'Tanggal Kedaluwarsa', 'Lokasi / Peruntukan', 'Keterangan Detail'];
     const worksheetRows = [];
     const exportedAt = new Date().toLocaleString('id-ID', {timeZone: 'Asia/Jakarta', dateStyle: 'medium', timeStyle: 'short'});
     const periodLabel = selectedStart && selectedEnd
@@ -3010,7 +3015,7 @@
       const isGrouped = childIds.length > 1;
       const locations = (row.lokasiKandangList || []).filter(Boolean);
       const detail = isGrouped
-        ? `<b>${childIds.length} baris kandang/peruntukan</b>${locations.length ? `<br><small>${escapeHtml(locations.join(', '))}</small>` : ''}`
+        ? `<b>${childIds.length} baris lokasi/peruntukan</b>${locations.length ? `<br><small>${escapeHtml(locations.join(', '))}</small>` : ''}`
         : escapeHtml(row.lokasiKandang || row.keterangan || '-');
       const qtyText = `${formatNumber(row.jumlah)} ${escapeHtml(row.satuan || 'pcs')}${isGrouped ? `<br><small>${childIds.length} baris dalam 1 transaksi</small>` : ''}`;
       return `<tr><td><small class="mono">${escapeHtml(row.waktu)}</small><br><small>${escapeHtml(row.idTransaksi)}</small></td><td><b>${escapeHtml(row.namaBarang)}</b><br><small class="mono">${escapeHtml(row.kodeBarang)} · ${escapeHtml(row.kategori)}</small></td><td><span class="badge ${row.tipeMutasi === 'MASUK' ? 'badge-success' : 'badge-danger'}">${escapeHtml(row.aksi)} / ${escapeHtml(row.tipeMutasi)}</span></td><td class="mono"><b>${qtyText}</b></td><td>${escapeHtml(row.kodeUnit)}<br><small>${escapeHtml(row.kodeGudang)}</small></td><td>${escapeHtml(row.pelaku)}<br><small>${detail}</small></td><td><button type="button" class="btn btn-outline btn-sm" style="color:var(--erp-danger);" onclick="bukaModalHapusTransaksi(${inlineArg(row.idTransaksi)})"><i class="fa-solid fa-trash-can"></i> ${isGrouped ? 'Batalkan semua' : 'Hapus'}</button></td></tr>`;
@@ -3028,7 +3033,7 @@
     document.getElementById('hapusTransaksiIdsSumber').value = isGrouped ? JSON.stringify(childIds) : '';
     const locationText = (row.lokasiKandangList || []).filter(Boolean).join(', ');
     document.getElementById('hapusTransaksiDetail').innerHTML = isGrouped
-      ? `<b>${escapeHtml(row.namaBarang)}</b> · ${escapeHtml(row.kodeBarang)}<br>${escapeHtml(row.aksi)} · Total ${formatNumber(row.jumlah)} ${escapeHtml(row.satuan)}<br>${escapeHtml(row.kodeUnit)} / ${escapeHtml(row.kodeGudang)}<br><b>${childIds.length} baris kandang/peruntukan</b>${locationText ? `<br><small>${escapeHtml(locationText)}</small>` : ''}<br><small>${escapeHtml(row.waktu)} · ID transaksi ${escapeHtml(row.idTransaksi)}</small><p style="margin:8px 0 0;color:var(--erp-danger);">Semua baris dalam transaksi ini akan dibatalkan sekaligus.</p>`
+      ? `<b>${escapeHtml(row.namaBarang)}</b> · ${escapeHtml(row.kodeBarang)}<br>${escapeHtml(row.aksi)} · Total ${formatNumber(row.jumlah)} ${escapeHtml(row.satuan)}<br>${escapeHtml(row.kodeUnit)} / ${escapeHtml(row.kodeGudang)}<br><b>${childIds.length} baris lokasi/peruntukan</b>${locationText ? `<br><small>${escapeHtml(locationText)}</small>` : ''}<br><small>${escapeHtml(row.waktu)} · ID transaksi ${escapeHtml(row.idTransaksi)}</small><p style="margin:8px 0 0;color:var(--erp-danger);">Semua baris dalam transaksi ini akan dibatalkan sekaligus.</p>`
       : `<b>${escapeHtml(row.namaBarang)}</b> · ${escapeHtml(row.kodeBarang)}<br>${escapeHtml(row.tipeMutasi)} ${formatNumber(row.jumlah)} ${escapeHtml(row.satuan)} · ${escapeHtml(row.kodeUnit)} / ${escapeHtml(row.kodeGudang)}<br><small>${escapeHtml(row.waktu)} · ID ${escapeHtml(row.idTransaksi)}</small>`;
     document.getElementById('modalHapusTransaksi').style.display = 'flex';
     document.getElementById('hapusTransaksiAlasan').focus();
@@ -3397,7 +3402,7 @@
       await Promise.all([muatJurnalTransaksiBarang(), muatMasterStokBarang()]);
       if (!result.duplicate) tampilkanBuktiTransaksi({
         judul: 'Bukti Pengeluaran / Pemakaian Barang', idTransaksi: result.idTransaksi || submittedPayload.idTransaksi,
-        waktu: new Date().toLocaleString('id-ID', {timeZone: 'Asia/Jakarta'}), status: 'Tercatat', sumber: 'Pemakaian kandang / operasional',
+        waktu: new Date().toLocaleString('id-ID', {timeZone: 'Asia/Jakarta'}), status: 'Tercatat', sumber: 'Pemakaian operasional',
         kodeUnit: submittedPayload.kodeUnit, kodeGudang: submittedPayload.kodeGudang, pelaku: sesiUser.nama || sesiUser.username,
         catatan: submittedPayload.keterangan || `Pemakaian untuk: ${submittedPayload.lokasiKandang}`,
         items: [{idTransaksi: result.idTransaksi || submittedPayload.idTransaksi, kodeBarang: result.kodeBarang || submittedPayload.kodeBarang, namaBarang: usedItem && usedItem.namaBarang, kategori: usedItem && usedItem.kategori, tipeMutasi: 'KELUAR', jumlah: submittedPayload.jumlah, satuan: usedItem && usedItem.satuan, lokasiKandang: submittedPayload.lokasiKandang, saldoSebelum: result.saldoSebelum, saldoSesudah: result.saldoSesudah}]
@@ -3413,7 +3418,7 @@
     const lines = Array.from(document.querySelectorAll('#pemakaianPakanRows .bulk-feed-row')).map(row => {
       return Object.assign({}, selectedItem, {lokasiKandang: row.querySelector('.bulk-feed-cage').value.trim(), jumlah: row.querySelector('.bulk-feed-quantity').value});
     });
-    if (!lines.length) return showToast('Tambahkan minimal satu kandang atau peruntukan.', 'error');
+    if (!lines.length) return showToast('Tambahkan minimal satu lokasi atau peruntukan.', 'error');
     const selectedStock = rawStokList.find(item => String(item.kodeBarang) === String(selectedItem.kodeBarang) && String(item.kodeUnit) === String(selectedItem.kodeUnit) && String(item.kodeGudang) === String(selectedItem.kodeGudang));
     const totalUsage = lines.reduce((total, item) => total + Number(item.jumlah || 0), 0);
     if (!selectedStock || totalUsage > Number(selectedStock.sisaStok || 0)) return showToast('Total pemakaian melebihi stok barang yang tersedia.', 'error');
