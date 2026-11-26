@@ -924,7 +924,7 @@
       <div class="form-group"><label for="masterBarangUnit">Satuan</label><input id="masterBarangUnit" type="text" maxlength="32" required></div>
       <div class="form-group"><label for="masterBarangSupplier">Supplier</label><input id="masterBarangSupplier" type="text" maxlength="200"></div>
       <p class="form-hint">Kode barang tidak dapat diubah. Satuan hanya dapat diubah sebelum barang memiliki riwayat transaksi.</p>
-      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px;"><button type="button" class="btn btn-outline" onclick="tutupModal('modalMasterBarang')">Batal</button><button type="submit" id="masterBarangSaveButton" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan</button></div>
+      <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:16px;"><div style="display:flex;gap:8px;flex-wrap:wrap;"><button type="button" id="masterBarangToggleButton" class="btn btn-outline" onclick="toggleStatusMasterBarangEdit()"><i class="fa-solid fa-power-off"></i> Nonaktifkan</button><button type="button" class="btn btn-danger" onclick="hapusMasterBarangEdit()"><i class="fa-solid fa-trash"></i> Hapus</button></div><div style="display:flex;gap:8px;"><button type="button" class="btn btn-outline" onclick="tutupModal('modalMasterBarang')">Batal</button><button type="submit" id="masterBarangSaveButton" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan</button></div></div>
     </form>
   </div>
 </div>
@@ -1512,9 +1512,10 @@
 
   function daftarOpsiStokPakan() {
     return rawStokList.filter(item => {
+      const isActive = String(item.statusBarang || 'AKTIF').toUpperCase() === 'AKTIF';
       const isFeed = String(item.kategori || '').trim().toUpperCase() === 'PAKAN';
       const isOvk = isOvkWarehouseClient(item.kodeGudang, item.kodeUnit);
-      return (isFeed || isOvk) && Number(item.sisaStok || 0) > 0 && clientCanAccessWarehouse(item.kodeUnit, item.kodeGudang);
+      return isActive && (isFeed || isOvk) && Number(item.sisaStok || 0) > 0 && clientCanAccessWarehouse(item.kodeUnit, item.kodeGudang);
     });
   }
 
@@ -2151,7 +2152,7 @@
       if (result.status !== 'success') throw new Error(result.message || 'Daftar kategori barang gagal dimuat.');
       masterBarangData = Array.isArray(result.data) ? result.data : [];
       masterBarangCategories = gabungkanKategoriStok(result.categories || [], masterBarangData.map(item => item.kategori));
-      const names = [...new Set(masterBarangData.map(item => String(item.namaBarang || '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+      const names = [...new Set(masterBarangData.filter(item => String(item.statusBarang || 'AKTIF').toUpperCase() === 'AKTIF').map(item => String(item.namaBarang || '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b));
       document.getElementById('stockMasterBarangList').innerHTML = names.map(name => `<option value="${escapeHtml(name)}"></option>`).join('');
       perbaruiDropdownKategoriStok();
       perbaruiDropdownSatuanStok();
@@ -2187,13 +2188,14 @@
     const query = String(document.getElementById('masterBarangSearch').value || '').trim().toLowerCase();
     const rows = masterBarangData.map((item, index) => ({item, index})).filter(({item}) => !query || [item.kodeBarang, item.namaBarang, item.kategori, item.satuan, item.supplier].some(value => String(value || '').toLowerCase().includes(query)));
     if (!rows.length) { target.innerHTML = '<p style="padding:18px;color:var(--erp-text-muted);">Tidak ada barang yang cocok.</p>'; return; }
-    target.innerHTML = `<table class="erp-table"><thead><tr><th>Kode</th><th>Nama barang</th><th>Kategori</th><th>Satuan</th><th>Supplier</th><th>Status</th><th>Aksi</th></tr></thead><tbody>${rows.map(({item,index}) => { const status=String(item.statusBarang||'AKTIF').toUpperCase(); const statusBadge=status==='AKTIF'?'<span class="badge badge-success">Aktif</span>':status==='NONAKTIF'?'<span class="badge badge-warning">Nonaktif</span>':'<span class="badge badge-danger">Dihapus · arsip</span>'; const controls=status==='DIHAPUS'?`<button type="button" class="btn btn-outline btn-sm" onclick="setStatusMasterBarang(${index},'AKTIF')"><i class="fa-solid fa-rotate-left"></i> Pulihkan</button>`:`<button type="button" class="btn btn-outline btn-sm" onclick="bukaEditMasterBarang(${index})"><i class="fa-solid fa-pen"></i> Edit</button> <button type="button" class="btn btn-outline btn-sm" onclick="setStatusMasterBarang(${index},'${status==='AKTIF'?'NONAKTIF':'AKTIF'}')"><i class="fa-solid fa-power-off"></i> ${status==='AKTIF'?'Nonaktifkan':'Aktifkan'}</button> <button type="button" class="btn btn-danger btn-sm" onclick="setStatusMasterBarang(${index},'DIHAPUS')"><i class="fa-solid fa-trash"></i> Hapus</button>`; return `<tr><td class="mono">${escapeHtml(item.kodeBarang || '-')}</td><td><b>${escapeHtml(item.namaBarang || '-')}</b></td><td>${escapeHtml(item.kategori || '-')}</td><td>${escapeHtml(item.satuan || '-')}</td><td>${escapeHtml(item.supplier || '-')}</td><td>${statusBadge}</td><td style="min-width:260px;white-space:nowrap;">${controls}</td></tr>`; }).join('')}</tbody></table>`;
+    target.innerHTML = `<table class="erp-table"><thead><tr><th>Kode</th><th>Nama barang</th><th>Kategori</th><th>Satuan</th><th>Supplier</th><th>Status</th><th>Aksi</th></tr></thead><tbody>${rows.map(({item,index}) => { const status=String(item.statusBarang||'AKTIF').toUpperCase(); const statusBadge=status==='AKTIF'?'<span class="badge badge-success">Aktif</span>':status==='NONAKTIF'?'<span class="badge badge-warning">Nonaktif</span>':'<span class="badge badge-danger">Dihapus · arsip</span>'; const controls=status==='DIHAPUS'?`<button type="button" class="btn btn-outline btn-sm" onclick="setStatusMasterBarang(${index},'AKTIF')"><i class="fa-solid fa-rotate-left"></i> Pulihkan</button>`:`<button type="button" class="btn btn-outline btn-sm" onclick="bukaEditMasterBarang(${index})"><i class="fa-solid fa-pen"></i> Edit</button>`; return `<tr><td class="mono">${escapeHtml(item.kodeBarang || '-')}</td><td><b>${escapeHtml(item.namaBarang || '-')}</b></td><td>${escapeHtml(item.kategori || '-')}</td><td>${escapeHtml(item.satuan || '-')}</td><td>${escapeHtml(item.supplier || '-')}</td><td>${statusBadge}</td><td style="white-space:nowrap;">${controls}</td></tr>`; }).join('')}</tbody></table>`;
   }
 
   async function setStatusMasterBarang(index, status) {
     if (!sesiUser.isAdmin) return showToast('Hanya ADMIN yang dapat mengubah status master barang.', 'error');
     const item = masterBarangData[Number(index)];
     if (!item) return showToast('Data master barang tidak ditemukan.', 'error');
+    if (String(item.statusBarang || 'AKTIF').toUpperCase() === 'DIHAPUS') return showToast('Record ini sudah diarsipkan. Pulihkan dari daftar terlebih dahulu.', 'error');
     const actionName = status === 'DIHAPUS' ? 'mengarsipkan' : status === 'NONAKTIF' ? 'menonaktifkan' : 'mengaktifkan kembali';
     const warning = status === 'DIHAPUS' ? ' Record tetap tersimpan sebagai arsip dan tidak dihapus permanen.' : '';
     if (!confirm(`Yakin ${actionName} ${item.namaBarang}? Sistem akan menolak jika barang masih memiliki stok di salah satu gudang.${warning}`)) return;
@@ -2202,6 +2204,7 @@
       const result = await response.json();
       if (cekSesiBerakhir(result)) return;
       if (result.status !== 'success') throw new Error(result.message || 'Status master barang gagal diubah.');
+      tutupModal('modalMasterBarang');
       await Promise.all([muatTabelMasterBarang(), muatMasterStokBarang()]);
       showToast(result.message || 'Status master barang berhasil diubah.');
     } catch (error) { showToast(error.message || 'Status master barang gagal diubah.', 'error'); }
@@ -2218,9 +2221,14 @@
     const category = String(item.kategori || 'LAINNYA').toUpperCase();
     const categories = gabungkanKategoriStok(masterBarangCategories, [category]);
     document.getElementById('masterBarangCategory').innerHTML = categories.map(value => `<option value="${escapeHtml(value)}"${value === category ? ' selected' : ''}>${escapeHtml(value)}</option>`).join('');
+    document.getElementById('masterBarangToggleButton').innerHTML = String(item.statusBarang || 'AKTIF').toUpperCase() === 'AKTIF' ? '<i class="fa-solid fa-power-off"></i> Nonaktifkan' : '<i class="fa-solid fa-power-off"></i> Aktifkan';
+    document.getElementById('masterBarangToggleButton').dataset.status = String(item.statusBarang || 'AKTIF').toUpperCase() === 'AKTIF' ? 'NONAKTIF' : 'AKTIF';
     document.getElementById('modalMasterBarang').style.display = 'flex';
     document.getElementById('masterBarangName').focus();
   }
+
+  function toggleStatusMasterBarangEdit() { const row=masterBarangData.find(item=>String(item.kodeBarang)===String(document.getElementById('masterBarangCode').value)); const button=document.getElementById('masterBarangToggleButton'); if(row) setStatusMasterBarang(masterBarangData.indexOf(row),button.dataset.status); }
+  function hapusMasterBarangEdit() { const row=masterBarangData.find(item=>String(item.kodeBarang)===String(document.getElementById('masterBarangCode').value)); if(row) setStatusMasterBarang(masterBarangData.indexOf(row),'DIHAPUS'); }
 
   async function simpanEditMasterBarang(event) {
     event.preventDefault();
@@ -2244,7 +2252,7 @@
   function autofillReceiptCategoryFromName() {
     const name = String(document.getElementById('penNamaBarang').value || '').trim().toLowerCase();
     if (!name || !masterBarangData.length || document.getElementById('penSumber').value === 'PERMINTAAN_ACC') return;
-    const item = masterBarangData.find(row => String(row.namaBarang || '').trim().toLowerCase() === name);
+    const item = masterBarangData.find(row => String(row.statusBarang || 'AKTIF').toUpperCase() === 'AKTIF' && String(row.namaBarang || '').trim().toLowerCase() === name);
     if (!item || !item.kategori) return;
     const category = String(item.kategori).trim().toUpperCase();
     if (!masterBarangCategories.some(value => value.toLowerCase() === category.toLowerCase())) masterBarangCategories = gabungkanKategoriStok(masterBarangCategories, [category]);
@@ -2277,7 +2285,7 @@
   function autofillRegisteredItem(name, categorySelect, unitSelect) {
     const key = String(name || '').trim().toLowerCase();
     if (!key || !masterBarangData.length) return;
-    const item = masterBarangData.find(row => String(row.namaBarang || '').trim().toLowerCase() === key);
+    const item = masterBarangData.find(row => String(row.statusBarang || 'AKTIF').toUpperCase() === 'AKTIF' && String(row.namaBarang || '').trim().toLowerCase() === key);
     if (!item) return;
     const category = String(item.kategori || '').trim().toUpperCase();
     if (category) { masterBarangCategories = gabungkanKategoriStok(masterBarangCategories, [category]); perbaruiDropdownKategoriStok(); if (categorySelect) categorySelect.value = category; }
@@ -2371,7 +2379,7 @@
     if (!select) return;
     const unit = document.getElementById('koreksiUnit').value;
     const warehouse = document.getElementById('koreksiGudang').value;
-    const matches = rawStokList.filter(item => String(item.kodeUnit).toLowerCase() === unit.toLowerCase() && String(item.kodeGudang).toLowerCase() === warehouse.toLowerCase());
+    const matches = rawStokList.filter(item => String(item.statusBarang || 'AKTIF').toUpperCase() === 'AKTIF' && String(item.kodeUnit).toLowerCase() === unit.toLowerCase() && String(item.kodeGudang).toLowerCase() === warehouse.toLowerCase());
     select.innerHTML = matches.length
       ? '<option value="">-- Pilih barang --</option>' + matches.map(item => {
         const value = escapeHtml(JSON.stringify({kodeBarang: String(item.kodeBarang)}));
@@ -2457,6 +2465,7 @@
       return;
     }
     const sourceItems = rawStokList.filter(stock =>
+      String(stock.statusBarang || 'AKTIF').toUpperCase() === 'AKTIF' &&
       String(stock.kodeUnit).toLowerCase() === 'teknisi' &&
       String(stock.kodeGudang).toLowerCase() === 'teknik sukajaya' &&
       String(stock.namaBarang).trim().toLowerCase() === String(item.namaBarang).trim().toLowerCase() &&
@@ -2530,7 +2539,7 @@
   function populateBarangSelects() {
     const pemBarangPilih = document.getElementById('pemBarangPilih');
     const trBarangAsal = document.getElementById('trBarangAsal');
-    let opts = '<option value="">-- Pilih Barang Stok --</option>' + rawStokList.map(i => {
+    let opts = '<option value="">-- Pilih Barang Stok --</option>' + rawStokList.filter(i => String(i.statusBarang || 'AKTIF').toUpperCase() === 'AKTIF').map(i => {
       const locationValue = escapeHtml(JSON.stringify({kodeBarang: String(i.kodeBarang), kodeUnit: String(i.kodeUnit), kodeGudang: String(i.kodeGudang)}));
       return `<option value="${locationValue}">${escapeHtml(i.namaBarang)} · ${escapeHtml(i.kodeUnit)}/${escapeHtml(i.kodeGudang)} · Tersedia ${formatNumber(i.sisaStok)} ${escapeHtml(i.satuan)}</option>`;
     }).join('');
