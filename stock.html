@@ -3224,7 +3224,7 @@
       ticketReceiptOptions = json.data || [];
       const tickets = [...new Map(ticketReceiptOptions.map(item => [String(item.kodeTiket), item])).values()];
       select.innerHTML = tickets.length ? '<option value="">-- Pilih permintaan --</option>' + tickets.map(item =>
-        `<option value="${escapeHtml(item.kodeTiket)}">${escapeHtml(item.kodeTiket)} · ${escapeHtml(item.kodeUnitTujuan || item.kodeUnit)} · ${escapeHtml(item.kodeGudangTujuan || item.kodeGudang)} · ${escapeHtml(item.pemohon || '')}</option>`
+        `<option value="${escapeHtml(item.kodeTiket)}">${escapeHtml(item.kodeTiket)} · ${escapeHtml(item.kodeUnitTujuan || item.kodeUnit)} · ${escapeHtml(item.kodeGudangTujuan || 'Gudang dipilih saat penerimaan')} · ${escapeHtml(item.pemohon || '')}</option>`
       ).join('') : '<option value="">Tidak ada permintaan yang dapat diterima</option>';
       document.getElementById('penTicketRemaining').textContent = tickets.length ? 'Setelah permintaan dipilih, semua barang yang disetujui akan ditampilkan. Isi jumlah hanya pada barang yang diterima.' : 'Tidak ada item permintaan yang masih dapat diterima.';
       toggleReceiptSource();
@@ -3267,7 +3267,9 @@
     category.disabled = linked;
     addCategoryButton.disabled = linked;
     unit.disabled = linked || !(sesiUser.canViewAllLocations || sesiUser.isAdmin);
-    warehouse.disabled = linked;
+    const selectedTicketRows = linked ? ticketReceiptOptions.filter(row => String(row.kodeTiket) === String(ticketSelect.value)) : [];
+    const receiverIsTechnician = String(sesiUser.roleAccess || '').toUpperCase() === 'ADMIN_TEKNISI';
+    warehouse.disabled = linked && (receiverIsTechnician || Boolean(selectedTicketRows[0] && selectedTicketRows[0].kodeGudangTujuan));
     document.getElementById('penItemHint').textContent = linked
       ? 'Nama barang, satuan, dan kategori mengikuti persetujuan tiket portal.'
       : 'Gunakan nama dan satuan barang sesuai dokumen penerimaan.';
@@ -3300,13 +3302,16 @@
     unit.value = item.kodeUnit;
     updateSubGudangPilih('penUnit', 'penGudang');
     document.getElementById('penGudang').value = item.kodeGudang || (['ALL', 'UNIT'].includes(String(sesiUser.scopeGudang || '').toUpperCase()) ? '' : sesiUser.scopeGudang);
+    const receiverIsTechnician = String(sesiUser.roleAccess || '').toUpperCase() === 'ADMIN_TEKNISI';
+    document.getElementById('penGudang').disabled = receiverIsTechnician || Boolean(item.kodeGudangTujuan);
     updateReceiptOvkFields();
     const receivedField = String(sesiUser.roleAccess || '').toUpperCase() === 'ADMIN_TEKNISI' ? 'jumlahDiterimaTeknisi' : 'jumlahTerpenuhi';
     document.getElementById('penTicketItemsWrap').innerHTML = `<div class="erp-table-responsive"><table class="erp-table"><thead><tr><th>Barang permintaan</th><th>Disetujui</th><th>Sudah diterima</th><th>Sisa</th><th>Jumlah diterima sekarang</th></tr></thead><tbody>${rows.map(row => {
       const remaining = Math.max(0, Number(row.sisaDisetujui || 0));
       return `<tr><td><b>${escapeHtml(row.namaBarang)}</b><br><small>Item ${Number(row.noItem)} · ${escapeHtml(row.kategori || 'LAINNYA')}</small></td><td>${formatNumber(row.jumlahDisetujui)} ${escapeHtml(row.satuan)}</td><td>${formatNumber(row[receivedField] || 0)} ${escapeHtml(row.satuan)}</td><td>${formatNumber(remaining)} ${escapeHtml(row.satuan)}</td><td><input type="number" class="pen-ticket-qty" data-no-item="${Number(row.noItem)}" min="0" max="${remaining}" step="any" placeholder="0" ${remaining <= 0 ? 'disabled' : ''} style="max-width:150px;"></td></tr>`;
     }).join('')}</tbody></table></div>`;
-    hint.textContent = `Permintaan ${item.kodeTiket} · ${rows.length} barang ditampilkan. Isi jumlah pada barang yang benar-benar diterima; barang lain biarkan 0.`;
+    const warehouseHint = !receiverIsTechnician && !item.kodeGudangTujuan ? ' Pilih gudang penerimaan pada daftar Gudang.' : '';
+    hint.textContent = `Permintaan ${item.kodeTiket} · ${rows.length} barang ditampilkan. Isi jumlah pada barang yang benar-benar diterima; barang lain biarkan 0.${warehouseHint}`;
   }
 
   function tambahBarisPenerimaan() {
