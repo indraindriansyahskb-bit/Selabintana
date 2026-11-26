@@ -2187,7 +2187,24 @@
     const query = String(document.getElementById('masterBarangSearch').value || '').trim().toLowerCase();
     const rows = masterBarangData.map((item, index) => ({item, index})).filter(({item}) => !query || [item.kodeBarang, item.namaBarang, item.kategori, item.satuan, item.supplier].some(value => String(value || '').toLowerCase().includes(query)));
     if (!rows.length) { target.innerHTML = '<p style="padding:18px;color:var(--erp-text-muted);">Tidak ada barang yang cocok.</p>'; return; }
-    target.innerHTML = `<table class="erp-table"><thead><tr><th>Kode</th><th>Nama barang</th><th>Kategori</th><th>Satuan</th><th>Supplier</th><th>Aksi</th></tr></thead><tbody>${rows.map(({item,index}) => `<tr><td class="mono">${escapeHtml(item.kodeBarang || '-')}</td><td><b>${escapeHtml(item.namaBarang || '-')}</b></td><td>${escapeHtml(item.kategori || '-')}</td><td>${escapeHtml(item.satuan || '-')}</td><td>${escapeHtml(item.supplier || '-')}</td><td><button type="button" class="btn btn-outline btn-sm" onclick="bukaEditMasterBarang(${index})"><i class="fa-solid fa-pen"></i> Edit</button></td></tr>`).join('')}</tbody></table>`;
+    target.innerHTML = `<table class="erp-table"><thead><tr><th>Kode</th><th>Nama barang</th><th>Kategori</th><th>Satuan</th><th>Supplier</th><th>Status</th><th>Aksi</th></tr></thead><tbody>${rows.map(({item,index}) => { const status=String(item.statusBarang||'AKTIF').toUpperCase(); const statusBadge=status==='AKTIF'?'<span class="badge badge-success">Aktif</span>':status==='NONAKTIF'?'<span class="badge badge-warning">Nonaktif</span>':'<span class="badge badge-danger">Dihapus · arsip</span>'; const controls=status==='DIHAPUS'?`<button type="button" class="btn btn-outline btn-sm" onclick="setStatusMasterBarang(${index},'AKTIF')"><i class="fa-solid fa-rotate-left"></i> Pulihkan</button>`:`<button type="button" class="btn btn-outline btn-sm" onclick="bukaEditMasterBarang(${index})"><i class="fa-solid fa-pen"></i> Edit</button> <button type="button" class="btn btn-outline btn-sm" onclick="setStatusMasterBarang(${index},'${status==='AKTIF'?'NONAKTIF':'AKTIF'}')"><i class="fa-solid fa-power-off"></i> ${status==='AKTIF'?'Nonaktifkan':'Aktifkan'}</button> <button type="button" class="btn btn-danger btn-sm" onclick="setStatusMasterBarang(${index},'DIHAPUS')"><i class="fa-solid fa-trash"></i> Hapus</button>`; return `<tr><td class="mono">${escapeHtml(item.kodeBarang || '-')}</td><td><b>${escapeHtml(item.namaBarang || '-')}</b></td><td>${escapeHtml(item.kategori || '-')}</td><td>${escapeHtml(item.satuan || '-')}</td><td>${escapeHtml(item.supplier || '-')}</td><td>${statusBadge}</td><td style="min-width:260px;white-space:nowrap;">${controls}</td></tr>`; }).join('')}</tbody></table>`;
+  }
+
+  async function setStatusMasterBarang(index, status) {
+    if (!sesiUser.isAdmin) return showToast('Hanya ADMIN yang dapat mengubah status master barang.', 'error');
+    const item = masterBarangData[Number(index)];
+    if (!item) return showToast('Data master barang tidak ditemukan.', 'error');
+    const actionName = status === 'DIHAPUS' ? 'mengarsipkan' : status === 'NONAKTIF' ? 'menonaktifkan' : 'mengaktifkan kembali';
+    const warning = status === 'DIHAPUS' ? ' Record tetap tersimpan sebagai arsip dan tidak dihapus permanen.' : '';
+    if (!confirm(`Yakin ${actionName} ${item.namaBarang}? Sistem akan menolak jika barang masih memiliki stok di salah satu gudang.${warning}`)) return;
+    try {
+      const response = await postPayload({action: 'setMasterBarangStatus', token: sesiUser.token, kodeBarang: item.kodeBarang, statusBarang: status});
+      const result = await response.json();
+      if (cekSesiBerakhir(result)) return;
+      if (result.status !== 'success') throw new Error(result.message || 'Status master barang gagal diubah.');
+      await Promise.all([muatTabelMasterBarang(), muatMasterStokBarang()]);
+      showToast(result.message || 'Status master barang berhasil diubah.');
+    } catch (error) { showToast(error.message || 'Status master barang gagal diubah.', 'error'); }
   }
 
   function bukaEditMasterBarang(index) {
