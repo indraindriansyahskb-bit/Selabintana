@@ -354,7 +354,7 @@
       if (!categories.length) { grid.innerHTML = '<div class="inbox-empty">Tidak ada antrean yang perlu ditindaklanjuti.</div>'; return; }
       grid.innerHTML = categories.map(category => {
         const items = Array.isArray(category.items) ? category.items : [];
-        const contents = items.length ? items.slice(0,4).map(item => `<a class="inbox-item" href="${inboxEscape(category.href)}"><strong>${inboxEscape(item.title || item.id)}</strong><small>${inboxEscape(item.subtitle || item.id)} · ${inboxEscape(item.status || 'Menunggu')}</small></a>`).join('') : '<div class="inbox-empty">Tidak ada yang menunggu.</div>';
+        const contents = items.length ? items.slice(0,4).map(item => `<a class="inbox-item" href="${inboxEscape(category.href)}"><strong>${inboxEscape(item.id)}</strong><small>${inboxEscape(item.requester || '-')} · ${inboxEscape(item.date || '-')}</small></a>`).join('') : '<div class="inbox-empty">Tidak ada yang menunggu.</div>';
         return `<article class="inbox-card"><h4>${inboxEscape(category.label)}<span class="inbox-count">${Number(category.count)||0}</span></h4><div class="inbox-items">${contents}</div></article>`;
       }).join('');
     }
