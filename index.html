@@ -202,7 +202,7 @@
           <div><h2 id="modules-title">Pilih modul</h2><p class="module-note" id="moduleWelcome">Sesi aktif.</p><p class="module-note" id="moduleNotice" role="status" aria-live="polite" hidden></p></div>
         </div>
         <section class="inbox-panel" id="approvalInbox" aria-labelledby="inboxTitle" hidden>
-          <div class="inbox-head"><div><h3 id="inboxTitle">Menunggu tindakan Anda</h3><p>Ringkasan antrean yang perlu ditinjau setelah login.</p></div><button class="inbox-refresh" type="button" onclick="loadApprovalInbox()">Muat ulang</button></div>
+          <div class="inbox-head"><div><h3 id="inboxTitle">Menunggu tindakan Anda</h3><p id="inboxDescription">Ringkasan antrean yang perlu ditinjau setelah login.</p></div><button class="inbox-refresh" type="button" onclick="loadApprovalInbox()">Muat ulang</button></div>
           <div class="inbox-grid" id="approvalInboxGrid" aria-live="polite"><div class="inbox-loading">Memuat antrean…</div></div>
         </section>
         <div class="module-list">
@@ -354,7 +354,7 @@
       if (!categories.length) { grid.innerHTML = '<div class="inbox-empty">Tidak ada antrean yang perlu ditindaklanjuti.</div>'; return; }
       grid.innerHTML = categories.map(category => {
         const items = Array.isArray(category.items) ? category.items : [];
-        const contents = items.length ? items.slice(0,4).map(item => `<a class="inbox-item" href="${inboxEscape(category.href)}"><strong>${inboxEscape(item.id)}</strong><small>${inboxEscape(item.requester || '-')} · ${inboxEscape(item.date || '-')}</small></a>`).join('') : '<div class="inbox-empty">Tidak ada yang menunggu.</div>';
+        const contents = items.length ? items.slice(0,4).map(item => `<a class="inbox-item" href="${inboxEscape(category.href)}"><strong>${inboxEscape(item.id)}</strong><small>Pemohon: ${inboxEscape(item.requester || '-')}</small><small>Asal farm: ${inboxEscape(item.farm || '-')}</small><small>Diajukan: ${inboxEscape(item.date || '-')}</small></a>`).join('') : '<div class="inbox-empty">Tidak ada yang menunggu.</div>';
         return `<article class="inbox-card"><h4>${inboxEscape(category.label)}<span class="inbox-count">${Number(category.count)||0}</span></h4><div class="inbox-items">${contents}</div></article>`;
       }).join('');
     }
@@ -428,7 +428,7 @@
       if (!summary) return;
       summary.innerHTML = adminUserUnits.length ? adminUserUnits.map(unit => {
         const warehouses = adminUserWarehouses.filter(item => String(item.kodeUnit).toLowerCase() === String(unit.kodeUnit).toLowerCase());
-        return `<div class="admin-location-summary-unit"><strong>${escapeHtml(unit.namaUnit || unit.kodeUnit)}</strong><span>${warehouses.length ? warehouses.map(item => `${escapeHtml(item.namaGudang)} (${escapeHtml(item.kodeGudang)})`).join(' · ') : 'Belum memiliki gudang'}</span></div>`;
+        return `<div class="admin-location-summary-unit"><strong>${escapeHtml(unit.namaUnit || unit.kodeUnit)}</strong><span>${warehouses.length ? warehouses.map(item => `${escapeHtml(item.namaGudang)} (${escapeHtml(item.kodeGudang)})`).join(' · </small><small>Diajukan: ') : 'Belum memiliki gudang'}</span></div>`;
       }).join('') : 'Belum ada unit/farm terdaftar.';
     }
 
@@ -494,7 +494,7 @@
       const unitSelect = document.getElementById('userBaruUnit');
       const previousUnit = unitSelect.value;
       const portalOnlyRole = role === 'ADMIN_DIVISI';
-      unitSelect.innerHTML = portalOnlyRole ? '<option value="ALL">Semua unit / farm</option>' : role === 'ADMIN_TEKNISI' ? '<option value="TEKNISI">Gudang Teknik · Teknik Sukajaya</option>' : '<option value="">-- Pilih Unit / Farm --</option>' + adminUserUnits.map(unit => `<option value="${escapeHtml(unit.kodeUnit)}">${escapeHtml(unit.namaUnit || unit.kodeUnit)}</option>`).join('');
+      unitSelect.innerHTML = portalOnlyRole ? '<option value="ALL">Semua unit / farm</option>' : role === 'ADMIN_TEKNISI' ? '<option value="TEKNISI">Gudang Teknik · </small><small>Diajukan: Teknik Sukajaya</option>' : '<option value="">-- Pilih Unit / Farm --</option>' + adminUserUnits.map(unit => `<option value="${escapeHtml(unit.kodeUnit)}">${escapeHtml(unit.namaUnit || unit.kodeUnit)}</option>`).join('');
       unitSelect.disabled = portalOnlyRole || role === 'ADMIN_TEKNISI';
       if (portalOnlyRole) unitSelect.value = 'ALL';
       else if (role === 'ADMIN_TEKNISI') unitSelect.value = 'TEKNISI';
@@ -676,9 +676,18 @@
       document.getElementById('adminUsersCard').hidden = !isAdmin;
       document.getElementById('adminTransactionsCard').hidden = !isAdmin;
       const role = String(user.roleAccess || '').toUpperCase();
-      const showInbox = role === 'ADMIN' || role === 'ADMIN_TEKNISI';
+      const hasInboxModule = modules.indexOf('portal') >= 0 || modules.indexOf('repair') >= 0 || modules.indexOf('proposal') >= 0;
+      const showInbox = (role === 'ADMIN' || role === 'ADMIN_TEKNISI') && (isAdmin || hasInboxModule);
       document.getElementById('approvalInbox').hidden = !showInbox;
-      if (showInbox) loadApprovalInbox();
+      if (role === 'STAFF_OPERASIONAL' && hasInboxModule) {
+        document.getElementById('approvalInbox').hidden = false;
+        document.getElementById('inboxTitle').textContent = 'Pengingat dokumen bertanda tangan';
+        document.getElementById('inboxDescription').textContent = 'Pengajuan Anda yang masih perlu dilengkapi dokumen bertanda tangan.';
+      } else {
+        document.getElementById('inboxTitle').textContent = 'Menunggu tindakan Anda';
+        document.getElementById('inboxDescription').textContent = 'Ringkasan antrean yang perlu ditinjau setelah login.';
+      }
+      if (showInbox || (role === 'STAFF_OPERASIONAL' && hasInboxModule)) loadApprovalInbox();
       document.querySelector('.module-list').classList.toggle('admin-visible', isAdmin);
       document.getElementById('startLink').href = '#moduleSection';
       document.getElementById('startLinkText').textContent = 'Pilih modul';
