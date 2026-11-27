@@ -483,6 +483,9 @@
               <button onclick="bukaModalTransferDirect()" class="btn btn-primary" style="padding: 20px; font-size: 13px; flex-direction: column;">
                 <i class="fa-solid fa-truck-ramp-box fa-2xl" style="margin-bottom: 8px;"></i> 3. Mutasi Inter-Farm
               </button>
+              <button onclick="bukaModalMutasiGudang()" class="btn btn-outline" style="padding: 20px; font-size: 13px; flex-direction: column;">
+                <i class="fa-solid fa-right-left fa-2xl" style="margin-bottom: 8px;"></i> 4. Mutasi Antar Gudang (Satu Unit)
+              </button>
             </div>
 
           </div>
@@ -845,6 +848,31 @@
   </div>
 </div>
 
+<div id="modalMutasiGudang" class="modal">
+  <div class="modal-content" style="max-width:620px;">
+    <div class="modal-header">
+      <h3 style="font-size:14px;font-weight:700;color:var(--erp-primary);"><i class="fa-solid fa-right-left"></i> Mutasi Antar Gudang dalam Satu Unit</h3>
+      <button type="button" aria-label="Tutup form mutasi antar gudang" onclick="tutupModal('modalMutasiGudang')" style="background:none;border:0;cursor:pointer;font-size:16px;"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form id="formMutasiGudang" class="modal-body">
+      <p style="margin:0 0 14px;color:var(--erp-text-muted);">Untuk membetulkan stok yang tercatat di gudang yang salah. Pilih gudang dalam unit/farm yang sama. Mutasi langsung dicatat sebagai barang keluar dan barang masuk tanpa menunggu ACC admin.</p>
+      <div class="form-group"><label for="intraStockSource">Barang dan gudang asal</label><select id="intraStockSource" required></select><small id="intraStockSourceHint" style="display:block;margin-top:6px;color:var(--erp-text-muted);"></small></div>
+      <div class="form-row">
+        <div class="form-group"><label for="intraUnitLabel">Unit / farm</label><input id="intraUnitLabel" type="text" readonly></div>
+        <div class="form-group"><label for="intraWarehouseDestination">Gudang tujuan</label><select id="intraWarehouseDestination" required><option value="">-- Pilih barang asal dahulu --</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label for="intraQuantity">Jumlah mutasi</label><input id="intraQuantity" type="number" min="0.001" max="1000000000" step="any" required></div>
+        <div class="form-group"><label for="intraReason">Alasan mutasi</label><input id="intraReason" type="text" minlength="5" maxlength="500" placeholder="Contoh: stok salah dicatat ke Gudang OVK" required></div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;">
+        <button type="button" onclick="tutupModal('modalMutasiGudang')" class="btn btn-outline">Batal</button>
+        <button type="submit" class="btn btn-primary">Simpan Mutasi</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <div id="modalTransferReceipt" class="modal">
   <div class="modal-content">
     <div class="modal-header">
@@ -962,7 +990,7 @@
   }
 
   function aktifkanPencarianSelectBarang() {
-    const ids = ['penTicketItem', 'stockItemHistoryItem', 'koreksiBarang', 'pemBarangPilih', 'pemakaianBulkBarang', 'trTicketItem', 'trBarangAsal'];
+    const ids = ['penTicketItem', 'stockItemHistoryItem', 'koreksiBarang', 'pemBarangPilih', 'pemakaianBulkBarang', 'trTicketItem', 'trBarangAsal', 'intraStockSource'];
     ids.forEach(id => {
       const select = document.getElementById(id);
       if (!select || select.dataset.searchable === 'true') return;
@@ -1320,6 +1348,7 @@
       if (json.status === "success") { 
         masterUnits = json.units; allUnits = json.allUnits || json.units; masterGudang = json.gudang || []; allowedGudang = json.gudangDiizinkan || masterGudang;
         populateUnitDropdowns(); 
+        aktifkanPencarianSelectBarang();
         populateStockViewFilters();
         populateStockItemHistoryUnits();
         setConnectionStatus('ok', 'GAS tersambung');
@@ -2554,8 +2583,18 @@
     }).join('');
     if(pemBarangPilih) pemBarangPilih.innerHTML = opts;
     if(trBarangAsal) trBarangAsal.innerHTML = opts;
+    const intraSource = document.getElementById('intraStockSource');
+    if (intraSource) {
+      const availableRows = rawStokList.filter(i => String(i.statusBarang || 'AKTIF').toUpperCase() === 'AKTIF' && Number(i.sisaStok || 0) > 0);
+      intraSource.innerHTML = '<option value="">-- Pilih barang dari gudang asal --</option>' + availableRows.map(i => {
+        const locationValue = escapeHtml(JSON.stringify({kodeBarang:String(i.kodeBarang), kodeUnit:String(i.kodeUnit), kodeGudang:String(i.kodeGudang)}));
+        return `<option value="${locationValue}">${escapeHtml(i.namaBarang)} · ${escapeHtml(i.kodeUnit)}/${escapeHtml(i.kodeGudang)} · Tersedia ${formatNumber(i.sisaStok)} ${escapeHtml(i.satuan)}</option>`;
+      }).join('');
+      aktifkanPencarianSelectBarang();
+    }
     updateSelectedStockHint('pemBarangPilih', 'pemSaldoTersedia');
     updateSelectedStockHint('trBarangAsal', 'trSaldoTersedia');
+    updateMutasiGudangSource();
   }
 
   function populateFilterBarangDatalist() {
@@ -3469,6 +3508,73 @@
     if (isTechnician) muatTiketMutasiTeknisi();
     document.getElementById('modalTransfer').style.display = 'flex'; 
   }
+
+  function bukaModalMutasiGudang() {
+    const source = document.getElementById('intraStockSource');
+    if (source) source.value = '';
+    document.getElementById('intraUnitLabel').value = '';
+    document.getElementById('intraStockSourceHint').textContent = '';
+    document.getElementById('intraWarehouseDestination').innerHTML = '<option value="">-- Pilih barang asal dahulu --</option>';
+    document.getElementById('formMutasiGudang').reset();
+    document.getElementById('modalMutasiGudang').style.display = 'flex';
+  }
+
+  function updateMutasiGudangSource() {
+    const sourceSelect = document.getElementById('intraStockSource');
+    if (!sourceSelect) return;
+    let selected;
+    try { selected = JSON.parse(sourceSelect.value || 'null'); } catch (error) { selected = null; }
+    const unitLabel = document.getElementById('intraUnitLabel');
+    const destination = document.getElementById('intraWarehouseDestination');
+    const hint = document.getElementById('intraStockSourceHint');
+    if (!selected) {
+      unitLabel.value = '';
+      destination.innerHTML = '<option value="">-- Pilih barang asal dahulu --</option>';
+      hint.textContent = '';
+      return;
+    }
+    const sourceItem = rawStokList.find(item => String(item.kodeBarang) === selected.kodeBarang && String(item.kodeUnit) === selected.kodeUnit && String(item.kodeGudang) === selected.kodeGudang);
+    const sourceUnit = sourceItem ? sourceItem.kodeUnit : selected.kodeUnit;
+    unitLabel.value = sourceUnit;
+    hint.textContent = sourceItem ? `Stok tersedia: ${formatNumber(sourceItem.sisaStok)} ${sourceItem.satuan}. Jumlah mutasi tidak boleh melebihi stok bebas.` : '';
+    document.getElementById('intraQuantity').max = sourceItem ? String(Math.max(0, Number(sourceItem.sisaStok) || 0)) : '1000000000';
+    const destinations = masterGudang.filter(warehouse => String(warehouse.kodeUnit).toLowerCase() === String(selected.kodeUnit).toLowerCase() && String(warehouse.kodeGudang).toLowerCase() !== String(selected.kodeGudang).toLowerCase() && clientCanAccessWarehouse(warehouse.kodeUnit, warehouse.kodeGudang));
+    destination.innerHTML = destinations.length ? '<option value="">-- Pilih gudang tujuan --</option>' + destinations.map(warehouse => `<option value="${escapeHtml(warehouse.kodeGudang)}">${escapeHtml(warehouse.namaGudang)} · ${escapeHtml(warehouse.kodeGudang)}</option>`).join('') : '<option value="">Tidak ada gudang lain yang dapat diakses</option>';
+  }
+
+  document.getElementById('intraStockSource').addEventListener('change', updateMutasiGudangSource);
+  document.getElementById('formMutasiGudang').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    let source;
+    try { source = JSON.parse(document.getElementById('intraStockSource').value); } catch (error) { return showToast('Pilih barang dan gudang asal.', 'error'); }
+    const sourceItem = rawStokList.find(item => String(item.kodeBarang) === source.kodeBarang && String(item.kodeUnit) === source.kodeUnit && String(item.kodeGudang) === source.kodeGudang);
+    if (!sourceItem) return showToast('Stok asal tidak ditemukan. Muat ulang data stok.', 'error');
+    const targetWarehouse = document.getElementById('intraWarehouseDestination').value;
+    const reason = document.getElementById('intraReason').value.trim();
+    if (!targetWarehouse || targetWarehouse.toLowerCase() === source.kodeGudang.toLowerCase()) return showToast('Pilih gudang tujuan lain dalam unit yang sama.', 'error');
+    if (reason.length < 5) return showToast('Alasan mutasi wajib diisi minimal 5 karakter.', 'error');
+    const payload = {
+      action: 'mutasiAntarGudangSatuUnit', kodeBarang: source.kodeBarang, kodeUnit: source.kodeUnit,
+      gudangAsal: source.kodeGudang, gudangTujuan: targetWarehouse,
+      jumlah: document.getElementById('intraQuantity').value, alasan: reason
+    };
+    await kirimAksiStok(payload, async function(result, submittedPayload) {
+      tutupModal('modalMutasiGudang');
+      document.getElementById('formMutasiGudang').reset();
+      await Promise.all([muatJurnalTransaksiBarang(), muatMasterStokBarang()]);
+      const destinationItem = rawStokList.find(item => String(item.kodeBarang) === source.kodeBarang && String(item.kodeUnit) === source.kodeUnit && String(item.kodeGudang) === targetWarehouse);
+      if (!result.duplicate) tampilkanBuktiTransaksi({
+        judul: 'Bukti Mutasi Antar Gudang', idTransaksi: result.idTransaksi || submittedPayload.idTransaksi,
+        waktu: new Date().toLocaleString('id-ID', {timeZone:'Asia/Jakarta'}), status: 'Tercatat',
+        sumber: `Pemindahan stok dalam unit ${source.kodeUnit}`, kodeUnit: source.kodeUnit,
+        kodeGudang: `${source.kodeGudang} → ${targetWarehouse}`, pelaku: sesiUser.nama || sesiUser.username,
+        catatan: reason, items: [
+          {idTransaksi: `${result.idTransaksi || submittedPayload.idTransaksi}:KELUAR`, kodeBarang: source.kodeBarang, namaBarang: sourceItem.namaBarang, kategori: sourceItem.kategori, kodeUnit:source.kodeUnit, kodeGudang:source.kodeGudang, tipeMutasi:'KELUAR', jumlah:submittedPayload.jumlah, satuan:sourceItem.satuan, saldoSebelum:result.saldoAsalSebelum, saldoSesudah:result.saldoAsalSesudah},
+          {idTransaksi: `${result.idTransaksi || submittedPayload.idTransaksi}:MASUK`, kodeBarang: source.kodeBarang, namaBarang: sourceItem.namaBarang, kategori: sourceItem.kategori, kodeUnit:source.kodeUnit, kodeGudang:targetWarehouse, tipeMutasi:'MASUK', jumlah:submittedPayload.jumlah, satuan:sourceItem.satuan, saldoSebelum:result.saldoTujuanSebelum, saldoSesudah:result.saldoTujuanSesudah}
+        ]
+      });
+    }, 'formMutasiGudang');
+  });
 
   document.getElementById('formTransferStok').addEventListener('submit', async function(e) {
     e.preventDefault();
