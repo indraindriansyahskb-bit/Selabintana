@@ -56,6 +56,7 @@
   async function start(){try{const raw=sessionStorage.getItem(SESSION_KEY);session=raw?JSON.parse(raw):null;if(!session||!session.token){location.replace('index.html');return}const token=session.token;const check=await get('validateSession');if(check.status!=='success'||!check.userData){sessionStorage.removeItem(SESSION_KEY);location.replace('index.html');return}session={...check.userData,token};if(!session.isAdmin&&session.roleAccess!=='ADMIN'){location.replace('index.html');return}$('userInfo').textContent=`${session.nama||session.username} · ADMIN`;await loadCurrent(true)}catch(error){toast(error.message||'Sesi admin tidak dapat diperiksa.',true)}}
   start();
 </script>
+
   <script src="transaction-confirm.js"></script>
 </body>
 </html>
