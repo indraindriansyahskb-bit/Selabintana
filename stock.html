@@ -1206,18 +1206,20 @@
     const koreksiMenu = document.getElementById('koreksiStokMenuItem');
     const roleName = String(sesiUser.roleAccess || '').toUpperCase();
     const temporaryOpeningStaff = roleName === 'STAFF_OPERASIONAL' && todayJakarta() <= '2026-11-30';
-    koreksiMenu.hidden = !(sesiUser.isAdmin || temporaryOpeningStaff);
+    const technicianOpening = roleName === 'ADMIN_TEKNISI';
+    const openingOnlyStockRole = technicianOpening || temporaryOpeningStaff;
+    koreksiMenu.hidden = !(sesiUser.isAdmin || openingOnlyStockRole);
     document.getElementById('masterBarangMenuItem').hidden = !sesiUser.isAdmin;
-    if (temporaryOpeningStaff) {
-      document.querySelector('#koreksiStokMenuItem span').textContent = 'Saldo Awal (Sementara)';
+    if (openingOnlyStockRole) {
+      document.querySelector('#koreksiStokMenuItem span').textContent = technicianOpening ? 'Masukan Saldo Awal' : 'Saldo Awal (Sementara)';
       document.getElementById('correctionCardTitle').innerHTML = '<i class="fa-solid fa-boxes-stacked"></i> Masukan Saldo Awal';
-      document.getElementById('correctionRoleBadge').textContent = 'STAFF · SEMENTARA S/D 30 NOV';
+      document.getElementById('correctionRoleBadge').textContent = technicianOpening ? 'GUDANG TEKNISI' : 'STAFF · SEMENTARA S/D 30 NOV';
       document.getElementById('correctionModeControls').hidden = true;
       document.getElementById('singleCorrectionPanel').hidden = true;
       document.getElementById('bulkOpeningPanel').hidden = false;
       document.getElementById('correctionHistoryCard').hidden = true;
       const temporaryNotice = document.querySelector('#tabKoreksiView .erp-card-body > div:first-child');
-      temporaryNotice.textContent = 'Akses sementara untuk memasukkan saldo awal. Menu ini berlaku sampai 30 November 2026 dan otomatis ditutup setelah akhir bulan.';
+      temporaryNotice.textContent = technicianOpening ? 'Masukkan saldo awal khusus untuk gudang teknisi yang termasuk cakupan akun.' : 'Akses sementara untuk memasukkan saldo awal. Menu ini berlaku sampai 30 November 2026 dan otomatis ditutup setelah akhir bulan.';
       if (!document.querySelector('#saldoAwalRows .opening-stock-row')) tambahBarisSaldoAwal();
     }
     document.querySelector('.erp-menu').classList.toggle('has-admin-menu', Boolean(sesiUser.isAdmin));
@@ -1276,7 +1278,9 @@
   function switchTab(tab) {
     const roleName = String(sesiUser.roleAccess || '').toUpperCase();
     const temporaryOpeningStaff = roleName === 'STAFF_OPERASIONAL' && todayJakarta() <= '2026-11-30';
-    if (tab === 'koreksi' && !(sesiUser.isAdmin || temporaryOpeningStaff)) return showToast('Menu ini hanya tersedia untuk admin.', 'error');
+    const technicianOpening = roleName === 'ADMIN_TEKNISI';
+    const openingOnlyStockRole = technicianOpening || temporaryOpeningStaff;
+    if (tab === 'koreksi' && !(sesiUser.isAdmin || openingOnlyStockRole)) return showToast('Menu ini hanya tersedia untuk admin.', 'error');
     if (tab === 'masterBarang' && !sesiUser.isAdmin) return showToast('Menu ini hanya tersedia untuk ADMIN.', 'error');
     const tabs = {stok: ['tabStokBtn','tabStokView','Jurnal Stok & Mutasi'], transaksi: ['tabTransaksiBtn','tabTransaksiView','Pusat Transaksi Gudang'], history: ['tabHistoryBtn','tabHistoryView','Riwayat Mutasi'], audit: ['tabAuditBtn','tabAuditView','Jejak Audit Stok'], lihatStok: ['tabLihatStokBtn','tabLihatStokView','Lihat Saldo Stok'], historyBarang: ['tabHistoryBarangBtn','tabHistoryBarangView','History Stok per Barang'], koreksi: ['tabKoreksiBtn','tabKoreksiView','Koreksi Stok'], kandang: ['tabPemakaianKandangBtn','tabPemakaianKandangView','Pemakaian per Lokasi'], masterBarang: ['tabMasterBarangBtn','tabMasterBarangView','Master Barang']};
     if (!tabs[tab]) return;
@@ -1289,7 +1293,7 @@
       button.tabIndex = tab === key ? 0 : -1;
       panel.style.display = tab === key ? 'block' : 'none';
     });
-    document.getElementById('currentPageTitle').textContent = tab === 'koreksi' && temporaryOpeningStaff ? 'Masukan Saldo Awal' : tabs[tab][2];
+    document.getElementById('currentPageTitle').textContent = tab === 'koreksi' && openingOnlyStockRole ? 'Masukan Saldo Awal' : tabs[tab][2];
     if (tab === 'history') muatPendingTransfers();
     if (tab === 'koreksi') muatMasterBarangKategori();
     if (tab === 'transaksi') muatTiketPenerimaan();
@@ -1351,7 +1355,7 @@
     }
     const openingUnit = document.getElementById('saldoAwalUnit');
     if (openingUnit) {
-      const openingUnits = sesiUser.isAdmin ? (allUnits.length ? allUnits : masterUnits) : (String(sesiUser.roleAccess || '').toUpperCase() === 'STAFF_OPERASIONAL' ? masterUnits : []);
+      const openingUnits = sesiUser.isAdmin ? (allUnits.length ? allUnits : masterUnits) : (['STAFF_OPERASIONAL','ADMIN_TEKNISI'].includes(String(sesiUser.roleAccess || '').toUpperCase()) ? masterUnits : []);
       openingUnit.innerHTML = '<option value="">-- Pilih Unit --</option>' + openingUnits.map(u => `<option value="${escapeHtml(u.kodeUnit)}">${escapeHtml(u.namaUnit)}</option>`).join('');
     }
     updateBulkOpeningWarehouses();
@@ -3518,7 +3522,7 @@
   document.getElementById('koreksiSatuan').addEventListener('change', updatePreviewKoreksi);
   document.getElementById('formSaldoAwalBulk').addEventListener('submit', async function(event) {
     event.preventDefault();
-    if (!(sesiUser.isAdmin || (String(sesiUser.roleAccess || '').toUpperCase() === 'STAFF_OPERASIONAL' && todayJakarta() <= '2026-11-30'))) return showToast('Akses saldo awal sementara sudah ditutup.', 'error');
+    if (!(sesiUser.isAdmin || String(sesiUser.roleAccess || '').toUpperCase() === 'ADMIN_TEKNISI' || (String(sesiUser.roleAccess || '').toUpperCase() === 'STAFF_OPERASIONAL' && todayJakarta() <= '2026-11-30'))) return showToast('Akses input saldo awal tidak tersedia untuk akun ini.', 'error');
     if (!this.reportValidity()) return;
     const items = Array.from(document.querySelectorAll('#saldoAwalRows .opening-stock-row')).map(row => ({
       namaBarang: row.querySelector('[data-field="name"]').value.trim(),
