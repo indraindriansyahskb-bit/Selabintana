@@ -782,7 +782,7 @@
             <b>Daftar lokasi / peruntukan untuk barang terpilih</b>
             <button id="tambahBarisPemakaianBulkBtn" type="button" class="btn btn-outline btn-sm" onclick="tambahBarisPemakaianPakan()" disabled><i class="fa-solid fa-plus"></i> Tambah lokasi</button>
           </div>
-          <small style="display:block;margin-bottom:10px;color:var(--erp-text-muted);">Pilih gudang, lalu pilih satu barang. Tambahkan baris untuk setiap lokasi pemakaian; total barang tidak boleh melebihi stok tersedia.</small>
+          <small style="display:block;margin-bottom:10px;color:var(--erp-text-muted);">Pilih gudang dan satu barang. Daftar lokasi di bawah dapat digulir; total pemakaian tidak boleh melebihi stok tersedia.</small>
           <div id="pemakaianPakanRows"></div>
           <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:15px;">
             <button type="button" onclick="tutupModal('modalPemakaian')" class="btn btn-outline">Batal</button>
@@ -795,6 +795,57 @@
 </div>
 
 <style>
+  /* Keep bulk-use controls in view; scroll only the growing location list. */
+  #modalPemakaian.bulk-mode .modal-content {
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - 40px);
+    max-height: calc(100dvh - 40px);
+  }
+  #modalPemakaian.bulk-mode .modal-header { flex: 0 0 auto; }
+  #modalPemakaian.bulk-mode .modal-body {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+    padding: 14px 18px;
+  }
+  #modalPemakaian.bulk-mode .erp-filter-bar { flex: 0 0 auto; }
+  #bulkFeedPanel:not([hidden]) {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+  #formPemakaianPakanBulk {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+  #formPemakaianPakanBulk > .form-row,
+  #formPemakaianPakanBulk > div:not(#pemakaianPakanRows),
+  #formPemakaianPakanBulk > small { flex: 0 0 auto; }
+  #formPemakaianPakanBulk > .form-row { margin-bottom: 7px; }
+  #formPemakaianPakanBulk .form-group { margin-bottom: 7px; }
+  #formPemakaianPakanBulk > small { margin-bottom: 6px !important; }
+  #pemakaianPakanRows {
+    flex: 1 1 auto;
+    min-height: 84px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    padding: 2px 5px 2px 0;
+  }
+  #formPemakaianPakanBulk > div:last-child {
+    flex: 0 0 auto;
+    margin-top: 8px !important;
+    padding-top: 10px;
+    border-top: 1px solid var(--erp-border-light);
+  }
   #pemakaianPakanRows .bulk-feed-row {
     display: grid;
     grid-template-columns: minmax(0, 1.2fr) minmax(0, .8fr) 38px;
@@ -807,6 +858,10 @@
   #pemakaianPakanRows .bulk-feed-row > button { min-width: 0; padding-left: 8px; padding-right: 8px; }
 
   @media (max-width: 720px) {
+    #modalPemakaian.bulk-mode { padding: 8px; }
+    #modalPemakaian.bulk-mode .modal-content { max-height: calc(100vh - 16px); max-height: calc(100dvh - 16px); }
+    #modalPemakaian.bulk-mode .modal-body { padding: 12px; }
+    #modalPemakaian.bulk-mode #pemakaianPakanRows { min-height: 64px; }
     #pemakaianPakanRows .bulk-feed-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 38px; }
     #pemakaianPakanRows .bulk-feed-row > .form-group:first-child { grid-column: 1; }
     #pemakaianPakanRows .bulk-feed-row > .form-group:nth-child(2) { grid-column: 2; }
@@ -1531,6 +1586,7 @@
 
   function switchPemakaianMode(mode) {
     const feedMode = mode === 'feed';
+    document.getElementById('modalPemakaian').classList.toggle('bulk-mode', feedMode);
     document.getElementById('singlePemakaianPanel').hidden = feedMode;
     document.getElementById('bulkFeedPanel').hidden = !feedMode;
     document.getElementById('modePemakaianSatuBtn').className = feedMode ? 'btn btn-outline' : 'btn btn-primary';
