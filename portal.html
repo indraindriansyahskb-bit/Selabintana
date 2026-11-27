@@ -1343,7 +1343,8 @@
       return;
     }
 
-    html += `</tbody></table></body></html>`;
+    html += `</tbody></table>  <script src="transaction-confirm.js"></script>
+</body></html>`;
 
     let blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
     let url = URL.createObjectURL(blob);
@@ -1726,7 +1727,8 @@
     const techSignature = isTechTarget ? `<td class="sig-cell"><div class="sig-title">KEPALA TEKNISI</div>${techSigned ? `<div class="sig-status">ACC · ${escapeHtml(t.waktuAccTeknisi || '')}</div>` : ''}<div class="sig-line"></div><div class="sig-name">( A Silvado )</div></td>` : '';
     let printWin = window.open('', '_blank');
     if (!printWin) return showToast('Izinkan pop-up untuk mencetak formulir permintaan.', 'error');
-    printWin.document.write('<!DOCTYPE html><html lang="id"><meta charset="UTF-8"><title>Menyiapkan cetakan</title><body style="font:14px Arial;padding:32px;color:#334155">Menyiapkan formulir dan lampiran foto untuk dicetak…</body></html>');
+    printWin.document.write('<!DOCTYPE html><html lang="id"><meta charset="UTF-8"><title>Menyiapkan cetakan</title><body style="font:14px Arial;padding:32px;color:#334155">Menyiapkan formulir dan lampiran foto untuk dicetak…  <script src="transaction-confirm.js"></script>
+</body></html>');
     printWin.document.close();
     const photoItems = t.items.filter(item => (Array.isArray(item.fotoBarang) && item.fotoBarang.length) || item.fotoBarangUrl);
     const photoResults = await Promise.all(photoItems.map(async item => {
@@ -1745,7 +1747,8 @@
     if (failedPhotos.length) {
       showToast(`${failedPhotos.length} foto gagal dimuat. Formulir tidak dicetak agar lampiran tidak terlewat.`, 'error');
       printWin.document.open();
-      printWin.document.write(`<!DOCTYPE html><html lang="id"><meta charset="UTF-8"><title>Lampiran gagal dimuat</title><body style="font:14px Arial;padding:32px;color:#7f1d1d"><h2>Foto belum siap dicetak</h2><p>Periksa koneksi lalu coba cetak kembali. Foto yang gagal:</p><ul>${failedPhotos.map(error => `<li>${escapeHtml(error)}</li>`).join('')}</ul></body></html>`);
+      printWin.document.write(`<!DOCTYPE html><html lang="id"><meta charset="UTF-8"><title>Lampiran gagal dimuat</title><body style="font:14px Arial;padding:32px;color:#7f1d1d"><h2>Foto belum siap dicetak</h2><p>Periksa koneksi lalu coba cetak kembali. Foto yang gagal:</p><ul>${failedPhotos.map(error => `<li>${escapeHtml(error)}</li>`).join('')}</ul>  <script src="transaction-confirm.js"></script>
+</body></html>`);
       printWin.document.close();
       return;
     }
@@ -1800,7 +1803,8 @@
         </tr></table>
         </main>
         ${printPhotos ? `<section class="print-page photo-page"><h2>Lampiran Foto Barang — ${escapeHtml(t.kodeTiket)}</h2><div class="photo-grid">${printPhotos}</div></section>` : ''}
-      </body></html>`;
+        <script src="transaction-confirm.js"></script>
+</body></html>`;
     printWin.addEventListener('load', function() {
       const images = Array.from(printWin.document.images);
       Promise.all(images.map(image => image.complete ? Promise.resolve() : new Promise(resolve => {
@@ -1879,5 +1883,6 @@
   }
 </script>
 
+  <script src="transaction-confirm.js"></script>
 </body>
 </html>
