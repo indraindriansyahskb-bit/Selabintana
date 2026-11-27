@@ -57,6 +57,24 @@
     .modules h2 { margin:0 0 17px; font:700 21px/1.3 "Manrope",sans-serif; letter-spacing:-.035em; }
     .module-heading h2 { margin:0; }
     .module-note { margin:6px 0 0; color:var(--muted); font-size:11px; }
+    .inbox-panel { margin:0 0 22px; padding:17px; border:1px solid #d7e4d8; border-radius:15px; background:linear-gradient(135deg,#f5faf5,#fff 70%); }
+    .inbox-panel[hidden] { display:none!important; }
+    .inbox-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
+    .inbox-head h3 { margin:0; color:var(--green); font:700 15px/1.35 "Manrope",sans-serif; }
+    .inbox-head p { margin:4px 0 0; color:var(--muted); font-size:10px; }
+    .inbox-refresh { border:1px solid #cbd8cd; border-radius:8px; padding:7px 10px; background:white; color:var(--green); font:700 10px "DM Sans",Arial,sans-serif; cursor:pointer; }
+    .inbox-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; }
+    .inbox-card { min-width:0; padding:13px; border:1px solid var(--line); border-radius:11px; background:#fff; }
+    .inbox-card h4 { display:flex; align-items:center; justify-content:space-between; gap:8px; margin:0 0 9px; font:700 12px "Manrope",sans-serif; }
+    .inbox-count { min-width:24px; padding:3px 7px; border-radius:20px; background:#fff0d0; color:#805300; text-align:center; font:700 10px "DM Sans",Arial,sans-serif; }
+    .inbox-items { display:grid; gap:7px; }
+    .inbox-item { display:block; overflow:hidden; padding:7px 8px; border-radius:7px; background:#f7f9f7; color:var(--ink); text-decoration:none; }
+    .inbox-item:hover { background:#edf4ed; }
+    .inbox-item strong,.inbox-item small { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .inbox-item strong { font-size:10px; }
+    .inbox-item small { margin-top:3px; color:var(--muted); font-size:9px; }
+    .inbox-empty,.inbox-loading { padding:9px; border-radius:7px; background:#f7f9f7; color:var(--muted); font-size:10px; }
+    .inbox-error { color:#a43d32; }
     .module-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:15px; }
     .module { min-height:130px; display:flex; align-items:center; gap:16px; padding:21px; border:1px solid var(--line); border-radius:15px; background:#fff; text-decoration:none; transition:border-color .2s,box-shadow .2s,transform .2s; }
     .module[hidden] { display:none!important; }
@@ -121,6 +139,7 @@
       .hero-photo { min-height:270px; }
       .modules { padding-top:30px; }
       .module-list.admin-visible { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .inbox-grid { grid-template-columns:1fr; }
       .admin-modal-card { max-height:94vh; }
       .admin-modal-head, .admin-form { padding-left:17px; padding-right:17px; }
     }
@@ -182,6 +201,10 @@
         <div class="module-heading">
           <div><h2 id="modules-title">Pilih modul</h2><p class="module-note" id="moduleWelcome">Sesi aktif.</p><p class="module-note" id="moduleNotice" role="status" aria-live="polite" hidden></p></div>
         </div>
+        <section class="inbox-panel" id="approvalInbox" aria-labelledby="inboxTitle" hidden>
+          <div class="inbox-head"><div><h3 id="inboxTitle">Menunggu tindakan Anda</h3><p>Ringkasan antrean yang perlu ditinjau setelah login.</p></div><button class="inbox-refresh" type="button" onclick="loadApprovalInbox()">Muat ulang</button></div>
+          <div class="inbox-grid" id="approvalInboxGrid" aria-live="polite"><div class="inbox-loading">Memuat antrean…</div></div>
+        </section>
         <div class="module-list">
           <a class="module" href="portal.html">
             <span class="module-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M6 3.8h8l4 4V20H6V3.8Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M14 4v4h4M9 12h6m-6 3.5h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>
@@ -266,10 +289,10 @@
         </div>
         <div><label for="userBaruScope">Cakupan akses awal</label><select id="userBaruScope" required onchange="perbaruiGudangChecklist()"></select><small id="userBaruScopeHint">Pilih akses dasar sesuai tugas akun.</small></div>
         <section class="access-section" aria-labelledby="userModulesHeading"><h3 id="userModulesHeading">Modul yang dapat dibuka</h3><small>Modul menentukan halaman yang dapat dibuka. Persetujuan tetap ditentukan oleh role akun.</small><div class="access-options">
-          <label class="access-option"><input type="checkbox" name="userModules" value="portal"><span>Permintaan Barang</span></label>
+          <label class="access-option"><input type="checkbox" name="userModules" value="portal"><span>Portal Permintaan</span></label>
           <label class="access-option"><input type="checkbox" name="userModules" value="stock"><span>Manajemen Stok</span></label>
           <label class="access-option"><input type="checkbox" name="userModules" value="repair"><span>Permintaan Perbaikan</span></label>
-          <label class="access-option"><input type="checkbox" name="userModules" value="proposal"><span>Pengajuan Proposal</span></label>
+          <label class="access-option"><input type="checkbox" name="userModules" value="proposal"><span>Proposal Permintaan</span></label>
         </div></section>
         <section class="access-section" id="warehouseAccessSection" aria-labelledby="warehouseAccessHeading"><h3 id="warehouseAccessHeading">Gudang yang dapat diakses</h3><small>Pilih satu atau lebih gudang. Untuk Kepala Teknisi, gunakan pilihan gudang Teknik lintas farm.</small><div class="warehouse-tools"><button type="button" onclick="pilihGudangTeknik()">Pilih semua gudang Teknik</button><button type="button" onclick="bersihkanGudangChecklist()">Hapus pilihan</button></div><div class="warehouse-list" id="userWarehouseChecklist"></div></section>
         <p id="adminFormMessage" role="status" aria-live="polite" hidden></p>
@@ -291,6 +314,7 @@
     let userModalInvoker = null;
     let moduleDefaultsInitialized = false;
     let activeManagementPanel = 'users';
+    let inboxRequestId = 0;
     const moduleByPage = {portal: 'portal.html', stock: 'stock.html', repair: 'perbaikan.html', proposal: 'proposal.html'};
 
     function readCentralSession() {
@@ -318,6 +342,38 @@
     function getUserModules(user) {
       if (user && user.customAccessConfigured) return Array.isArray(user.modulesAccess) ? user.modulesAccess : [];
       return isPicGudangLegacy(user) ? ['stock'] : ['portal','stock','repair','proposal'];
+    }
+
+    function inboxEscape(value) {
+      return String(value == null ? '' : value).replace(/[&<>"']/g, character => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[character]));
+    }
+
+    function renderInbox(data) {
+      const grid = document.getElementById('approvalInboxGrid');
+      const categories = data && Array.isArray(data.categories) ? data.categories : [];
+      if (!categories.length) { grid.innerHTML = '<div class="inbox-empty">Tidak ada antrean yang perlu ditindaklanjuti.</div>'; return; }
+      grid.innerHTML = categories.map(category => {
+        const items = Array.isArray(category.items) ? category.items : [];
+        const contents = items.length ? items.slice(0,4).map(item => `<a class="inbox-item" href="${inboxEscape(category.href)}"><strong>${inboxEscape(item.title || item.id)}</strong><small>${inboxEscape(item.subtitle || item.id)} · ${inboxEscape(item.status || 'Menunggu')}</small></a>`).join('') : '<div class="inbox-empty">Tidak ada yang menunggu.</div>';
+        return `<article class="inbox-card"><h4>${inboxEscape(category.label)}<span class="inbox-count">${Number(category.count)||0}</span></h4><div class="inbox-items">${contents}</div></article>`;
+      }).join('');
+    }
+
+    async function loadApprovalInbox() {
+      const user = currentCentralUser;
+      if (!user || !user.token) return;
+      const requestId = ++inboxRequestId;
+      const grid = document.getElementById('approvalInboxGrid');
+      grid.innerHTML = '<div class="inbox-loading">Memuat antrean…</div>';
+      try {
+        const result = await postAuth({action:'getApprovalInbox', token:user.token});
+        if (requestId !== inboxRequestId) return;
+        if (result.status !== 'success') throw new Error(result.message || 'Ringkasan antrean tidak dapat dimuat.');
+        renderInbox(result.data);
+      } catch (error) {
+        if (requestId !== inboxRequestId) return;
+        grid.innerHTML = `<div class="inbox-empty inbox-error">${inboxEscape(error.message || 'Ringkasan antrean gagal dimuat.')}</div>`;
+      }
     }
 
     async function postAuth(payload) {
@@ -619,6 +675,10 @@
       document.querySelectorAll('.module-list a[href]:not(#adminTransactionsCard)').forEach(link => { const key = Object.keys(moduleByPage).find(module => moduleByPage[module] === link.getAttribute('href')); link.hidden = !key || modules.indexOf(key) < 0; });
       document.getElementById('adminUsersCard').hidden = !isAdmin;
       document.getElementById('adminTransactionsCard').hidden = !isAdmin;
+      const role = String(user.roleAccess || '').toUpperCase();
+      const showInbox = role === 'ADMIN' || role === 'ADMIN_TEKNISI';
+      document.getElementById('approvalInbox').hidden = !showInbox;
+      if (showInbox) loadApprovalInbox();
       document.querySelector('.module-list').classList.toggle('admin-visible', isAdmin);
       document.getElementById('startLink').href = '#moduleSection';
       document.getElementById('startLinkText').textContent = 'Pilih modul';
