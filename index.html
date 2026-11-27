@@ -266,10 +266,10 @@
         </div>
         <div><label for="userBaruScope">Cakupan akses awal</label><select id="userBaruScope" required onchange="perbaruiGudangChecklist()"></select><small id="userBaruScopeHint">Pilih akses dasar sesuai tugas akun.</small></div>
         <section class="access-section" aria-labelledby="userModulesHeading"><h3 id="userModulesHeading">Modul yang dapat dibuka</h3><small>Modul menentukan halaman yang dapat dibuka. Persetujuan tetap ditentukan oleh role akun.</small><div class="access-options">
-          <label class="access-option"><input type="checkbox" name="userModules" value="portal"><span>Portal Permintaan</span></label>
+          <label class="access-option"><input type="checkbox" name="userModules" value="portal"><span>Permintaan Barang</span></label>
           <label class="access-option"><input type="checkbox" name="userModules" value="stock"><span>Manajemen Stok</span></label>
           <label class="access-option"><input type="checkbox" name="userModules" value="repair"><span>Permintaan Perbaikan</span></label>
-          <label class="access-option"><input type="checkbox" name="userModules" value="proposal"><span>Proposal Permintaan</span></label>
+          <label class="access-option"><input type="checkbox" name="userModules" value="proposal"><span>Pengajuan Proposal</span></label>
         </div></section>
         <section class="access-section" id="warehouseAccessSection" aria-labelledby="warehouseAccessHeading"><h3 id="warehouseAccessHeading">Gudang yang dapat diakses</h3><small>Pilih satu atau lebih gudang. Untuk Kepala Teknisi, gunakan pilihan gudang Teknik lintas farm.</small><div class="warehouse-tools"><button type="button" onclick="pilihGudangTeknik()">Pilih semua gudang Teknik</button><button type="button" onclick="bersihkanGudangChecklist()">Hapus pilihan</button></div><div class="warehouse-list" id="userWarehouseChecklist"></div></section>
         <p id="adminFormMessage" role="status" aria-live="polite" hidden></p>
